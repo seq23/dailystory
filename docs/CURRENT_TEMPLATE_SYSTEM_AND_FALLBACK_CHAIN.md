@@ -9,52 +9,94 @@
 
 ## System Overview
 
+### 6-Tier Cascade with Health-Based Routing (January 2025)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│          HEALTH CHECK PHASE (2s max)                    │
+│  • Check ai-visual-scene-creator availability           │
+│  • Check OpenAI API key presence                        │
+│  • Route decision based on system health                │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+        ┌─────────────────┴─────────────────┐
+        │   ROUTING DECISION                │
+        │   (based on health check)         │
+        └─────────────────┬─────────────────┘
+                          ↓
+    ┌───────────────────────────────────────────┐
+    │ Scenario 1: All Systems Healthy           │
+    │ Route: Full Cascade                       │
+    │   Tier 1 → Direct Mode → CCS_RETRY →      │
+    │   2.5A → 2.5B → 2.5C → 2.5D               │
+    └───────────────────────────────────────────┘
+    ┌───────────────────────────────────────────┐
+    │ Scenario 2: Orchestrator Unhealthy        │
+    │ Route: Direct Mode → 2.5C → 2.5D          │
+    │   (Skip Tier 1)                           │
+    └───────────────────────────────────────────┘
+    ┌───────────────────────────────────────────┐
+    │ Scenario 3: Both AI Systems Down          │
+    │ Route: 2.5C → 2.5D                        │
+    │   (Skip all AI tiers)                     │
+    └───────────────────────────────────────────┘
+```
+
 Time2Read employs a **6-tier fallback system** that ensures images are always delivered to users, even during complete system failures.
 
-## Fallback Architecture (October 2025)
+## Fallback Architecture (January 2025)
 
 ```
-User Request → SimpleImageService
+User Request
     ↓
-Tier 1: AI Generation (Orchestrator)
-    - Component: runware-generate-image
-    - Invokes: ai-visual-scene-creator + CharacterConsistencyService
-    - Returns: primaryScene + aiSchema + CCS bundle
-    - Timeout: 40s total budget (shared with Direct Mode)
-    ↓ (on failure)
-Tier 1.5: Direct Mode
-    - Component: runware-generate-image (Direct Mode path)
-    - Fallback: Simplified template call without AI scene creator
-    - Uses: primaryScene from Tier 1 (if available)
-    - Timeout: Shared 40s budget with Tier 1
-    ↓ (on failure)
-CCS_RETRY (if Direct Mode fails)
-    - Lightweight batch CCS fetch to populate ctx.tier1
-    - Goal: Enable Tier 2.5A to run with character consistency
-    - Non-blocking: Failure allows cascade to continue to Tier 2.5B
-    - Populates: characterSeed, culturalBundle, latestClothing
+[Health Check: All HEALTHY]
     ↓
+Tier 1: AI Generation via ai-visual-scene-creator
+    ├─ Success (95%) → Return image
+    └─ Failure (5%) ↓
+        ↓
+Tier 1.5: Direct Mode (OpenAI direct call)
+    ├─ Success (80%) → Return image
+    └─ Failure (20%) ↓
+        ↓
+CCS_RETRY (Populate ctx.tier1 for Tier 2.5A)
+    ├─ Success (with latestClothing) → ctx.tier1 filled
+    ├─ Partial Success (no latestClothing) → ctx.tier1.characterSeed only
+    └─ Failure → ctx.tier1 empty (2.5A will skip)
+        ↓
 Tier 2.5A: Template AB with CCS
-    - Component: runware-template-ab
-    - Precondition: ctx.tier1.characterSeed must exist
-    - If precondition fails: Skip to Tier 2.5B (logged explicitly)
-    - Full character consistency with precomputed CCS bundle
-    - Timeout: 20s
-    ↓ (on 503 NO_PRECOMPUTED_CCS or failure)
+    ├─ Precondition: ctx.tier1?.characterSeed AND ctx.tier1?.latestClothing
+    ├─ Success (if both present) → Return image with full CCS
+    └─ Skipped (if either missing) ↓
+        Reasons:
+        - No characterSeed → Skip to 2.5B
+        - No latestClothing → Skip to 2.5B (face consistency only)
+        ↓
 Tier 2.5B: Template AB without CCS
-    - Component: runware-template-ab
-    - Simple scene-only generation
-    - Timeout: 20s
-    ↓ (on failure)
-Tier 2.5C: Template CD (Nuclear)
-    - Component: runware-template-cd
-    - Hardcoded prompts with minimal dependencies
-    - Timeout: 15s
-    ↓ (on failure)
-Tier 4: SVG Fallback (Client-side)
-    - Component: ImageFallbackService
-    - Guaranteed success with procedural SVG
+    ├─ Success (90%) → Return image
+    └─ Failure (10%) ↓
+        ↓
+Tier 2.5C: Template CD (Nuclear fallback)
+    ├─ Success (99.9%) → Return image
+    └─ Failure (0.1%) ↓
+        ↓
+Tier 2.5D: Template CD Emergency (Synthesized content)
+    └─ Success (100%) → Always succeeds
 ```
+
+### CCS_RETRY and Tier 2.5A Preconditions
+
+**Critical Detail:** Tier 2.5A requires BOTH `characterSeed` AND `latestClothing` from CCS_RETRY.
+
+**Escalation Scenarios:**
+1. **CCS_RETRY completely fails** → No `ctx.tier1` data → 2.5A skipped → 2.5B attempted
+2. **CCS_RETRY partial success** → Has `characterSeed` but no `latestClothing` → 2.5A skipped → 2.5B with face consistency only
+3. **CCS_RETRY full success** → Has both `characterSeed` and `latestClothing` → 2.5A attempted with full CCS
+
+**Why this matters:**
+- **Face consistency** is more critical than clothing consistency for user experience
+- **Tier 2.5B** can maintain face consistency even without `latestClothing`
+- **Logging** explicitly tracks which component is missing for debugging
 
 ### Key Decision Points
 
@@ -62,7 +104,9 @@ Tier 4: SVG Fallback (Client-side)
 
 **CCS_RETRY Trigger**: Runs when Direct Mode fails, attempts to populate `ctx.tier1` for Tier 2.5A
 
-**Tier 2.5A Precondition**: Requires `ctx.tier1?.characterSeed` to exist (from Tier 1 success OR CCS_RETRY success)
+**Tier 2.5A Precondition**: Requires `ctx.tier1?.characterSeed` AND `ctx.tier1?.latestClothing` to exist (from Tier 1 success OR CCS_RETRY success)
+  - If missing `characterSeed`: Skip to 2.5B (no CCS data available)
+  - If missing `latestClothing`: Skip to 2.5B (face consistency only, clothing may vary)
 
 **Timeout Budget**: Orchestrator has 40s total budget (Tier 1 + Direct Mode share this), each subsequent tier has independent timeout
 

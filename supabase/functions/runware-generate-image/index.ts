@@ -61,6 +61,7 @@ interface TierContext {
     secondaryCharacters: any[];
     mainCharacterAppearance: any;
     structuredAvatarData: any;
+    latestClothing?: any;
   };
   trace?: Array<{ tier: string; ms: number; ok: boolean; code?: string; details?: any }>;
   requestAbort?: AbortController;
@@ -68,6 +69,12 @@ interface TierContext {
     imageURL?: string;
     seed?: string;
     primaryScene?: string;
+  };
+  healthRoutingDecision?: {
+    orchestratorHealthy: boolean;
+    openaiHealthy: boolean;
+    routingStrategy: string;
+    skippedTiers: string[];
   };
 }
 
@@ -1814,15 +1821,18 @@ const executeDirectMode: TierFn = async (ctx) => {
         sessionSetting: sessionSetting || ctx.payload.sessionSetting,
       };
       
-      console.log(`✅ [${ctx.requestId}] CCS_RETRY: SUCCESS - Tier 2.5A precondition satisfied`, {
+      console.log(`✅ [${ctx.requestId}] CCS_RETRY: SUCCESS - Tier 2.5A precondition check`, {
         characterSeedSource: ctx.tier1.characterSeed?.source || 'unknown',
         seedMethod: ctx.tier1.characterSeed?.source === 'synthetic_ccs_retry_fallback' ? 'SYNTHETIC' : 
                     batchCCSData?.characterSeed ? 'CACHED' : 'FRESH_GENERATED',
         hasCulturalBundle: !!ctx.tier1.culturalBundle,
         hasLatestClothing: !!ctx.tier1.latestClothing,
+        clothingConsistencyStatus: ctx.tier1.latestClothing ? 'AVAILABLE' : 'MISSING_WILL_ESCALATE_TO_2.5B',
         hasHair: !!ctx.tier1.culturalBundle?.hair,
         hasFeatures: !!ctx.tier1.culturalBundle?.features,
-        nextTier: "TIER_2.5A (Template AB with CCS)",
+        nextTierEligibility: ctx.tier1.characterSeed && ctx.tier1.latestClothing ? 
+          "TIER_2.5A (full CCS)" : 
+          ctx.tier1.characterSeed ? "TIER_2.5B (face only)" : "TIER_2.5B (no CCS)",
         tier1Populated: true
       });
       
@@ -1836,6 +1846,8 @@ const executeDirectMode: TierFn = async (ctx) => {
       console.error(`❌ [${ctx.requestId}] CCS_RETRY: FAILED - Tier 2.5A will be skipped`, {
         ccsError: ccsErrorMessage.substring(0, 100),
         tier1Populated: false,
+        hasLatestClothing: false,
+        clothingConsistencyStatus: 'UNAVAILABLE_DUE_TO_CCS_FAILURE',
         nextTier: "TIER_2.5B (Template AB without CCS)",
         reason: 'CCS_RETRY could not populate characterSeed'
       });
@@ -1854,6 +1866,45 @@ const executeT25A: TierFn = async (ctx) => {
   let gateAcquired = false;
   
   try {
+    // Precondition: Require BOTH characterSeed AND latestClothing
+    if (!ctx.tier1?.characterSeed) {
+      console.log(`⚠️ [${ctx.requestId}] TIER_2.5A: SKIPPED (precondition failed: no characterSeed)`, {
+        reason: 'No characterSeed from Tier 1 or CCS_RETRY',
+        escalation: 'TIER_2.5B',
+        ccsRetryRan: !!ctx.trace?.some(t => t.tier === 'CCS_RETRY'),
+        ccsRetrySuccess: !!ctx.tier1
+      });
+      ctx.tierLogger.attempt("TIER_2.5A_PRECONDITION_SKIP", { reason: "no_character_seed" });
+      return { ok: false, code: "T25A_NO_CCS", reason: "No characterSeed - escalating to 2.5B" };
+    }
+    
+    if (!ctx.tier1?.latestClothing) {
+      console.warn(`⚠️ [${ctx.requestId}] TIER_2.5A: SKIPPED (precondition failed: no latestClothing)`, {
+        hasCharacterSeed: true,
+        hasLatestClothing: false,
+        reason: 'CCS_RETRY failed to fetch clothing consistency data',
+        escalation: 'TIER_2.5B (face consistency only)',
+        impact: 'Character face will be consistent but clothing may vary between pages',
+        businessImpact: 'Acceptable degradation - face consistency is primary requirement'
+      });
+      ctx.tierLogger.attempt("TIER_2.5A_PRECONDITION_SKIP", { 
+        reason: "no_latest_clothing",
+        hasCharacterSeed: true,
+        hasLatestClothing: false
+      });
+      return { 
+        ok: false, 
+        code: "T25A_NO_CLOTHING", 
+        reason: "No latestClothing - escalating to 2.5B for face-only consistency" 
+      };
+    }
+    
+    console.log(`✅ [${ctx.requestId}] TIER_2.5A: Precondition satisfied (full CCS available)`, {
+      hasCharacterSeed: true,
+      hasLatestClothing: true,
+      readyForFullCCS: true
+    });
+    
     // Gate check
     const gateResult = await acquire(gateKey);
     if (!gateResult.acquired) {
@@ -2362,19 +2413,8 @@ async function runTierCascade(
   const trace: Array<{ tier: string; ms: number; ok: boolean; code?: string; details?: any }> = [];
   
   for (const { name, fn, precondition } of tiers) {
-    // Skip if precondition fails (e.g., T25A needs culturalBundle)
+    // Skip if precondition fails (handled inside tier functions now)
     if (precondition && !precondition(ctx)) {
-      // Enhanced precondition logging for T25A
-      if (name === "T25A") {
-        console.log(`⚠️ [${ctx.requestId}] TIER_2.5A: SKIPPED (precondition failed: no characterSeed)`, {
-          hasTier1: !!ctx.tier1,
-          hasCharacterSeed: !!ctx.tier1?.characterSeed,
-          ccsRetryRan: ctx.trace?.some(t => t.tier === 'CCS_RETRY') || false,
-          ccsRetrySuccess: ctx.trace?.find(t => t.tier === 'CCS_RETRY')?.ok || false,
-          reason: 'Tier 1 failed and CCS_RETRY did not populate characterSeed',
-          nextTier: 'TIER_2.5B'
-        });
-      }
       trace.push({ tier: name, ms: 0, ok: false, code: "PRECONDITION_FAILED" });
       continue;
     }
@@ -2679,25 +2719,91 @@ serve(async (req) => {
         requestAbort, // ADD: Request-level abort signal
       };
       
-      // 2. Define cascade (order matters!)
-      const tiers = [
-        { 
-          name: "TIER_1", 
-          fn: executeTier1,
-        },
-        { 
-          name: "DIRECT_MODE", 
-          fn: executeDirectMode,
-        },
-        { 
-          name: "T25A", 
-          fn: executeT25A,
-          precondition: (ctx) => !!ctx.tier1?.characterSeed,
-        },
-        { name: "T25B", fn: executeT25B },
-        { name: "T25C", fn: executeT25C },
-        { name: "T25D", fn: executeT25D },
-      ];
+      // 2. Health-based routing
+      const openaiKey = Deno.env.get('OPENAI_API_KEY');
+      const openaiHealthy = !!openaiKey && openaiKey.trim().length > 0;
+      
+      // Check ai-visual-scene-creator health (2s timeout)
+      let aiVisualSceneCreatorHealthy = true;
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        
+        if (supabaseUrl && supabaseKey) {
+          const healthCheck = await fetch(`${supabaseUrl}/functions/v1/ai-visual-scene-creator`, {
+            method: 'HEAD',
+            headers: { 'Authorization': `Bearer ${supabaseKey}` },
+            signal: AbortSignal.timeout(2000)
+          });
+          aiVisualSceneCreatorHealthy = healthCheck.ok || healthCheck.status === 400;
+        } else {
+          aiVisualSceneCreatorHealthy = false;
+        }
+      } catch (error) {
+        console.warn(`⚠️ [${requestId}] AI Visual Scene Creator health check failed:`, error.message);
+        aiVisualSceneCreatorHealthy = false;
+      }
+      
+      console.log(`🏥 [${requestId}] System Health Check:`, {
+        openai: openaiHealthy ? 'HEALTHY' : 'UNHEALTHY',
+        aiVisualSceneCreator: aiVisualSceneCreatorHealthy ? 'HEALTHY' : 'UNHEALTHY',
+        routingDecision: !aiVisualSceneCreatorHealthy && !openaiHealthy ? 'SKIP_TO_T25C' :
+                         !aiVisualSceneCreatorHealthy ? 'SKIP_TO_DIRECT_MODE' : 'FULL_CASCADE'
+      });
+      
+      // 3. Define cascade with health-based routing
+      let tiers = [];
+      const healthRoutingDecision: any = {
+        orchestratorHealthy: aiVisualSceneCreatorHealthy,
+        openaiHealthy: openaiHealthy,
+        routingStrategy: 'FULL_CASCADE',
+        skippedTiers: []
+      };
+      
+      if (!aiVisualSceneCreatorHealthy && !openaiHealthy) {
+        // CRITICAL: Both systems down - route directly to nuclear fallback
+        console.log(`🚨 [${requestId}] CRITICAL: Both AI systems unhealthy - routing directly to Tier 2.5C`);
+        tierLogger.attempt("TIER_1", { skipped: true, reason: "ai_systems_unhealthy" });
+        tierLogger.attempt("DIRECT_MODE", { skipped: true, reason: "ai_systems_unhealthy" });
+        tierLogger.attempt("CCS_RETRY", { skipped: true, reason: "tier1_skipped" });
+        tierLogger.attempt("TIER_2.5A", { skipped: true, reason: "no_ccs_data" });
+        tierLogger.attempt("TIER_2.5B", { skipped: true, reason: "fast_fail_to_nuclear" });
+        
+        healthRoutingDecision.routingStrategy = 'NUCLEAR_ONLY';
+        healthRoutingDecision.skippedTiers = ["TIER_1", "DIRECT_MODE", "CCS_RETRY", "TIER_2.5A", "TIER_2.5B"];
+        
+        tiers = [
+          { name: "T25C", fn: executeT25C },
+          { name: "T25D", fn: executeT25D }
+        ];
+      } else if (!aiVisualSceneCreatorHealthy) {
+        // Orchestrator dependencies unhealthy - skip Tier 1, try Direct Mode first
+        console.log(`⚠️ [${requestId}] AI Visual Scene Creator unhealthy - skipping Tier 1, routing to Direct Mode → 2.5C`);
+        tierLogger.attempt("TIER_1", { skipped: true, reason: "ai_visual_scene_creator_unhealthy" });
+        
+        healthRoutingDecision.routingStrategy = 'DIRECT_MODE_FIRST';
+        healthRoutingDecision.skippedTiers = ["TIER_1"];
+        
+        tiers = [
+          { name: "DIRECT_MODE", fn: executeDirectMode },
+          { name: "T25C", fn: executeT25C },
+          { name: "T25D", fn: executeT25D }
+        ];
+      } else {
+        // All systems healthy - run full cascade
+        console.log(`✅ [${requestId}] All systems healthy - executing full cascade from Tier 1`);
+        tiers = [
+          { name: "TIER_1", fn: executeTier1 },
+          { name: "DIRECT_MODE", fn: executeDirectMode },
+          { name: "T25A", fn: executeT25A, precondition: (ctx) => !!ctx.tier1?.characterSeed && !!ctx.tier1?.latestClothing },
+          { name: "T25B", fn: executeT25B },
+          { name: "T25C", fn: executeT25C },
+          { name: "T25D", fn: executeT25D }
+        ];
+      }
+      
+      // Store health routing decision in context
+      ctx.healthRoutingDecision = healthRoutingDecision;
       
       // 3. Run cascade
       const result = await runTierCascade(tiers, ctx);
@@ -2707,7 +2813,8 @@ serve(async (req) => {
         return corsResponse({ 
           ...result.data, 
           requestId, 
-          timestamp: new Date().toISOString() 
+          timestamp: new Date().toISOString(),
+          healthRoutingDecision: ctx.healthRoutingDecision
         }, req, 200);
       }
       

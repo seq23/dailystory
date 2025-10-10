@@ -652,6 +652,37 @@ async function handleRequest(req: Request) {
     const payload = await req.json();
     console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
     
+    // Detect emergency mode
+    const isEmergencyMode = payload.emergencyMode === true || payload.templateComplexity === 'D';
+    
+    if (isEmergencyMode) {
+      console.log(`🚨 [Template CD] Emergency mode detected (complexity: ${payload.templateComplexity}) - using minimal validation`);
+      
+      // Synthesize fallback content if missing
+      if (!payload.pageText && !payload.storyText && !payload.primaryScene) {
+        console.warn('⚠️ [Template CD] No story content provided - synthesizing emergency fallback');
+        payload.primaryScene = 'A magical storybook scene with vibrant colors and friendly characters';
+        payload.pageText = 'Once upon a time in a magical land...';
+        payload.storyText = payload.pageText;
+      }
+      
+      if (!payload.userInfo || !payload.userInfo.name) {
+        console.warn('⚠️ [Template CD] No userInfo provided - using emergency defaults');
+        payload.userInfo = {
+          ...payload.userInfo,
+          name: payload.userInfo?.name || 'Friend',
+          age: payload.userInfo?.age || 7,
+          interests: payload.userInfo?.interests || ['adventure', 'magic']
+        };
+      }
+      
+      console.log(`✅ [Template CD] Emergency mode payload prepared`, {
+        hasContent: !!(payload.pageText || payload.storyText || payload.primaryScene),
+        hasUserInfo: !!payload.userInfo?.name,
+        synthesizedContent: !payload.pageText && !payload.storyText && !payload.primaryScene
+      });
+    }
+    
     let enhancedStoryData: any, storyText: string, pageNumber: number, avatarIdentity: any, templateComplexity: string, failedTierData: any, sessionId: string, seed: number | null;
     
     // Handle bundle-structured payloads

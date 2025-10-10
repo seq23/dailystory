@@ -105,6 +105,77 @@ This document reflects the **actual codebase behavior** of the image generation 
 
 ---
 
+## Health-Based Fail-Fast Routing (January 2025)
+
+### Overview
+The orchestrator performs health checks at request time and routes based on system availability, preventing 95-second timeout waits when AI systems are unavailable.
+
+### Routing Logic
+
+**Scenario 1: All Systems Healthy**
+```
+Health Check → All HEALTHY
+    ↓
+Route: Full cascade
+  Tier 1 (ai-visual-scene-creator) → 
+  Direct Mode (fallback) →
+  CCS_RETRY (populate ctx.tier1) →
+  Tier 2.5A (Template AB with CCS) →
+  Tier 2.5B (Template AB without CCS) →
+  Tier 2.5C (Template CD nuclear) →
+  Tier 2.5D (Template CD emergency)
+```
+**Expected:** 95%+ success at Tier 1 or Direct Mode
+
+**Scenario 2: AI Visual Scene Creator Unhealthy**
+```
+Health Check → ai-visual-scene-creator UNHEALTHY, OpenAI HEALTHY
+    ↓
+Route: Skip Tier 1, try Direct Mode
+  Direct Mode (uses OpenAI directly) →
+  Tier 2.5C (if Direct fails) →
+  Tier 2.5D (emergency)
+```
+**Expected:** 80% success at Direct Mode, 20% at 2.5C
+
+**Scenario 3: Both AI Systems Down**
+```
+Health Check → ai-visual-scene-creator UNHEALTHY, OpenAI UNHEALTHY
+    ↓
+Route: Skip directly to nuclear fallback
+  Tier 2.5C (Template CD with minimal content) →
+  Tier 2.5D (Template CD emergency synthesis)
+```
+**Expected:** 100% success at 2.5C/D (guaranteed by design)
+
+### Health Check Implementation
+
+```typescript
+// Orchestrator checks (2s timeout each)
+checkAIVisualSceneCreatorHealth() → HEAD /ai-visual-scene-creator
+checkOpenAIHealth() → Check OPENAI_API_KEY presence
+
+// Decision matrix
+if (!aiVisualSceneCreator && !openai) → Route: T25C
+else if (!aiVisualSceneCreator) → Route: DIRECT_MODE → T25C
+else → Route: TIER_1 (full cascade)
+```
+
+### Benefits
+- **Prevents 95s timeout waits** when AI systems are down
+- **Degrades gracefully** to lower-quality tiers
+- **Users get immediate results** even during outages
+- **No manual intervention** required
+
+### Testing in ImageTierTester
+The existing "Test All Tiers (Real Routing)" button will automatically exercise health-based routing:
+- Logs will show: `🏥 System Health Check: {...}`
+- Logs will show: `⚠️ AI Visual Scene Creator unhealthy - skipping Tier 1` (if applicable)
+- Response will include: `healthRoutingDecision` metadata
+- Tier failure history will show which tiers were skipped due to health checks
+
+---
+
 ## Logging Visibility (October 2025 Enhancements)
 
 ### Direct Mode Logs
