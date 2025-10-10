@@ -699,7 +699,8 @@ async function handleRequest(req: Request) {
     }
   
     // Allow primaryScene-only payloads (Direct Mode Simple 2.5C)
-    if (!storyText && !primaryScene) {
+    const hasPrimaryScene = typeof payload.primaryScene === 'string' && payload.primaryScene.trim().length > 0;
+    if (!storyText && !hasPrimaryScene) {
       console.warn(`⚠️ Missing storyText AND primaryScene - forcing Emergency Mode D`);
       templateComplexity = 'D';
     }
@@ -879,12 +880,12 @@ serve(async (req) => {
             message: 'Template CD provider gate unavailable - escalate to Emergency Mode',
             retryable: true
           }), {
-            status: 503,
-            headers: { 
-              ...corsHeaders, 
-              'Content-Type': 'application/json',
-              'Retry-After': '5'
-            }
+          status: 503,
+          headers: { 
+            ...generateEchoCorsHeaders(req), 
+            'Content-Type': 'application/json',
+            'Retry-After': String(gateResult.retryAfterSeconds ?? 5)
+          }
           });
         }
       }
