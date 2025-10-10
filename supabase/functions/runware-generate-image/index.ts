@@ -363,9 +363,35 @@ const EMERGENCY_HAIR_MAP: Record<string, string> = {
   dark: "black textured 4C hair",
 };
 
+const EMERGENCY_AVATAR_DESCRIPTIONS: Record<string, string> = {
+  boy: "a young boy with an adventurous spirit",
+  girl: "a young girl with bright curious eyes",
+  child: "a cheerful child with a warm smile",
+  'gender-neutral': "a creative young person with boundless imagination",
+  'prefer-not-to-answer': "a thoughtful child with a kind demeanor"
+};
+
+const EMERGENCY_SKIN_FEATURES: Record<string, string> = {
+  pale: "fair complexion with rosy cheeks",
+  light: "light skin with warm undertones",
+  medium: "medium tan skin with natural glow",
+  olive: "olive-toned skin with golden warmth",
+  dark: "rich dark skin with radiant beauty"
+};
+
 function emergencyHairFallback(skinTone: string | undefined): string {
   const normalized = (skinTone || "medium").toLowerCase().trim();
   return EMERGENCY_HAIR_MAP[normalized] || EMERGENCY_HAIR_MAP["medium"];
+}
+
+function emergencyAvatarDescription(avatarType: string | undefined): string {
+  const normalized = (avatarType || "child").toLowerCase().trim();
+  return EMERGENCY_AVATAR_DESCRIPTIONS[normalized] || EMERGENCY_AVATAR_DESCRIPTIONS["child"];
+}
+
+function emergencySkinFeatures(skinTone: string | undefined): string {
+  const normalized = (skinTone || "medium").toLowerCase().trim();
+  return EMERGENCY_SKIN_FEATURES[normalized] || EMERGENCY_SKIN_FEATURES["medium"];
 }
 
 // CRITICAL: ProviderGate and IdempotencyMemory now lazy-loaded inside serve handler to prevent boot failures
@@ -1578,22 +1604,24 @@ const executeDirectMode: TierFn = async (ctx) => {
           console.error(`❌ [${ctx.requestId}] [CCS_RETRY] getEnhancedCharacterSeed: FAILED`, seedError);
           
           // ✅ NEW: Synthesize minimal characterSeed from available inline data
-          console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] Synthesizing minimal characterSeed from inline data`);
+          console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] Synthesizing bulletproof characterSeed from inline fallback arrays`);
           
           const skinTone = avatarIdentity.skinTone || "medium";
+          const avatarType = avatarIdentity.type || "child";
           const hairColor = emergencyHairFallback(skinTone);
-          const characterDescription = `${avatarIdentity.name || "the child"}, ${avatarIdentity.type || "child"}`;
+          const skinFeatures = emergencySkinFeatures(skinTone);
+          const enhancedDescription = emergencyAvatarDescription(avatarType);
           
           characterSeed = {
             selectedCulturalHair: hairColor,
-            selectedCulturalFeatures: "",
-            physicalTraits: { hair: hairColor, skinFeatures: "" },
-            characterDescription,
+            selectedCulturalFeatures: skinFeatures,
+            physicalTraits: { hair: hairColor, skinFeatures },
+            characterDescription: `${avatarIdentity.name || "the child"}, ${enhancedDescription}`,
             seed: `synthetic_${sessionId}_${Date.now()}`,
             source: 'synthetic_ccs_retry_fallback'
           };
           
-          console.log(`✅ [${ctx.requestId}] [CCS_RETRY] Synthetic characterSeed created`, { hairColor, characterDescription, source: 'synthetic_ccs_retry_fallback' });
+          console.log(`✅ [${ctx.requestId}] [CCS_RETRY] Bulletproof synthetic characterSeed created`, { hairColor, skinFeatures, enhancedDescription, source: 'synthetic_ccs_retry_fallback' });
         }
       }
       
@@ -1617,7 +1645,7 @@ const executeDirectMode: TierFn = async (ctx) => {
         }
         
         if (!culturalBundle?.features || culturalBundle.features.trim() === "") {
-          culturalBundle.features = "friendly features";
+          culturalBundle.features = emergencySkinFeatures(skinToneForFallback);
           console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.features to "${culturalBundle.features}"`);
         }
         
