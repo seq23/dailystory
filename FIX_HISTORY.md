@@ -2,6 +2,49 @@
 
 ---
 
+## 2025-10-10: Runware Template CD Runtime Error Fix
+
+### Issue
+`runware-template-cd` edge function experiencing POST `RUNTIME_ERROR` (500 status) during Enhanced Connectivity tests, breaking Direct Mode Simple (2.5C) image generation flows.
+
+### Root Causes & Fixes
+
+#### 1. Undefined `primaryScene` Variable (Lines 701-705)
+- **Problem**: Validation code referenced undefined `primaryScene` variable
+- **Fix**: Added `const hasPrimaryScene = typeof payload.primaryScene === 'string' && payload.primaryScene.trim().length > 0;`
+- **Impact**: Eliminated `ReferenceError: primaryScene is not defined`
+
+#### 2. Undefined `corsHeaders` Variable (Lines 882-887)
+- **Problem**: Gate-failure response used undefined `corsHeaders` in spread operator
+- **Fix**: Replaced with `...generateEchoCorsHeaders(req)` and dynamic `Retry-After` header
+- **Impact**: Proper 503 HEALTHY_ESCALATION responses with correct CORS headers
+
+#### 3. Missing Direct Mode Simple Payload Handler (Lines 689-699)
+- **Problem**: No extraction path for `primaryScene`-only payloads with `directMode: true`, causing `enhancedStoryData` to remain undefined and crash at line 710 with "Cannot read properties of undefined (reading 'userInfo')"
+- **Fix**: Added 5th payload extraction path treating `primaryScene` as `storyText` and initializing all required fields
+- **Impact**: Direct Mode Simple (2.5C) now fully functional, orchestrator alignment complete
+
+### Files Modified
+- `supabase/functions/runware-template-cd/index.ts` (Lines 689-699, 701-705, 882-887)
+- `docs/archive/2025/fixes/RUNWARE_TEMPLATE_CD_RUNTIME_FIX_2025_10_10.md` (Created)
+
+### Testing Results
+Enhanced Connectivity tests now show:
+- ✅ GET /health → 200 HEALTHY
+- ✅ POST with `primaryScene` + `directMode` → 200 JSON success (previously 500)
+- ✅ POST with gate denial → 503 HEALTHY_ESCALATION with proper CORS
+- ✅ All existing payload formats continue working unchanged
+
+### Integration Notes
+- Orchestrator (`runware-generate-image`) sends `primaryScene`-only payloads at line 1458
+- Template CD now correctly handles this format via dedicated extraction path
+- 100% backward compatible with existing flows (4 original paths unchanged)
+
+### Documentation
+See `docs/archive/2025/fixes/RUNWARE_TEMPLATE_CD_RUNTIME_FIX_2025_10_10.md` for complete technical details.
+
+---
+
 ## 2025-10-07: Resilience & UX Enhancement Day
 
 ### Subscription System Resilience Overhaul
