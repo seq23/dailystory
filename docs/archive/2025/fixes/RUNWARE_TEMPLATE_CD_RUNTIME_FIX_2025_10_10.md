@@ -40,6 +40,25 @@ Enhanced Connectivity tests should now show:
 - POST with primaryScene-only → 200 JSON success ✅
 - POST with gate denial → 503 HEALTHY_ESCALATION with Retry-After ✅
 
+### 3. Missing Direct Mode Simple Payload Handler (Lines 689-699)
+**Problem:** When Direct Mode Simple (2.5C) sent `primaryScene`-only payloads (with `directMode: true`), none of the 4 extraction paths handled this format. The code fell through to the legacy `else` block, which didn't extract `primaryScene`, leaving `enhancedStoryData` undefined and causing crashes at line 710.
+
+**Fix:** Added dedicated 5th extraction path for Direct Mode Simple:
+```typescript
+} else if (payload.primaryScene && payload.directMode) {
+  console.log('🎯 Template CD: Direct Mode Simple format (primaryScene-only)');
+  storyText = payload.primaryScene; // Use primaryScene as the story content
+  enhancedStoryData = { userInfo: payload.userInfo || {} };
+  pageNumber = payload.pageNumber || 1;
+  avatarIdentity = payload.userInfo?.avatar;
+  templateComplexity = 'C'; // Direct Mode always uses 2.5C
+  sessionId = payload.sessionId;
+  failedTierData = payload.failedTierData;
+  seed = payload.seed;
+}
+```
+
 ## Related
 - `runware-generate-image` already has correct `hasPrimaryScene` validation (lines 576-580)
 - This fix brings `runware-template-cd` into alignment with orchestrator validation patterns
+- Direct Mode Simple now fully supported with proper payload extraction

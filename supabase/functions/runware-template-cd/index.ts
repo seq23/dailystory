@@ -686,6 +686,16 @@ async function handleRequest(req: Request) {
       sessionId = payload.sessionId || payload.enhancedStoryData.sessionId;
       failedTierData = payload.failedTierData;
       seed = payload.seed;
+    } else if (payload.primaryScene && payload.directMode) {
+      console.log('🎯 Template CD: Direct Mode Simple format (primaryScene-only)');
+      storyText = payload.primaryScene; // Use primaryScene as the story content
+      enhancedStoryData = { userInfo: payload.userInfo || {} };
+      pageNumber = payload.pageNumber || 1;
+      avatarIdentity = payload.userInfo?.avatar;
+      templateComplexity = 'C'; // Direct Mode always uses 2.5C
+      sessionId = payload.sessionId;
+      failedTierData = payload.failedTierData;
+      seed = payload.seed;
     } else {
       console.log('📚 Template CD: Enhanced legacy format');
       enhancedStoryData = payload.enhancedStoryData;
