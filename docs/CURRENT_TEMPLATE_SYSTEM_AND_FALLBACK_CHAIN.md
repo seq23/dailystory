@@ -9,33 +9,62 @@
 
 ## System Overview
 
-Time2Read employs a **4-tier fallback system** that ensures story content is always delivered to users, even during complete system failures.
+Time2Read employs a **6-tier fallback system** that ensures images are always delivered to users, even during complete system failures.
 
-## Fallback Architecture
+## Fallback Architecture (October 2025)
 
 ```
-Tier 1: AI Generation (ai-visual-scene-creator)
-    - Returns primaryScene + schema OR ok: false
-    - 2 retry attempts maximum
-    - 200-char minimum for primaryScene (warning only)
-    - Three parsing outcomes (October 2025):
-      1. Valid JSON (parseMethod: 'json') → Full schema + primaryScene
-      2. Regex extraction (parseMethod: 'regex') → primaryScene only, no schema
-      3. Complete failure (parseMethod: 'none') → Escalates to Tier 2
-    - Test button truthfulness: aiSchema only appears when OpenAI returned valid JSON
-    ↓ (on ok: false → escalate to Tier 2.5A)
-Tier 2.5A: Template Service with Character Consistency (runware-template-ab)
-    - Attempts Direct Mode if Tier 1 succeeded with primaryScene
-    - Full character consistency with precomputed CCS bundle
-    ↓ (on failure → escalate to Tier 2.5B)
-Tier 2.5B: Template Service Scene-Only (runware-template-cd)
-    - Uses primaryScene only (no schema required)
-    ↓ (on failure → escalate to Tier 3)
-Tier 3: Emergency Content (ErrorHandlingManager)
-    - Generates rhyming fallback content (NEVER FAILS)
+User Request → SimpleImageService
     ↓
-User sees story content (NEVER sees diagnostic page)
+Tier 1: AI Generation (Orchestrator)
+    - Component: runware-generate-image
+    - Invokes: ai-visual-scene-creator + CharacterConsistencyService
+    - Returns: primaryScene + aiSchema + CCS bundle
+    - Timeout: 40s total budget (shared with Direct Mode)
+    ↓ (on failure)
+Tier 1.5: Direct Mode
+    - Component: runware-generate-image (Direct Mode path)
+    - Fallback: Simplified template call without AI scene creator
+    - Uses: primaryScene from Tier 1 (if available)
+    - Timeout: Shared 40s budget with Tier 1
+    ↓ (on failure)
+CCS_RETRY (if Direct Mode fails)
+    - Lightweight batch CCS fetch to populate ctx.tier1
+    - Goal: Enable Tier 2.5A to run with character consistency
+    - Non-blocking: Failure allows cascade to continue to Tier 2.5B
+    - Populates: characterSeed, culturalBundle, latestClothing
+    ↓
+Tier 2.5A: Template AB with CCS
+    - Component: runware-template-ab
+    - Precondition: ctx.tier1.characterSeed must exist
+    - If precondition fails: Skip to Tier 2.5B (logged explicitly)
+    - Full character consistency with precomputed CCS bundle
+    - Timeout: 20s
+    ↓ (on 503 NO_PRECOMPUTED_CCS or failure)
+Tier 2.5B: Template AB without CCS
+    - Component: runware-template-ab
+    - Simple scene-only generation
+    - Timeout: 20s
+    ↓ (on failure)
+Tier 2.5C: Template CD (Nuclear)
+    - Component: runware-template-cd
+    - Hardcoded prompts with minimal dependencies
+    - Timeout: 15s
+    ↓ (on failure)
+Tier 4: SVG Fallback (Client-side)
+    - Component: ImageFallbackService
+    - Guaranteed success with procedural SVG
 ```
+
+### Key Decision Points
+
+**Direct Mode Trigger**: Automatically attempts after Tier 1 failure (no gate check, zero throttling)
+
+**CCS_RETRY Trigger**: Runs when Direct Mode fails, attempts to populate `ctx.tier1` for Tier 2.5A
+
+**Tier 2.5A Precondition**: Requires `ctx.tier1?.characterSeed` to exist (from Tier 1 success OR CCS_RETRY success)
+
+**Timeout Budget**: Orchestrator has 40s total budget (Tier 1 + Direct Mode share this), each subsequent tier has independent timeout
 
 ## Tier 1: AI Visual Scene Creator (`ai-visual-scene-creator`)
 

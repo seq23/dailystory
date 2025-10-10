@@ -1532,6 +1532,16 @@ const executeDirectMode: TierFn = async (ctx) => {
   try {
     ctx.tierLogger.attempt("DIRECT_MODE", {});
     
+    // Log Direct Mode attempt with context
+    const tier1Trace = ctx.trace?.find(t => t.tier === 'TIER_1');
+    console.log(`🎯 [${ctx.requestId}] DIRECT_MODE: Attempting fallback after Tier 1 failure`, {
+      tier1FailureReason: tier1Trace?.code || 'unknown',
+      tier1Details: tier1Trace?.details?.failureCategory || 'no_details',
+      hasPayload: !!ctx.payload,
+      sessionId: ctx.payload.sessionId,
+      hasPrimaryScene: !!ctx.tier1?.primaryScene
+    });
+    
     // Always available (no gate check - zero throttling)
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const controller = new AbortController();
@@ -1562,6 +1572,15 @@ const executeDirectMode: TierFn = async (ctx) => {
       
       ctx.directMode = { imageURL: data.imageURL, seed: data.seed, primaryScene: data.primaryScene };
       ctx.tierLogger.success("DIRECT_MODE", { imageURL: data.imageURL });
+      
+      // Enhanced success logging
+      console.log(`✅ [${ctx.requestId}] DIRECT_MODE: SUCCESS`, {
+        imageURL: data.imageURL,
+        seed: data.seed,
+        primaryScene: data.primaryScene?.substring(0, 50),
+        processingTimeMs: Date.now() - startMs,
+        tier: 'DIRECT_MODE'
+      });
       
       // Check if Tier 1 failed and capture its details
       const tier1Trace = ctx.trace?.find(t => t.tier === 'TIER_1');
@@ -1595,7 +1614,12 @@ const executeDirectMode: TierFn = async (ctx) => {
     ctx.tierLogger.failure("DIRECT_MODE", { error: errorMessage });
     
     // ============= CCS RETRY: Attempt lightweight batch CCS fetch after Direct Mode failure =============
-    console.log(`⚡ [CCS_RETRY] Direct Mode failed, attempting lightweight batch CCS fetch to populate ctx.tier1 for T2.5A`);
+    console.log(`⚡ [${ctx.requestId}] CCS_RETRY: Direct Mode failed, attempting lightweight CCS recovery`, {
+      directModeError: errorMessage.substring(0, 100),
+      willPopulateTier1ForT25A: true,
+      sessionId: ctx.payload.sessionId,
+      goal: 'Enable Tier 2.5A with character consistency'
+    });
     
     try {
       // Import CCS service (same as Tier 1)
@@ -1790,20 +1814,16 @@ const executeDirectMode: TierFn = async (ctx) => {
         sessionSetting: sessionSetting || ctx.payload.sessionSetting,
       };
       
-      console.log(`✅ [CCS_RETRY] SUCCESS - ctx.tier1 populated`, {
-        hasCharacterSeed: !!ctx.tier1.characterSeed,
+      console.log(`✅ [${ctx.requestId}] CCS_RETRY: SUCCESS - Tier 2.5A precondition satisfied`, {
         characterSeedSource: ctx.tier1.characterSeed?.source || 'unknown',
-        hasCulturalBundle: !!ctx.tier1.culturalBundle,
-        hasHair: !!ctx.tier1.culturalBundle?.hair,
-        hasFeatures: !!ctx.tier1.culturalBundle?.features,
-        hair: ctx.tier1.culturalBundle?.hair,
-        features: ctx.tier1.culturalBundle?.features,
-      });
-      
-      console.log(`📊 [${ctx.requestId}] [CCS_RETRY] CharacterSeed source tracking`, {
         seedMethod: ctx.tier1.characterSeed?.source === 'synthetic_ccs_retry_fallback' ? 'SYNTHETIC' : 
                     batchCCSData?.characterSeed ? 'CACHED' : 'FRESH_GENERATED',
-        source: ctx.tier1.characterSeed?.source || 'unknown'
+        hasCulturalBundle: !!ctx.tier1.culturalBundle,
+        hasLatestClothing: !!ctx.tier1.latestClothing,
+        hasHair: !!ctx.tier1.culturalBundle?.hair,
+        hasFeatures: !!ctx.tier1.culturalBundle?.features,
+        nextTier: "TIER_2.5A (Template AB with CCS)",
+        tier1Populated: true
       });
       
       ctx.tierLogger.success("CCS_RETRY", { ccsRetry: true, path: "afterDirectMode" });
@@ -1813,7 +1833,12 @@ const executeDirectMode: TierFn = async (ctx) => {
       
     } catch (ccsError: any) {
       const ccsErrorMessage = ccsError instanceof Error ? ccsError.message : String(ccsError);
-      console.error(`❌ [CCS_RETRY] FAILED - escalating to T2.5B`, { error: ccsErrorMessage });
+      console.error(`❌ [${ctx.requestId}] CCS_RETRY: FAILED - Tier 2.5A will be skipped`, {
+        ccsError: ccsErrorMessage.substring(0, 100),
+        tier1Populated: false,
+        nextTier: "TIER_2.5B (Template AB without CCS)",
+        reason: 'CCS_RETRY could not populate characterSeed'
+      });
       ctx.tierLogger.failure("CCS_RETRY", { error: ccsErrorMessage });
       
       // CCS retry failed - return DM failure and let cascade skip T2.5A (precondition fails) and go to T2.5B
@@ -2339,6 +2364,17 @@ async function runTierCascade(
   for (const { name, fn, precondition } of tiers) {
     // Skip if precondition fails (e.g., T25A needs culturalBundle)
     if (precondition && !precondition(ctx)) {
+      // Enhanced precondition logging for T25A
+      if (name === "T25A") {
+        console.log(`⚠️ [${ctx.requestId}] TIER_2.5A: SKIPPED (precondition failed: no characterSeed)`, {
+          hasTier1: !!ctx.tier1,
+          hasCharacterSeed: !!ctx.tier1?.characterSeed,
+          ccsRetryRan: ctx.trace?.some(t => t.tier === 'CCS_RETRY') || false,
+          ccsRetrySuccess: ctx.trace?.find(t => t.tier === 'CCS_RETRY')?.ok || false,
+          reason: 'Tier 1 failed and CCS_RETRY did not populate characterSeed',
+          nextTier: 'TIER_2.5B'
+        });
+      }
       trace.push({ tier: name, ms: 0, ok: false, code: "PRECONDITION_FAILED" });
       continue;
     }
