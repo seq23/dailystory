@@ -1816,7 +1816,9 @@ export class CharacterConsistencyService {
           console.log(`👕 Using detected clothing for ${characterName}: ${detectedClothing}`);
         }
       } catch (error) {
-        console.log(`⚠️ Clothing detection failed:`, error.message);
+        // FAIL FAST: Clothing consistency failure escalates to caller
+        console.error(`❌ [CCS] CRITICAL: Clothing consistency failure for ${characterName}:`, error.message);
+        throw error; // Re-throw to escalate to getEnhancedCharacterSeed() → orchestrator → Direct Mode
       }
     }
 
@@ -1828,43 +1830,60 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Build clothing description with tiered fallback
-   * 1. Database cache (fastest, 90% of requests)
-   * 2. Tier25 vocabulary (fast, 9% of requests - new sessions)
-   * 3. Full vocabulary (rare, 1% of requests)
+   * Build clothing description from most recent page detection
+   * FIX: Returns ONLY the most recent clothing item (highest page_first_seen)
+   * to ensure characters wear the same clothes across pages until story changes them
    */
   async buildClothingDescription(sessionId, characterName) {
-    try {
-      // 1. Try database cache first (fastest path)
-      const supabase = await this.getSupabaseClient();
-      if (supabase) {
-        const { data: clothingDetails, error } = await supabase
-          .from('visual_details_cache')
-          .select('detail_value')
-          .eq('session_id', sessionId)
-          .eq('character_name', characterName)
-          .eq('detail_type', 'clothing');
-
-        if (!error && clothingDetails && clothingDetails.length > 0) {
-          const clothingPieces = clothingDetails
-            .map(detail => detail.detail_value)
-            .filter(Boolean)
-            .join(', ');
-
-          if (clothingPieces) {
-            console.log(`👕 Using story-detected clothing: ${clothingPieces}`);
-            return `wearing ${clothingPieces}`;
-          }
-        }
-      }
-      
-      // ✅ No story-detected clothing found - let Runware decide naturally
-      console.log(`👕 No story clothing detected - letting Runware generate clothing naturally`);
-      return '';
-    } catch (error) {
-      console.log('⚠️ All clothing description fallbacks failed:', error.message);
+    const supabase = await this.getSupabaseClient();
+    
+    // FAIL FAST: Database unavailable = core method failure
+    if (!supabase) {
+      throw new Error('CCS_CLOTHING_FAILED: Database unavailable');
+    }
+    
+    // Step 1: Check if ANY clothing entries exist for this session/character
+    const { count, error: countError } = await supabase
+      .from('visual_details_cache')
+      .select('*', { count: 'exact', head: true })
+      .eq('session_id', sessionId)
+      .eq('character_name', characterName)
+      .eq('detail_type', 'clothing');
+    
+    // FAIL FAST: Database query error = core method failure
+    if (countError) {
+      throw new Error(`CCS_CLOTHING_FAILED: Count query failed - ${countError.message}`);
+    }
+    
+    // GRACEFUL: No clothing ever detected = legitimate empty state
+    if (count === 0) {
+      console.log(`👔 No clothing detected for ${characterName} in session ${sessionId} (Runware will generate)`);
       return '';
     }
+    
+    // Step 2: Clothing exists, now retrieve it
+    const { data, error } = await supabase
+      .from('visual_details_cache')
+      .select('detail_value, page_first_seen')
+      .eq('session_id', sessionId)
+      .eq('character_name', characterName)
+      .eq('detail_type', 'clothing')
+      .order('page_first_seen', { ascending: false })
+      .limit(1);
+    
+    // FAIL FAST: Query error when clothing should exist = consistency violation
+    if (error) {
+      throw new Error(`CCS_CLOTHING_FAILED: Retrieval failed - ${error.message}`);
+    }
+    
+    // FAIL FAST: No data when count > 0 = database inconsistency
+    if (!data || data.length === 0) {
+      throw new Error(`CCS_CLOTHING_FAILED: Inconsistency detected - count=${count} but no data returned`);
+    }
+    
+    const clothingValue = data[0].detail_value;
+    console.log(`👔 Latest clothing for ${characterName}: "${clothingValue}" (first seen page ${data[0].page_first_seen})`);
+    return clothingValue;
   }
 
   /**
