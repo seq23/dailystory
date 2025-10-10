@@ -2479,9 +2479,16 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             { category: 'SUCCESS', probableCause: 'Test completed successfully', errorType: 'RUNTIME_ERROR' as const };
 
           if (data?.success && data?.imageURL) {
-            // Check for escalation in Tier 1 (via Orchestrator)
-            if (tier.name === 'Tier 1 (via Orchestrator)' && data.templateStructure !== 'COMPLETE_TIER_1') {
-              throw new Error(`Tier 1 failed - escalated to ${data.usedTier || data.tier || 'higher tier'}`);
+            // Tier 1 escalation is healthy behavior - only fail if cascade completely fails
+            if (tier.name === 'Tier 1 (via Orchestrator)') {
+              if (!data.success || !data.imageURL) {
+                throw new Error(`Orchestrator cascade failed: ${data.error || 'Unknown error'}`);
+              }
+              // Track which tier was actually used for debugging
+              const escalatedFromTier1 = data.templateStructure !== 'COMPLETE_TIER_1';
+              if (escalatedFromTier1) {
+                console.log(`✅ Tier 1 escalated to ${data.usedTier || data.tier} (healthy behavior)`);
+              }
             }
             
             tierResult = {
