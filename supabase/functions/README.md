@@ -40,7 +40,7 @@ This directory contains all Edge Functions for the project. GitHub is the source
 - `runware-generate-image` - JWT: false (JS only)
 
 - `runware-template-ab` - JWT: false (Single-file TypeScript, thin JS wrapper)
-- `runware-template-cd` - JWT: false (JS only)
+- `runware-template-cd` - JWT: false (Single-file TypeScript)
 
 ### Security & Monitoring Functions
 - `log-personal-info-incident` - JWT: true
@@ -62,7 +62,7 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 - `ai-visual-scene-creator` - Shim: `index.ts` → Implementation: `index.js`
 - `runware-generate-image` - Shim: `index.ts` → Implementation: `index.js`
 - `runware-template-ab` - **Single-file TypeScript** (index.js is thin re-export wrapper only)
-- `runware-template-cd` - Shim: `index.ts` → Implementation: `index.js`
+- `runware-template-cd` - **Single-file TypeScript** (920 lines, includes all Direct Mode logic)
 - `background-image-pregeneration` - Shim: `index.ts` → Implementation: `index.js`
 
 ## Maintenance Notes
@@ -103,9 +103,9 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 
 **Files Using Option A Pattern** (✅ COMPLETE MIGRATION):
 - `runware-generate-image/index.ts` - Strengthened receptionist ✅
-- `runware-template-cd/index.ts` - Strengthened receptionist ✅  
+- `runware-template-cd/index.ts` - **Single-file TypeScript** ✅  
 - `ai-visual-scene-creator/index.ts` - Strengthened receptionist ✅
-- `runware-template-ab/index.ts` - Strengthened receptionist ✅
+- `runware-template-ab/index.ts` - **Single-file TypeScript** ✅
 - `background-image-pregeneration/index.ts` - Strengthened receptionist ✅
 - `clear-character-cache/index.ts` - Strengthened receptionist ✅
 

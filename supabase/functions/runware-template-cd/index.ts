@@ -698,10 +698,10 @@ async function handleRequest(req: Request) {
       seed = payload.seed;
     }
   
-    if (!storyText) {
-      const receivedKeys = Object.keys(payload).join(', ');
-      console.error(`❌ Template CD validation failed - Received keys: [${receivedKeys}]`);
-      throw new Error(`Missing required field: pageText OR storyText. Received keys: ${receivedKeys}`);
+    // Allow primaryScene-only payloads (Direct Mode Simple 2.5C)
+    if (!storyText && !primaryScene) {
+      console.warn(`⚠️ Missing storyText AND primaryScene - forcing Emergency Mode D`);
+      templateComplexity = 'D';
     }
 
     console.log(`🎯 Template CD processing complexity: ${templateComplexity || 'auto'}`);
@@ -871,7 +871,21 @@ serve(async (req) => {
           console.log(`✅ [GATE] DM:runware-template-cd acquired`);
           gateAcquired = true;
         } else {
-          console.warn(`⚠️ [GATE] Failed: ${gateResult.reason}`);
+          console.warn(`⚠️ [GATE] Failed: ${gateResult.reason} - returning 503 HEALTHY_ESCALATION`);
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'PROVIDER_GATE_UNAVAILABLE',
+            escalation: 'TIER_2.5D',
+            message: 'Template CD provider gate unavailable - escalate to Emergency Mode',
+            retryable: true
+          }), {
+            status: 503,
+            headers: { 
+              ...corsHeaders, 
+              'Content-Type': 'application/json',
+              'Retry-After': '5'
+            }
+          });
         }
       }
       
