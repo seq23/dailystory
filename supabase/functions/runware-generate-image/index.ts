@@ -1265,8 +1265,26 @@ const executeTier1: TierFn = async (ctx) => {
     // Make primaryScene available in payload for cascade (including Direct Mode)
     ctx.payload.primaryScene = tier1Result.primaryScene;
     
-    // 4. Validate scene quality
+    // 4. Validate scene quality - WITH DEBUG LOGGING
+    console.log(`🔍 [DEBUG] Validating tier1Result.primaryScene:`, {
+      exists: !!tier1Result.primaryScene,
+      type: typeof tier1Result.primaryScene,
+      length: tier1Result.primaryScene?.length || 0,
+      firstHeadline: tier1Result.primaryScene?.substring(0, 100) || "EMPTY",
+      includesUndefined: tier1Result.primaryScene?.includes("undefined") || false,
+      includesNull: tier1Result.primaryScene?.includes("null") || false,
+      wordCount: tier1Result.primaryScene?.split(" ").filter((w: string) => w.length > 0).length || 0
+    });
+
     if (!validatePrimarySceneQuality(tier1Result.primaryScene || "")) {
+      console.error(`❌ [DEBUG] Scene validation FAILED:`, {
+        scene: tier1Result.primaryScene,
+        reason: !tier1Result.primaryScene ? "scene_falsy" :
+                typeof tier1Result.primaryScene !== "string" ? "not_string" :
+                tier1Result.primaryScene.length < 30 ? "too_short" :
+                tier1Result.primaryScene.includes("undefined") || tier1Result.primaryScene.includes("null") ? "contains_undefined_null" :
+                "insufficient_word_count"
+      });
       ctx.tierLogger.failure("TIER_1", { reason: "POOR_SCENE_QUALITY" });
       return { ok: false, code: "T1_POOR_SCENE", reason: "Scene quality validation failed" };
     }
@@ -2135,10 +2153,11 @@ async function runTierCascade(
     // Always run Tier 1 first to build CCS (but don't require success)
     const tier1Result = await executeTier1(ctx);
     if (tier1Result.ok) {
-      console.log(`✅ Tier 1 CCS prep complete, skipping to ${skipToTier}`);
-      return tier1Result; // Return Tier 1 success immediately in skip mode
+      console.log(`✅ Tier 1 CCS prep complete (ctx.tier1 populated), continuing to ${skipToTier}`);
+      // Don't return here - let it continue to target tier
     } else {
       console.log(`⚠️ Tier 1 failed, but continuing to ${skipToTier} with emergency CCS`);
+      // ctx.tier1 might be incomplete, but target tier can handle it
     }
     
     // Now skip to the requested tier
@@ -2154,7 +2173,8 @@ async function runTierCascade(
       return { ok: false, code: "INVALID_SKIP_TIER", reason: `Unknown tier: ${skipToTier}` };
     }
     
-    // Execute target tier directly
+    // Execute target tier directly (whether Tier 1 succeeded or failed)
+    console.log(`🎯 Executing target tier: ${skipToTier}`);
     return await targetTier(ctx);
   }
   
