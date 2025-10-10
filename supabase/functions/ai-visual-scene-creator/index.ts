@@ -692,13 +692,18 @@ RULES:
    Example: If PREVIOUS SCENE has "Jake: boy with curly hair, red shirt, blue cap" and current story mentions "Jake ran to the door" → Include "Jake: boy with curly hair, red shirt, blue cap" in output
 7. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
 8. Visual continuity on pages 2+: CRITICAL - maintain exact visual consistency from PREVIOUS SCENE:
+   - **CLOTHING TRACKING (CRITICAL)**: Extract and track clothing items mentioned in story text
+     * Add clothing to the clothing array for session-wide consistency
+     * If story explicitly mentions clothing change, update the array with new items
+     * Examples: 'blue t-shirt', 'red sneakers', 'yellow raincoat', 'purple backpack'
+     * If previous scene shows "blue shirt", character keeps "blue shirt" unless story says they changed
    - Object persistence: if previous scene mentions "pink backpack", current scene MUST show "pink backpack" when story references "it" or "the backpack"
-   - Clothing consistency: if previous scene shows "blue shirt", character keeps "blue shirt" unless story explicitly says they changed
    - Pronoun resolution: "it", "them", "her toy" MUST match objects/characters from previous scene
    - Scene element maintenance: if previous scene was "sunny park", continue "sunny park" unless story changes location
    - Color memory: NEVER change colors ("red ball" stays "red ball", "green jacket" stays "green jacket")
    
    Example: Prev="pink backpack", Current="walked with it" → Keep "pink backpack" (not "blue bag")
+   Example: Prev clothing=["blue t-shirt", "red sneakers"], Story="Emma walked to school" → Keep "blue t-shirt" and "red sneakers" visible
 9. Main character presence in ALL scenes (children's story requirement): ALWAYS include the main character in EVERY scene for visual continuity
    - If story text explicitly mentions character doing an action: character is PRIMARY FOCUS of scene
    - If story text focuses on object/animal WITHOUT mentioning character (e.g., "The dog jumps", "The ball rolls"): position main character as OBSERVER or in BACKGROUND watching/near the action
@@ -731,9 +736,7 @@ Use cultural detail naturally without contradicting explicit story settings.
 - Objects in Scene: ${JSON.stringify(prevData.previousVisualSchema.objects || [])}
 - Previous Secondary Characters: ${JSON.stringify(prevData.previousVisualSchema.secondaryCharacters || { humans: [], pets: [] })}
 - Setting: ${prevData.previousVisualSchema.setting || 'outdoor scene'}
-- Mood: ${prevData.previousVisualSchema.mood || 'cheerful'}
-- Lighting: ${prevData.previousVisualSchema.lighting || 'natural daylight'}
-- Background: ${prevData.previousVisualSchema.backgroundColor || 'bright and colorful'}`
+- Composition: ${prevData.previousVisualSchema.composition || 'centered'}`
       : 'None - this is the first scene';
 
     const userPrompt =
