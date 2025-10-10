@@ -1412,7 +1412,11 @@ export const ImageTierTester = () => {
           
           // Enhanced character consistency diagnostics for BOTH Tier 1 AND Direct Mode
           const isTier1Success = actualTier.includes('TIER_1') || actualTier.includes('orchestrator') || actualTier.includes('Enhanced Character-First');
+          const directModeEntryPoint = result.metadata?.directModeEntryPoint; // 'ORCHESTRATOR' or undefined (frontend-initiated)
           const isDirectModeSuccess = actualTier.includes('DIRECT_MODE') || actualTier.includes('ai-visual-scene-creator');
+          const directModeLabel = isDirectModeSuccess 
+            ? (directModeEntryPoint === 'ORCHESTRATOR' ? 'Direct Mode (orchestrator → ai-visual-scene-creator)' : 'Direct Mode (frontend → ai-visual-scene-creator)')
+            : '';
           
           const ccErrors = result.metadata?.cascadeHistory?.filter((line: string) => 
             line.includes('structuredAvatarData') || 

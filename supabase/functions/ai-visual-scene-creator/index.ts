@@ -899,8 +899,8 @@ ${previousBlock}`;
       prompts = buildPrompts(prev);
       let attempt = 0;
       function loop(lastBackoff = false): Promise<{ ok:boolean; visual:any|null; parseMethod?:string; extractedPrimaryScene?:string; jsonParseError?:string; upstreamBackoff:boolean }> {
-        if (attempt >= 2) {
-          attemptsUsed = 2;
+        if (attempt >= 3) { // Increased from 2 to 3 attempts for better resilience against transient OpenAI failures
+          attemptsUsed = 3;
           return Promise.resolve({ ok: false, visual: null, upstreamBackoff: lastBackoff });
         }
         return callOpenAI({ systemPrompt: prompts!.systemPrompt, userPrompt: prompts!.userPrompt }, attempt).then((res) => {
@@ -910,7 +910,7 @@ ${previousBlock}`;
             const isBackoff = res.status === 429 || res.status === 503;
             if (isBackoff) encounteredBackoff = true;
             attempt++;
-            const delayMs = isBackoff ? Math.min(1000 * Math.pow(2, attempt-1), 8000) + Math.floor(Math.random()*1000) : 100 + Math.floor(Math.random()*200);
+            const delayMs = isBackoff ? Math.min(1000 * Math.pow(2, attempt-1), 10000) + Math.floor(Math.random()*1000) : 100 + Math.floor(Math.random()*200); // Increased max backoff from 8s to 10s
             return new Promise<{ ok:boolean; visual:any|null; parseMethod?:string; extractedPrimaryScene?:string; jsonParseError?:string; upstreamBackoff:boolean }>((resolve) =>
               setTimeout(()=> resolve(loop(isBackoff)), delayMs)
             );

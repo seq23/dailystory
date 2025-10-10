@@ -730,23 +730,37 @@ async function processInlinedTier1(
   let characterConsistencyService: any;
   let characterServiceUnavailable = false;
 
-  try {
-    logTier1Step("CharacterConsistencyService Import", "attempt", "Attempting inline CCS (fail-fast mode)");
-    console.log(`[TIER_1] Inline CCS attempt - escalates to Direct Mode immediately on failure`);
+  // Retry CCS import once to handle transient CDN/network failures
+  let ccsImportAttempts = 0;
+  const MAX_CCS_IMPORT_ATTEMPTS = 2;
+  
+  while (ccsImportAttempts < MAX_CCS_IMPORT_ATTEMPTS) {
+    try {
+      logTier1Step("CharacterConsistencyService Import", "attempt", `Attempting inline CCS (fail-fast mode) - attempt ${ccsImportAttempts + 1}/${MAX_CCS_IMPORT_ATTEMPTS}`);
+      console.log(`[TIER_1] Inline CCS attempt ${ccsImportAttempts + 1}/${MAX_CCS_IMPORT_ATTEMPTS} - escalates to Direct Mode on final failure`);
 
-    // INLINE-ONLY CCS - NO FALLBACK CHAIN
-    const inlineModule = await import("./CharacterConsistencyServiceInline.js");
-    characterConsistencyService = inlineModule.characterConsistencyService;
-    
-    console.log(`✅ [CCS_INLINE] Loaded successfully - proceeding with Tier 1`);
-    ccsBootStatus.loaded = true;
-    ccsBootStatus.error = null;
-    logTier1Step("CharacterConsistencyService Import", "success", "Inline CCS loaded");
-  } catch (inlineError) {
-    const errorMessage = inlineError instanceof Error ? inlineError.message : String(inlineError);
-    console.log(`⚠️ [CCS_INLINE] Failed - escalating to Direct Mode immediately: ${errorMessage}`);
-    logTier1Step("CharacterConsistencyService Import", "failed", `Inline CCS failed - escalating to Direct Mode`);
-    throw new Error("INLINE_CCS_FAILED_ESCALATE_DIRECT_MODE");
+      // INLINE-ONLY CCS - NO FALLBACK CHAIN
+      const inlineModule = await import("./CharacterConsistencyServiceInline.js");
+      characterConsistencyService = inlineModule.characterConsistencyService;
+      
+      console.log(`✅ [CCS_INLINE] Loaded successfully on attempt ${ccsImportAttempts + 1} - proceeding with Tier 1`);
+      ccsBootStatus.loaded = true;
+      ccsBootStatus.error = null;
+      logTier1Step("CharacterConsistencyService Import", "success", `Inline CCS loaded on attempt ${ccsImportAttempts + 1}`);
+      break; // Success, exit retry loop
+    } catch (inlineError) {
+      ccsImportAttempts++;
+      const errorMessage = inlineError instanceof Error ? inlineError.message : String(inlineError);
+      
+      if (ccsImportAttempts >= MAX_CCS_IMPORT_ATTEMPTS) {
+        console.log(`⚠️ [CCS_INLINE] Failed after ${MAX_CCS_IMPORT_ATTEMPTS} attempts - escalating to Direct Mode: ${errorMessage}`);
+        logTier1Step("CharacterConsistencyService Import", "failed", `Inline CCS failed after ${MAX_CCS_IMPORT_ATTEMPTS} attempts - escalating to Direct Mode`);
+        throw new Error("INLINE_CCS_FAILED_ESCALATE_DIRECT_MODE");
+      }
+      
+      console.log(`⚠️ [CCS_INLINE] Attempt ${ccsImportAttempts} failed, retrying after 200ms: ${errorMessage}`);
+      await new Promise(resolve => setTimeout(resolve, 200)); // Brief delay before retry
+    }
   }
 
   // Check for force flag (now passed from handler scope)
@@ -1552,7 +1566,7 @@ const executeDirectMode: TierFn = async (ctx) => {
     // Always available (no gate check - zero throttling)
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
+    const timeout = setTimeout(() => controller.abort(), 35000); // Increased from 20s to 35s to accommodate OpenAI + processing time (17-21s typical)
     
     try {
       const { createVendorFirstSupabaseClient } = await ctx.memoizedImport("../_shared/resilientLoader.js");
@@ -1607,6 +1621,7 @@ const executeDirectMode: TierFn = async (ctx) => {
             ],
             tier1FailureDetails,
             tier1Timeline: tier1FailureDetails?.tier1Timeline || [],
+            directModeEntryPoint: 'ORCHESTRATOR', // Track orchestrator-initiated Direct Mode for testing diagnostics
           },
         },
         meta: { tier: "DIRECT_MODE", ms: Date.now() - startMs }
