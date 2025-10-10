@@ -2021,7 +2021,9 @@ export class CharacterConsistencyService {
           console.log(`👕 Using detected clothing for ${characterName}: ${detectedClothing}`);
         }
       } catch (error) {
-        console.log(`⚠️ Clothing detection failed:`, error.message);
+        // FAIL FAST: Clothing consistency failure escalates to caller
+        console.error(`❌ [CCS] CRITICAL: Clothing consistency failure for ${characterName}:`, error.message);
+        throw error; // Re-throw to escalate to getEnhancedCharacterSeed() → orchestrator → Direct Mode
       }
     }
 
@@ -2045,8 +2047,32 @@ export class CharacterConsistencyService {
    */
   async buildClothingDescription(sessionId, characterName) {
     const supabase = await this.getSupabaseClient();
-    if (!supabase) return '';
     
+    // FAIL FAST: Database unavailable = core method failure
+    if (!supabase) {
+      throw new Error('CCS_CLOTHING_FAILED: Database unavailable');
+    }
+    
+    // Step 1: Check if ANY clothing entries exist for this session/character
+    const { count, error: countError } = await supabase
+      .from('visual_details_cache')
+      .select('*', { count: 'exact', head: true })
+      .eq('session_id', sessionId)
+      .eq('character_name', characterName)
+      .eq('detail_type', 'clothing');
+    
+    // FAIL FAST: Database query error = core method failure
+    if (countError) {
+      throw new Error(`CCS_CLOTHING_FAILED: Count query failed - ${countError.message}`);
+    }
+    
+    // GRACEFUL: No clothing ever detected = legitimate empty state
+    if (count === 0) {
+      console.log(`👔 No clothing detected for ${characterName} in session ${sessionId} (Runware will generate)`);
+      return '';
+    }
+    
+    // Step 2: Clothing exists, now retrieve it
     const { data, error } = await supabase
       .from('visual_details_cache')
       .select('detail_value, page_first_seen')
@@ -2054,13 +2080,21 @@ export class CharacterConsistencyService {
       .eq('character_name', characterName)
       .eq('detail_type', 'clothing')
       .order('page_first_seen', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
     
-    if (error || !data) return '';
+    // FAIL FAST: Query error when clothing should exist = consistency violation
+    if (error) {
+      throw new Error(`CCS_CLOTHING_FAILED: Retrieval failed - ${error.message}`);
+    }
     
-    console.log(`👔 Latest clothing for ${characterName}: "${data.detail_value}" (first seen page ${data.page_first_seen})`);
-    return data.detail_value;
+    // FAIL FAST: No data when count > 0 = database inconsistency
+    if (!data || data.length === 0) {
+      throw new Error(`CCS_CLOTHING_FAILED: Inconsistency detected - count=${count} but no data returned`);
+    }
+    
+    const clothingValue = data[0].detail_value;
+    console.log(`👔 Latest clothing for ${characterName}: "${clothingValue}" (first seen page ${data[0].page_first_seen})`);
+    return clothingValue;
   }
 
   /**

@@ -69,6 +69,7 @@ CCS Method Failure (non-database):
 | `getCulturalEnhancements()` | Database errors → throw for escalation; missing data → escalate |
 | `getCharacterAppearanceFromStory()` | Any failure → immediate escalation |
 | `getSessionSetting()` | Any failure → immediate escalation |
+| `buildClothingDescription()` | Count=0 → return ""; Database error or inconsistency → escalate |
 | `detectAllCharacters()` | Uses inline vocab → should not fail |
 | `generateCharacterForConsistency()` | Uses inline vocab → should not fail |
 
