@@ -1138,46 +1138,9 @@ export const ImageTierTester = () => {
       const userInfo = buildUserInfo();
       const sessionId = crypto.randomUUID();
 
-      // Build complete structuredAvatarData like orchestrator does
-      const skinTone = userInfo.skinTone || 'medium';
-      const age = userInfo.age || 8;
-      
-      // Use session-seeded hair/skin selection
-      const hairColor = getTestHairVariation(skinTone, sessionId, userInfo.avatar?.type);
-      const skinFeatures = getTestSkinFeatures(skinTone, sessionId);
-      const ethnicity = getEthnicityFromSkinTone(skinTone);
-      
-      const structuredAvatarData = {
-        characterName: userInfo.name,
-        age: age,
-        resolvedSkinTone: skinTone,
-        hairColor: hairColor,
-        skinFeatures: skinFeatures,
-        ethnicity: ethnicity,
-        source: 'test_enriched'
-      };
-
-      // Extract clothing from test story text
-      const clothingItems = extractClothingFromStory(testStoryText);
-      
-      // Build main character appearance object (matches orchestrator structure)
-      const mainCharacterAppearance = {
-        physicalFeatures: [
-          `${userInfo.name}, age ${age}`,
-          hairColor,
-          skinFeatures,
-          `${ethnicity} ethnicity`
-        ],
-        clothing: clothingItems
-      };
-
-      // Extract secondary characters from story
-      const secondaryCharacters = extractSecondaryCharacters(testStoryText, userInfo.name);
-
-      DebugLogger.log('image', '🧪 Test Scene Creator - Enriched Payload:', {
-        structuredAvatarData,
-        mainCharacterAppearance,
-        secondaryCharacters
+      DebugLogger.log('image', '🧪 Test Scene Creator - Production Payload (no overrides):', {
+        storyLength: testStoryText.length,
+        userInfo: { name: userInfo.name, age: userInfo.age, skinTone: userInfo.skinTone }
       });
 
       const startTime = Date.now();
@@ -1187,26 +1150,17 @@ export const ImageTierTester = () => {
         setTimeout(() => reject(new Error('AI Scene Creator timeout after 12 seconds')), 12000)
       );
       
-      // Race between the actual call and timeout
+      // FIXED: Let backend compute all avatar data (no client-side overrides)
       const response = await Promise.race([
         supabase.functions.invoke('ai-visual-scene-creator', {
           body: {
+            pageText: testStoryText,
             storyText: testStoryText,
-            userInfo: {
-              ...userInfo,
-              structuredAvatarData: structuredAvatarData
-            },
-            mainCharacterAppearance: mainCharacterAppearance,
-            secondaryCharacters: secondaryCharacters,
-            previousScene: null, // First scene has no previous
+            userInfo: userInfo, // FIXED: Send basic userInfo only
             sessionId: sessionId,
-            storyId: sessionId,
             pageNumber: 1,
-            isGuestUser: true,
-            difficultyLevel: mapDifficultyLevel(userInfo),
-            isDebugMode: true,
-            testMode: true, // NEW: Enable test mode to capture prompts without generating image
-            directMode: false // NEW: Disable Direct Mode to prevent image generation
+            testMode: true, // Enable test mode to capture prompts without generating image
+            directMode: false // Disable Direct Mode to prevent image generation
           }
         }),
         timeoutPromise
@@ -1252,11 +1206,11 @@ export const ImageTierTester = () => {
           // NEW: OpenAI prompts for debugging
           systemPrompt: response.data?.systemPrompt,
           userPrompt: response.data?.userPrompt,
-          // NEW: Character details
-          structuredAvatarData: structuredAvatarData,
-          hairColor: hairColor,
-          skinFeatures: skinFeatures,
-          ethnicity: ethnicity,
+          // FIXED: Display server-returned avatar data (not tester overrides)
+          structuredAvatarData: response.data?.structuredAvatarData,
+          hairColor: response.data?.structuredAvatarData?.hairColor,
+          skinFeatures: response.data?.structuredAvatarData?.skinFeatures,
+          ethnicity: response.data?.structuredAvatarData?.ethnicity,
           errorCategory: category as any,
           probableCause,
           executionStatus: isTimeout ? 'TIMEOUT_OR_HANGING' : 
@@ -1741,8 +1695,8 @@ export const ImageTierTester = () => {
       steps[0].status = 'running';
       const functionMap: { [key: string]: string } = {
         '1': 'runware-generate-image',  // Test Enhanced Character-First Flow orchestrator
-        '2.5A': 'runware-template-ab',
-        '2.5B': 'runware-template-ab', 
+        '2.5A': 'runware-generate-image', // FIXED: Use orchestrator with skipDirectlyToTier
+        '2.5B': 'runware-template-ab',
         '2.5C': 'runware-template-cd',
         '2.5D': 'runware-template-cd'
       };
@@ -1757,12 +1711,12 @@ export const ImageTierTester = () => {
       const selectedFunction = functionMap[tier];
       steps[0].status = selectedFunction ? 'success' : 'error';
       
-      // Step 2: Payload Construction - PLAN B: Add Tier 1 case
+      // Step 2: Payload Construction - FIXED: Use orchestrator for 2.5A with skip logic
       steps[1].status = 'running';
       const payload = tier === '1'
         ? {
             // Tier 1 Enhanced Character-First Flow: runware-generate-image orchestrator
-            storyText: enhancedPrompt,  // FIXED: Add missing storyText field
+            storyText: enhancedPrompt,
             pageText: enhancedPrompt,
             userInfo: userInfo,
             sessionId: crypto.randomUUID(),
@@ -1775,11 +1729,27 @@ export const ImageTierTester = () => {
             forceCompleteTier1: true, // Force Enhanced Character-First Flow
             test: true
           }
-        : tier === '2.5A' || tier === '2.5B'
+        : tier === '2.5A'
         ? {
-            // FLAT payload structure for template AB (no nested bundle/config)
+            // FIXED: Use orchestrator with skip logic to prep CCS then jump to 2.5A
+            storyText: enhancedPrompt,
             pageText: enhancedPrompt,
-            storyText: enhancedPrompt, // Add fallback field
+            userInfo: userInfo,
+            sessionId: crypto.randomUUID(),
+            storyId: crypto.randomUUID(),
+            pageNumber: 1,
+            characterName: userInfo?.name || 'Alex',
+            isGuestUser: true,
+            difficultyLevel: mapDifficultyLevel(userInfo),
+            protectionNegatives: [],
+            skipDirectlyToTier: '2.5A', // NEW: Skip to Tier 2.5A after Tier 1 CCS prep
+            test: true
+          }
+        : tier === '2.5B'
+        ? {
+            // Template AB B variant
+            pageText: enhancedPrompt,
+            storyText: enhancedPrompt,
             userInfo: userInfo,
             sessionId: crypto.randomUUID(),
             storyId: crypto.randomUUID(),
@@ -1787,18 +1757,18 @@ export const ImageTierTester = () => {
             isGuestUser: true,
             difficultyLevel: mapDifficultyLevel(userInfo),
             protectionNegatives: [],
-            templateComplexity: templateMap[tier], // Add directly at root level
+            templateComplexity: 'B',
           }
         : {
-            // Template CD expects flat payload - FIXED: Use pageText and add missing fields
-            pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
+            // Template CD expects flat payload
+            pageText: enhancedPrompt,
             userInfo: userInfo,
             sessionId: crypto.randomUUID(),
-            storyId: crypto.randomUUID(), // ADDED: Missing field
+            storyId: crypto.randomUUID(),
             pageNumber: 1,
-            isGuestUser: true, // ADDED: Missing field
-            difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
-            protectionNegatives: [], // ADDED: Missing field
+            isGuestUser: true,
+            difficultyLevel: mapDifficultyLevel(userInfo),
+            protectionNegatives: [],
             templateComplexity: templateMap[tier],
           };
       steps[1].status = 'success';

@@ -885,7 +885,7 @@ async function processInlinedTier1(
   const detectedAnimals: any[] = [];
 
   // Lean CPU budget guard for Tier 1 analysis
-  const TIER1_CPU_BUDGET_MS = 2200;
+  const TIER1_CPU_BUDGET_MS = 5000; // INCREASED from 2200ms to prevent false aborts
   const elapsedTier1 = Date.now() - tier1Start;
   if (elapsedTier1 > TIER1_CPU_BUDGET_MS) {
     console.warn(
@@ -1250,8 +1250,8 @@ const executeTier1: TierFn = async (ctx) => {
     
     // 3. Store results in context for cascade
     ctx.tier1 = {
-      enhancedPrompt: tier1Result.enhancedPrompt,
-      primaryScene: tier1Result.enhancedPrompt?.primaryScene || tier1Result.enhancedPrompt, // ✅ Extract primaryScene for Direct Mode
+      enhancedPrompt: tier1Result.enhancedPrompt, // STRING: COMPLETE_TIER_1 prompt
+      primaryScene: tier1Result.primaryScene, // CORRECT: Use separate primaryScene field
       characterSeed: tier1Result.characterSeed,
       culturalBundle: tier1Result.culturalBundle,
       coloredObjects: tier1Result.coloredObjects || "",
@@ -1263,10 +1263,10 @@ const executeTier1: TierFn = async (ctx) => {
     };
     
     // Make primaryScene available in payload for cascade (including Direct Mode)
-    ctx.payload.primaryScene = ctx.tier1.primaryScene;
+    ctx.payload.primaryScene = tier1Result.primaryScene;
     
     // 4. Validate scene quality
-    if (!validatePrimarySceneQuality(tier1Result.enhancedPrompt?.primaryScene || "")) {
+    if (!validatePrimarySceneQuality(tier1Result.primaryScene || "")) {
       ctx.tierLogger.failure("TIER_1", { reason: "POOR_SCENE_QUALITY" });
       return { ok: false, code: "T1_POOR_SCENE", reason: "Scene quality validation failed" };
     }
@@ -1307,15 +1307,15 @@ const executeTier1: TierFn = async (ctx) => {
       return { ok: false, code: "T1_NO_API_KEY", reason: "Runware API key not configured" };
     }
     
-    // 7. Call Runware with 20s timeout
+    // 7. Call Runware with 15s timeout
     const imageResult: any = await Promise.race([
       RunwareWebSocketService.generateImage({
         apiKey: runwareApiKey,
-        positivePrompt: tier1Result.enhancedPrompt.enhancedPrompt,
-        negativePrompt: tier1Result.enhancedPrompt.negativePrompt || "",
+        positivePrompt: tier1Result.enhancedPrompt, // CORRECT: Use string directly
+        negativePrompt: tier1Result.negativePrompt || "",
         parameters: { width: 1024, height: 1024, model: "runware:100@1", numberResults: 1, outputFormat: "WEBP" },
       }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 15000)) // CHANGED: 20s → 15s for consistency
+      new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 15000))
     ]);
     
     if (!imageResult?.success || !imageResult?.imageURL) {
@@ -1333,8 +1333,8 @@ const executeTier1: TierFn = async (ctx) => {
         provider: "runware-websocket",
         tier: "TIER_1",
         resultType: "TIER_1_SUCCESS",
-        positivePrompt: tier1Result.enhancedPrompt.enhancedPrompt,
-        negativePrompt: tier1Result.enhancedPrompt.negativePrompt,
+        positivePrompt: tier1Result.enhancedPrompt, // CORRECT: Use string directly
+        negativePrompt: tier1Result.negativePrompt,
         tier1Debug: {
           timeline: tier1ErrorLog,
           enhancedPrompt: tier1Result.enhancedPrompt,
@@ -2126,6 +2126,39 @@ async function runTierCascade(
   ctx: TierContext
 ): Promise<TierResult> {
   
+  // NEW: Check if we should skip to a specific tier after Tier 1 prep
+  const skipToTier = (ctx.payload as any)?.skipDirectlyToTier;
+  
+  if (skipToTier) {
+    console.log(`🎯 Skip mode: Running Tier 1 for CCS prep, then jumping to ${skipToTier}`);
+    
+    // Always run Tier 1 first to build CCS (but don't require success)
+    const tier1Result = await executeTier1(ctx);
+    if (tier1Result.ok) {
+      console.log(`✅ Tier 1 CCS prep complete, skipping to ${skipToTier}`);
+      return tier1Result; // Return Tier 1 success immediately in skip mode
+    } else {
+      console.log(`⚠️ Tier 1 failed, but continuing to ${skipToTier} with emergency CCS`);
+    }
+    
+    // Now skip to the requested tier
+    const tierMap: Record<string, TierFn> = {
+      '2.5A': executeT25A,
+      '2.5B': executeT25B,
+      '2.5C': executeT25C,
+      '2.5D': executeT25D,
+    };
+    
+    const targetTier = tierMap[skipToTier];
+    if (!targetTier) {
+      return { ok: false, code: "INVALID_SKIP_TIER", reason: `Unknown tier: ${skipToTier}` };
+    }
+    
+    // Execute target tier directly
+    return await targetTier(ctx);
+  }
+  
+  // Normal cascade (no skip mode)
   const trace: Array<{ tier: string; ms: number; ok: boolean; code?: string; details?: any }> = [];
   
   for (const { name, fn, precondition } of tiers) {
