@@ -161,7 +161,7 @@ function getSimpleHairColor(skinTone, nativeLanguage = 'en') {
 }
 
 // Generate Tier 2.5C template - NUCLEAR HARDCODED VERSION
-function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {}) {
+function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {}, primaryScene = null) {
   console.log(`🚀 Nuclear Tier 2.5C: Pure hardcoded template - NO imports, NO dependencies [logging: ${TIER_LOGGING_VERSION}]`);
   console.log('📊 Nuclear 2.5C: Received failed tier data', {
     hasCharacterConsistency: !!failedTierData.characterConsistency,
@@ -170,7 +170,7 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   });
   
   // ========== PRIMARY PATH: Direct Mode Simple (primaryScene + brand suffix) ==========
-  if (payload.primaryScene && typeof payload.primaryScene === 'string' && payload.primaryScene.length >= 30) {
+  if (primaryScene && typeof primaryScene === 'string' && primaryScene.length >= 30) {
     console.log('✅ [DIRECT_MODE_SIMPLE] Using top-level primaryScene with brand suffix only');
     
     const difficulty = userInfo?.difficulty || userInfo?.difficultyLevel || 'medium';
@@ -178,7 +178,7 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
     const avatarType = userInfo?.avatar?.type || 'child';
     
-    const positivePrompt = `scene: ${payload.primaryScene}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
+    const positivePrompt = `scene: ${primaryScene}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
     const negativePrompt = generateInlineNuclearNegative(culturalProfileType, avatarType, difficulty);
     
     console.log('✅ [DIRECT_MODE_SIMPLE] Simple prompt constructed - scene + brand suffix only');
@@ -596,7 +596,7 @@ async function handleRequest(req) {
   if (complexityLevel === 'C') {
     // Tier 2.5C: Nuclear hardcoded template
     console.log('🚀 Processing Tier 2.5C: Nuclear hardcoded template');
-    templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {});
+    templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {}, payload.primaryScene || null);
     
   } else {
     // Tier 2.5D: Ultimate emergency fallback
