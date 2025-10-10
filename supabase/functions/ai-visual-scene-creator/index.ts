@@ -647,15 +647,6 @@ function generateCompleteVisualSchema(
 
   function buildPrompts(prevData: { previousPrimaryScene: string | null; previousVisualSchema: any | null }) {
     const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';
-    let culturalContext = '';
-    if (isNonEnglish) {
-      culturalContext =
-        nativeLanguage === 'fr' ? 'French cultural elements like Parisian parks near Eiffel Tower, Seine River waterfront scenes, charming café districts with outdoor seating, French gardens with lavender, elegant French architecture, boulangeries' :
-        nativeLanguage === 'es' ? 'Spanish cultural settings like Mediterranean courtyards, colorful plazas with fountains, vibrant Hispanic neighborhoods, traditional Spanish architecture, sunny patios with potted plants, Spanish gardens' :
-        nativeLanguage === 'zh' ? 'Chinese cultural elements like traditional gardens with bamboo, pagoda backgrounds, Chinese parks with stone bridges, cultural landmarks, lantern-lit scenes, traditional Chinese architecture' :
-        nativeLanguage === 'ar' ? 'Middle Eastern cultural settings like desert oasis scenes, traditional Arabic architecture with geometric patterns, cultural landmarks, palm tree gardens, ornate archways' :
-        `${nativeLanguage} cultural context with authentic local settings and architecture`;
-    }
 
     const systemPrompt = `Generate a comprehensive visual scene description for children's story image generation. Create rich primary scenes (200-2000 characters preferred) with key actions, setting, character descriptions, and other visual details derived from story text with intelligent enhancements and inferences.
 
@@ -675,10 +666,16 @@ JSON RESPONSE:
 RULES:
 1. Story text priority: absolute driver - never contradict visual details
 2. Main action extraction: focus on most visually significant action from story text
-3. Character appearance: use provided appearance data VERBATIM (word-for-word ethnicity, hair, skin tone) but weave it naturally into flowing prose using connecting phrases like "with her" or "who has" - NEVER simplify core appearance details
-4. Character poses and positioning: infer body positions from story actions ('wakes up' = sitting up in bed with arms stretched, 'runs' = dynamic running pose, 'reads' = sitting/lying with book, 'looks up' = head tilted upward, 'plays' = active engaging pose)
-5. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
-6. **Secondary Characters - SESSION CONSISTENCY**: Extract ONLY characters explicitly mentioned in the CURRENT STORY TEXT:
+3. Core Identity (HIGHEST PRIORITY - mainCharacterAppearance): use provided appearance data VERBATIM (word-for-word ethnicity, hair, skin tone) but weave it naturally into flowing prose using connecting phrases like "with her" or "who has" - NEVER simplify core appearance details. This data comes from the user profile.
+4. Main character presence in ALL scenes (children's story requirement): ALWAYS include the main character in EVERY scene for visual continuity
+   - If story text explicitly mentions character doing an action: character is PRIMARY FOCUS of scene
+   - If story text focuses on object/animal WITHOUT mentioning character (e.g., "The dog jumps", "The ball rolls"): position main character as OBSERVER or in BACKGROUND watching/near the action
+   - Example: Story says "The bird flies away" → Scene: "Sarah, age 6, with brown curly hair, watches from the garden as a small bird flies away into the blue sky"
+   - Example: Story says "The toy car zooms across the floor" → Scene: "Jake, age 5, with short black hair, sits nearby on the floor smiling as his red toy car zooms across the wooden floor"
+   - NEVER generate a scene without the main character visible - they must always be present for children's story continuity
+5. Character poses and positioning: infer body positions from story actions ('wakes up' = sitting up in bed with arms stretched, 'runs' = dynamic running pose, 'reads' = sitting/lying with book, 'looks up' = head tilted upward, 'plays' = active engaging pose)
+6. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
+7. **Secondary Characters - SESSION CONSISTENCY**: Extract ONLY characters explicitly mentioned in the CURRENT STORY TEXT:
    - HUMANS: Named people (Jake, mom, teacher) or unnamed groups (friends, children, people)
    - PETS: Named or unnamed animals (Whiskers the cat, dog, birds)
    
@@ -690,37 +687,29 @@ RULES:
    - For unnamed groups, use collective descriptions in primaryScene (Rule #1)
    
    Example: If PREVIOUS SCENE has "Jake: boy with curly hair, red shirt, blue cap" and current story mentions "Jake ran to the door" → Include "Jake: boy with curly hair, red shirt, blue cap" in output
-7. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
-8. Visual continuity on pages 2+: CRITICAL - maintain exact visual consistency from PREVIOUS SCENE:
-   - **CLOTHING TRACKING (CRITICAL)**: Extract and track clothing items mentioned in story text
+8. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
+9. Visual continuity on pages 2+: CRITICAL - maintain exact visual consistency from PREVIOUS SCENE:
+   - **CLOTHING TRACKING (HIGHEST PRIORITY)**: Extract and track clothing items mentioned in story text
      * Add clothing to the clothing array for session-wide consistency
      * If story explicitly mentions clothing change, update the array with new items
      * Examples: 'blue t-shirt', 'red sneakers', 'yellow raincoat', 'purple backpack'
      * If previous scene shows "blue shirt", character keeps "blue shirt" unless story says they changed
    - Object persistence: if previous scene mentions "pink backpack", current scene MUST show "pink backpack" when story references "it" or "the backpack"
-   - Pronoun resolution: "it", "them", "her toy" MUST match objects/characters from previous scene
+   - **Pronoun Resolution (CRITICAL)**: "it", "them", "her toy" MUST match objects/characters from previous scene
+     * If story says "picked it up" and previous scene had "red ball", current scene must show "red ball"
+     * If story says "they arrived" and previous scene had "mom and dad", current scene must show "mom and dad"
+     * NEVER introduce new interpretations of pronouns - always reference PREVIOUS SCENE data
    - Scene element maintenance: if previous scene was "sunny park", continue "sunny park" unless story changes location
    - Color memory: NEVER change colors ("red ball" stays "red ball", "green jacket" stays "green jacket")
    
    Example: Prev="pink backpack", Current="walked with it" → Keep "pink backpack" (not "blue bag")
    Example: Prev clothing=["blue t-shirt", "red sneakers"], Story="Emma walked to school" → Keep "blue t-shirt" and "red sneakers" visible
-9. Main character presence in ALL scenes (children's story requirement): ALWAYS include the main character in EVERY scene for visual continuity
-   - If story text explicitly mentions character doing an action: character is PRIMARY FOCUS of scene
-   - If story text focuses on object/animal WITHOUT mentioning character (e.g., "The dog jumps", "The ball rolls"): position main character as OBSERVER or in BACKGROUND watching/near the action
-   - Example: Story says "The bird flies away" → Scene: "Sarah, age 6, with brown curly hair, watches from the garden as a small bird flies away into the blue sky"
-   - Example: Story says "The toy car zooms across the floor" → Scene: "Jake, age 5, with short black hair, sits nearby on the floor smiling as his red toy car zooms across the wooden floor"
-   - NEVER generate a scene without the main character visible - they must always be present for children's story continuity
 
-10. Main character appearance details: If mainCharacterAppearance provides physical features (eyes, hair texture) or clothing items, incorporate them naturally into the scene description
+10. Main character appearance details (from story): If mainCharacterAppearance provides physical features (eyes, hair texture) or clothing items extracted from the story, incorporate them naturally into the scene description. This is SEPARATE from Rule #3 (which uses user profile data).
 11. Secondary character visual consistency: If secondary characters have visualDetails arrays, use these exact descriptors for consistent appearances across pages
 
 CULTURAL CONTEXT:
-${isNonEnglish ? `
-CRITICAL: Enhance settings with ${nativeLanguage} cultural elements:
-${culturalContext}
-
-EXAMPLE: French park → "Parisian park near Eiffel Tower with Seine River background, French gardens with lavender, café district"
-` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
+${isNonEnglish ? `Enhance settings with authentic cultural elements, architecture, and atmosphere appropriate for ${nativeLanguage} regions.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 
     const previousBlock = prevData.previousVisualSchema
       ? `STRUCTURED VISUAL CONSISTENCY DATA (use these exact details):

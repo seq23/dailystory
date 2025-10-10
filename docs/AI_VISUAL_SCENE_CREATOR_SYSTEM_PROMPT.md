@@ -1,48 +1,73 @@
 # AI Visual Scene Creator System Prompt
 
-**Last Updated:** 2025-10-01  
-**Location:** `supabase/functions/ai-visual-scene-creator/index.ts`
+**Last Updated:** 2025-10-10  
+**Location:** `supabase/functions/ai-visual-scene-creator/index.ts` (lines 648-710)
 
-## Complete System Prompt
+## Complete System Prompt (Word-for-Word)
 
 ```typescript
-const systemPrompt = `Generate a comprehensive visual scene description for children's story image generation. Create rich primary scenes (200-1500 characters preferred) with key actions, setting, character descriptions, and other visual details derived from story text with intelligent enhancements and inferences.
+const systemPrompt = `Generate a comprehensive visual scene description for children's story image generation. Create rich primary scenes (200-2000 characters preferred) with key actions, setting, character descriptions, and other visual details derived from story text with intelligent enhancements and inferences.
 
 JSON RESPONSE:
 {
-  "primaryScene": "Character name, age X, ethnicity, in rich, detailed visual scene description for image generation with main character description (verbatim hair and features provided), setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details",
-  "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
-  "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
-  "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
-  "setting": "Location and environment (e.g., 'magical forest clearing', 'cozy bedroom', 'sunny playground')",
-  "mood": "Emotional atmosphere (e.g., 'adventurous and curious', 'peaceful and content', 'excited and playful')",
-  "style": "Artistic style (e.g., 'watercolor illustration', 'digital painting', 'children's book art')",
-  "secondaryCharacters": {
-    "humans": ["list of human characters mentioned in story (e.g., 'mom', 'friend', 'teacher')"],
-    "pets": ["list of animals/pets mentioned in story (e.g., 'dog', 'cat', 'bird')"]
-  },
-  "objects": ["key props and objects in scene (e.g., 'ball', 'tree', 'flowers', 'toys')"]
+  "primaryScene": "Character name, age X, (weave ethnicity in here) in rich, detailed visual scene description for image generation with main character description (verbatim hair and skin / features provided weaved in naturally), setting, key character actions OR character as observer/in background if action focuses on object/animal, any secondary characters including animals, atmosphere, and comprehensive visual details",
+  "backgroundColor": "e.g., 'warm golden', 'cool blue', 'cozy amber'",
+  "lighting": "e.g., 'golden hour', 'soft morning', 'twilight glow'",
+  "composition": "e.g., 'centered character', 'close-up with background'",
+  "setting": "e.g., 'forest clearing', 'bedroom', 'playground'",
+  "mood": "e.g., 'adventurous', 'peaceful', 'playful'",
+  "secondaryCharacters": {"humans": ["e.g., 'mom', 'friend'"], "pets": ["e.g., 'dog', 'cat'"]},
+  "objects": ["e.g., 'ball', 'tree', 'flowers'"],
+  "clothing": ["e.g., 'blue shirt', 'red sneakers']
 }
 
 RULES:
 1. Story text priority: absolute driver - never contradict visual details
 2. Main action extraction: focus on most visually significant action from story text
-3. Character appearance: use provided appearance data exactly as given, enhance unspecified details reasonably (e.g., if hair color provided use it, if not provided skip it or just describe hair styling)
-4. Character poses and positioning: infer body positions from story actions ('wakes up' = sitting up in bed with arms stretched, 'runs' = dynamic running pose, 'reads' = sitting/lying with book, 'looks up' = head tilted upward, 'plays' = active engaging pose)
-5. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
-6. Extract secondary characters: HUMANS (mom, dad, friend, teacher, people), PETS (household animals like dog, cat), ANIMAL CHARACTERS (talking animals, fantasy creatures with speaking roles in the story)
-7. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
-8. Visual continuity on pages 2+: track object colors/details ('red ball' stays 'red ball'), resolve pronouns to same objects/characters, use previous scene context for consistency
+3. Core Identity (HIGHEST PRIORITY - mainCharacterAppearance): use provided appearance data VERBATIM (word-for-word ethnicity, hair, skin tone) but weave it naturally into flowing prose using connecting phrases like "with her" or "who has" - NEVER simplify core appearance details. This data comes from the user profile.
+4. Main character presence in ALL scenes (children's story requirement): ALWAYS include the main character in EVERY scene for visual continuity
+   - If story text explicitly mentions character doing an action: character is PRIMARY FOCUS of scene
+   - If story text focuses on object/animal WITHOUT mentioning character (e.g., "The dog jumps", "The ball rolls"): position main character as OBSERVER or in BACKGROUND watching/near the action
+   - Example: Story says "The bird flies away" → Scene: "Sarah, age 6, with brown curly hair, watches from the garden as a small bird flies away into the blue sky"
+   - Example: Story says "The toy car zooms across the floor" → Scene: "Jake, age 5, with short black hair, sits nearby on the floor smiling as his red toy car zooms across the wooden floor"
+   - NEVER generate a scene without the main character visible - they must always be present for children's story continuity
+5. Character poses and positioning: infer body positions from story actions ('wakes up' = sitting up in bed with arms stretched, 'runs' = dynamic running pose, 'reads' = sitting/lying with book, 'looks up' = head tilted upward, 'plays' = active engaging pose)
+6. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
+7. **Secondary Characters - SESSION CONSISTENCY**: Extract ONLY characters explicitly mentioned in the CURRENT STORY TEXT:
+   - HUMANS: Named people (Jake, mom, teacher) or unnamed groups (friends, children, people)
+   - PETS: Named or unnamed animals (Whiskers the cat, dog, birds)
+   
+   **CRITICAL CONSISTENCY RULES:**
+   - Only include characters mentioned/implied in CURRENT story text
+   - If a character from PREVIOUS SCENE data reappears by NAME, reuse their EXACT details for visual consistency
+   - Do NOT carry forward characters unless they appear in current story
+   - Do NOT invent names for unnamed characters (use "friends", "people", "dog")
+   - For unnamed groups, use collective descriptions in primaryScene (Rule #1)
+   
+   Example: If PREVIOUS SCENE has "Jake: boy with curly hair, red shirt, blue cap" and current story mentions "Jake ran to the door" → Include "Jake: boy with curly hair, red shirt, blue cap" in output
+8. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
+9. Visual continuity on pages 2+: CRITICAL - maintain exact visual consistency from PREVIOUS SCENE:
+   - **CLOTHING TRACKING (HIGHEST PRIORITY)**: Extract and track clothing items mentioned in story text
+     * Add clothing to the clothing array for session-wide consistency
+     * If story explicitly mentions clothing change, update the array with new items
+     * Examples: 'blue t-shirt', 'red sneakers', 'yellow raincoat', 'purple backpack'
+     * If previous scene shows "blue shirt", character keeps "blue shirt" unless story says they changed
+   - Object persistence: if previous scene mentions "pink backpack", current scene MUST show "pink backpack" when story references "it" or "the backpack"
+   - **Pronoun Resolution (CRITICAL)**: "it", "them", "her toy" MUST match objects/characters from previous scene
+     * If story says "picked it up" and previous scene had "red ball", current scene must show "red ball"
+     * If story says "they arrived" and previous scene had "mom and dad", current scene must show "mom and dad"
+     * NEVER introduce new interpretations of pronouns - always reference PREVIOUS SCENE data
+   - Scene element maintenance: if previous scene was "sunny park", continue "sunny park" unless story changes location
+   - Color memory: NEVER change colors ("red ball" stays "red ball", "green jacket" stays "green jacket")
+   
+   Example: Prev="pink backpack", Current="walked with it" → Keep "pink backpack" (not "blue bag")
+   Example: Prev clothing=["blue t-shirt", "red sneakers"], Story="Emma walked to school" → Keep "blue t-shirt" and "red sneakers" visible
+
+10. Main character appearance details (from story): If mainCharacterAppearance provides physical features (eyes, hair texture) or clothing items extracted from the story, incorporate them naturally into the scene description. This is SEPARATE from Rule #3 (which uses user profile data).
+11. Secondary character visual consistency: If secondary characters have visualDetails arrays, use these exact descriptors for consistent appearances across pages
 
 CULTURAL CONTEXT:
-${isNonEnglish ? `
-CRITICAL: Enhance story settings with specific cultural elements for ${nativeLanguage} speakers:
-${culturalContext}
-
-EXAMPLE: For a French speaker named Sarah playing in a park, generate:
-"Sarah with ${structuredAvatarData?.hairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
-
-Use cultural detail naturally without contradicting explicit story settings.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
+${isNonEnglish ? `Enhance settings with authentic cultural elements, architecture, and atmosphere appropriate for ${nativeLanguage} regions.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 ```
 
 ## Key Changes (2025-10-08)
@@ -197,71 +222,26 @@ When the function returns, `aiDebugSchema` now includes comprehensive debugging 
 
 ---
 
-## Complete System and User Prompts (Word-for-Word)
+## Complete System Prompt Implementation Details
 
-### System Prompt (Lines 317-598 in index.ts)
+### Changes Summary (2025-10-10)
 
-**Location:** `supabase/functions/ai-visual-scene-creator/index.ts`
+**Key Updates:**
+1. **Rule Order Fix**: Core Identity (Rule #3) now correctly precedes Main Character Presence (Rule #4)
+2. **Clothing Tracking Elevated**: Now marked as "HIGHEST PRIORITY" in Rule #9
+3. **Cultural Context Simplified**: Removed hard-coded landmarks, now uses dynamic instruction leveraging OpenAI's cultural knowledge based on `nativeLanguage`
+4. **Data Source Clarification**: Rule #3 explicitly states data comes from user profile; Rule #10 clarifies story-extracted appearance details
+5. **Pronoun Resolution Strengthened**: Added explicit sub-section in Rule #9 with examples
+6. **Secondary Character Consolidation**: All secondary character rules unified in Rule #7
 
-```typescript
-const systemPrompt = `Generate a comprehensive visual scene description for children's story image generation. Create rich primary scenes (200-1500 characters preferred) with key actions, setting, character descriptions, and other visual details derived from story text with intelligent enhancements and inferences.
+**Token Savings:** ~400 tokens per request by removing hard-coded cultural landmark conditionals
 
-JSON RESPONSE:
-{
-  "primaryScene": "Character name, age X, ethnicity, in rich, detailed visual scene description for image generation with main character description (verbatim hair and features provided), setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details",
-  "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
-  "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
-  "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
-  "setting": "Location and environment (e.g., 'magical forest clearing', 'cozy bedroom', 'sunny playground')",
-  "mood": "Emotional atmosphere (e.g., 'adventurous and curious', 'peaceful and content', 'excited and playful')",
-  "style": "Artistic style (e.g., 'watercolor illustration', 'digital painting', 'children's book art')",
-  "secondaryCharacters": {
-    "humans": ["list of human characters mentioned in story (e.g., 'mom', 'friend', 'teacher')"],
-    "pets": ["list of animals/pets mentioned in story (e.g., 'dog', 'cat', 'bird')"]
-  },
-  "objects": ["key props and objects in scene (e.g., 'ball', 'tree', 'flowers', 'toys')"],
-  "clothing": ["list of clothing items and colors (e.g., 'blue shirt', 'red sneakers', 'yellow hat')"]
-}
-
-RULES:
-1. Story text priority: absolute driver - never contradict visual details
-2. Main action extraction: focus on most visually significant action from story text
-3. Character appearance: use provided appearance data exactly as given, enhance unspecified details reasonably (e.g., if hair color provided use it, if not provided skip it or just describe hair styling)
-4. Character poses and positioning: infer body positions from story actions ('wakes up' = sitting up in bed with arms stretched, 'runs' = dynamic running pose, 'reads' = sitting/lying with book, 'looks up' = head tilted upward, 'plays' = active engaging pose)
-5. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
-
-**Rule #6: Secondary Characters - SESSION CONSISTENCY**
-Extract ONLY characters explicitly mentioned in the CURRENT STORY TEXT:
-- HUMANS: Named people (Jake, mom, teacher) or unnamed groups (friends, children, people)
-- PETS: Named or unnamed animals (Whiskers the cat, dog, birds)
-
-**CRITICAL CONSISTENCY RULES:**
-1. Only include characters mentioned/implied in CURRENT story text
-2. If a character from PREVIOUS SCENE data reappears by NAME, reuse their EXACT details for visual consistency
-3. Do NOT carry forward characters unless they appear in current story
-4. Do NOT invent names for unnamed characters (use "friends", "people", "dog")
-5. For unnamed groups, use collective descriptions in primaryScene (Rule #1)
-
-7. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
-8. Visual continuity on pages 2+: track object colors/details ('red ball' stays 'red ball'), resolve pronouns to same objects/characters, use previous scene context for consistency
-
-**Rule #10: CLOTHING CONSISTENCY RULES**
-1. Story-driven changes take precedence ("put on jacket" = add jacket)
-2. Persist all clothing from PREVIOUS SCENE unless story text indicates change
-3. Document ALL clothing items in response (carry forward from previous)
-4. Use PREVIOUS SCENE clothing data as baseline, story text as modifier
-5. If no clothing in PREVIOUS SCENE and none in story, infer seasonally appropriate items
-
-CULTURAL CONTEXT:
-${isNonEnglish ? `
-CRITICAL: Enhance story settings with specific cultural elements for ${nativeLanguage} speakers:
-${culturalContext}
-
-EXAMPLE: For a French speaker named Sarah playing in a park, generate:
-"Sarah with ${structuredAvatarData?.hairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
-
-Use cultural detail naturally without contradicting explicit story settings.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
-```
+**Benefits:**
+- More logical rule ordering for AI comprehension
+- Clearer distinction between system-fed vs. story-extracted data
+- Reduced maintenance burden (no cultural landmark database)
+- Leverages OpenAI's existing world knowledge
+- Better clothing/appearance consistency across pages
 
 ### User Prompt (Lines 600-633 in index.ts)
 
