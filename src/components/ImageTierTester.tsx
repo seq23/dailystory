@@ -1363,7 +1363,35 @@ export const ImageTierTester = () => {
               cascadeHistory.push('   Architecture: Vendor-First Client - Zero Dependencies');
             }
           } else if (result.tier === 'TIER_1' || result.metadata?.templateStructure === 'COMPLETE_TIER_1') {
-            if (!cascadeHistory.some(line => line.includes('Tier 1 Success'))) {
+            // CRITICAL: Check for CCS failure indicators BEFORE declaring success
+            const ccsMethodStatus = result.metadata?.ccsMethodStatus || {};
+            const hasCCSFailures = Object.values(ccsMethodStatus).some(status => 
+              status === 'failed' || String(status).includes('fallback')
+            );
+            
+            // Check for .maybeSingle() error in cascade history
+            const hasMaybeSingleError = result.metadata?.cascadeHistory?.some((line: string) =>
+              line.includes('maybeSingle is not a function') ||
+              line.includes('TypeError') ||
+              line.includes('CHARACTERSERVICE') && line.includes('failed')
+            ) || false;
+            
+            // Check if orchestrator returned success but CCS actually failed
+            if (hasCCSFailures || hasMaybeSingleError) {
+              if (!cascadeHistory.some(line => line.includes('Tier 1 DEGRADED'))) {
+                cascadeHistory.push('⚠️ Tier 1 DEGRADED (CCS Failed - No Character Consistency)');
+                cascadeHistory.push('   ❌ Character Consistency Service: FAILED');
+                
+                if (hasMaybeSingleError) {
+                  cascadeHistory.push('   💥 Error: .maybeSingle() not supported in vendor bundle v2.57.4');
+                  cascadeHistory.push('   📋 Impact: Character seed incomplete, visual consistency broken');
+                }
+                
+                cascadeHistory.push('   🖼️ Image Generated: YES (fallback without CCS)');
+                cascadeHistory.push('   🎭 Character Consistency: NO');
+                cascadeHistory.push('   Architecture: Degraded Orchestrator (CCS bypass)');
+              }
+            } else if (!cascadeHistory.some(line => line.includes('Tier 1 Success'))) {
               cascadeHistory.push('✅ Tier 1 Success (Enhanced Character-First Flow)');
               cascadeHistory.push('   Architecture: Full Orchestrator with CCS');
             }
@@ -1404,6 +1432,13 @@ export const ImageTierTester = () => {
             line.includes('emergency structuredAvatarData')
           ) || [];
           
+          // CRITICAL: Detect .maybeSingle() errors in cascade history
+          const maybeSingleErrors = result.metadata?.cascadeHistory?.filter((line: string) =>
+            line.includes('maybeSingle is not a function') ||
+            line.includes('TypeError: supabase.from') ||
+            line.includes('CCS database query failed')
+          ) || [];
+          
           // TIER 1 CCS DIAGNOSTICS (Enhanced with method-specific status)
           if (isTier1Success) {
             cascadeHistory.push('🔍 Tier 1 Character Consistency Status:');
@@ -1435,7 +1470,16 @@ export const ImageTierTester = () => {
                 cascadeHistory.push('   ⚠️ Tier 1 CCS: DEGRADED');
               }
             } else if (result.metadata?.characterConsistencyActive === true) {
-              cascadeHistory.push('   ✅ CCS Active and Working');
+              // Check for silent CCS failures
+              if (maybeSingleErrors.length > 0) {
+                cascadeHistory.push('   ❌ CCS Reported Active But Database Queries Failed');
+                cascadeHistory.push('   💥 Root Cause: .maybeSingle() not supported in v2.57.4');
+                maybeSingleErrors.forEach(error => {
+                  cascadeHistory.push(`      • ${error}`);
+                });
+              } else {
+                cascadeHistory.push('   ✅ CCS Active and Working');
+              }
             } else if (ccErrors.length > 0) {
               cascadeHistory.push('   ⚠️ CCS Issues Detected');
               cascadeHistory.push('   📋 Tier 1 CCS Diagnostics:');

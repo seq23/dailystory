@@ -14,6 +14,9 @@ interface BatchResult {
   result?: any;
   duration: number;
   sceneExtracted?: boolean;
+  imageTier?: string;          // NEW: Which tier generated images
+  ccsFailed?: boolean;          // NEW: Did CCS fail?
+  ccsFailureReason?: string;    // NEW: Why did CCS fail?
 }
 
 const ALL_LEVELS: { value: string; label: string }[] = [
@@ -77,12 +80,43 @@ export function BatchTemplateTest() {
         const metadata = result?.metadata as any;
         const sceneExtracted = metadata?.sceneExtracted || false;
 
+        // CRITICAL: Detect image generation tier and CCS failures
+        let imageTier = 'UNKNOWN';
+        let ccsFailed = false;
+        let ccsFailureReason = '';
+
+        // Check if story has images (generated stories have image metadata)
+        if (metadata?.images && Array.isArray(metadata.images) && metadata.images.length > 0) {
+          const firstImage = metadata.images[0];
+          imageTier = firstImage?.tier || firstImage?.metadata?.tier || 'UNKNOWN';
+          
+          // Check for CCS failures
+          const ccsMethodStatus = firstImage?.metadata?.ccsMethodStatus || {};
+          ccsFailed = Object.values(ccsMethodStatus).some(status => 
+            status === 'failed' || String(status).includes('fallback')
+          );
+          
+          // Check for .maybeSingle() errors
+          const hasMaybeSingleError = firstImage?.metadata?.cascadeHistory?.some((line: string) =>
+            line.includes('maybeSingle is not a function') ||
+            line.includes('TypeError')
+          );
+          
+          if (hasMaybeSingleError) {
+            ccsFailed = true;
+            ccsFailureReason = '.maybeSingle() not supported in vendor bundle v2.57.4';
+          }
+        }
+
         batchResults.push({
           level: level.label,
           success: true,
           result,
           duration,
           sceneExtracted,
+          imageTier,        // NEW: Track which tier generated images
+          ccsFailed,        // NEW: Track CCS failures
+          ccsFailureReason, // NEW: Track failure reason
         });
       } catch (error) {
         const duration = Date.now() - startTime;
@@ -118,6 +152,9 @@ export function BatchTemplateTest() {
   const failureCount = results.filter(r => !r.success).length;
   const avgDuration = results.length > 0 ? Math.round(results.reduce((sum, r) => sum + r.duration, 0) / results.length) : 0;
   const sceneExtractionCount = results.filter(r => r.sceneExtracted).length;
+  const ccsFailureCount = results.filter(r => r.ccsFailed).length;
+  const tier1Count = results.filter(r => r.imageTier === 'TIER_1').length;
+  const tier1DegradedCount = results.filter(r => r.imageTier === 'TIER_1' && r.ccsFailed).length;
 
   return (
     <div className="space-y-6">
@@ -186,6 +223,26 @@ export function BatchTemplateTest() {
               </div>
             </div>
           )}
+
+          {ccsFailureCount > 0 && (
+            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <div className="flex items-start gap-3">
+                <XCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-destructive">Character Consistency Service Failures Detected</div>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    {ccsFailureCount} of {results.length} tests experienced CCS failures.
+                    {tier1DegradedCount > 0 && (
+                      <> {tier1DegradedCount} Tier 1 attempts generated images but without character consistency.</>
+                    )}
+                  </div>
+                  <div className="text-xs text-destructive/80 mt-2">
+                    💥 Root Cause: .maybeSingle() not supported in vendor bundle @supabase/supabase-js v2.57.4
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -215,9 +272,28 @@ export function BatchTemplateTest() {
                         <div className="text-sm text-destructive">{result.error}</div>
                       )}
                       {result.success && result.result && (
-                        <div className="text-sm text-muted-foreground">
-                          Generated {result.result.pages?.length || 0} pages • 
-                          Scene: {result.sceneExtracted ? '✅' : '❌'}
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div>
+                            Generated {result.result.pages?.length || 0} pages • 
+                            Scene: {result.sceneExtracted ? '✅' : '❌'}
+                          </div>
+                          {result.imageTier && (
+                            <div>
+                              Image Tier: <Badge variant={result.ccsFailed ? 'destructive' : 'default'} className="text-xs">
+                                {result.imageTier}
+                              </Badge>
+                              {result.ccsFailed && (
+                                <span className="text-destructive ml-1">
+                                  ⚠️ CCS FAILED
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {result.ccsFailureReason && (
+                            <div className="text-xs text-destructive">
+                              🔍 {result.ccsFailureReason}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
