@@ -1841,7 +1841,7 @@ export const ImageTierTester = () => {
       setResults([{
         tier: `tier-${tier}-forced`,
         success: isTier1Test ? tier1Success : overallSuccess,
-        imageURL: safeImageURL,
+        imageURL: (isTier1Test ? tier1Success : overallSuccess) ? safeImageURL : null,
         details: {
           processingTime,
           requestId: response.data?.requestId,
