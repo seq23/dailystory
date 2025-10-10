@@ -711,23 +711,15 @@ RULES:
    - Example: Story says "The toy car zooms across the floor" → Scene: "Jake, age 5, with short black hair, sits nearby on the floor smiling as his red toy car zooms across the wooden floor"
    - NEVER generate a scene without the main character visible - they must always be present for children's story continuity
 
-PHASE 1 ENHANCEMENT - MAIN CHARACTER APPEARANCE:
-- If mainCharacterAppearance physical features are provided (e.g., 'brown eyes', 'curly hair'), incorporate them into the scene description
-- If mainCharacterAppearance clothing is provided (e.g., 'blue shirt', 'red sneakers'), ensure they're visible in the scene
-
-PHASE 1 ENHANCEMENT - SECONDARY CHARACTER VISUALS:
-- If secondary characters have visualDetails (e.g., ['blonde', 'tall', 'blue dress']), incorporate these descriptors into their appearance in the scene
-- Use visualDetails to create consistent appearances for recurring secondary characters across pages
+10. Main character appearance details: If mainCharacterAppearance provides physical features (eyes, hair texture) or clothing items, incorporate them naturally into the scene description
+11. Secondary character visual consistency: If secondary characters have visualDetails arrays, use these exact descriptors for consistent appearances across pages
 
 CULTURAL CONTEXT:
 ${isNonEnglish ? `
-CRITICAL: Enhance story settings with specific cultural elements for ${nativeLanguage} speakers:
+CRITICAL: Enhance settings with ${nativeLanguage} cultural elements:
 ${culturalContext}
 
-EXAMPLE: For a French speaker named Sarah playing in a park, generate:
-"Sarah with ${structuredAvatarData?.hairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
-
-Use cultural detail naturally without contradicting explicit story settings.
+EXAMPLE: French park → "Parisian park near Eiffel Tower with Seine River background, French gardens with lavender, café district"
 ` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 
     const previousBlock = prevData.previousVisualSchema
@@ -740,7 +732,7 @@ Use cultural detail naturally without contradicting explicit story settings.
       : 'None - this is the first scene';
 
     const userPrompt =
-`Create a visual scene description for this story page.
+`INSTRUCTION: Generate a comprehensive scene description. The primaryScene must include the complete CHARACTER APPEARANCE string exactly as provided.
 
 CHARACTER APPEARANCE: ${characterData}
 
@@ -762,9 +754,7 @@ STORY TEXT:
 "${storyText}"
 
 PREVIOUS SCENE (Session-Wide Character Memory):
-${previousBlock}
-
-Generate a comprehensive scene... The primaryScene must include the complete CHARACTER APPEARANCE string exactly as provided.`;
+${previousBlock}`;
 
     return { systemPrompt, userPrompt, isNonEnglish, culturalContext };
   }
