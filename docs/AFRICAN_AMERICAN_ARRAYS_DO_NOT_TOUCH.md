@@ -27,6 +27,42 @@
 
 ---
 
+## 🚨 EMERGENCY FALLBACK ARRAYS (runware-generate-image/index.ts)
+
+### Purpose
+During database connection failures, the system uses emergency inline arrays to maintain cultural authenticity and gender inclusivity.
+
+### Array Structure
+- **Girls Array (3 entries):** Lines 102, 103, 105 from StaticDataCache.js
+- **Boys Array (3 entries):** Lines 90, 91, 98 from StaticDataCache.js
+- **Neutral Array (5 entries):** Universal styles from both arrays, no gendered descriptors
+- **Features Array (3 entries):** Lines 217, 220, 225 from StaticDataCache.js
+
+### Gender-Neutral Support
+Users who select "prefer-not-to-answer" or "gender-neutral" receive:
+- 5 universally-styled hair options (afros, twist-outs, tapered styles, wash-and-go)
+- 3 facial feature options (same as all dark-skinned users)
+- No gendered styling descriptors
+- Full cultural authenticity maintained
+
+### Detection Logic
+Emergency arrays activate when:
+- `skinTone === "dark"` AND
+- `nativeLanguage === "en"` AND
+- Database connection fails OR seed generation fails
+
+### Consistency Mechanism
+- Hash-based selection using `hashCode(seed)`
+- Same seed → Same hair → Same features
+- Ensures visual consistency across page regeneration
+
+### Critical Warnings
+⚠️ **DO NOT MODIFY** these arrays without updating source arrays in StaticDataCache.js
+⚠️ **DO NOT REMOVE** the neutral array - it respects user identity choices
+⚠️ **DO NOT SIMPLIFY** descriptions - maintain professional salon-quality language
+
+---
+
 ## 📚 ARRAY DOCUMENTATION
 
 ### FACIAL FEATURES (36 Total Entries)

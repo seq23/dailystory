@@ -394,6 +394,70 @@ function emergencySkinFeatures(skinTone: string | undefined): string {
   return EMERGENCY_SKIN_FEATURES[normalized] || EMERGENCY_SKIN_FEATURES["medium"];
 }
 
+// Emergency African American Arrays (3 samples per gender + 5 neutral)
+// Source: StaticDataCache.js AFRICAN_AMERICAN_HAIRSTYLES and AFRICAN_AMERICAN_FACIAL_FEATURES
+const EMERGENCY_AFRICAN_AMERICAN_HAIR: Record<string, string[]> = {
+  girls: [
+    "wearing a full voluminous afro with authentic coily texture, natural 4B-4C curl pattern, rounded dome shape, dense hair distribution, individual curl spirals visible, matte finish texture, proper afro proportions, natural hair movement",
+    "wearing individual box braids with distinct square sectioning, each braid separately defined and visible, geometric parting pattern, multiple separate braided units, detailed individual braid texture, professional sectioning technique, natural or vibrant color variations",
+    "wearing defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement"
+  ],
+  boys: [
+    "wearing a curly top fade with perfectly defined coils on top, crisp line-up around the edges, and smooth fade transitions down the sides and back",
+    "wearing twist sponge curls with tight coil definition, fresh line-up with sharp edges, and tapered sides with natural texture",
+    "wearing a tapered afro with rounded natural shape, soft textured crown, and gradually shortened sides and back"
+  ],
+  neutral: [
+    "wearing a full voluminous afro with authentic coily texture, natural 4B-4C curl pattern, rounded dome shape, dense hair distribution, individual curl spirals visible, matte finish texture, proper afro proportions, natural hair movement",
+    "wearing defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement",
+    "wearing a tapered afro with rounded natural shape, soft textured crown, and gradually shortened sides and back",
+    "wearing twist sponge curls with tight coil definition and natural texture",
+    "wearing natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement"
+  ]
+};
+
+const EMERGENCY_AFRICAN_AMERICAN_FEATURES: Record<string, string[]> = {
+  dark: [
+    "deep brown skin tone with warm brown eyes and a bright infectious smile",
+    "rich chocolate complexion with hazel eyes with golden flecks and a confident cheerful expression",
+    "ebony skin tone with dark honey-colored eyes and a warm welcoming expression"
+  ]
+};
+
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash;
+}
+
+function emergencyAfricanAmericanHair(avatarType: string | undefined, seed: string): string {
+  const normalized = (avatarType || "child").toLowerCase().trim();
+  
+  let gender: "girls" | "boys" | "neutral";
+  if (normalized === "girl") {
+    gender = "girls";
+  } else if (normalized === "boy") {
+    gender = "boys";
+  } else {
+    // child, gender-neutral, prefer-not-to-answer use neutral array
+    gender = "neutral";
+  }
+  
+  const hairArray = EMERGENCY_AFRICAN_AMERICAN_HAIR[gender];
+  const index = Math.abs(hashCode(seed)) % hairArray.length;
+  return hairArray[index];
+}
+
+function emergencyAfricanAmericanFeatures(seed: string): string {
+  const featuresArray = EMERGENCY_AFRICAN_AMERICAN_FEATURES.dark;
+  const index = Math.abs(hashCode(seed)) % featuresArray.length;
+  return featuresArray[index];
+}
+
 // CRITICAL: ProviderGate and IdempotencyMemory now lazy-loaded inside serve handler to prevent boot failures
 
 // COMPLETE_TIER_1_TEMPLATE: 4-section structured template
@@ -1608,8 +1672,26 @@ const executeDirectMode: TierFn = async (ctx) => {
           
           const skinTone = avatarIdentity.skinTone || "medium";
           const avatarType = avatarIdentity.type || "child";
-          const hairColor = emergencyHairFallback(skinTone);
-          const skinFeatures = emergencySkinFeatures(skinTone);
+          const nativeLanguage = avatarIdentity.nativeLanguage || "en";
+          const seedString = `synthetic_${sessionId}_${Date.now()}`;
+
+          // Detect African American user (dark skin + English language)
+          const isAfricanAmerican = skinTone === "dark" && nativeLanguage === "en";
+
+          let hairColor: string;
+          let skinFeatures: string;
+
+          if (isAfricanAmerican) {
+            // Use culturally authentic arrays with gender-neutral support
+            hairColor = emergencyAfricanAmericanHair(avatarType, seedString);
+            skinFeatures = emergencyAfricanAmericanFeatures(seedString);
+            console.log(`🎨 [${ctx.requestId}] [CCS_RETRY] Using emergency African American arrays for synthetic seed (gender: ${avatarType})`);
+          } else {
+            // Use generic fallback
+            hairColor = emergencyHairFallback(skinTone);
+            skinFeatures = emergencySkinFeatures(skinTone);
+          }
+
           const enhancedDescription = emergencyAvatarDescription(avatarType);
           
           characterSeed = {
@@ -1617,11 +1699,17 @@ const executeDirectMode: TierFn = async (ctx) => {
             selectedCulturalFeatures: skinFeatures,
             physicalTraits: { hair: hairColor, skinFeatures },
             characterDescription: `${avatarIdentity.name || "the child"}, ${enhancedDescription}`,
-            seed: `synthetic_${sessionId}_${Date.now()}`,
+            seed: seedString,
             source: 'synthetic_ccs_retry_fallback'
           };
           
-          console.log(`✅ [${ctx.requestId}] [CCS_RETRY] Bulletproof synthetic characterSeed created`, { hairColor, skinFeatures, enhancedDescription, source: 'synthetic_ccs_retry_fallback' });
+          console.log(`✅ [${ctx.requestId}] [CCS_RETRY] Bulletproof synthetic characterSeed created`, { 
+            hairColor: hairColor.substring(0, 50) + '...', 
+            skinFeatures: skinFeatures.substring(0, 50) + '...',
+            isAfricanAmerican,
+            avatarType,
+            source: 'synthetic_ccs_retry_fallback' 
+          });
         }
       }
       
@@ -1639,14 +1727,33 @@ const executeDirectMode: TierFn = async (ctx) => {
         
         const skinToneForFallback = structuredAvatarData?.skinTone || avatarSkinTone;
         
+        // Repair hair with African American detection
         if (!culturalBundle?.hair || culturalBundle.hair.trim() === "") {
-          culturalBundle.hair = emergencyHairFallback(skinToneForFallback);
-          console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.hair to "${culturalBundle.hair}"`);
+          const isAfricanAmericanBundle = skinToneForFallback === "dark" && (avatarIdentity.nativeLanguage || "en") === "en";
+          
+          if (isAfricanAmericanBundle) {
+            const seedForHash = characterSeed?.seed || `repair_${sessionId}_${Date.now()}`;
+            const avatarType = avatarIdentity.type || "child";
+            culturalBundle.hair = emergencyAfricanAmericanHair(avatarType, seedForHash);
+            console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.hair with African American array: "${culturalBundle.hair.substring(0, 50)}..."`);
+          } else {
+            culturalBundle.hair = emergencyHairFallback(skinToneForFallback);
+            console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.hair to "${culturalBundle.hair}"`);
+          }
         }
         
+        // Repair features with African American detection
         if (!culturalBundle?.features || culturalBundle.features.trim() === "") {
-          culturalBundle.features = emergencySkinFeatures(skinToneForFallback);
-          console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.features to "${culturalBundle.features}"`);
+          const isAfricanAmericanBundle = skinToneForFallback === "dark" && (avatarIdentity.nativeLanguage || "en") === "en";
+          
+          if (isAfricanAmericanBundle) {
+            const seedForHash = characterSeed?.seed || `repair_${sessionId}_${Date.now()}`;
+            culturalBundle.features = emergencyAfricanAmericanFeatures(seedForHash);
+            console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.features with African American array: "${culturalBundle.features.substring(0, 50)}..."`);
+          } else {
+            culturalBundle.features = emergencySkinFeatures(skinToneForFallback);
+            console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.features to "${culturalBundle.features}"`);
+          }
         }
         
         console.log(`✅ [${ctx.requestId}] [CCS_RETRY] culturalBundle VALIDATED`);
