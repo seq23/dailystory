@@ -720,30 +720,90 @@ ${isNonEnglish ? `Enhance settings with authentic cultural elements, architectur
 - Composition: ${prevData.previousVisualSchema.composition || 'centered'}`
       : 'None - this is the first scene';
 
-    const userPrompt =
-`INSTRUCTION: Generate a comprehensive scene description. The primaryScene must include the complete CHARACTER APPEARANCE string exactly as provided.
+    const userPrompt = `Your PRIMARY JOB: Generate a detailed "primaryScene" visual description (200-2000 chars) for AI image generation. This primaryScene field drives the entire image, so pack it with rich visual details: main character (with exact identity strings woven naturally), setting, action, secondary characters, objects, atmosphere, and mood. Then complete the JSON with supporting fields.
 
-CHARACTER APPEARANCE: ${characterData}
+═══════════════════════════════════════════════════════════════
+📖 STORY TEXT (Rule #1 - PRIMARY DRIVER)
+═══════════════════════════════════════════════════════════════
+"${storyText}"
 
-${mainCharacterAppearance ? `MAIN CHARACTER APPEARANCE DETAILS:
-- Physical features: ${JSON.stringify(mainCharacterAppearance.physicalFeatures || [])}
-- Clothing: ${JSON.stringify(mainCharacterAppearance.clothing || [])}` : ''}
+↑ Extract visual details ONLY from this story text. This is the absolute driver.
 
-${secondaryCharacters && secondaryCharacters.length > 0 ? `SECONDARY CHARACTERS WITH VISUAL DETAILS:
+═══════════════════════════════════════════════════════════════
+👤 MAIN CHARACTER CORE IDENTITY (Rule #3 - HIGHEST PRIORITY)
+═══════════════════════════════════════════════════════════════
+SOURCE: User profile (system-provided)
+
+${characterData}
+
+↑ Weave these exact strings verbatim into your primaryScene with natural flow:
+Example: "Emma, age 8, caramel blonde hair, soft bisque skin tone with pink flush, Euro-American ethnicity"
+→ "Emma is a beautiful 8-year-old girl of Euro-American ethnicity with flowing caramel blonde hair and a soft bisque skin tone with pink flush"
+
+${mainCharacterAppearance ? `───────────────────────────────────────────────────────────────
+👗 STORY-EXTRACTED APPEARANCE DETAILS (Rule #10)
+───────────────────────────────────────────────────────────────
+SOURCE: Extracted from story text above
+Physical features mentioned: ${JSON.stringify(mainCharacterAppearance.physicalFeatures || [])}
+Clothing items mentioned: ${JSON.stringify(mainCharacterAppearance.clothing || [])}
+
+↑ Incorporate these naturally if they complement the core identity above.
+` : ''}
+
+${secondaryCharacters && secondaryCharacters.length > 0 ? `═══════════════════════════════════════════════════════════════
+👥 SECONDARY CHARACTERS (Rule #7 & #11 - Session Consistency)
+═══════════════════════════════════════════════════════════════
+SOURCE: Session memory (consistent across all pages)
+
 ${secondaryCharacters.map((c:any)=>{
   const details = Array.isArray(c.visualDetails) 
     ? c.visualDetails.join(', ')
     : typeof c.visualDetails === 'string'
     ? c.visualDetails
     : 'no visual details';
-  return `- ${c.name} (${c.type}): ${details}`;
-}).join('\n')}` : ''}
+  return `• ${c.name} (${c.type}): ${details}`;
+}).join('\n')}
 
-STORY TEXT:
-"${storyText}"
+↑ Use these EXACT visual descriptors if these characters appear in the story.
+` : ''}
 
-PREVIOUS SCENE (Session-Wide Character Memory):
-${previousBlock}`;
+${prevData.previousVisualSchema ? `═══════════════════════════════════════════════════════════════
+🔗 PREVIOUS SCENE VISUAL MEMORY (Rule #9 - CRITICAL CONTINUITY)
+═══════════════════════════════════════════════════════════════
+SOURCE: Previous page's visual schema (NOT prose description)
+
+🎽 CLOTHING (Rule #9.1 - HIGHEST PRIORITY):
+${JSON.stringify(prevData.previousVisualSchema.clothing || [])}
+⚠️ Character MUST wear these exact items UNLESS story explicitly states clothing change.
+
+📦 OBJECTS IN SCENE:
+${JSON.stringify(prevData.previousVisualSchema.objects || [])}
+⚠️ PRONOUN RESOLUTION (Rule #9.2): If story uses "it", "them", "that" → MUST reference these objects.
+
+👥 SECONDARY CHARACTERS PRESENT:
+${JSON.stringify(prevData.previousVisualSchema.secondaryCharacters || { humans: [], pets: [] })}
+⚠️ If story mentions "they arrived" or "mom and dad" → MUST match these characters.
+
+🏞️ SETTING: ${prevData.previousVisualSchema.setting || 'outdoor scene'}
+📐 COMPOSITION: ${prevData.previousVisualSchema.composition || 'centered'}
+
+↑ Maintain exact visual consistency with these details UNLESS story text contradicts them.
+` : `═══════════════════════════════════════════════════════════════
+🆕 FIRST SCENE - No Previous Visual Data
+═══════════════════════════════════════════════════════════════
+This is page 1. Establish initial visual baseline from story text.
+`}
+
+═══════════════════════════════════════════════════════════════
+✅ OUTPUT FORMAT REQUIREMENT
+═══════════════════════════════════════════════════════════════
+Return ONLY valid JSON matching the schema in system prompt.
+- NO markdown code blocks
+- NO explanatory text
+- NO comments
+- ONLY raw JSON object
+
+PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - make it detailed, visual, and image-generation-ready (200-2000 characters).`;
 
     return { systemPrompt, userPrompt, isNonEnglish, culturalContext };
   }
