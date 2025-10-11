@@ -2867,7 +2867,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           if (scenario.testType === 'FRONTEND_BYPASS') {
             const { SimpleImageService } = await import('@/services/SimpleImageService');
             
-            // Use PRODUCTION method - Note: Can't mock healthStatus, will do real health check
+            // Use PRODUCTION method - generateStoryImage with smartBypassEnabled
             const result = await SimpleImageService.generateStoryImage(
               scenario.payload.storyText,
               scenario.payload.userInfo,
@@ -2875,7 +2875,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
               scenario.payload.pageNumber,
               scenario.payload.isPremium || false,
               false, // forceTier1
-              true   // smartBypassEnabled
+              true   // smartBypassEnabled - will perform real health check and trigger Direct Mode
             );
 
             data = result;
@@ -2903,6 +2903,12 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                                 data.metadata?.primaryScene || 
                                 data.tier1?.primaryScene || 
                                 data.directMode?.primaryScene;
+
+            // Assert primaryScene presence for Direct Mode tests
+            const isDirectModeTest = scenario.name.includes('Direct Mode');
+            if (isDirectModeTest && !primaryScene) {
+              throw new Error('❌ Direct Mode test failed: primaryScene missing from response');
+            }
 
             // Special handling for Tier 1 Natural Cascade to detect CCS health
             let ccsStatus = 'UNKNOWN';

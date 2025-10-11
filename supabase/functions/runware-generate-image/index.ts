@@ -1500,6 +1500,21 @@ const executeTier1: TierFn = async (ctx) => {
         return { ok: false, code: "T1_POOR_SCENE", reason: "Scene quality validation failed" };
       }
     } else {
+      // Force test mode: Skip scene validation (AI intentionally bypassed for CCS-only prep)
+      console.log(`🎯 [FORCE_TEST_MODE] Bypassing scene validation (forceCompleteTier1 + skipTier1AI)`, {
+        tier1Complete: true,
+        ccsMethodsRan: 7,
+        primaryScene: 'undefined (intentional)',
+        willProceedTo: '2.5A with precomputedCCS',
+        ccsDataAvailable: {
+          characterSeed: !!tier1Result.characterSeed,
+          culturalBundle: !!tier1Result.culturalBundle,
+          latestClothing: !!tier1Result.latestClothing
+        }
+      });
+    }
+      }
+    } else {
       // Force test mode: Skip scene validation (AI intentionally bypassed)
       console.log(`🎯 [FORCE_TEST_MODE] Bypassing scene validation (forceCompleteTier1 + skipTier1AI)`, {
         tier1Complete: true,

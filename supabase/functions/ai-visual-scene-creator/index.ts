@@ -1236,14 +1236,26 @@ serve((req) => {
           content, userInfo, sessionId, pageNumber, directMode, null, mainCharacterAppearance, secondaryCharacters, testMode // NEW: Pass testMode for prompt capture
         );
 
+      // Direct Mode: Accept primaryScene-only results (regex/prose parsing sufficient)
+      const hasPrimaryScene = gen.visualSchema?.primaryScene || gen.result?.visual?.primaryScene;
+      
       if (!gen.ok || !gen.visualSchema) {
-        const status = gen.upstreamBackoff ? 503 : 500;
-        return corsResponse({
-          success:false,
-          error: gen.error || 'Visual schema generation failed',
-          tier:'SCHEMA_GENERATION_FAILED',
-          retryAfterSeconds: gen.upstreamBackoff ? 5 : undefined
-        }, req, status);
+        // Allow primaryScene-only success for Direct Mode (doesn't need full schema)
+        if (directMode && hasPrimaryScene) {
+          console.log(`✅ [${requestId}] Direct Mode: Accepting primaryScene-only result (parseMethod: ${gen.aiDebugSchema?.parseMethod || 'unknown'})`);
+          // Ensure visualSchema exists with at least primaryScene
+          if (!gen.visualSchema) {
+            gen.visualSchema = { primaryScene: hasPrimaryScene };
+          }
+        } else {
+          const status = gen.upstreamBackoff ? 503 : 500;
+          return corsResponse({
+            success:false,
+            error: gen.error || 'Visual schema generation failed',
+            tier:'SCHEMA_GENERATION_FAILED',
+            retryAfterSeconds: gen.upstreamBackoff ? 5 : undefined
+          }, req, status);
+        }
       }
 
       // Direct Mode: build character/cultural bundle and attempt image
