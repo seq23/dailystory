@@ -2782,6 +2782,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
+            pageText: testStoryText,    // ✅ Required for template-ab to process (not treat as probe)
             userInfo: userInfo,
             sessionId: `batch-test-2.5a-${Date.now()}`,
             pageNumber: 1,

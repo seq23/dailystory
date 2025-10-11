@@ -2136,6 +2136,9 @@ const executeT25A: TierFn = async (ctx) => {
           ...ctx.payload,
           templateComplexity, // "A" or "B" based on CCS completeness
           precomputedCCS: precomputedCCS,
+          // ✅ Explicitly ensure story content is present (prevents runtime probe response)
+          storyText: ctx.payload.storyText || ctx.payload.pageText,
+          pageText: ctx.payload.pageText || ctx.payload.storyText,
         }),
         signal: controller.signal,
       });
@@ -2754,6 +2757,21 @@ serve(async (req) => {
       }
       const payload = cachedPayload;
       console.log(`🚀 [${requestId}] runware-generate-image ready`);
+      
+      // 🔍 DEBUG: Log ALL incoming requests for debugging Force Tier 2.5A failures
+      console.log(`🔍 [${requestId}] POST Request Received:`, {
+        hasStoryText: !!payload.storyText,
+        hasPageText: !!payload.pageText,
+        hasUserInfo: !!payload.userInfo,
+        hasSessionId: !!payload.sessionId,
+        skipDirectlyToTier: payload.skipDirectlyToTier,
+        forceCompleteTier1: payload.forceCompleteTier1,
+        skipTier1AI: payload.skipTier1AI,
+        __testSimulateOrchestratorFailure: payload.__testSimulateOrchestratorFailure,
+        __testSimulateT1Failure: payload.__testSimulateT1Failure,
+        payloadKeys: Object.keys(payload),
+        timestamp: new Date().toISOString()
+      });
 
       // PHASE 4: Fast validation
       validatePayloadFast(payload);
