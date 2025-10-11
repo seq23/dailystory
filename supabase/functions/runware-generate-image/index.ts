@@ -2679,7 +2679,7 @@ serve(async (req) => {
         const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
         
         if (supabaseUrl && supabaseKey) {
-          const healthCheck = await fetch(`${supabaseUrl}/functions/v1/ai-visual-scene-creator`, {
+          const healthCheck = await fetch(`${supabaseUrl}/functions/v1/ai-visual-scene-creator/health`, {
             method: 'HEAD',
             headers: { 'Authorization': `Bearer ${supabaseKey}` },
             signal: AbortSignal.timeout(2000)

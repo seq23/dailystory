@@ -49,12 +49,19 @@ async function insertDebugRow(supabase, row) {
         const supabaseUrl = Deno?.env?.get('SUPABASE_URL') || 'NOT_SET';
         const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || 'UNKNOWN';
         
-        const { data: verifyData, error: verifyError } = await supabase
+        // Build query with feature detection for .order() method
+        const query = supabase
           .from('image_generation_debug')
           .select('id, session_id, tier, created_at')
-          .eq('session_id', row.session_id)
-          .order('created_at', { ascending: false })
-          .limit(1);
+          .eq('session_id', row.session_id);
+        
+        // Check if .order() method exists (some Supabase client versions may not support it)
+        const hasOrderMethod = typeof query.order === 'function';
+        const finalQuery = hasOrderMethod 
+          ? query.order('created_at', { ascending: false }).limit(1)
+          : query.limit(1);
+        
+        const { data: verifyData, error: verifyError } = await finalQuery;
         
         if (verifyError) {
           console.error("❌ POST-INSERT VERIFICATION FAILED:", verifyError.message);
