@@ -508,6 +508,24 @@ function redactPII(value: any): any {
   return value;
 }
 
+// ✅ NUCLEAR FIX: Console-only logger (ZERO tierLogging references, never crashes)
+function createConsoleOnlyLogger(isProd: boolean) {
+  const wrapConsoleWithRedaction =
+    (prefix: string) =>
+    (msg: string, ctx: any = {}) => {
+      const safeCtx = isProd ? redactPII(ctx) : ctx;
+      console.log(`[${prefix}] ${msg}`, safeCtx);
+    };
+
+  return {
+    t1: wrapConsoleWithRedaction("T1"),
+    t2: wrapConsoleWithRedaction("T2"),
+    attempt: (tier: string, ctx: any = {}) => wrapConsoleWithRedaction(tier)("Attempting", ctx),
+    success: (tier: string, ctx: any = {}) => wrapConsoleWithRedaction(tier)("Success", ctx),
+    failure: (tier: string, ctx: any = {}) => wrapConsoleWithRedaction(tier)("Failure", ctx),
+  };
+}
+
 async function bindTierLogger(
   sessionId: string,
   requestId: string,
@@ -516,24 +534,23 @@ async function bindTierLogger(
 ): Promise<TierLogger> {
   const isProd = Deno.env.get("ENVIRONMENT") === "production";
   const debugTierSample = Deno.env.get("DEBUG_TIER_LOG_SAMPLE");
-  // Force 100% logging when DEBUG_TIER_LOG_SAMPLE=1, otherwise default 10% sampling
   const logSampleRate = debugTierSample === "1" ? 1.0 : parseFloat(debugTierSample || "0.1");
 
-    // ✅ CRASH-PROOF: Wrap resilientLoader import - fall back to inline memoizer if unavailable
-    let createVendorFirstSupabaseClient, tierLogging, supabaseClient;
-    try {
-      [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
-        memoizedImport("../_shared/resilientLoader.js"),
-        memoizedImport("../_shared/tierLogging.js"),
-      ]);
+  let createVendorFirstSupabaseClient, tierLogging, supabaseClient;
+  
+  try {
+    [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
+      memoizedImport("../_shared/resilientLoader.js"),
+      memoizedImport("../_shared/tierLogging.js"),
+    ]);
 
-      supabaseClient = await createVendorFirstSupabaseClient();
-
-    // ✅ CRASH-PROOF: Silently detect incomplete tierLogging and fall back to console-only
+    // ✅ NUCLEAR FIX: Early return if tierLogging invalid (no throw, no crash)
     if (!tierLogging || typeof tierLogging.logTier1 !== 'function') {
-      console.warn('⚠️ [ORCHESTRATOR] tierLogging module incomplete - falling back to console-only logger');
-      throw new Error('tierLogging incomplete'); // Trigger catch block for console-only fallback
+      console.warn('⚠️ [ORCHESTRATOR] tierLogging module incomplete - using console-only logger');
+      return createConsoleOnlyLogger(isProd);
     }
+
+    supabaseClient = await createVendorFirstSupabaseClient();
 
     // Sampling helper: only log to DB if sampled or failure
     const shouldLogToDB = (status: string = "info") => {
@@ -563,13 +580,22 @@ async function bindTierLogger(
         }
       };
 
+    // ✅ NUCLEAR FIX: Helper for console-only fallback in return statement
+    const wrapConsoleWithRedaction = (prefix: string) => {
+      return (msg: string, ctx: any = {}) => {
+        const safeCtx = isProd ? redactPII(ctx) : ctx;
+        console.log(`[${prefix}] ${msg}`, safeCtx);
+      };
+    };
+
+    // ✅ NUCLEAR FIX: Optional chaining on tierLogging as final safety net
     return {
-      t1: wrapWithRedactionAndSampling(tierLogging.logTier1),
-      t2: wrapWithRedactionAndSampling(tierLogging.logTier2),
+      t1: tierLogging?.logTier1 ? wrapWithRedactionAndSampling(tierLogging.logTier1) : wrapConsoleWithRedaction("T1"),
+      t2: tierLogging?.logTier2 ? wrapWithRedactionAndSampling(tierLogging.logTier2) : wrapConsoleWithRedaction("T2"),
       attempt: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
         console.log(`[${tier}] Attempting`, safeCtx);
-        if (shouldLogToDB("attempting")) {
+        if (shouldLogToDB("attempting") && tierLogging?.logTierAttempt) {
           try {
             return tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, "attempting", safeCtx);
           } catch (dbError) {
@@ -580,7 +606,7 @@ async function bindTierLogger(
       success: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
         console.log(`[${tier}] Success`, safeCtx);
-        if (shouldLogToDB("success")) {
+        if (shouldLogToDB("success") && tierLogging?.logTierSuccess) {
           try {
             return tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, safeCtx);
           } catch (dbError) {
@@ -591,31 +617,18 @@ async function bindTierLogger(
       failure: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
         console.error(`[${tier}] Failure`, safeCtx);
-        // Always log failures to DB - wrapped to NEVER throw
-        try {
-          return tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, safeCtx);
-        } catch (dbError) {
-          console.warn(`⚠️ [${tier}] DB log failed (non-fatal):`, dbError);
+        if (tierLogging?.logTierFailure) {
+          try {
+            return tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, safeCtx);
+          } catch (dbError) {
+            console.warn(`⚠️ [${tier}] DB log failed (non-fatal):`, dbError);
+          }
         }
       },
     };
   } catch (error) {
     console.warn(`⚠️ [ORCHESTRATOR] resilientLoader/tierLogging unavailable (NON-FATAL), using console-only logger:`, error);
-    // ✅ CRASH-PROOF: Return console-only logger to prevent function crashes
-    const wrapConsoleWithRedaction =
-      (prefix: string) =>
-      (msg: string, ctx: any = {}) => {
-        const safeCtx = isProd ? redactPII(ctx) : ctx;
-        console.log(`[${prefix}] ${msg}`, safeCtx);
-      };
-
-    return {
-      t1: wrapConsoleWithRedaction("T1"),
-      t2: wrapConsoleWithRedaction("T2"),
-      attempt: (tier, ctx = {}) => wrapConsoleWithRedaction(tier)("Attempting", ctx),
-      success: (tier, ctx = {}) => wrapConsoleWithRedaction(tier)("Success", ctx),
-      failure: (tier, ctx = {}) => wrapConsoleWithRedaction(tier)("Failure", ctx),
-    };
+    return createConsoleOnlyLogger(isProd);
   }
 }
 
