@@ -24,7 +24,9 @@ JSON RESPONSE:
 RULES:
 1. Story text priority: absolute driver - never contradict visual details
 2. Main action extraction: focus on most visually significant action from story text
-3. Core Identity (HIGHEST PRIORITY - mainCharacterAppearance): use provided appearance data VERBATIM (word-for-word ethnicity, hair, skin tone) but weave it naturally into flowing prose using connecting phrases like "with her" or "who has" - NEVER simplify core appearance details. This data comes from the user profile.
+3. Core Identity (HIGHEST PRIORITY - mainCharacterAppearance): Character data (ethnicity, hair, skin tone) are EXACT SUBSTRINGS - add words BEFORE substrings for flow but keep each substring INTACT. Don't condense multi-part phrases. User profile data.
+   ✅ Add before: "flowing platinum blonde hair"
+   ❌ Condense: "light caramel undertones with creamy base" → "soft caramel skin"
 4. Main character presence in ALL scenes (children's story requirement): ALWAYS include the main character in EVERY scene for visual continuity
    - If story text explicitly mentions character doing an action: character is PRIMARY FOCUS of scene
    - If story text focuses on object/animal WITHOUT mentioning character (e.g., "The dog jumps", "The ball rolls"): position main character as OBSERVER or in BACKGROUND watching/near the action
@@ -271,7 +273,7 @@ When the function returns, `aiDebugSchema` now includes comprehensive debugging 
 5. **Pronoun Resolution Strengthened**: Added explicit sub-section in Rule #9 with examples
 6. **Secondary Character Consolidation**: All secondary character rules unified in Rule #7
 
-**Token Savings:** ~400 tokens per request by removing hard-coded cultural landmark conditionals
+**Token Savings:** ~400 tokens per request by removing hard-coded cultural landmark conditionals + ~87 tokens from Rule #3 and example compression (2025-10-11)
 
 **Benefits:**
 - More logical rule ordering for AI comprehension
@@ -305,9 +307,13 @@ SOURCE: User profile (system-provided)
 
 ${characterData}
 
-↑ Weave these exact strings verbatim into your primaryScene with natural flow:
-Example: "Emma, age 8, caramel blonde hair, soft bisque skin tone with pink flush, Euro-American ethnicity"
-→ "Emma is a beautiful 8-year-old girl of Euro-American ethnicity with flowing caramel blonde hair and a soft bisque skin tone with pink flush"
+↑ Use appearance data as EXACT SUBSTRINGS (add words before, keep intact):
+✅ "flowing platinum blonde hair, light caramel undertones with creamy base"
+❌ "flowing platinum blonde hair, soft caramel skin" (condensed substring!)
+
+⚠️ SUBSTRING RULES:
+"light caramel undertones with creamy base" = ONE UNIT - don't shorten to "soft caramel"
+Add words BEFORE ✅ | Break apart ❌
 
 ${mainCharacterAppearance ? `───────────────────────────────────────────────────────────────
 👗 STORY-EXTRACTED APPEARANCE DETAILS (Rule #10)
