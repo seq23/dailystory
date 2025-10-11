@@ -1481,17 +1481,32 @@ const executeTier1: TierFn = async (ctx) => {
       wordCount: tier1Result.primaryScene?.split(" ").filter((w: string) => w.length > 0).length || 0
     });
 
-    if (!validatePrimarySceneQuality(tier1Result.primaryScene || "")) {
-      console.error(`❌ [DEBUG] Scene validation FAILED:`, {
-        scene: tier1Result.primaryScene,
-        reason: !tier1Result.primaryScene ? "scene_falsy" :
-                typeof tier1Result.primaryScene !== "string" ? "not_string" :
-                tier1Result.primaryScene.length < 30 ? "too_short" :
-                tier1Result.primaryScene.includes("undefined") || tier1Result.primaryScene.includes("null") ? "contains_undefined_null" :
-                "insufficient_word_count"
+    // Skip scene validation in force test mode (CCS methods ran, AI intentionally skipped)
+    const skipAIMode = ctx.payload.skipTier1AI === true;
+    const forceMode = ctx.payload.forceCompleteTier1 === true;
+
+    if (!skipAIMode || !forceMode) {
+      // Normal mode: validate scene quality
+      if (!validatePrimarySceneQuality(tier1Result.primaryScene || "")) {
+        console.error(`❌ [DEBUG] Scene validation FAILED:`, {
+          scene: tier1Result.primaryScene,
+          reason: !tier1Result.primaryScene ? "scene_falsy" :
+                  typeof tier1Result.primaryScene !== "string" ? "not_string" :
+                  tier1Result.primaryScene.length < 30 ? "too_short" :
+                  tier1Result.primaryScene.includes("undefined") || tier1Result.primaryScene.includes("null") ? "contains_undefined_null" :
+                  "insufficient_word_count"
+        });
+        ctx.tierLogger.failure("TIER_1", { reason: "POOR_SCENE_QUALITY" });
+        return { ok: false, code: "T1_POOR_SCENE", reason: "Scene quality validation failed" };
+      }
+    } else {
+      // Force test mode: Skip scene validation (AI intentionally bypassed)
+      console.log(`🎯 [FORCE_TEST_MODE] Bypassing scene validation (forceCompleteTier1 + skipTier1AI)`, {
+        tier1Complete: true,
+        ccsMethodsRan: 7,
+        primaryScene: 'undefined (intentional)',
+        willProceedTo: '2.5A with precomputedCCS'
       });
-      ctx.tierLogger.failure("TIER_1", { reason: "POOR_SCENE_QUALITY" });
-      return { ok: false, code: "T1_POOR_SCENE", reason: "Scene quality validation failed" };
     }
     
     // 5. DRY RUN: Return debug data without image

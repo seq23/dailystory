@@ -2787,8 +2787,9 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             storyId: crypto.randomUUID(),
             isGuestUser: false,
             difficultyLevel: 'medium',
-            skipDirectlyToTier: '2.5A',
-            skipTier1AI: true
+            forceCompleteTier1: true,  // ✅ Force all 7 CCS methods to run
+            skipTier1AI: true,          // ✅ Skip AI scene extraction
+            skipDirectlyToTier: '2.5A'  // ✅ Jump to 2.5A after Tier 1 prep
           },
           expectedBehavior: 'CCS healthy: 2.5A succeeds. CCS broken: 2.5A fails (requires CCS)',
           criticalFailure: 'Continued cascade (should STOP at 2.5A)'
@@ -2862,18 +2863,20 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           let data: any;
           let error: any;
 
-          // PATH 1: Frontend Bypass Test
+          // PATH 1: Frontend Bypass Test (Direct Production Method)
           if (scenario.testType === 'FRONTEND_BYPASS') {
             const { SimpleImageService } = await import('@/services/SimpleImageService');
             
-            const result = await SimpleImageService.generateImage({
-              storyText: scenario.payload.storyText,
-              userInfo: scenario.payload.userInfo,
-              sessionId: scenario.payload.sessionId,
-              pageNumber: scenario.payload.pageNumber,
-              isPremium: scenario.payload.isPremium,
-              healthStatus: scenario.payload.healthStatus
-            });
+            // Use PRODUCTION method - Note: Can't mock healthStatus, will do real health check
+            const result = await SimpleImageService.generateStoryImage(
+              scenario.payload.storyText,
+              scenario.payload.userInfo,
+              scenario.payload.sessionId,
+              scenario.payload.pageNumber,
+              scenario.payload.isPremium || false,
+              false, // forceTier1
+              true   // smartBypassEnabled
+            );
 
             data = result;
             error = result.success ? null : { message: result.error };
