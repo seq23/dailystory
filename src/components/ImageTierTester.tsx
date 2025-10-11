@@ -2710,14 +2710,8 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
     try {
       DebugLogger.log('image', '🎯 Batch Tier Testing: 6 Isolated Tier Tests');
       
-      const buildUserInfo = () => ({
-        name: "TestHero",
-        age: 10,
-        ethnicity: "adventurer",
-        skinTone: "light",
-        avatar: { type: "hero", skinTone: "light" },
-        userTier: "premium"
-      });
+      // Use form-based user info (respects ALL dropdown selections)
+      const userInfo = buildUserInfo();
 
       // 6 Isolated Test Scenarios
       const productionScenarios = [
@@ -2728,7 +2722,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           testType: 'FRONTEND_BYPASS' as const,
           payload: {
             storyText: testStoryText,
-            userInfo: buildUserInfo(),
+            userInfo: userInfo,
             sessionId: `batch-test-dm-frontend-${Date.now()}`,
             pageNumber: 1,
             isPremium: true,
@@ -2746,7 +2740,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
-            userInfo: buildUserInfo(),
+            userInfo: userInfo,
             sessionId: `batch-test-dm-orch-${Date.now()}`,
             pageNumber: 1,
             storyId: crypto.randomUUID(),
@@ -2766,7 +2760,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
-            userInfo: buildUserInfo(),
+            userInfo: userInfo,
             sessionId: `batch-test-tier1-${Date.now()}`,
             pageNumber: 1,
             storyId: crypto.randomUUID(),
@@ -2787,7 +2781,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
-            userInfo: buildUserInfo(),
+            userInfo: userInfo,
             sessionId: `batch-test-2.5a-${Date.now()}`,
             pageNumber: 1,
             storyId: crypto.randomUUID(),
@@ -2805,7 +2799,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
-            userInfo: buildUserInfo(),
+            userInfo: userInfo,
             sessionId: `batch-test-2.5b-${Date.now()}`,
             pageNumber: 1,
             storyId: crypto.randomUUID(),
@@ -2823,7 +2817,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
-            userInfo: buildUserInfo(),
+            userInfo: userInfo,
             sessionId: `batch-test-2.5c-${Date.now()}`,
             pageNumber: 1,
             storyId: crypto.randomUUID(),
@@ -2841,7 +2835,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
-            userInfo: buildUserInfo(),
+            userInfo: userInfo,
             sessionId: `batch-test-2.5d-${Date.now()}`,
             pageNumber: 1,
             storyId: crypto.randomUUID(),
