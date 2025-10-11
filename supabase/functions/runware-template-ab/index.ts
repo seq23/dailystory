@@ -1051,37 +1051,60 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
       // ✅ CRITICAL VALIDATION: Check characterSeed presence (orchestrator provided data)
       const precomputedCCS = payload.precomputedCCS || null;
       
-      if (!precomputedCCS?.characterSeed) {
-        console.error(`❌ Tier 2.5A: No characterSeed from orchestrator, escalating to Tier 2.5B`);
+      // 🔍 DEBUG: Log exact precomputedCCS structure received from orchestrator
+      console.log(`🔍 [${requestId}] [T2.5A] Received from orchestrator:`, JSON.stringify({
+        hasPrecomputedCCS: !!precomputedCCS,
+        hasCharacterSeed: !!precomputedCCS?.characterSeed,
+        characterSeedType: typeof precomputedCCS?.characterSeed,
+        characterSeedKeys: precomputedCCS?.characterSeed ? Object.keys(precomputedCCS.characterSeed) : [],
+        characterSeedSample: precomputedCCS?.characterSeed ? JSON.stringify(precomputedCCS.characterSeed).substring(0, 200) : null,
+        source: precomputedCCS?.source
+      }));
+      
+      // ✅ FIXED VALIDATION: Check if characterSeed is a valid, non-empty object
+      if (!precomputedCCS?.characterSeed || 
+          typeof precomputedCCS.characterSeed !== 'object' || 
+          Object.keys(precomputedCCS.characterSeed).length === 0) {
+        console.error(`❌ Tier 2.5A: Invalid or empty characterSeed from orchestrator, escalating to Tier 2.5B`);
         return createResponse({
           success: false,
           error: 'NO_CHARACTER_SEED',
           escalation: 'NEXT_TIER',
           tier: 'tier-2.5A',
           service: SERVICE_NAME,
-          message: 'Tier 2.5A requires characterSeed from orchestrator. Escalating to Tier 2.5B.'
+          message: 'Tier 2.5A requires valid characterSeed object from orchestrator. Escalating to Tier 2.5B.'
         }, 503);
       }
       
-      // ✅ BUNDLE VALIDATION: Ensure characterSeed and culturalBundle exist
+      // ✅ BUNDLE VALIDATION: Ensure culturalBundle exists
       const bundle = precomputedCCS.culturalBundle || {};
-      if (!precomputedCCS.characterSeed || !bundle) {
-        console.error(`❌ Tier 2.5A: Missing characterSeed or culturalBundle, escalating to Tier 2.5B`);
-        return createResponse({
-          success: false,
-          error: 'INCOMPLETE_BUNDLE',
-          escalation: 'NEXT_TIER',
-          tier: 'tier-2.5A',
-          service: SERVICE_NAME,
-          message: 'Missing characterSeed or culturalBundle'
-        }, 503);
+      
+      // ✅ FALLBACK REPAIR: Dynamically populate missing hair/skin/eyes in characterSeed
+      const characterSeed = precomputedCCS.characterSeed;
+      const skinTone = characterSeed.skinTone || 'medium';
+      const culturalProfile = inlineDetectCultural(payload.userInfo, payload.avatarIdentity);
+      
+      // Repair missing hair property
+      if (!characterSeed.hair || characterSeed.hair.trim() === '') {
+        characterSeed.hair = inlineGetHairBySkin(skinTone, culturalProfile);
+        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing hair: ${characterSeed.hair}`);
       }
       
-      // ✅ INLINE COMPUTATION: If hair/features empty, use existing helper functions
+      // Repair missing skin property
+      if (!characterSeed.skin || characterSeed.skin.trim() === '') {
+        characterSeed.skin = inlineGetSkinBySkin(skinTone);
+        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing skin: ${characterSeed.skin}`);
+      }
+      
+      // Repair missing eyes property
+      if (!characterSeed.eyes || characterSeed.eyes.trim() === '') {
+        characterSeed.eyes = inlineGetEyesBySkin(skinTone);
+        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing eyes: ${characterSeed.eyes}`);
+      }
+      
+      // ✅ INLINE COMPUTATION: If bundle hair/features empty, compute them
       if (!bundle.hair || !bundle.features) {
-        console.log(`⚙️ Tier 2.5A: Computing missing hair/features with inline helpers`);
-        const skinTone = precomputedCCS.characterSeed.skinTone || 'medium';
-        const culturalProfile = inlineDetectCultural(payload.userInfo, payload.avatarIdentity);
+        console.log(`⚙️ Tier 2.5A: Computing missing bundle hair/features with inline helpers`);
         
         // ✅ REUSE EXISTING MODULE-LEVEL HELPERS (no duplication)
         bundle.hair = bundle.hair || getHairBySkintone(skinTone, sessionId);

@@ -1983,6 +1983,16 @@ const executeT25A: TierFn = async (ctx) => {
         };
       }
       
+      // 🔍 DEBUG: Log exact precomputedCCS structure being sent to template-ab
+      console.log(`🔍 [${ctx.requestId}] [T2.5A] Sending to template-ab:`, JSON.stringify({
+        hasPrecomputedCCS: !!precomputedCCS,
+        hasCharacterSeed: !!precomputedCCS?.characterSeed,
+        characterSeedType: typeof precomputedCCS?.characterSeed,
+        characterSeedKeys: precomputedCCS?.characterSeed ? Object.keys(precomputedCCS.characterSeed) : [],
+        characterSeedSample: precomputedCCS?.characterSeed ? JSON.stringify(precomputedCCS.characterSeed).substring(0, 200) : null,
+        source: precomputedCCS?.source
+      }));
+      
       const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
         method: "POST",
         headers,
