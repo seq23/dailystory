@@ -67,8 +67,45 @@ RULES:
 11. Secondary character visual consistency: If secondary characters have visualDetails arrays, use these exact descriptors for consistent appearances across pages
 
 CULTURAL CONTEXT:
-${isNonEnglish ? `Enhance settings with authentic cultural elements, architecture, and atmosphere appropriate for ${nativeLanguage} regions.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
+${(() => {
+  const ethnicity = structuredAvatarData?.ethnicity || 'Euro-American';
+  const lang = nativeLanguage || 'en';
+  
+  if (ethnicity !== 'Euro-American' || lang !== 'en') {
+    return `Incorporate authentic cultural elements based on ${ethnicity} ethnicity and ${lang}-speaking region. Example: Light-skinned French speaker (Euro-French) → Eiffel Tower, Parisian cafes, cobblestone streets. Dark-skinned French speaker (Francophone African) → vibrant markets in Dakar or Paris suburbs, colorful textiles, tropical trees.`;
+  }
+  return 'Use universal child-friendly settings with warm, invating atmospheres';
+})()}`;
 ```
+
+### **Cultural Context Determination (Lines 711-712)**
+
+**Purpose:** Dynamically generates cultural guidance based on user's ethnicity and native language.
+
+**Logic:**
+```typescript
+const ethnicity = structuredAvatarData?.ethnicity || 'Euro-American';
+const lang = nativeLanguage || 'en';
+
+if (ethnicity !== 'Euro-American' || lang !== 'en') {
+  return `Incorporate authentic cultural elements based on ${ethnicity} ethnicity and ${lang}-speaking region...`;
+}
+return 'Use universal child-friendly settings...';
+```
+
+**Example Instruction Generated:**
+```
+Incorporate authentic cultural elements based on Francophone African ethnicity and fr-speaking region. 
+Example: Light-skinned French speaker (Euro-French) → Eiffel Tower, Parisian cafes, cobblestone streets. 
+Dark-skinned French speaker (Francophone African) → vibrant markets in Dakar or Paris suburbs, colorful textiles, tropical trees.
+```
+
+**Design Rationale:**
+- Single concrete example differentiates settings by skin tone + language
+- Light skin + French → European French settings (Eiffel Tower, Parisian cafes)
+- Dark skin + French → Francophone African settings (Dakar markets, colorful textiles)
+- Provides specific visual targets without being prescriptive
+- AI can adapt example pattern to other ethnicity/language combinations
 
 ## Key Changes (2025-10-08)
 

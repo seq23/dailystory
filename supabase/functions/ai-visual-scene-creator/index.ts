@@ -709,7 +709,15 @@ RULES:
 11. Secondary character visual consistency: If secondary characters have visualDetails arrays, use these exact descriptors for consistent appearances across pages
 
 CULTURAL CONTEXT:
-${isNonEnglish ? `Enhance settings with authentic cultural elements, architecture, and atmosphere appropriate for ${nativeLanguage} regions.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
+${(() => {
+  const ethnicity = structuredAvatarData?.ethnicity || 'Euro-American';
+  const lang = nativeLanguage || 'en';
+  
+  if (ethnicity !== 'Euro-American' || lang !== 'en') {
+    return `Incorporate authentic cultural elements based on ${ethnicity} ethnicity and ${lang}-speaking region. Example: Light-skinned French speaker (Euro-French) → Eiffel Tower, Parisian cafes, cobblestone streets. Dark-skinned French speaker (Francophone African) → vibrant markets in Dakar or Paris suburbs, colorful textiles, tropical trees.`;
+  }
+  return 'Use universal child-friendly settings with warm, inviting atmospheres';
+})()}`;
 
     const previousBlock = prevData.previousVisualSchema
       ? `STRUCTURED VISUAL CONSISTENCY DATA (use these exact details):
@@ -805,7 +813,7 @@ Return ONLY valid JSON matching the schema in system prompt.
 
 PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - make it detailed, visual, and image-generation-ready (200-2000 characters).`;
 
-    return { systemPrompt, userPrompt, isNonEnglish, culturalContext };
+    return { systemPrompt, userPrompt, isNonEnglish };
   }
 
   function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number): Promise<{ ok:boolean; content?: string; status?: number }> {
