@@ -1079,56 +1079,24 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
       // ✅ BUNDLE VALIDATION: Ensure culturalBundle exists
       const bundle = precomputedCCS.culturalBundle || {};
       
-      // ✅ FALLBACK REPAIR: Dynamically populate missing hair/skin/eyes in characterSeed
+      // Extract skinTone and culturalProfile for bundle repair (if needed)
       const characterSeed = precomputedCCS.characterSeed;
       const skinTone = characterSeed.skinTone || 'medium';
       const culturalProfile = inlineDetectCultural(payload.userInfo, payload.avatarIdentity);
       
-      // Extract character traits from CCS structure (selectedCulturalHair/Features or physicalTraits)
-      const hairTrait = characterSeed.selectedCulturalHair || 
-                        characterSeed.physicalTraits?.hair || 
-                        '';
-      const skinTrait = characterSeed.selectedCulturalFeatures || 
-                        characterSeed.physicalTraits?.skinFeatures || 
-                        '';
-      const eyesTrait = characterSeed.physicalTraits?.eyes || '';
-
-      // Repair missing traits if extraction failed
-      const repairedHair = hairTrait.trim() || inlineGetHairBySkin(skinTone, culturalProfile);
-      const repairedSkin = skinTrait.trim() || inlineGetSkinBySkin(skinTone);
-      const repairedEyes = eyesTrait.trim() || inlineGetEyesBySkin(skinTone);
-
-      // Log any repairs
-      if (!hairTrait.trim()) {
-        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing hair: ${repairedHair}`);
-      }
-      if (!skinTrait.trim()) {
-        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing skin: ${repairedSkin}`);
-      }
-      if (!eyesTrait.trim()) {
-        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing eyes: ${repairedEyes}`);
-      }
-
-      // Create normalized characterSeed with flat structure for downstream use
-      const normalizedCharacterSeed = {
-        hair: repairedHair,
-        skin: repairedSkin,
-        eyes: repairedEyes,
-        skinTone: characterSeed.skinTone || skinTone,
-        seed: characterSeed.seed,
-        source: characterSeed.source || 'orchestrator',
-        _original: characterSeed // Preserve original for debugging
-      };
-      
-      // ✅ INLINE COMPUTATION: If bundle hair/features empty, compute them
+      // ✅ BUNDLE REPAIR: Compute missing bundle.hair/features using orchestrator's CCS data
+      // This is the ONLY place where bundle repair happens (no characterSeed manipulation)
       if (!bundle.hair || !bundle.features) {
-        console.log(`⚙️ Tier 2.5A: Computing missing bundle hair/features with inline helpers`);
+        console.log(`⚙️ [${requestId}] [T2.5A] Computing missing bundle properties from CCS`);
         
-        // ✅ REUSE EXISTING MODULE-LEVEL HELPERS (no duplication)
+        // Use existing module-level helpers for consistent fallback behavior
         bundle.hair = bundle.hair || getHairBySkintone(skinTone, sessionId);
         bundle.features = bundle.features || getSkinBySkintone(skinTone, culturalProfile);
         
-        console.log(`✅ Computed: hair="${bundle.hair}", features="${bundle.features}"`);
+        console.log(`✅ [${requestId}] [T2.5A] Bundle repaired:`, {
+          hair: bundle.hair.substring(0, 50) + '...',
+          features: bundle.features.substring(0, 50) + '...'
+        });
       }
       
       // ✅ FAST PATH: Use orchestrator's pre-computed data (with computed hair/features if needed)
