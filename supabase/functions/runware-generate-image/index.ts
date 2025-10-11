@@ -1445,6 +1445,22 @@ const FAST_BOOT_SYNC = {
 // ============= TIER 1: AI-Enhanced Scene Generation =============
 const executeTier1: TierFn = async (ctx) => {
   const startMs = Date.now();
+  const { payload } = ctx;
+  
+  // ✅ TEST SIMULATION: Clean Tier 1 failure (for Direct Mode orchestrator fallback tests)
+  if (payload.__testSimulateT1Failure === true) {
+    console.log(`🧪 [TEST] Simulating Tier 1 failure for Direct Mode orchestrator fallback test`);
+    return {
+      ok: false,
+      code: "T1_SIMULATED_FAILURE",
+      reason: "Tier 1 simulated failure for testing Direct Mode fallback inside orchestrator",
+      details: {
+        testSimulation: true,
+        simulatedFailure: true
+      }
+    };
+  }
+  
   const gateKey = "T1:ai-visual-scene-creator";
   let gateAcquired = false;
   
@@ -2842,6 +2858,18 @@ serve(async (req) => {
           tier1ErrorLog.splice(0, tier1ErrorLog.length - 20);
         }
       };
+
+      // ✅ TEST SIMULATION: Orchestrator failure (for Direct Mode frontend bypass tests)
+      if (payload.__testSimulateOrchestratorFailure === true) {
+        console.log(`🧪 [TEST] Simulating orchestrator failure for Direct Mode frontend bypass test`);
+        return corsResponse({
+          success: false,
+          error: 'TEST_SIMULATED_ORCHESTRATOR_FAILURE',
+          message: 'Orchestrator simulated failure for testing Direct Mode fallback',
+          tier: 'ORCHESTRATOR_TEST_FAILURE',
+          testSimulation: true
+        }, req, 503); // Return 503 to trigger catch block in SimpleImageService
+      }
 
       // Preferred: resilient loader from _shared
       let memoizedImport: <T = any>(href: string) => Promise<T>;

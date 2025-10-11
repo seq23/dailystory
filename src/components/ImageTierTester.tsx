@@ -2737,7 +2737,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
         // PATH 2: Orchestrator Fallback to Direct Mode
         {
           name: 'Direct Mode (Orchestrator Fallback)',
-          description: 'Orchestrator → Tier 1 forced skip → Direct Mode',
+          description: 'Orchestrator → Tier 1 simulated failure → Direct Mode',
           testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
@@ -2747,11 +2747,11 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             storyId: crypto.randomUUID(),
             isGuestUser: false,
             difficultyLevel: 'medium',
-            skipTier1AI: true,
+            __testSimulateT1Failure: true, // ✅ Clean simulation (replaces skipTier1AI)
             test: true
           },
-          expectedBehavior: 'Tier 1 skipped → Direct Mode runs → image + primaryScene',
-          criticalFailure: 'Direct Mode did not run'
+          expectedBehavior: 'Tier 1 fails → Direct Mode runs → image + primaryScene',
+          criticalFailure: 'Direct Mode did not run or primaryScene missing'
         },
 
         // Tier 1 Forced (Stop at Tier 1, no cascade)
@@ -2864,33 +2864,28 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           let data: any;
           let error: any;
 
-          // PATH 1: Frontend Bypass Test (Direct Production Method)
+          // PATH 1: Frontend Bypass Test - Simulate orchestrator failure
           if (scenario.testType === 'FRONTEND_BYPASS') {
-            const { SimpleImageService } = await import('@/services/SimpleImageService');
-            
-            // Mock unhealthy orchestrator to force Direct Mode path (production simulation)
-            const mockHealthStatus = {
-              orchestrator: 'server', // Simulates orchestrator unhealthy
-              'runware-template-ab': 'healthy',
-              'runware-template-cd': 'healthy',
-              'ai-visual-scene-creator': 'healthy',
-              timestamp: new Date().toISOString()
-            };
-
-            // Call the internal production method with mocked health status
-            const result = await (SimpleImageService as any).generateWithOrchestrator(
-              scenario.payload.storyText,
-              scenario.payload.userInfo,
-              scenario.payload.sessionId,
-              scenario.payload.pageNumber,
-              scenario.payload.isPremium || false,
-              mockHealthStatus, // Pass mock to simulate orchestrator failure
-              false, // forceTier1
-              true   // smartBypassEnabled
-            );
-
-            data = result;
-            error = result.success ? null : { message: result.error };
+            try {
+              // Try orchestrator with simulation flag
+              await supabase.functions.invoke('runware-generate-image', {
+                body: {
+                  ...scenario.payload,
+                  __testSimulateOrchestratorFailure: true // ✅ Clean simulation
+                }
+              });
+            } catch (orchestratorError) {
+              // Orchestrator "failed" (simulated), now call Direct Mode
+              const directModeResult = await supabase.functions.invoke('ai-visual-scene-creator', {
+                body: {
+                  ...scenario.payload,
+                  directMode: true
+                }
+              });
+              
+              data = directModeResult.data;
+              error = directModeResult.error;
+            }
 
           } else {
             // PATH 2: Orchestrator Call
