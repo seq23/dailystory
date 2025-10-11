@@ -74,7 +74,7 @@ ${(() => {
   if (ethnicity !== 'Euro-American' || lang !== 'en') {
     return `Incorporate authentic cultural elements based on ${ethnicity} ethnicity and ${lang}-speaking region. Example: Light-skinned French speaker (Euro-French) → Eiffel Tower, Parisian cafes, cobblestone streets. Dark-skinned French speaker (Francophone African) → vibrant markets in Dakar or Paris suburbs, colorful textiles, tropical trees.`;
   }
-  return 'Use universal child-friendly settings with warm, invating atmospheres';
+  return 'Use universal child-friendly settings with warm, inviting atmospheres';
 })()}`;
 ```
 

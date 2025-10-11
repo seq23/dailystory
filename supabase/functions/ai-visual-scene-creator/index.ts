@@ -944,7 +944,7 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
   }
 
   // Hoist variables to outer scope for debug access in all paths
-  let prompts: { systemPrompt: string; userPrompt: string; culturalContext?: string; isNonEnglish?: boolean } | null = null;
+  let prompts: { systemPrompt: string; userPrompt: string; isNonEnglish?: boolean } | null = null;
   let lastOpenAIResponse: { status?: number; content?: string; ok: boolean } | null = null;
   let attemptsUsed = 0;
   let encounteredBackoff = false;
@@ -1008,7 +1008,6 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
           storyTextLength: storyText.length,
           systemPrompt: prompts?.systemPrompt || null,
           userPrompt: prompts?.userPrompt || null,
-          culturalContext: prompts?.culturalContext || null,
           httpStatus: lastOpenAIResponse?.status || 0,
           rawResponse: lastOpenAIResponse?.content?.substring(0, 500) || null,
           parseMethod: result.parseMethod || 'none',
@@ -1032,7 +1031,6 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
         isNonEnglish: nativeLanguage && nativeLanguage !== 'en',
         systemPrompt: prompts?.systemPrompt || null,
         userPrompt: prompts?.userPrompt || null,
-        culturalContext: prompts?.culturalContext || null,
         httpStatus: lastOpenAIResponse?.status || 200,
         parseMethod,
         attemptsUsed,
@@ -1071,7 +1069,6 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
         storyTextLength: storyText.length,
         systemPrompt: prompts?.systemPrompt || null,
         userPrompt: prompts?.userPrompt || null,
-        culturalContext: prompts?.culturalContext || null,
         httpStatus: lastOpenAIResponse?.status || 0,
         rawResponse: lastOpenAIResponse?.content?.substring(0, 500) || null,
         parseMethod: 'none',
