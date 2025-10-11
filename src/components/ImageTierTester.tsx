@@ -2867,15 +2867,25 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           if (scenario.testType === 'FRONTEND_BYPASS') {
             const { SimpleImageService } = await import('@/services/SimpleImageService');
             
-            // Use PRODUCTION method - generateStoryImage with smartBypassEnabled
-            const result = await SimpleImageService.generateStoryImage(
+            // Mock unhealthy orchestrator to force Direct Mode path (production simulation)
+            const mockHealthStatus = {
+              orchestrator: 'server', // Simulates orchestrator unhealthy
+              'runware-template-ab': 'healthy',
+              'runware-template-cd': 'healthy',
+              'ai-visual-scene-creator': 'healthy',
+              timestamp: new Date().toISOString()
+            };
+
+            // Call the internal production method with mocked health status
+            const result = await (SimpleImageService as any).generateWithOrchestrator(
               scenario.payload.storyText,
               scenario.payload.userInfo,
               scenario.payload.sessionId,
               scenario.payload.pageNumber,
               scenario.payload.isPremium || false,
+              mockHealthStatus, // Pass mock to simulate orchestrator failure
               false, // forceTier1
-              true   // smartBypassEnabled - will perform real health check and trigger Direct Mode
+              true   // smartBypassEnabled
             );
 
             data = result;
