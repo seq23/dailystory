@@ -805,21 +805,31 @@ async function handleRequest(req: Request) {
         );
       }
       
-      const { logTierAttempt } = await import("../_shared/tierLogging.js");
-      await logTierAttempt(
-        supabase,
-        sessionId,
-        'template-cd-req',
-        templateResult.tier || 'template-cd',
-        'success',
-        {
-          positivePrompt: templateResult.positivePrompt,
-          negativePrompt: templateResult.negativePrompt,
-          edgeFunction: 'runware-template-cd',
-          pageNumber: pageNumber || 1,
-          imageUrl: result.imageURL
+      // ✅ NUCLEAR FIX: Defensive tierLogging wrapper (never crashes template generation)
+      try {
+        const tierLoggingModule = await import("../_shared/tierLogging.js");
+        if (tierLoggingModule?.logTierAttempt && typeof tierLoggingModule.logTierAttempt === 'function') {
+          await tierLoggingModule.logTierAttempt(
+            supabase,
+            sessionId,
+            'template-cd-req',
+            templateResult.tier || 'template-cd',
+            'success',
+            {
+              positivePrompt: templateResult.positivePrompt,
+              negativePrompt: templateResult.negativePrompt,
+              edgeFunction: 'runware-template-cd',
+              pageNumber: pageNumber || 1,
+              imageUrl: result.imageURL
+            }
+          );
+        } else {
+          console.warn('⚠️ [TEMPLATE-CD] tierLogging unavailable - skipping DB log (non-fatal)');
         }
-      );
+      } catch (loggingError: any) {
+        console.warn('⚠️ [TEMPLATE-CD] tierLogging failed (non-fatal):', loggingError.message);
+        // Continue execution - logging failure never crashes template generation
+      }
     } catch (loggingError: any) {
       console.warn('Failed to log success:', loggingError.message);
     }

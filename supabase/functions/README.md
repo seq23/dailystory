@@ -76,6 +76,13 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 7. **Parser Hardening**: Avoid trailing commas in function call argument lists. While modern JS/TS runtimes handle trailing commas in objects and arrays, Deno's graph parser may misinterpret them in function calls during deployment bundling, causing "Expected ',', got 'return'" errors.
 8. **Timeout and Abort Handling**: Edge functions calling external APIs (e.g., `RunwareWebSocketService`) must respect caller-provided `AbortSignal` for proper timeout handling. Pass `signal` to async operations and clean up listeners on completion. Default timeouts should be 20s for image generation to align with frontend expectations and prevent client-side fetch timeouts (typically 45s for supabase-js).
 9. **Dynamic Import Requirements**: Deno Deploy's bundler processes TypeScript at build time but expects JavaScript files for dynamic imports at runtime. Critical services in `_shared/` that use dynamic imports (via `memoizedImport`) must have both `.ts` (for type safety) and `.js` (for runtime) versions. Use two-tier fallback: `_shared/*.js` → `_vendor/*.js`. Example: `RunwareWebSocketService.ts/js` with vendor bundle ensures 100% availability.
+10. **TierLogging Crash Prevention (CRITICAL)**: Any edge function using `_shared/tierLogging.js` MUST implement the nuclear fix pattern to prevent module import failures from crashing business logic:
+    - Extract console-only logger as standalone function with zero `tierLogging` references
+    - Validate `tierLogging` module immediately after import with early return fallback
+    - Apply optional chaining (`?.`) to ALL `tierLogging` references
+    - Wrap DB logging operations in try/catch with silent failure
+    - Example: `runware-generate-image/index.ts` (lines 511-632)
+    - **Rationale**: Logging is observability, not critical path. Failures must never crash image generation.
 
 ## CRITICAL: Edge Function Boot Analysis
 

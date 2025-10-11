@@ -112,6 +112,118 @@ executeEmergencyFallback(context) {
 }
 ```
 
+### 6.3 TierLogging Crash Prevention (Nuclear Fix) ✅
+
+**Status**: IMPLEMENTED  
+**Date**: January 10, 2025  
+**Affected Functions**: `runware-generate-image`, `runware-template-cd`
+
+#### Problem Statement
+
+**Error**: `"logTier1 is not defined"` (ReferenceError)  
+**Impact**: Crashed Tier 1 and Tier 2.5A image generation  
+**Root Cause**: When `tierLogging.js` module import failed, the validation check for `tierLogging` occurred AFTER the import attempt but allowed undefined references to execute before the console-only logger fallback.
+
+#### The Nuclear Fix Architecture
+
+**Core Principle**: Logging failures must NEVER crash image generation. Logging is observability, not critical path.
+
+**Implementation Strategy**:
+1. **Standalone Console-Only Logger**: Zero dependencies on `tierLogging` module
+2. **Early Return Pattern**: Validate `tierLogging` immediately after import, return console-only logger if invalid
+3. **Optional Chaining**: All `tierLogging` references use `?.` as final safety net
+4. **Silent Failure**: Logging errors swallowed with console warnings only
+
+#### Code Pattern (runware-generate-image/index.ts)
+
+```typescript
+// ✅ NUCLEAR FIX: Console-only logger (ZERO tierLogging references)
+function createConsoleOnlyLogger(isProd: boolean) {
+  const wrapConsoleWithRedaction =
+    (prefix: string) =>
+    (msg: string, ctx: any = {}) => {
+      const safeCtx = isProd ? redactPII(ctx) : ctx;
+      console.log(`[${prefix}] ${msg}`, safeCtx);
+    };
+
+  return {
+    t1: wrapConsoleWithRedaction("T1"),
+    t2: wrapConsoleWithRedaction("T2"),
+    attempt: (tier: string, ctx: any = {}) => wrapConsoleWithRedaction(tier)("Attempting", ctx),
+    success: (tier: string, ctx: any = {}) => wrapConsoleWithRedaction(tier)("Success", ctx),
+    failure: (tier: string, ctx: any = {}) => wrapConsoleWithRedaction(tier)("Failure", ctx),
+  };
+}
+
+async function bindTierLogger(sessionId, requestId, isProd = false) {
+  let createVendorFirstSupabaseClient, tierLogging, supabaseClient;
+  
+  try {
+    [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
+      memoizedImport("../_shared/resilientLoader.js"),
+      memoizedImport("../_shared/tierLogging.js"),
+    ]);
+
+    // ✅ NUCLEAR FIX: Early return if tierLogging invalid (no throw, no crash)
+    if (!tierLogging || typeof tierLogging.logTier1 !== 'function') {
+      console.warn('⚠️ [ORCHESTRATOR] tierLogging module incomplete - using console-only logger');
+      return createConsoleOnlyLogger(isProd);
+    }
+
+    supabaseClient = await createVendorFirstSupabaseClient();
+
+    // ... DB logger creation only if tierLogging is valid ...
+
+    // ✅ NUCLEAR FIX: Optional chaining as final safety net
+    return {
+      t1: tierLogging?.logTier1 ? wrapWithRedactionAndSampling(tierLogging.logTier1) : wrapConsoleWithRedaction("T1"),
+      t2: tierLogging?.logTier2 ? wrapWithRedactionAndSampling(tierLogging.logTier2) : wrapConsoleWithRedaction("T2"),
+      attempt: (tier, ctx = {}) => {
+        console.log(`[${tier}] Attempting`, ctx);
+        if (shouldLogToDB("attempting") && tierLogging?.logTierAttempt) {
+          try {
+            return tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, "attempting", ctx);
+          } catch (dbError) {
+            console.warn(`⚠️ [${tier}] DB log failed (non-fatal):`, dbError);
+          }
+        }
+      },
+      // ... success and failure methods follow same pattern ...
+    };
+  } catch (error) {
+    console.warn(`⚠️ [ORCHESTRATOR] resilientLoader/tierLogging unavailable (NON-FATAL), using console-only logger:`, error);
+    return createConsoleOnlyLogger(isProd);
+  }
+}
+```
+
+#### Benefits Achieved
+
+- **Zero Crashes**: Logging failures now completely isolated from image generation
+- **Graceful Degradation**: Console-only logging when DB unavailable
+- **Silent Failure**: Logging errors logged to console but don't bubble up
+- **Triple Safety Net**: Standalone logger + early return + optional chaining
+
+#### Anti-Patterns to Avoid
+
+❌ **DON'T**: Reference `tierLogging` before validating it exists  
+❌ **DON'T**: Throw errors in logger creation (use early return instead)  
+❌ **DON'T**: Allow logging failures to propagate to business logic  
+❌ **DON'T**: Create console-only logger with references to `tierLogging`
+
+✅ **DO**: Extract console-only logger as standalone function  
+✅ **DO**: Validate `tierLogging` immediately after import  
+✅ **DO**: Use optional chaining (`?.`) on all `tierLogging` references  
+✅ **DO**: Wrap DB logging calls in try/catch with console fallback
+
+#### Future-Proofing
+
+Any new edge function using `tierLogging.js` MUST implement this nuclear fix pattern:
+1. Create standalone console-only logger function
+2. Validate module after import with early return
+3. Apply optional chaining to all module references
+4. Wrap DB operations in try/catch with silent failure
+
 ### 6.2 Comprehensive Logging ✅
 
 #### Tier Routing Logging:

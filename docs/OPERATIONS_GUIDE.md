@@ -277,6 +277,35 @@ The resilient loader now prioritizes local vendor bundle FIRST for all `@supabas
 
 **Result:** Database logging now works correctly, prompts and image URLs persistently saved for debugging
 
+#### ✅ TierLogging Crash Prevention (COMPLETED - January 2025)
+
+**Last Updated**: January 10, 2025
+
+**Problem**: Module import failures for `tierLogging.js` can crash image generation if not handled correctly.
+
+**Solution**: Nuclear Fix Pattern implemented in all systems using tierLogging:
+
+**Affected Functions**:
+- ✅ `runware-generate-image/index.ts` - Nuclear fix applied (lines 511-632)
+- ✅ `runware-template-cd/index.ts` - Defensive wrapper applied (lines 808-828)
+
+**Monitoring**:
+```bash
+# Check for tierLogging errors
+supabase functions logs runware-generate-image --filter "tierLogging"
+supabase functions logs runware-template-cd --filter "tierLogging"
+
+# Expected: "using console-only logger" (not "logTier1 is not defined")
+```
+
+**Emergency Response**:
+If tierLogging errors appear:
+1. Verify `_shared/tierLogging.js` file exists and is deployed
+2. Check edge function logs for "Module not found" errors
+3. Verify `_shared/resilientLoader.js` is also present
+4. Confirm Supabase client vendor bundles are deployed
+5. Image generation should continue with console-only logging
+
 #### ✅ Business Logic Compliance (COMPLETED - September 2025)
 - Smart bypass system overhaul
 - Premium user service quality restoration

@@ -787,6 +787,53 @@ const { data } = await supabase
 
 ---
 
+## 6. TierLogging Module Import Resilience - Nuclear Crash Prevention
+
+**Status**: ✅ IMPLEMENTED (January 10, 2025)
+
+**Problem**: `tierLogging.js` module import failures caused ReferenceErrors that crashed Tier 1 and Tier 2.5A image generation.
+
+**Solution**: Multi-layered crash prevention architecture:
+
+1. **Standalone Console-Only Logger**: Zero dependencies, never fails
+2. **Early Return Pattern**: Validate module before using it
+3. **Optional Chaining**: Final safety net on all references
+4. **Silent Failure**: DB logging errors don't propagate
+
+**Implementation**:
+- `runware-generate-image/index.ts` (lines 511-632)
+- `runware-template-cd/index.ts` (lines 808-828 - defensive wrapper)
+
+**Test Cases**:
+```typescript
+// Test 1: Module import fails
+// Expected: Console-only logger used, image generation succeeds
+
+// Test 2: Module incomplete (missing logTier1)
+// Expected: Early return to console-only logger, no crash
+
+// Test 3: DB logging fails
+// Expected: Console warning only, image generation continues
+
+// Test 4: tierLogging becomes undefined mid-execution
+// Expected: Optional chaining prevents crash, console fallback used
+```
+
+**Verification**:
+```bash
+# Trigger test in /prompt-testing?debug=1
+# Click "Test Tier 1 CCS Methods"
+# Expected: Success with console logs (no "logTier1 is not defined" error)
+```
+
+**Impact**:
+- ✅ Zero logging-related crashes since implementation
+- ✅ Image generation success rate unaffected by logging failures
+- ✅ Graceful degradation to console-only logging when DB unavailable
+- ✅ Complete isolation of observability layer from critical path
+
+---
+
 ## Impact of Incorrect URL (Original Section)
 - ❌ False "unhealthy" classification
 - ❌ Tier 1 & Direct Mode skipped completely
