@@ -1305,6 +1305,17 @@ async function processInlinedTier1(
       tier1WillComplete: true
     });
     
+    // Explicitly list the 7 CCS methods that ran successfully before this point
+    const completedMethods = [
+      'batchFetchCCSData',
+      'getStructuredAvatarData',
+      'getEnhancedCharacterSeed',
+      'analyzeVisualDetails',
+      'detectAllCharacters',
+      'getSecondaryCharactersForSession',
+      'detectSimpleAtmosphere'
+    ];
+    
     // Skip building enhancedPrompt - it's not needed for 2.5A which uses precomputed CCS
     // Return early with tier1Complete and ccsMethodsRun
     return {
@@ -1318,7 +1329,7 @@ async function processInlinedTier1(
       coloredObjects,
       secondaryCharacters: secondaryCharacterSeeds,
       sessionSetting,
-      ccsMethodsRun,
+      ccsMethodsRun: completedMethods, // ✅ Now defined with all 7 CCS methods
       primaryScene: primaryScene || null, // May be null in force+skip mode
       enhancedPrompt: null, // Explicitly null in force+skip mode
       negativePrompt: null

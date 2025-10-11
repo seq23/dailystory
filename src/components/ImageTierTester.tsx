@@ -2867,16 +2867,17 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
 
           // PATH 1: Frontend Bypass Test - Simulate orchestrator failure
           if (scenario.testType === 'FRONTEND_BYPASS') {
-            try {
-              // Try orchestrator with simulation flag
-              await supabase.functions.invoke('runware-generate-image', {
-                body: {
-                  ...scenario.payload,
-                  __testSimulateOrchestratorFailure: true // ✅ Clean simulation
-                }
-              });
-            } catch (orchestratorError) {
-              // Orchestrator "failed" (simulated), now call Direct Mode
+            // Try orchestrator with simulation flag
+            const orchestratorResult = await supabase.functions.invoke('runware-generate-image', {
+              body: {
+                ...scenario.payload,
+                __testSimulateOrchestratorFailure: true // ✅ Clean simulation
+              }
+            });
+            
+            // Check if orchestrator failed (simulated 503 or real error)
+            if (orchestratorResult.error || !orchestratorResult.data?.success) {
+              // Orchestrator failed, call Direct Mode as fallback (mimics production catch block)
               const directModeResult = await supabase.functions.invoke('ai-visual-scene-creator', {
                 body: {
                   ...scenario.payload,
@@ -2886,6 +2887,10 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
               
               data = directModeResult.data;
               error = directModeResult.error;
+            } else {
+              // Orchestrator succeeded (shouldn't happen with simulation flag)
+              data = orchestratorResult.data;
+              error = orchestratorResult.error;
             }
 
           } else {
