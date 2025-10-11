@@ -32,8 +32,25 @@ Navigate to `/prompt-testing?debug=1` to access the tier testing interface.
 
 #### Individual Tier Tests
 - **Force Tier 1**: Tests Tier 1 with fail-fast logic and Direct Mode fallback
-- **Tier 2.5A-D**: Tests `runware-template-ab` with different complexity levels
+- **Force Tier 2.5A**: Tests Template-AB Mode A with simulated AI failure (`skipTier1AI: true`)
+  - Skips AI scene extraction only
+  - Runs all CCS methods normally
+  - Generates real image via Template-AB Mode A
+  - Simulates production escalation scenario
+- **Force Tier 2.5B**: Tests Template-AB Mode B with simulated AI failure (`skipTier1AI: true`)
+  - Same CCS behavior as 2.5A
+  - Routes to Mode B (partial CCS)
+  - Generates real image
+- **Tier 2.5C/D**: Tests `runware-template-cd` with different complexity levels
 - **Tier 4**: Uses local placeholder generation (no edge function dependency)
+
+#### Force Tier 2.5A/B Behavior (October 2025)
+- **Flag Used**: `skipTier1AI: true` (NOT `test: true`)
+- **CCS Execution**: All 7 methods run (batchFetchCCSData, getStructuredAvatarData, etc.)
+- **AI Skipped**: Lines 1042-1056 in orchestrator bypassed
+- **Image Generation**: Real images generated (no dry run)
+- **Expected Badge**: "✅ tier-2.5A SUCCESS" or "✅ tier-2.5B SUCCESS"
+- **Log Pattern**: Look for `SKIP_TIER1_AI` in orchestrator logs
 
 #### Force Tier 1 Behavior
 - **Success Path 1**: Orchestrator succeeds → "Tier 1 Success" badge (green) with COMPLETE_TIER_1 template

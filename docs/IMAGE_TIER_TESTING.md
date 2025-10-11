@@ -35,6 +35,51 @@ Meta: Connectivity tester treats Tier 2.5A 503 NO_PRECOMPUTED_CCS as HEALTHY_ESC
 - Applies only to template endpoints on 503
 - No changes to production flows; this only affects the debug tester UI
 
+## Force Tier 2.5A/B Test Mode (October 2025)
+
+### Purpose
+The "Force Tier 2.5A" and "Force Tier 2.5B" buttons simulate production escalation scenarios where:
+- Tier 1 AI scene extraction fails
+- Full CCS Validation succeeds
+- Orchestrator escalates to template tiers
+- Real images are generated
+
+### Implementation: skipTier1AI Flag
+**Flag**: `skipTier1AI: true` (passed in payload)
+**Behavior**: Skips ONLY AI scene extraction (lines 1042-1056 in orchestrator)
+**Preserves**: All 7 CCS methods run normally (lines 782-1013)
+**Result**: `ctx.tier1` populated with complete CCS data, `primaryScene: undefined`
+
+### Production Flow Simulation
+1. Frontend sends: `skipDirectlyToTier: "2.5A"`, `skipTier1AI: true`
+2. Orchestrator runs `executeTier1()` → `processInlinedTier1()`
+3. Lines 782-1013: All CCS methods execute successfully
+4. Line 1042: Detects `skipTier1AI: true` → Skips AI scene extraction
+5. `primaryScene` remains `undefined` (simulates AI failure)
+6. `executeTier1` returns `{ ok: false, code: "T1_POOR_SCENE" }`
+7. Orchestrator proceeds to `executeDirectMode()` → Fails
+8. Direct Mode runs FULL CCS VALIDATION → `ctx.tier1.tier1Complete: true`
+9. Orchestrator proceeds to `executeT25A()` or `executeT25B()`
+10. Mode Selection detects complete CCS → Routes to appropriate mode
+11. Template-AB generates **REAL IMAGE**
+
+### Expected Logs
+```
+🎯 [requestId] SKIP_TIER1_AI: Simulating AI failure, proceeding without primaryScene
+✅ [requestId] Full CCS Validation complete (ctx.tier1 populated)
+🎯 [requestId] Mode Selection: tier1Complete=true → Mode A (for 2.5A)
+✅ tier-2.5A SUCCESS
+```
+
+### Differences from Connectivity Tests
+| Feature | Connectivity Test | Force Tier 2.5A/B Test |
+|---------|-------------------|------------------------|
+| Flag | `dryRun: true` | `skipTier1AI: true` |
+| AI Scene Extraction | Skipped | Skipped |
+| CCS Methods | Skipped | **Run Normally** |
+| Image Generation | Skipped | **Generated** |
+| Purpose | Health check | Production flow simulation |
+
 ## SEO
 - Images in this doc should include descriptive alt text if added later
 

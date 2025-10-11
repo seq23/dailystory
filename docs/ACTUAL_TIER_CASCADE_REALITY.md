@@ -88,6 +88,19 @@ This document reflects the **actual codebase behavior** of the image generation 
   - Tier 1 success, OR
   - CCS_RETRY success
 
+### 4. skipTier1AI Test Mode (October 2025)
+- **Location:** Line 1042 in `processInlinedTier1()`
+- **Purpose:** Testing-only flag to simulate AI scene extraction failure
+- **Flag:** `skipTier1AI: true` (payload parameter)
+- **Behavior:** 
+  - All CCS methods (lines 782-1013) run normally
+  - AI scene extraction (lines 1042-1056) is skipped
+  - `primaryScene` set to `undefined`
+  - Results in natural escalation through cascade
+- **Use Case:** Force Tier 2.5A/B test buttons in ImageTierTester
+- **Production Impact:** None - only affects forced test paths
+- **Log Pattern:** `🎯 SKIP_TIER1_AI: Simulating AI failure`
+
 ---
 
 ## Timeout Budget Analysis (Updated October 2025)

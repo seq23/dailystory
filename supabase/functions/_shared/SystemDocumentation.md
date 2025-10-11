@@ -45,6 +45,9 @@
 - DO maintain proper error handling and logging at each tier
 - DO ensure directErrorMessage is properly guarded when Direct Mode wasn't attempted
 
+## Test-Only Features:
+- **skipTier1AI flag**: Used by Force Tier 2.5A/B test buttons to skip AI scene extraction while preserving CCS execution. Simulates AI failure for testing template tier escalation. Never used in production flows.
+
 # COMPREHENSIVE IMAGE GENERATION SYSTEM - HARDENED ARCHITECTURE
 
 ## SYSTEM STATUS: ✅ FULLY OPERATIONAL (Updated September 23, 2025)

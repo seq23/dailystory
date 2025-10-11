@@ -112,6 +112,8 @@ Tier 2.5D: Template CD Emergency (Synthesized content)
 
 **Timeout Budget**: Orchestrator has 40s total budget (Tier 1 + Direct Mode share this), each subsequent tier has independent timeout
 
+**Test Mode (skipTier1AI)**: Force Tier 2.5A/B test buttons use `skipTier1AI: true` flag to simulate AI failure while preserving CCS execution. This allows testing template tier behavior with complete CCS data. Production flows never use this flag.
+
 ## Tier 1: AI Visual Scene Creator (`ai-visual-scene-creator`)
 
 **Purpose**: Generate comprehensive visual schemas using GPT-4o-mini with character consistency and cultural context.
