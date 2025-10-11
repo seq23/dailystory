@@ -1297,6 +1297,34 @@ async function processInlinedTier1(
     throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
   }
 
+  // Skip primaryScene validation when in force test mode with skipTier1AI
+  if (payload.forceCompleteTier1 && payload.skipTier1AI) {
+    console.log(`🎯 [FORCE_TEST_MODE] Bypassing scene validation (forceCompleteTier1 + skipTier1AI)`, {
+      primarySceneLength: primaryScene?.length || 0,
+      willSkipEnhancedPrompt: true,
+      tier1WillComplete: true
+    });
+    
+    // Skip building enhancedPrompt - it's not needed for 2.5A which uses precomputed CCS
+    // Return early with tier1Complete and ccsMethodsRun
+    return {
+      tier1Complete: true,
+      aiSchema,
+      characterSeed,
+      culturalBundle,
+      structuredAvatarData,
+      latestClothing,
+      mainCharacterAppearance,
+      coloredObjects,
+      secondaryCharacters: secondaryCharacterSeeds,
+      sessionSetting,
+      ccsMethodsRun,
+      primaryScene: primaryScene || null, // May be null in force+skip mode
+      enhancedPrompt: null, // Explicitly null in force+skip mode
+      negativePrompt: null
+    };
+  }
+  
   if (!primaryScene || primaryScene.length < 30) {
     const error = `primaryScene invalid (length: ${primaryScene?.length || 0})`;
     logTier1Step("Template Building", "failed", error);
@@ -1697,14 +1725,26 @@ const executeDirectMode: TierFn = async (ctx) => {
         return { ok: false, code: "DM_NO_IMAGE", reason: "No image URL returned" };
       }
       
-      ctx.directMode = { imageURL: data.imageURL, seed: data.seed, primaryScene: data.primaryScene };
+      // Propagate primaryScene from aiSchema if missing in main data
+      let primaryScene = data.primaryScene;
+      if (!primaryScene && data.aiSchema?.primaryScene) {
+        primaryScene = data.aiSchema.primaryScene;
+        console.log(`🔄 [${ctx.requestId}] Direct Mode: Propagating primaryScene from aiSchema`);
+      }
+      // Backup: generate minimal primaryScene from pageText if still missing
+      if (!primaryScene && ctx.payload.pageText) {
+        primaryScene = ctx.payload.pageText.substring(0, 200);
+        console.log(`🔄 [${ctx.requestId}] Direct Mode: Generated minimal primaryScene from pageText`);
+      }
+      
+      ctx.directMode = { imageURL: data.imageURL, seed: data.seed, primaryScene };
       ctx.tierLogger.success("DIRECT_MODE", { imageURL: data.imageURL });
       
       // Enhanced success logging
       console.log(`✅ [${ctx.requestId}] DIRECT_MODE: SUCCESS`, {
         imageURL: data.imageURL,
         seed: data.seed,
-        primaryScene: data.primaryScene?.substring(0, 50),
+        primaryScene: primaryScene?.substring(0, 50),
         processingTimeMs: Date.now() - startMs,
         tier: 'DIRECT_MODE'
       });
@@ -1720,8 +1760,8 @@ const executeDirectMode: TierFn = async (ctx) => {
           imageURL: data.imageURL,
           tier: "DIRECT_MODE",
           resultType: "DIRECT_MODE_SUCCESS",
-          primaryScene: data.primaryScene,  // ✅ ADD: primaryScene text for display
-          seed: data.seed,                  // ✅ ADD: seed for debugging
+          primaryScene,  // ✅ Use propagated primaryScene
+          seed: data.seed,
           metadata: { 
             cascadeHistory: [
               tier1FailureDetails ? `❌ Tier 1 Failed: ${tier1FailureDetails.failureCategory}` : "⚠️ Tier 1 Failed",
@@ -1729,8 +1769,8 @@ const executeDirectMode: TierFn = async (ctx) => {
             ],
             tier1FailureDetails,
             tier1Timeline: tier1FailureDetails?.tier1Timeline || [],
-            directModeEntryPoint: 'ORCHESTRATOR', // Track orchestrator-initiated Direct Mode for testing diagnostics
-            primaryScene: data.primaryScene,  // ✅ ADD: Also in metadata for consistency
+            directModeEntryPoint: 'ORCHESTRATOR',
+            primaryScene,  // ✅ Use propagated primaryScene
           },
         },
         meta: { tier: "DIRECT_MODE", ms: Date.now() - startMs }

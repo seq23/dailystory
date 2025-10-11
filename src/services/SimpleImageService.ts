@@ -1044,6 +1044,92 @@ export class SimpleImageService {
         throw new Error(`AI Visual Scene Creator error: ${error.message}`);
       }
 
+      // Check if ai-visual-scene-creator returned success with primaryScene but no image (sceneOnly mode)
+      if (result?.success && result?.primaryScene && !result?.imageURL && result?.sceneOnly) {
+        DebugLogger.log('image', '🎯 Direct Mode: Got primaryScene without image, escalating to template-cd', {
+          primarySceneLength: result.primaryScene?.length || 0,
+          sceneOnly: true
+        });
+        
+        // Try template-cd with complexity C first
+        try {
+          const templateResult = await supabase.functions.invoke('runware-template-cd', {
+            body: {
+              storyText,
+              pageText: storyText,
+              userInfo,
+              sessionId: normalizedSessionId,
+              pageNumber,
+              templateComplexity: 'C',
+              primaryScene: result.primaryScene
+            }
+          });
+          
+          if (templateResult.data?.success && templateResult.data?.imageURL) {
+            DebugLogger.log('image', '✅ Direct Mode: Template C succeeded after scene-only');
+            const imageURL = templateResult.data.imageURL;
+            OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
+            
+            try {
+              window.dispatchEvent(new CustomEvent('image:generation:complete'));
+            } catch {}
+            
+            return {
+              success: true,
+              url: imageURL,
+              imageURL: imageURL,
+              tier: 'DIRECT_MODE_TEMPLATE_C',
+              metadata: {
+                ...templateResult.data,
+                primaryScene: result.primaryScene,
+                escalatedFrom: 'ai-visual-scene-creator'
+              }
+            };
+          }
+          
+          // Try complexity D if C failed
+          DebugLogger.log('image', '⚠️ Direct Mode: Template C failed, trying D');
+          const templateDResult = await supabase.functions.invoke('runware-template-cd', {
+            body: {
+              storyText,
+              pageText: storyText,
+              userInfo,
+              sessionId: normalizedSessionId,
+              pageNumber,
+              templateComplexity: 'D',
+              primaryScene: result.primaryScene
+            }
+          });
+          
+          if (templateDResult.data?.success && templateDResult.data?.imageURL) {
+            DebugLogger.log('image', '✅ Direct Mode: Template D succeeded after scene-only');
+            const imageURL = templateDResult.data.imageURL;
+            OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
+            
+            try {
+              window.dispatchEvent(new CustomEvent('image:generation:complete'));
+            } catch {}
+            
+            return {
+              success: true,
+              url: imageURL,
+              imageURL: imageURL,
+              tier: 'DIRECT_MODE_TEMPLATE_D',
+              metadata: {
+                ...templateDResult.data,
+                primaryScene: result.primaryScene,
+                escalatedFrom: 'ai-visual-scene-creator'
+              }
+            };
+          }
+        } catch (templateError) {
+          DebugLogger.error('image', 'Direct Mode: Template escalation failed', templateError);
+        }
+        
+        // If all templates failed, throw error
+        throw new Error('No image returned after template escalation');
+      }
+
       // Phase A: Multi-Field Image URL Validation - Handle all API response variations  
       const imageURL = extractImageUrl(result);
       const isSuccess = extractSuccessValue(result);

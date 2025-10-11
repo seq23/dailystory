@@ -1295,7 +1295,15 @@ serve((req) => {
 
         // Skip image generation in test mode
         if (!testMode) {
-          const runware = await callRunwareTemplateCD(templatePayload, requestAbort);
+          // Try complexity C first, then D if fails
+          let runware = await callRunwareTemplateCD(templatePayload, requestAbort);
+          
+          if (!runware.ok && templatePayload.templateComplexity === 'C') {
+            console.log(`⚠️ [${requestId}] Direct Mode: Template C failed, trying D`, { error: runware.error });
+            templatePayload.templateComplexity = 'D';
+            runware = await callRunwareTemplateCD(templatePayload, requestAbort);
+          }
+          
           if (runware.ok) {
             imageURL = runware.imageURL;
             tier = 'DIRECT_MODE';
@@ -1310,9 +1318,13 @@ serve((req) => {
         }
       }
 
+      // Add sceneOnly flag when Direct Mode has primaryScene but no image
+      const sceneOnly = directMode && gen.visualSchema.primaryScene && !imageURL;
+      
       const response = {
         success: true,
         tier,
+        sceneOnly, // Flag for caller to escalate to template if needed
         primaryScene: gen.visualSchema.primaryScene,
         enhancedPrompt: gen.visualSchema.primaryScene,
         negativePrompt: 'blurry, low quality, dark, scary, violent, inappropriate, adult content, text, watermarks',
