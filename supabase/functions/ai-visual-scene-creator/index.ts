@@ -1301,21 +1301,15 @@ serve((req) => {
 
         // Skip image generation in test mode
         if (!testMode) {
-          // Try complexity C first, then D if fails
-          let runware = await callRunwareTemplateCD(templatePayload, requestAbort);
-          
-          if (!runware.ok && templatePayload.templateComplexity === 'C') {
-            console.log(`⚠️ [${requestId}] Direct Mode: Template C failed, trying D`, { error: runware.error });
-            templatePayload.templateComplexity = 'D';
-            runware = await callRunwareTemplateCD(templatePayload, requestAbort);
-          }
+          // Try Template C only (Template D is reserved for frontend's generateWithTemplate Tier 2.5D)
+          const runware = await callRunwareTemplateCD(templatePayload, requestAbort);
           
           if (runware.ok) {
             imageURL = runware.imageURL;
             tier = 'DIRECT_MODE';
             runwareDebugData = { templateUsed: 'runware-template-cd', templateComplexity: 'C', templatePayloadSent: templatePayload };
           } else {
-            console.error(`❌ [${requestId}] Direct Mode failed, falling back to Scene-Only: ${runware.error}`);
+            console.error(`❌ [${requestId}] Direct Mode Template C failed, returning Scene-Only for frontend escalation: ${runware.error}`);
             tier = 'TIER_1_SCENE_ONLY';
           }
         } else {

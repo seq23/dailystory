@@ -2918,6 +2918,9 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             // Assert primaryScene presence for Direct Mode tests
             const isDirectModeTest = scenario.name.includes('Direct Mode');
             if (isDirectModeTest && !primaryScene) {
+              console.error('❌ Direct Mode Response Structure:', JSON.stringify(data, null, 2).substring(0, 500));
+              console.error('❌ Available keys:', Object.keys(data));
+              console.error('❌ Metadata keys:', data.metadata ? Object.keys(data.metadata) : 'no metadata');
               throw new Error('❌ Direct Mode test failed: primaryScene missing from response');
             }
 
