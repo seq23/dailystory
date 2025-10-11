@@ -1328,21 +1328,36 @@ async function processInlinedTier1(
     // Template-ab strictly validates characterSeed (lines 1115-1128)
     // If CCS methods partially failed, create a minimal valid seed for testing
     if (!characterSeed || typeof characterSeed !== 'object' || Object.keys(characterSeed).length === 0) {
-      console.warn(`⚠️ [${requestId}] [FORCE_TEST_MODE] characterSeed invalid, creating minimal test seed`);
+      console.warn(`⚠️ [${requestId}] [FORCE_TEST_MODE] characterSeed invalid, creating comprehensive test seed`);
+      
+      const testAge = userInfo?.age || 8;
+      const testName = userInfo?.name || avatarIdentity?.name || 'Test User';
+      const testSkinTone = culturalBundle?.features?.skinTone || avatarIdentity?.skinTone || 'medium';
+      const testHairColor = culturalBundle?.hair?.color || avatarIdentity?.hairColor || 'brown';
+      const testAvatarType = avatarIdentity?.type || 'gender-neutral';
+      const testEthnicity = structuredAvatarData?.ethnicity || 'general';
+      
       characterSeed = {
-        name: userInfo?.name || avatarIdentity?.name || 'Test User',
-        skinTone: culturalBundle?.features?.skinTone || avatarIdentity?.skinTone || 'medium',
-        hairColor: culturalBundle?.hair?.color || avatarIdentity?.hairColor || 'brown',
+        seed: Math.floor(Math.random() * 1000000),
+        name: testName,
+        characterName: testName,
+        avatarType: testAvatarType,
+        skinTone: testSkinTone,
+        hairColor: testHairColor,
         hairStyle: culturalBundle?.hair?.style || avatarIdentity?.hairStyle || 'short',
         ageGroup: 'child',
+        age: testAge,
+        ethnicity: testEthnicity,
         consistencyId: `test-${sessionId}-${Date.now()}`,
-        gender: avatarIdentity?.type || 'gender-neutral',
+        gender: testAvatarType,
         physicalTraits: {
-          hair: culturalBundle?.hair || { color: 'brown', style: 'short' },
-          skinFeatures: culturalBundle?.features || { skinTone: 'medium' }
-        }
+          hair: culturalBundle?.hair || { color: testHairColor, style: 'short' },
+          skinFeatures: culturalBundle?.features || { skinTone: testSkinTone }
+        },
+        skinFeatures: `friendly ${testSkinTone} skin tone with natural features`,
+        characterDescription: `${testName}, age ${testAge}, ${testHairColor} hair, ${testSkinTone} skin tone, ${testEthnicity} background`
       };
-      console.log(`✅ [${requestId}] [FORCE_TEST_MODE] Created minimal characterSeed:`, characterSeed);
+      console.log(`✅ [${requestId}] [FORCE_TEST_MODE] Created comprehensive characterSeed with ${Object.keys(characterSeed).length} fields`);
     }
     
     // Skip building enhancedPrompt - it's not needed for 2.5A which uses precomputed CCS
@@ -3116,14 +3131,26 @@ serve(async (req) => {
       } else {
         // All systems healthy - run full cascade
         console.log(`✅ [${requestId}] All systems healthy - executing full cascade from Tier 1`);
-        tiers = [
-          { name: "TIER_1", fn: executeTier1 },
-          { name: "DIRECT_MODE", fn: executeDirectMode },
-          { name: "T25A", fn: executeT25A, precondition: (ctx) => !!ctx.tier1?.characterSeed && !!ctx.tier1?.latestClothing },
-          { name: "T25B", fn: executeT25B },
-          { name: "T25C", fn: executeT25C },
-          { name: "T25D", fn: executeT25D }
-        ];
+        
+        // Test-only guard: Enforce Direct Mode for "Orchestrator Fallback" test
+        if (payload.test === true && payload.__testSimulateT1Failure === true) {
+          console.log(`🧪 [${requestId}] TEST MODE: Forcing Direct Mode path for primaryScene validation`);
+          tiers = [
+            { name: "TIER_1", fn: executeTier1 },
+            { name: "DIRECT_MODE", fn: executeDirectMode },
+            // Stop cascade here - if DM fails, test should fail (no template fallback)
+          ];
+        } else {
+          // Normal production cascade
+          tiers = [
+            { name: "TIER_1", fn: executeTier1 },
+            { name: "DIRECT_MODE", fn: executeDirectMode },
+            { name: "T25A", fn: executeT25A, precondition: (ctx) => !!ctx.tier1?.characterSeed && !!ctx.tier1?.latestClothing },
+            { name: "T25B", fn: executeT25B },
+            { name: "T25C", fn: executeT25C },
+            { name: "T25D", fn: executeT25D }
+          ];
+        }
       }
       
       // Store health routing decision in context
