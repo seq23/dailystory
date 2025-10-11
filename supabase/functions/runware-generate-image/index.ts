@@ -1541,9 +1541,9 @@ const executeTier1: TierFn = async (ctx) => {
         }
       });
     }
-      }
-    } else {
-      // Force test mode: Skip scene validation (AI intentionally bypassed)
+    
+    // Force test mode: Skip scene validation (AI intentionally bypassed)
+    if (ctx.payload.forceCompleteTier1 && ctx.payload.skipTier1AI) {
       console.log(`🎯 [FORCE_TEST_MODE] Bypassing scene validation (forceCompleteTier1 + skipTier1AI)`, {
         tier1Complete: true,
         ccsMethodsRan: 7,
@@ -1721,7 +1721,59 @@ const executeDirectMode: TierFn = async (ctx) => {
         return { ok: false, code: "DM_INVOKE_FAILED", reason: error?.message || "Direct mode failed" };
       }
       
-      if (!data.imageURL) {
+      // Handle scene-only response (primaryScene but no imageURL)
+      if (!data.imageURL && data.sceneOnly && data.primaryScene) {
+        console.log(`🎯 [${ctx.requestId}] Direct Mode: ai-visual-scene-creator returned scene-only, escalating to template-cd`);
+        
+        // Try template-cd with complexity C first
+        const templatePayload = {
+          pageText: ctx.payload.pageText || ctx.payload.storyText,
+          userInfo: ctx.payload.userInfo,
+          sessionId: ctx.payload.sessionId,
+          pageNumber: ctx.payload.pageNumber,
+          templateComplexity: 'C',
+          primaryScene: data.primaryScene
+        };
+        
+        const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+        const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        
+        let templateResult = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-cd`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SERVICE_ROLE_KEY}`
+          },
+          body: JSON.stringify(templatePayload)
+        });
+        
+        let templateData = await templateResult.json();
+        
+        // If C fails, try D
+        if (!templateData?.success || !templateData?.imageURL) {
+          console.log(`⚠️ [${ctx.requestId}] Direct Mode: Template C failed, trying D`);
+          templatePayload.templateComplexity = 'D';
+          
+          templateResult = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-cd`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SERVICE_ROLE_KEY}`
+            },
+            body: JSON.stringify(templatePayload)
+          });
+          
+          templateData = await templateResult.json();
+        }
+        
+        if (templateData?.success && templateData?.imageURL) {
+          data.imageURL = templateData.imageURL;
+          data.tier = 'DIRECT_MODE_TEMPLATE_' + templatePayload.templateComplexity;
+          console.log(`✅ [${ctx.requestId}] Direct Mode: Template ${templatePayload.templateComplexity} succeeded`);
+        } else {
+          return { ok: false, code: "DM_ESCALATION_FAILED", reason: "Template escalation failed after scene-only" };
+        }
+      } else if (!data.imageURL) {
         return { ok: false, code: "DM_NO_IMAGE", reason: "No image URL returned" };
       }
       
