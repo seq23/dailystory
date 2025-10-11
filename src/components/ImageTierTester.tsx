@@ -12,7 +12,8 @@ import { extractImageUrl, extractSuccessValue } from '@/utils/typeGuards';
 import { DebugLogger } from '@/services/DebugLogger';
 import { HealthCheckService } from '@/services/HealthCheckService';
 import { ImageFallbackService } from '@/services/ImageFallbackService';
-import { Sparkles, Zap, Network, Search, Camera, RefreshCw, RotateCcw, Clock, AlertTriangle, CheckCircle, Settings } from 'lucide-react';
+import { Sparkles, Zap, Network, Search, Camera, RefreshCw, RotateCcw, Clock, AlertTriangle, CheckCircle, Settings, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SimpleImageService } from '@/services/SimpleImageService';
 import { TimerToggleItem } from '@/components/ui/timer-toggle-item';
 import { NetflixSessionManager } from '@/services/NetflixSessionManager';
@@ -3268,26 +3269,34 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
               Test Connectivity
             </Button>
             
-            <div className="space-y-2">
-              <Button
-                onClick={testBatchProductionCascade}
-                disabled={isLoading}
-                variant="outline"
-                className="flex items-center gap-2 w-full"
-              >
-                <CheckCircle className="h-4 w-4" />
-                Batch Tier Testing (6 Isolated Tier Tests)
-              </Button>
-              <p className="text-xs text-muted-foreground pl-2">
-                Tests all tier scenarios including BOTH Direct Mode paths:
-                <br />• Direct Mode (Frontend Bypass - orchestrator unhealthy)
-                <br />• Direct Mode (Orchestrator Fallback - Tier 1 forced failure)
-                <br />• Tier 1 (natural cascade)
-                <br />• Force Tier 2.5A-D
-                <br />
-                <br />Shows images + primaryScene text for Tier 1 and both Direct Mode paths.
-              </p>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={testBatchProductionCascade}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="flex items-center gap-2 w-full"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Batch Tier Testing (6 Isolated Tier Tests)
+                    <Info className="h-3 w-3 ml-1 opacity-70" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-sm">
+                  <div className="text-xs space-y-1">
+                    <p className="font-semibold">Tests all tier scenarios including BOTH Direct Mode paths:</p>
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      <li>Direct Mode (Frontend Bypass - orchestrator unhealthy)</li>
+                      <li>Direct Mode (Orchestrator Fallback - Tier 1 forced failure)</li>
+                      <li>Tier 1 (natural cascade)</li>
+                      <li>Force Tier 2.5A-D</li>
+                    </ul>
+                    <p className="pt-1">Shows images + primaryScene text for Tier 1 and both Direct Mode paths.</p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             
             <Button
               onClick={testAISCHealthEndpoint}
