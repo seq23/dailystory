@@ -1316,6 +1316,35 @@ async function processInlinedTier1(
       'detectSimpleAtmosphere'
     ];
     
+    // ============= DIAGNOSTIC LOGGING FOR FORCE TEST MODE =============
+    console.log(`🔍 [${requestId}] [FORCE_TEST_MODE] characterSeed validation:`, {
+      hasCharacterSeed: !!characterSeed,
+      characterSeedType: typeof characterSeed,
+      characterSeedKeys: characterSeed ? Object.keys(characterSeed) : [],
+      characterSeedSample: characterSeed ? JSON.stringify(characterSeed).substring(0, 300) : null
+    });
+    
+    // ============= ENSURE VALID CHARACTER SEED FOR TEMPLATE-AB =============
+    // Template-ab strictly validates characterSeed (lines 1115-1128)
+    // If CCS methods partially failed, create a minimal valid seed for testing
+    if (!characterSeed || typeof characterSeed !== 'object' || Object.keys(characterSeed).length === 0) {
+      console.warn(`⚠️ [${requestId}] [FORCE_TEST_MODE] characterSeed invalid, creating minimal test seed`);
+      characterSeed = {
+        name: userInfo?.name || avatarIdentity?.name || 'Test User',
+        skinTone: culturalBundle?.features?.skinTone || avatarIdentity?.skinTone || 'medium',
+        hairColor: culturalBundle?.hair?.color || avatarIdentity?.hairColor || 'brown',
+        hairStyle: culturalBundle?.hair?.style || avatarIdentity?.hairStyle || 'short',
+        ageGroup: 'child',
+        consistencyId: `test-${sessionId}-${Date.now()}`,
+        gender: avatarIdentity?.type || 'gender-neutral',
+        physicalTraits: {
+          hair: culturalBundle?.hair || { color: 'brown', style: 'short' },
+          skinFeatures: culturalBundle?.features || { skinTone: 'medium' }
+        }
+      };
+      console.log(`✅ [${requestId}] [FORCE_TEST_MODE] Created minimal characterSeed:`, characterSeed);
+    }
+    
     // Skip building enhancedPrompt - it's not needed for 2.5A which uses precomputed CCS
     // Return early with tier1Complete and ccsMethodsRun
     return {
