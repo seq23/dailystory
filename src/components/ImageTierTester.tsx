@@ -37,7 +37,7 @@ interface TestResult {
       status?: number;
       triageResult?: string;
     }; // NEW: Health check results
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO'; // Enhanced test types
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO' | 'FRONTEND_BYPASS' | 'ORCHESTRATOR_CALL'; // Enhanced test types
     timeoutTest?: boolean;
     abortReason?: string;
     // AI Scene Creator specific
@@ -2707,30 +2707,82 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
     setResults([]);
     
     try {
-      DebugLogger.log('image', '🎯 Batch Tier Testing: Production Cascade Scenarios');
+      DebugLogger.log('image', '🎯 Batch Tier Testing: 6 Isolated Tier Tests');
       
-      // All scenarios route through the orchestrator (runware-generate-image)
+      const buildUserInfo = () => ({
+        name: "TestHero",
+        age: 10,
+        ethnicity: "adventurer",
+        skinTone: "medium",
+        avatar: { type: "hero", skinTone: "medium" },
+        userTier: "premium"
+      });
+
+      // 6 Isolated Test Scenarios
       const productionScenarios = [
+        // PATH 1: Frontend Bypass to Direct Mode (Orchestrator Unhealthy)
         {
-          name: 'Full Natural Cascade (E2E)',
-          description: 'Complete production flow: Tier 1 → DM → 2.5A → 2.5B → 2.5C → 2.5D',
+          name: 'Direct Mode (Frontend Bypass)',
+          description: 'Frontend → ai-visual-scene-creator (orchestrator unhealthy)',
+          testType: 'FRONTEND_BYPASS' as const,
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
-            sessionId: `batch-test-e2e-${Date.now()}`,
+            sessionId: `batch-test-dm-frontend-${Date.now()}`,
+            pageNumber: 1,
+            isPremium: true,
+            // Mock unhealthy orchestrator for frontend bypass
+            healthStatus: { orchestrator: 'server', runware: 'healthy', serviceDeps: 'healthy' }
+          },
+          expectedBehavior: 'Frontend detects unhealthy orchestrator → calls ai-visual-scene-creator directly → image + primaryScene',
+          criticalFailure: 'Frontend did not bypass orchestrator'
+        },
+        
+        // PATH 2: Orchestrator Fallback to Direct Mode
+        {
+          name: 'Direct Mode (Orchestrator Fallback)',
+          description: 'Orchestrator → Tier 1 forced skip → Direct Mode',
+          testType: 'ORCHESTRATOR_CALL' as const,
+          payload: {
+            storyText: testStoryText,
+            userInfo: buildUserInfo(),
+            sessionId: `batch-test-dm-orch-${Date.now()}`,
             pageNumber: 1,
             storyId: crypto.randomUUID(),
             isGuestUser: false,
             difficultyLevel: 'medium',
+            skipTier1AI: true,
             test: true
-            // No skip flags - natural cascade
           },
-          expectedBehavior: 'Success at any tier (image generated)',
-          criticalFailure: 'No image after all tiers exhausted'
+          expectedBehavior: 'Tier 1 skipped → Direct Mode runs → image + primaryScene',
+          criticalFailure: 'Direct Mode did not run'
         },
+
+        // Tier 1 Natural Cascade (No Force)
+        {
+          name: 'Tier 1 (Natural Cascade)',
+          description: 'Let natural cascade run, observe which tier succeeds',
+          testType: 'ORCHESTRATOR_CALL' as const,
+          payload: {
+            storyText: testStoryText,
+            userInfo: buildUserInfo(),
+            sessionId: `batch-test-tier1-${Date.now()}`,
+            pageNumber: 1,
+            storyId: crypto.randomUUID(),
+            isGuestUser: false,
+            difficultyLevel: 'medium',
+            skipTier1AI: false,
+            test: true
+          },
+          expectedBehavior: 'CCS healthy: Tier 1 succeeds. CCS broken: Tier 1 fails → Direct Mode succeeds',
+          criticalFailure: 'No image generated'
+        },
+
+        // Template Tiers 2.5A-D
         {
           name: 'Force Tier 2.5A',
-          description: 'Test 2.5A with CCS prep (STOPS at 2.5A)',
+          description: 'Tier 1 prep → Jump to 2.5A (STOPS at 2.5A)',
+          testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
@@ -2742,12 +2794,13 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             skipDirectlyToTier: '2.5A',
             skipTier1AI: true
           },
-          expectedBehavior: 'Success if CCS complete, Error if CCS broken',
-          criticalFailure: 'Continues cascade (should STOP at 2.5A)'
+          expectedBehavior: 'CCS healthy: 2.5A succeeds. CCS broken: 2.5A fails (requires CCS)',
+          criticalFailure: 'Continued cascade (should STOP at 2.5A)'
         },
         {
           name: 'Force Tier 2.5B',
-          description: 'Test 2.5B with inline data (STOPS at 2.5B)',
+          description: 'Tier 1 prep → Jump to 2.5B (STOPS at 2.5B)',
+          testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
@@ -2760,11 +2813,12 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             skipTier1AI: true
           },
           expectedBehavior: 'ALWAYS succeeds (logs CCS errors but generates image)',
-          criticalFailure: 'Fails to generate image'
+          criticalFailure: 'Failed to generate image'
         },
         {
           name: 'Force Tier 2.5C',
-          description: 'Test 2.5C simplified template (STOPS at 2.5C)',
+          description: 'Tier 1 prep → Jump to 2.5C (STOPS at 2.5C)',
+          testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
@@ -2777,11 +2831,12 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             skipTier1AI: true
           },
           expectedBehavior: 'Success if 2.5C execution succeeds',
-          criticalFailure: 'Continues cascade (should STOP at 2.5C)'
+          criticalFailure: 'Continued cascade (should STOP at 2.5C)'
         },
         {
           name: 'Force Tier 2.5D',
-          description: 'Test 2.5D emergency fallback (STOPS at 2.5D)',
+          description: 'Tier 1 prep → Jump to 2.5D (STOPS at 2.5D)',
+          testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
@@ -2794,7 +2849,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             skipTier1AI: true
           },
           expectedBehavior: 'ALWAYS succeeds (nuclear fallback)',
-          criticalFailure: 'Fails to generate image'
+          criticalFailure: 'Failed to generate image'
         }
       ];
 
@@ -2808,20 +2863,58 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           DebugLogger.log('image', `Testing: ${scenario.name}`);
           console.log(`🎯 ${scenario.name}: ${scenario.description}`);
 
-          const { data, error } = await supabase.functions.invoke('runware-generate-image', {
-            body: scenario.payload
-          });
+          let data: any;
+          let error: any;
+
+          // PATH 1: Frontend Bypass Test
+          if (scenario.testType === 'FRONTEND_BYPASS') {
+            const { SimpleImageService } = await import('@/services/SimpleImageService');
+            
+            const result = await SimpleImageService.generateImage({
+              storyText: scenario.payload.storyText,
+              userInfo: scenario.payload.userInfo,
+              sessionId: scenario.payload.sessionId,
+              pageNumber: scenario.payload.pageNumber,
+              isPremium: scenario.payload.isPremium,
+              healthStatus: scenario.payload.healthStatus
+            });
+
+            data = result;
+            error = result.success ? null : { message: result.error };
+
+          } else {
+            // PATH 2: Orchestrator Call
+            const response = await supabase.functions.invoke('runware-generate-image', {
+              body: scenario.payload
+            });
+            data = response.data;
+            error = response.error;
+          }
 
           const processingTime = Date.now() - scenarioStartTime;
-          
+
+          if (error) {
+            throw new Error(error.message || 'Unknown error');
+          }
+
           if (data?.success && data?.imageURL) {
-            // Extract cascade history from response
             const cascadeHistory = data.metadata?.cascadeHistory || data.cascadeHistory || [];
             const actualTier = data.tier || data.usedTier || 'UNKNOWN';
             const primaryScene = data.primaryScene || 
-                               data.metadata?.primaryScene || 
-                               data.tier1?.primaryScene || 
-                               data.directMode?.primaryScene;
+                                data.metadata?.primaryScene || 
+                                data.tier1?.primaryScene || 
+                                data.directMode?.primaryScene;
+
+            // Special handling for Tier 1 Natural Cascade to detect CCS health
+            let ccsStatus = 'UNKNOWN';
+            if (scenario.name === 'Tier 1 (Natural Cascade)') {
+              if (actualTier === 'TIER_1') {
+                ccsStatus = 'HEALTHY - Tier 1 succeeded (CCS available)';
+              } else if (actualTier === 'DIRECT_MODE' || actualTier.includes('Direct')) {
+                ccsStatus = 'BROKEN - Tier 1 failed → Direct Mode rescued (CCS unavailable)';
+              }
+            }
+
             const ccsErrors = cascadeHistory.filter((line: string) => 
               line.includes('CCS') && (line.includes('failed') || line.includes('error') || line.includes('❌'))
             );
@@ -2832,17 +2925,15 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
               imageURL: data.imageURL,
               details: {
                 processingTime,
-                testType: 'PRODUCTION_SCENARIO',
+                testType: scenario.testType,
                 scenario: scenario.description,
                 expectedBehavior: scenario.expectedBehavior,
                 actualTier,
-                primaryScene,  // ✅ Will display for Tier 1 / Direct Mode
+                primaryScene,
                 cascadeHistory,
+                ccsStatus: scenario.name === 'Tier 1 (Natural Cascade)' ? ccsStatus : (ccsErrors.length > 0 ? 'ERRORS_DETECTED' : 'HEALTHY'),
                 ccsErrors: ccsErrors.length > 0 ? ccsErrors : undefined,
-                ccsStatus: ccsErrors.length > 0 ? 'ERRORS_DETECTED' : 'HEALTHY',
                 metadata: data.metadata,
-                tier: data.tier,
-                usedTier: data.usedTier,
                 errorCategory: 'SUCCESS'
               }
             };
@@ -2852,13 +2943,12 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
               console.warn(`⚠️ ${scenario.name} had CCS errors but still succeeded:`, ccsErrors);
             }
           } else {
-            throw new Error(error?.message || data?.error || `No image returned from ${scenario.name}`);
+            throw new Error(data?.error || 'No image returned');
           }
         } catch (error: any) {
           const processingTime = Date.now() - scenarioStartTime;
           const { category, probableCause } = categorizeError(error, 'runware-generate-image');
           
-          // Extract error details from response
           const cascadeHistory = error?.details?.cascadeHistory || [];
           const stoppedBecause = error?.details?.stoppedBecause || 'UNKNOWN';
 
@@ -2867,7 +2957,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             success: false,
             details: {
               processingTime,
-              testType: 'PRODUCTION_SCENARIO',
+              testType: scenario.testType,
               scenario: scenario.description,
               expectedBehavior: scenario.expectedBehavior,
               error: error?.message || 'Unknown error',
@@ -2883,21 +2973,21 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
         }
 
         testResults.push(scenarioResult);
-        setResults([...testResults]); // Update UI progressively
+        setResults([...testResults]);
       }
 
       const successCount = testResults.filter(r => r.success).length;
       const totalCount = testResults.length;
       
-      DebugLogger.log('image', '✅ Batch Production Cascade Testing completed', {
+      DebugLogger.log('image', '✅ Batch Tier Testing completed', {
         totalTests: totalCount,
         successCount,
         failureCount: totalCount - successCount
       });
 
       toast({
-        title: successCount === totalCount ? "✅ All Production Scenarios Passed" : "⚠️ Some Scenarios Failed",
-        description: `${successCount}/${totalCount} scenarios succeeded`,
+        title: successCount === totalCount ? "✅ All Tier Tests Passed" : "⚠️ Some Tests Failed",
+        description: `${successCount}/${totalCount} tier tests succeeded`,
         variant: successCount === totalCount ? "default" : "destructive",
         duration: 6000,
       });
@@ -3178,16 +3268,26 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
               Test Connectivity
             </Button>
             
-            <Button
-              onClick={testBatchProductionCascade}
-              disabled={isLoading}
-              variant="outline"
-              className="flex items-center gap-2"
-              title="Tests all tier scenarios using production cascade flow through orchestrator. Shows real CCS errors when they occur. Displays images + primaryScene text for Tier 1 and Direct Mode successes."
-            >
-              <CheckCircle className="h-4 w-4" />
-              Batch Tier Testing (Production Cascade)
-            </Button>
+            <div className="space-y-2">
+              <Button
+                onClick={testBatchProductionCascade}
+                disabled={isLoading}
+                variant="outline"
+                className="flex items-center gap-2 w-full"
+              >
+                <CheckCircle className="h-4 w-4" />
+                Batch Tier Testing (6 Isolated Tier Tests)
+              </Button>
+              <p className="text-xs text-muted-foreground pl-2">
+                Tests all tier scenarios including BOTH Direct Mode paths:
+                <br />• Direct Mode (Frontend Bypass - orchestrator unhealthy)
+                <br />• Direct Mode (Orchestrator Fallback - Tier 1 forced failure)
+                <br />• Tier 1 (natural cascade)
+                <br />• Force Tier 2.5A-D
+                <br />
+                <br />Shows images + primaryScene text for Tier 1 and both Direct Mode paths.
+              </p>
+            </div>
             
             <Button
               onClick={testAISCHealthEndpoint}
