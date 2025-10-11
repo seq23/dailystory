@@ -1,3 +1,4 @@
+// DEPLOYMENT MARKER: 2025-10-11-VENDOR-BUNDLE-REFRESH - Force fresh deployment with enhanced QueryBuilder
 /**
  * LOCAL VENDOR BUNDLE: Supabase JS Client v2.57.4
  * This is a true local fallback - completely independent of network CDNs
