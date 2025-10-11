@@ -1777,16 +1777,22 @@ const executeDirectMode: TierFn = async (ctx) => {
         return { ok: false, code: "DM_NO_IMAGE", reason: "No image URL returned" };
       }
       
-      // Propagate primaryScene from aiSchema if missing in main data
-      let primaryScene = data.primaryScene;
-      if (!primaryScene && data.aiSchema?.primaryScene) {
-        primaryScene = data.aiSchema.primaryScene;
-        console.log(`🔄 [${ctx.requestId}] Direct Mode: Propagating primaryScene from aiSchema`);
-      }
-      // Backup: generate minimal primaryScene from pageText if still missing
-      if (!primaryScene && ctx.payload.pageText) {
-        primaryScene = ctx.payload.pageText.substring(0, 200);
-        console.log(`🔄 [${ctx.requestId}] Direct Mode: Generated minimal primaryScene from pageText`);
+      // Exhaustive search for OpenAI's word-for-word primaryScene across ALL possible locations
+      const primaryScene = data.primaryScene 
+        || data.aiSchema?.primaryScene 
+        || data.enhancedPrompt 
+        || data.failedTierData?.enhancedSceneData;
+
+      if (primaryScene) {
+        console.log(`✅ [${ctx.requestId}] Direct Mode: Using OpenAI primaryScene (${primaryScene.length} chars, word-for-word preserved)`);
+      } else {
+        // NO FALLBACK TO TRUNCATED TEXT - if OpenAI didn't provide primaryScene, this is a failure
+        console.error(`❌ [${ctx.requestId}] Direct Mode: No primaryScene from OpenAI - cannot proceed without word-for-word scene description`);
+        return { 
+          ok: false, 
+          code: "DM_NO_PRIMARY_SCENE", 
+          reason: "OpenAI did not provide primaryScene - refusing to use truncated text fallback" 
+        };
       }
       
       ctx.directMode = { imageURL: data.imageURL, seed: data.seed, primaryScene };
@@ -1812,7 +1818,7 @@ const executeDirectMode: TierFn = async (ctx) => {
           imageURL: data.imageURL,
           tier: "DIRECT_MODE",
           resultType: "DIRECT_MODE_SUCCESS",
-          primaryScene,  // ✅ Use propagated primaryScene
+          primaryScene,  // ✅ Top-level (main access point)
           seed: data.seed,
           metadata: { 
             cascadeHistory: [
@@ -1822,8 +1828,15 @@ const executeDirectMode: TierFn = async (ctx) => {
             tier1FailureDetails,
             tier1Timeline: tier1FailureDetails?.tier1Timeline || [],
             directModeEntryPoint: 'ORCHESTRATOR',
-            primaryScene,  // ✅ Use propagated primaryScene
+            primaryScene,  // ✅ In metadata (for analytics/logging)
+            primarySceneLength: primaryScene?.length || 0,
+            primarySceneSource: 'openai_word_for_word'
           },
+          directMode: {
+            imageURL: data.imageURL,
+            seed: data.seed,
+            primaryScene  // ✅ In directMode object (for backward compatibility)
+          }
         },
         meta: { tier: "DIRECT_MODE", ms: Date.now() - startMs }
       };
