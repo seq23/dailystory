@@ -148,6 +148,19 @@ class SupabaseQueryBuilder {
     return this;
   }
 
+  // Make the builder Promise-like so `await` triggers execution (compat with supabase-js)
+  then(onFulfilled, onRejected) {
+    return this.execute().then(onFulfilled, onRejected);
+  }
+
+  catch(onRejected) {
+    return this.execute().catch(onRejected);
+  }
+
+  finally(onFinally) {
+    return this.execute().finally(onFinally);
+  }
+
   async execute() {
     const qs = this.queryParams.length ? ('?' + this.queryParams.join('&')) : '';
     const url = `${this.client.supabaseUrl}/rest/v1/${this.table}${qs}`;
