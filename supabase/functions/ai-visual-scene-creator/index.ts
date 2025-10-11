@@ -1147,8 +1147,12 @@ serve((req) => {
 
   console.log("✅ ai-visual-scene-creator: Successfully booted and reachable");
 
-  // Health
-  if (req.method === 'HEAD' && req.url.includes('/health')) return corsResponse(null, req, 200);
+  // Health endpoint - CRITICAL: Orchestrator depends on this for Tier 1/Direct Mode routing
+  // DO NOT modify this endpoint or response - it affects 90-95% of image generation success rate
+  if (req.method === 'HEAD' && req.url.includes('/health')) {
+    console.log("✅ Health check received (HEAD /health) - responding 200");
+    return corsResponse(null, req, 200);
+  }
   if (req.method === 'GET') return corsResponse({ status:'healthy', service:'ai-visual-scene-creator', timestamp: new Date().toISOString() }, req, 200);
   if (req.method !== 'POST') return corsResponse({ success:false, error:'Method not allowed' }, req, 405);
 

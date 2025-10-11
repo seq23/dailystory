@@ -566,6 +566,99 @@ ErrorHandlingManager.getEmergencyContent({ name: 'Test User' });
 
 ---
 
+## Critical Health Check Contract
+
+**⚠️ NEVER change the ai-visual-scene-creator health check URL**
+
+### The Contract
+
+✅ **CORRECT**: `/functions/v1/ai-visual-scene-creator/health`  
+❌ **WRONG**: `/functions/v1/ai-visual-scene-creator` (base path)
+
+### Impact of Incorrect URL
+
+When the health check URL is wrong:
+- ❌ False "unhealthy" classification
+- ❌ Tier 1 & Direct Mode skipped completely
+- ❌ 90-95% success rate lost
+- ❌ Users forced to slow template tiers (2.5A/B/C/D)
+- ❌ Massive degradation in user experience
+
+### Implementation References
+
+**Orchestrator Health Check**: `supabase/functions/runware-generate-image/index.ts` (lines 2675-2723)
+```typescript
+// ⚠️ CRITICAL: ai-visual-scene-creator ONLY responds to HEAD on /health endpoint
+// DO NOT change this URL to base path
+const healthCheck = await fetch(`${supabaseUrl}/functions/v1/ai-visual-scene-creator/health`, {
+  method: 'HEAD',
+  headers: { 'Authorization': `Bearer ${supabaseKey}` },
+  signal: AbortSignal.timeout(2000)
+});
+```
+
+**AISC Health Endpoint**: `supabase/functions/ai-visual-scene-creator/index.ts` (lines 1150-1155)
+```typescript
+// Health endpoint - CRITICAL: Orchestrator depends on this for Tier 1/Direct Mode routing
+// DO NOT modify this endpoint or response
+if (req.method === 'HEAD' && req.url.includes('/health')) {
+  console.log("✅ Health check received (HEAD /health) - responding 200");
+  return corsResponse(null, req, 200);
+}
+```
+
+### Regression Prevention Safeguards
+
+1. **Code Comments**: Explicit warnings in both orchestrator and AISC service
+2. **Self-Test Logging**: Runtime validation logs success/failure with impact details
+3. **Contract Logging**: AISC logs when health endpoint is hit correctly
+4. **UI Test Button**: "Test AISC Health Endpoint" in ImageTierTester component
+5. **Monitoring**: Health check failures logged to `image_generation_debug` table
+6. **Documentation**: This section serves as written contract
+
+### How to Verify Health Check Works
+
+#### Option 1: ImageTierTester UI (Recommended)
+1. Navigate to `/prompt-testing?debug=1`
+2. Click "Test AISC Health Endpoint" button
+3. Should see: "✅ AISC Health Check PASSED"
+4. If failure: "❌ AISC Health Check FAILED" with details
+
+#### Option 2: Edge Function Logs
+```bash
+# Check orchestrator logs for health check results
+# Should see: "✅ AISC health check PASSED"
+# Should NOT see: "❌ CRITICAL: AISC health check FAILED"
+```
+
+#### Option 3: Manual curl
+```bash
+curl -X HEAD \
+  -H "Authorization: Bearer YOUR_SUPABASE_ANON_KEY" \
+  https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/ai-visual-scene-creator/health
+  
+# Expected: HTTP 200 OK
+```
+
+### When Health Check Fails
+
+If health check fails, the system:
+1. Logs critical error with full impact details
+2. Logs to monitoring table for alerting
+3. Skips Tier 1 (enhanced character-first flow)
+4. Skips Direct Mode (vendor-first client)
+5. Falls back to slower template tiers (2.5A → 2.5B → 2.5C → 2.5D)
+
+### Pre-Deployment Checklist
+
+- [ ] Health check URL is `/health` endpoint (not base path)
+- [ ] "Test AISC Health Endpoint" button passes
+- [ ] Edge function logs show "✅ AISC health check PASSED"
+- [ ] No "CRITICAL: AISC health check FAILED" errors
+- [ ] E2E Simulation shows "FULL_CASCADE" routing
+
+---
+
 ## Developer Guidelines
 
 ### When to Use Emergency Fallback

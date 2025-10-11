@@ -17,6 +17,7 @@ import { SimpleImageService } from '@/services/SimpleImageService';
 import { TimerToggleItem } from '@/components/ui/timer-toggle-item';
 import { NetflixSessionManager } from '@/services/NetflixSessionManager';
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
+import { toast } from '@/hooks/use-toast';
 
 interface TestResult {
   tier: string;
@@ -2413,6 +2414,89 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
   };
 
   // Test Architecture Awareness - Different payload structures for mixed architectures
+  // NEW: Test AISC Health Endpoint (Critical for Tier 1 & Direct Mode routing)
+  const testAISCHealthEndpoint = async () => {
+    setIsLoading(true);
+    setResults([]);
+    
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const healthUrl = `${SUPABASE_URL}/functions/v1/ai-visual-scene-creator/health`;
+    
+    try {
+      const startTime = Date.now();
+      const response = await fetch(healthUrl, {
+        method: 'HEAD',
+        headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      const processingTime = Date.now() - startTime;
+      
+      const success = response.ok;
+      
+      setResults([{
+        tier: 'AISC Health Endpoint Test',
+        success,
+        details: {
+          testType: 'HEALTH' as any,
+          processingTime,
+          error: !success ? `Status ${response.status}: ${response.statusText}` : undefined,
+          errorCategory: !success ? 'NETWORK' : 'SUCCESS' as any,
+          probableCause: !success 
+            ? 'AISC health endpoint not responding - Tier 1 & Direct Mode will be SKIPPED' 
+            : 'Health endpoint responding correctly - Tier 1 & Direct Mode enabled',
+          healthCheck: {
+            endpoint: healthUrl,
+            available: success,
+            responseTime: processingTime,
+            status: response.status,
+            triageResult: success ? 'Health check passed' : 'Health check failed'
+          }
+        }
+      }]);
+      
+      if (success) {
+        toast({
+          title: "✅ AISC Health Check PASSED",
+          description: "Tier 1 & Direct Mode routing enabled (90-95% success rate)",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "❌ AISC Health Check FAILED",
+          description: `Status ${response.status} - Tier 1/Direct Mode will be SKIPPED (critical impact)`,
+          variant: "destructive",
+          duration: 8000,
+        });
+      }
+    } catch (error: any) {
+      setResults([{
+        tier: 'AISC Health Endpoint Test (Error)',
+        success: false,
+        details: {
+          testType: 'HEALTH' as any,
+          error: error.message,
+          errorCategory: 'NETWORK' as any,
+          probableCause: 'Unable to reach AISC health endpoint - check network or deployment status',
+          healthCheck: {
+            endpoint: healthUrl,
+            available: false,
+            triageResult: error.message
+          }
+        }
+      }]);
+      
+      toast({
+        title: "❌ AISC Health Check ERROR",
+        description: error.message,
+        variant: "destructive",
+        duration: 8000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const testArchitectureAwareness = async () => {
     if (!testStoryText.trim()) {
       alert('Please enter story text first');
@@ -2912,6 +2996,16 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             >
               <CheckCircle className="h-4 w-4" />
               Batch Tier Testing
+            </Button>
+            
+            <Button
+              onClick={testAISCHealthEndpoint}
+              disabled={isLoading}
+              variant="secondary"
+              className="flex items-center gap-2 border-2 border-orange-500"
+            >
+              <Settings className="h-4 w-4" />
+              Test AISC Health Endpoint
             </Button>
           </div>
 

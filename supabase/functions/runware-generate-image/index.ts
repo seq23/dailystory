@@ -2672,6 +2672,10 @@ serve(async (req) => {
       const openaiKey = Deno.env.get('OPENAI_API_KEY');
       const openaiHealthy = !!openaiKey && openaiKey.trim().length > 0;
       
+      // ⚠️ CRITICAL: ai-visual-scene-creator ONLY responds to HEAD on /health endpoint
+      // DO NOT change this URL to base path - it will cause false "unhealthy" classification
+      // and skip Tier 1 & Direct Mode (90-95% success rate lost)
+      // Reference: ai-visual-scene-creator/index.ts lines 1150-1153
       // Check ai-visual-scene-creator health (2s timeout)
       let aiVisualSceneCreatorHealthy = true;
       try {
@@ -2691,6 +2695,36 @@ serve(async (req) => {
       } catch (error) {
         console.warn(`⚠️ [${requestId}] AI Visual Scene Creator health check failed:`, error.message);
         aiVisualSceneCreatorHealthy = false;
+      }
+      
+      // Self-test: Verify health endpoint returns correct status
+      if (aiVisualSceneCreatorHealthy) {
+        console.log(`✅ [${requestId}] AISC health check PASSED - /health endpoint responding correctly`);
+      } else {
+        console.error(`❌ [${requestId}] CRITICAL: AISC health check FAILED - verify /health endpoint exists`);
+        console.error(`   Expected: ${Deno.env.get('SUPABASE_URL')}/functions/v1/ai-visual-scene-creator/health responds to HEAD`);
+        console.error(`   Impact: Tier 1 & Direct Mode will be SKIPPED (business-critical failure)`);
+        
+        // Log to monitoring for alerting
+        if (logTier1 && typeof logTier1 === 'function') {
+          try {
+            await logTier1(
+              `HEALTH_CHECK_FAILED: ai-visual-scene-creator unhealthy - Tier 1 & Direct Mode SKIPPED`,
+              {
+                service: 'ai-visual-scene-creator',
+                endpoint: `${Deno.env.get('SUPABASE_URL')}/functions/v1/ai-visual-scene-creator/health`,
+                impact: 'Tier 1 & Direct Mode will be skipped',
+                businessImpact: 'CRITICAL - 90-95% success rate lost',
+                severity: 'CRITICAL'
+              },
+              supabase,
+              sessionId,
+              requestId
+            );
+          } catch (logError) {
+            console.error(`Failed to log health check failure:`, logError);
+          }
+        }
       }
       
       console.log(`🏥 [${requestId}] System Health Check:`, {
