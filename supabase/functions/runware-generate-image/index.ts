@@ -1794,38 +1794,7 @@ const executeT25A: TierFn = async (ctx) => {
   let gateAcquired = false;
   
   try {
-    // Precondition: Require BOTH characterSeed AND latestClothing
-    if (!ctx.tier1?.characterSeed) {
-      console.log(`⚠️ [${ctx.requestId}] TIER_2.5A: SKIPPED (precondition failed: no characterSeed)`, {
-        reason: 'No characterSeed from Tier 1 or CCS_RETRY',
-        escalation: 'TIER_2.5B',
-        ccsRetryRan: !!ctx.trace?.some(t => t.tier === 'CCS_RETRY'),
-        ccsRetrySuccess: !!ctx.tier1
-      });
-      ctx.tierLogger.attempt("TIER_2.5A_PRECONDITION_SKIP", { reason: "no_character_seed" });
-      return { ok: false, code: "T25A_NO_CCS", reason: "No characterSeed - escalating to 2.5B" };
-    }
-    
-    if (!ctx.tier1?.latestClothing) {
-      console.warn(`⚠️ [${ctx.requestId}] TIER_2.5A: SKIPPED (precondition failed: no latestClothing)`, {
-        hasCharacterSeed: true,
-        hasLatestClothing: false,
-        reason: 'CCS_RETRY failed to fetch clothing consistency data',
-        escalation: 'TIER_2.5B (face consistency only)',
-        impact: 'Character face will be consistent but clothing may vary between pages',
-        businessImpact: 'Acceptable degradation - face consistency is primary requirement'
-      });
-      ctx.tierLogger.attempt("TIER_2.5A_PRECONDITION_SKIP", { 
-        reason: "no_latest_clothing",
-        hasCharacterSeed: true,
-        hasLatestClothing: false
-      });
-      return { 
-        ok: false, 
-        code: "T25A_NO_CLOTHING", 
-        reason: "No latestClothing - escalating to 2.5B for face-only consistency" 
-      };
-    }
+    // Old precondition logic removed - Mode Selection (lines ~1868-1921) now handles all cases
     
     console.log(`✅ [${ctx.requestId}] TIER_2.5A: Precondition satisfied (full CCS available)`, {
       hasCharacterSeed: true,
