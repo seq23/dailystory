@@ -1791,7 +1791,7 @@ export const ImageTierTester = () => {
             difficultyLevel: mapDifficultyLevel(userInfo),
             protectionNegatives: [],
             skipDirectlyToTier: '2.5A', // NEW: Skip to Tier 2.5A after Tier 1 CCS prep
-            test: true
+            skipTier1AI: true // Skip AI scene extraction, simulate AI failure with successful CCS
           }
         : tier === '2.5B'
         ? {
@@ -1805,6 +1805,8 @@ export const ImageTierTester = () => {
             isGuestUser: true,
             difficultyLevel: mapDifficultyLevel(userInfo),
             protectionNegatives: [],
+            skipDirectlyToTier: '2.5B',
+            skipTier1AI: true, // Skip AI scene extraction, simulate AI failure with successful CCS
             templateComplexity: 'B',
           }
         : {

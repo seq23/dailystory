@@ -1038,118 +1038,136 @@ async function processInlinedTier1(
   let primaryScene: string | undefined;
   let aiSchema: Record<string, any> = {};
   let aiDebugSchema: any = null;
-  try {
-    logTier1Step("AI Scene Creator Call", "attempt", "Invoking ai-visual-scene-creator");
-    const { createVendorFirstSupabaseClient } = await memoizedImport("../_shared/resilientLoader.js");
-    const supabase = await createVendorFirstSupabaseClient();
-
-    // Use raw fetch with proper AbortController signal (supabase.functions.invoke ignores signal)
-    const aiController = new AbortController();
-    const aiTimeout = setTimeout(() => aiController.abort(), 25000); // CHANGED: 15s → 25s for AI processing
-    
-    let aiResult: any, aiError: any;
-    try {
-      const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-      const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
-      
-      // Validate SUPABASE_URL
-      if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
-        throw new Error("SUPABASE_URL environment variable is not set");
-      }
-      
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-      };
-      
-      // Only add apikey header if key exists
-      if (SUPABASE_ANON_KEY) {
-        headers["apikey"] = SUPABASE_ANON_KEY;
-      }
-      
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-visual-scene-creator`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          pageText: storyText || pageText,
-          userInfo: {
-            ...userInfo,
-            age: userInfo?.age || structuredAvatarData?.age || 6,
-            structuredAvatarData,
-          },
-        sessionId,
-        pageNumber: payload.pageNumber || 1,
-        avatarIdentity,
-        // Pass COMPLETE character consistency context to AI
-        characterSeed,
-        culturalBundle,
-        coloredObjects,
-        secondaryCharacters, // Now includes visualDetails from Phase 1
-        mainCharacterAppearance, // PHASE 1: Pass main character appearance
-        detectedAnimals,
-        sessionSetting,
-        requestId: `tier1-${sessionId}`,
-        source: "inlined_orchestrator",
-        directMode: false, // Scene-Only mode - AI uses character context to inform scene
-        }),
-        signal: aiController.signal,
-      });
-      
-      if (!response.ok) {
-        aiError = { message: `HTTP ${response.status}: ${response.statusText}` };
-        aiResult = null;
-      } else {
-        aiResult = await response.json();
-      }
-    } catch (e: any) {
-      if (e?.name === "AbortError") {
-        aiError = { message: "AI scene creator timeout (15s)" };
-        aiResult = null;
-      } else {
-        throw e;
-      }
-    } finally {
-      clearTimeout(aiTimeout);
-    }
-
-    console.log(`✅ AI SCENE GENERATION: Called with complete character context`, {
-      hasCharacterSeed: !!characterSeed,
-      hasCulturalBundle: !!culturalBundle,
-      hasColoredObjects: !!coloredObjects,
-      secondaryCharactersCount: secondaryCharacters?.length || 0,
-      hasDetectedAnimals: detectedAnimals.length > 0,
-      hasSessionSetting: !!sessionSetting,
+  
+  // Check for skipTier1AI flag (force test mode)
+  const skipAI = payload.skipTier1AI === true;
+  
+  if (skipAI) {
+    console.log(`🎯 [${requestId}] SKIP_TIER1_AI: Simulating AI failure, proceeding without primaryScene`, {
+      reason: 'Force test mode - skip AI scene extraction',
+      ccsDataPopulated: true,
+      willEscalateTo: 'TIER_2.5A or Direct Mode',
+      simulatedFailure: true
     });
+    
+    // Set primaryScene to undefined (simulates AI failure)
+    primaryScene = undefined;
+    
+    logTier1Step("AI Scene Creator Call", "skipped", "AI scene extraction bypassed for force test mode");
+  } else {
+    try {
+      logTier1Step("AI Scene Creator Call", "attempt", "Invoking ai-visual-scene-creator");
+      const { createVendorFirstSupabaseClient } = await memoizedImport("../_shared/resilientLoader.js");
+      const supabase = await createVendorFirstSupabaseClient();
 
-    if (aiError || !aiResult?.primaryScene) {
-      logTier1Step("AI Scene Creator Call", "failed", `AI error: ${aiError?.message || "No primary scene"}`);
+      // Use raw fetch with proper AbortController signal (supabase.functions.invoke ignores signal)
+      const aiController = new AbortController();
+      const aiTimeout = setTimeout(() => aiController.abort(), 25000); // CHANGED: 15s → 25s for AI processing
+      
+      let aiResult: any, aiError: any;
+      try {
+        const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+        const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+        
+        // Validate SUPABASE_URL
+        if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+          throw new Error("SUPABASE_URL environment variable is not set");
+        }
+        
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        };
+        
+        // Only add apikey header if key exists
+        if (SUPABASE_ANON_KEY) {
+          headers["apikey"] = SUPABASE_ANON_KEY;
+        }
+        
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-visual-scene-creator`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            pageText: storyText || pageText,
+            userInfo: {
+              ...userInfo,
+              age: userInfo?.age || structuredAvatarData?.age || 6,
+              structuredAvatarData,
+            },
+          sessionId,
+          pageNumber: payload.pageNumber || 1,
+          avatarIdentity,
+          // Pass COMPLETE character consistency context to AI
+          characterSeed,
+          culturalBundle,
+          coloredObjects,
+          secondaryCharacters, // Now includes visualDetails from Phase 1
+          mainCharacterAppearance, // PHASE 1: Pass main character appearance
+          detectedAnimals,
+          sessionSetting,
+          requestId: `tier1-${sessionId}`,
+          source: "inlined_orchestrator",
+          directMode: false, // Scene-Only mode - AI uses character context to inform scene
+          }),
+          signal: aiController.signal,
+        });
+        
+        if (!response.ok) {
+          aiError = { message: `HTTP ${response.status}: ${response.statusText}` };
+          aiResult = null;
+        } else {
+          aiResult = await response.json();
+        }
+      } catch (e: any) {
+        if (e?.name === "AbortError") {
+          aiError = { message: "AI scene creator timeout (15s)" };
+          aiResult = null;
+        } else {
+          throw e;
+        }
+      } finally {
+        clearTimeout(aiTimeout);
+      }
+
+      console.log(`✅ AI SCENE GENERATION: Called with complete character context`, {
+        hasCharacterSeed: !!characterSeed,
+        hasCulturalBundle: !!culturalBundle,
+        hasColoredObjects: !!coloredObjects,
+        secondaryCharactersCount: secondaryCharacters?.length || 0,
+        hasDetectedAnimals: detectedAnimals.length > 0,
+        hasSessionSetting: !!sessionSetting,
+      });
+
+      if (aiError || !aiResult?.primaryScene) {
+        logTier1Step("AI Scene Creator Call", "failed", `AI error: ${aiError?.message || "No primary scene"}`);
+        throw new Error("NO_PRIMARY_SCENE_ESCALATE_TO_25A");
+      }
+
+      primaryScene = aiResult.primaryScene;
+      aiDebugSchema = aiResult.aiDebugSchema || null;
+      logTier1Step(
+        "AI Scene Creator Call",
+        "success",
+        `Primary scene generated: ${primaryScene?.substring(0, 50)}...`,
+      );
+
+      // Collect complete AI schema for debugging (only primaryScene used in template)
+      aiSchema = {
+        backgroundColor: aiResult?.backgroundColor || "",
+        lighting: aiResult?.lighting || "",
+        composition: aiResult?.composition || "",
+        mood: aiResult?.mood || "",
+        visualElements: aiResult?.visualElements || "",
+        sceneSettings: aiResult?.sceneSettings || "",
+        atmosphericDetails: aiResult?.atmosphericDetails || "",
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logTier1Step("AI Scene Creator Call", "failed", errorMessage);
+      console.warn("AI scene creator failed:", error);
       throw new Error("NO_PRIMARY_SCENE_ESCALATE_TO_25A");
     }
-
-    primaryScene = aiResult.primaryScene;
-    aiDebugSchema = aiResult.aiDebugSchema || null;
-    logTier1Step(
-      "AI Scene Creator Call",
-      "success",
-      `Primary scene generated: ${primaryScene?.substring(0, 50)}...`,
-    );
-
-    // Collect complete AI schema for debugging (only primaryScene used in template)
-    aiSchema = {
-      backgroundColor: aiResult?.backgroundColor || "",
-      lighting: aiResult?.lighting || "",
-      composition: aiResult?.composition || "",
-      mood: aiResult?.mood || "",
-      visualElements: aiResult?.visualElements || "",
-      sceneSettings: aiResult?.sceneSettings || "",
-      atmosphericDetails: aiResult?.atmosphericDetails || "",
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logTier1Step("AI Scene Creator Call", "failed", errorMessage);
-    console.warn("AI scene creator failed:", error);
-    throw new Error("NO_PRIMARY_SCENE_ESCALATE_TO_25A");
   }
 
   // ============================================================================
