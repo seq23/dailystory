@@ -529,6 +529,11 @@ async function bindTierLogger(
 
       supabaseClient = await createVendorFirstSupabaseClient();
 
+    // ✅ DEFENSIVE: Validate tierLogging module loaded correctly
+    if (!tierLogging || typeof tierLogging.logTier1 !== 'function') {
+      throw new Error('tierLogging module incomplete - logTier1 method missing');
+    }
+
     // Sampling helper: only log to DB if sampled or failure
     const shouldLogToDB = (status: string = "info") => {
       if (status === "failed" || status === "failure") return true; // Always log failures
@@ -784,14 +789,26 @@ async function processInlinedTier1(
   let batchCCSData;
   try {
     batchCCSData = await characterConsistencyService.batchFetchCCSData(sessionId, characterName);
-    console.log(`✅ [${requestId}] [TIER_1] batchFetchCCSData: SUCCESS`, {
-      sessionId,
-      hasCharacterSeed: !!batchCCSData.characterSeed,
-      visualDetailsCount: batchCCSData.visualDetails.length,
-      coloredObjectsCount: batchCCSData.coloredObjects.length,
-      latestClothing: batchCCSData.latestClothing || 'none'
-    });
-    logTier1Step("Batch CCS Fetch", "success", `Fetched ${batchCCSData.visualDetails.length} cached visual details`);
+    
+    // ✅ DEFENSIVE: Wrap success logging in try-catch to isolate any logging errors
+    try {
+      console.log(`✅ [${requestId}] [TIER_1] batchFetchCCSData: SUCCESS`, {
+        sessionId,
+        hasCharacterSeed: !!batchCCSData.characterSeed,
+        visualDetailsCount: batchCCSData.visualDetails.length,
+        coloredObjectsCount: batchCCSData.coloredObjects.length,
+        latestClothing: batchCCSData.latestClothing || 'none'
+      });
+    } catch (logError) {
+      console.error(`⚠️ [${requestId}] Failed to log batchCCSData success:`, logError);
+    }
+    
+    // ✅ DEFENSIVE: Wrap logTier1Step call separately
+    try {
+      logTier1Step("Batch CCS Fetch", "success", `Fetched ${batchCCSData.visualDetails.length} cached visual details`);
+    } catch (logError) {
+      console.error(`⚠️ [${requestId}] Failed to call logTier1Step:`, logError);
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`❌ [${requestId}] [TIER_1] batchFetchCCSData: FAILED`, { sessionId, error: errorMessage });
@@ -810,7 +827,7 @@ async function processInlinedTier1(
   // Self-test: Verify batch fetch succeeded without .order() errors
   if (!batchCCSData || (!batchCCSData.characterSeed && !batchCCSData.visualDetails.length)) {
     console.warn(`⚠️ [${requestId}] Batch CCS fetch returned empty - possible .order() incompatibility`);
-    // Note: logTier1 may be unavailable if tierLogging module fails to load (non-fatal)
+    // Note: logTier1Step is always available (defined in executeTier1 scope)
     logTier1Step("Batch CCS Fetch", "success", `Fetched 0 cached visual details`);
   } else {
     console.log(`✅ [${requestId}] Batch CCS fetch completed successfully - no .order() errors`);
