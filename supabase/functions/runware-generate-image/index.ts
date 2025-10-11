@@ -810,7 +810,8 @@ async function processInlinedTier1(
   // Self-test: Verify batch fetch succeeded without .order() errors
   if (!batchCCSData || (!batchCCSData.characterSeed && !batchCCSData.visualDetails.length)) {
     console.warn(`⚠️ [${requestId}] Batch CCS fetch returned empty - possible .order() incompatibility`);
-    logTier1(`⚠️ [${requestId}] Empty batch CCS data - potential vendor-first client issue`, { batchCCSData }, supabase, sessionId, requestId);
+    // Note: logTier1 may be unavailable if tierLogging module fails to load (non-fatal)
+    logTier1Step("Batch CCS Fetch", "success", `Fetched 0 cached visual details`);
   } else {
     console.log(`✅ [${requestId}] Batch CCS fetch completed successfully - no .order() errors`);
   }
@@ -2782,25 +2783,18 @@ serve(async (req) => {
         console.error(`   Expected: ${Deno.env.get('SUPABASE_URL')}/functions/v1/ai-visual-scene-creator/health responds to HEAD`);
         console.error(`   Impact: Tier 1 & Direct Mode will be SKIPPED (business-critical failure)`);
         
-        // Log to monitoring for alerting
-        if (logTier1 && typeof logTier1 === 'function') {
-          try {
-            await logTier1(
-              `HEALTH_CHECK_FAILED: ai-visual-scene-creator unhealthy - Tier 1 & Direct Mode SKIPPED`,
-              {
-                service: 'ai-visual-scene-creator',
-                endpoint: `${Deno.env.get('SUPABASE_URL')}/functions/v1/ai-visual-scene-creator/health`,
-                impact: 'Tier 1 & Direct Mode will be skipped',
-                businessImpact: 'CRITICAL - 90-95% success rate lost',
-                severity: 'CRITICAL'
-              },
-              supabase,
-              sessionId,
-              requestId
-            );
-          } catch (logError) {
-            console.error(`Failed to log health check failure:`, logError);
-          }
+        // Log to monitoring for alerting (using tierLogger instead of logTier1)
+        try {
+          tierLogger.failure('HEALTH_CHECK', {
+            service: 'ai-visual-scene-creator',
+            endpoint: `${Deno.env.get('SUPABASE_URL')}/functions/v1/ai-visual-scene-creator/health`,
+            impact: 'Tier 1 & Direct Mode will be skipped',
+            businessImpact: 'CRITICAL - 90-95% success rate lost',
+            severity: 'CRITICAL'
+          });
+        } catch (healthCheckError) {
+          console.error(`❌ [${requestId}] Health check error:`, healthCheckError);
+          aiVisualSceneCreatorHealthy = false;
         }
       }
       

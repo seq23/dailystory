@@ -1770,8 +1770,8 @@ export const ImageTierTester = () => {
       steps[0].status = 'running';
       const functionMap: { [key: string]: string } = {
         '1': 'runware-generate-image',  // Test Enhanced Character-First Flow orchestrator
-        '2.5A': 'runware-generate-image', // FIXED: Use orchestrator with skipDirectlyToTier
-        '2.5B': 'runware-template-ab',
+        '2.5A': 'runware-generate-image', // Use orchestrator with skipDirectlyToTier
+        '2.5B': 'runware-generate-image', // FIXED: Use orchestrator for 2.5B too
         '2.5C': 'runware-template-cd',
         '2.5D': 'runware-template-cd'
       };
@@ -1822,19 +1822,19 @@ export const ImageTierTester = () => {
           }
         : tier === '2.5B'
         ? {
-            // Template AB B variant
-            pageText: enhancedPrompt,
+            // FIXED: Use orchestrator with skip logic (works with inline data)
             storyText: enhancedPrompt,
+            pageText: enhancedPrompt,
             userInfo: userInfo,
             sessionId: crypto.randomUUID(),
             storyId: crypto.randomUUID(),
             pageNumber: 1,
+            characterName: userInfo?.name || 'Alex',
             isGuestUser: true,
             difficultyLevel: mapDifficultyLevel(userInfo),
             protectionNegatives: [],
             skipDirectlyToTier: '2.5B',
-            skipTier1AI: true, // Skip AI scene extraction, simulate AI failure with successful CCS
-            templateComplexity: 'B',
+            skipTier1AI: true // Skip AI scene extraction, 2.5B uses inline data
           }
         : {
             // Template CD expects flat payload
@@ -2714,8 +2714,8 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
         name: "TestHero",
         age: 10,
         ethnicity: "adventurer",
-        skinTone: "medium",
-        avatar: { type: "hero", skinTone: "medium" },
+        skinTone: "light",
+        avatar: { type: "hero", skinTone: "light" },
         userTier: "premium"
       });
 
@@ -2759,10 +2759,10 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           criticalFailure: 'Direct Mode did not run'
         },
 
-        // Tier 1 Natural Cascade (No Force)
+        // Tier 1 Forced (Stop at Tier 1, no cascade)
         {
-          name: 'Tier 1 (Natural Cascade)',
-          description: 'Let natural cascade run, observe which tier succeeds',
+          name: 'Tier 1 (Forced)',
+          description: 'Force Tier 1 to stop at Tier 1 (no cascade on failure)',
           testType: 'ORCHESTRATOR_CALL' as const,
           payload: {
             storyText: testStoryText,
@@ -2773,10 +2773,11 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             isGuestUser: false,
             difficultyLevel: 'medium',
             skipTier1AI: false,
+            forceCompleteTier1: true,
             test: true
           },
-          expectedBehavior: 'CCS healthy: Tier 1 succeeds. CCS broken: Tier 1 fails → Direct Mode succeeds',
-          criticalFailure: 'No image generated'
+          expectedBehavior: 'CCS healthy: Tier 1 succeeds. CCS broken: Tier 1 fails (no cascade)',
+          criticalFailure: 'Tier 1 cascaded to other tiers instead of stopping'
         },
 
         // Template Tiers 2.5A-D
