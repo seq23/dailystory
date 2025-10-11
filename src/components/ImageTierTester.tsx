@@ -214,6 +214,7 @@ interface TestResult {
     expectedBehavior?: string; // Expected behavior for the scenario
     criticalFailure?: string; // Critical failure condition
     stoppedBecause?: string; // Reason why cascade stopped
+    note?: string; // Additional note for test result (e.g., expected behavior)
     ccsErrors?: string[]; // CCS errors detected during scenario
     actualTier?: string; // Actual tier used in production cascade
   };
@@ -2967,9 +2968,27 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           const cascadeHistory = error?.details?.cascadeHistory || [];
           const stoppedBecause = error?.details?.stoppedBecause || 'UNKNOWN';
 
-          scenarioResult = {
-            tier: scenario.name,
-            success: false,
+          // Special case: Force Tier 2.5A is EXPECTED to stop without CCS
+          if (scenario.name === 'Force Tier 2.5A' && stoppedBecause === 'CCS_REQUIRED_FOR_2.5A') {
+            scenarioResult = {
+              tier: scenario.name,
+              success: true,  // ✅ This is a PASS, not a failure
+              details: {
+                processingTime,
+                testType: scenario.testType,
+                scenario: scenario.description,
+                expectedBehavior: scenario.expectedBehavior,
+                note: '✅ Expected STOP: 2.5A correctly refused to cascade without complete CCS',
+                stoppedBecause,
+                cascadeHistory
+              }
+            };
+            console.log(`✅ ${scenario.name} PASSED: Expected stop without CCS`);
+          } else {
+            // Continue with normal failure handling for all other scenarios
+            scenarioResult = {
+              tier: scenario.name,
+              success: false,
             details: {
               processingTime,
               testType: scenario.testType,
@@ -2985,6 +3004,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           };
           
           console.error(`❌ ${scenario.name} FAILED: ${error?.message}`);
+          }
         }
 
         testResults.push(scenarioResult);
