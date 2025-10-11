@@ -37,7 +37,7 @@ interface TestResult {
       status?: number;
       triageResult?: string;
     }; // NEW: Health check results
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION'; // Enhanced test types
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO'; // Enhanced test types
     timeoutTest?: boolean;
     abortReason?: string;
     // AI Scene Creator specific
@@ -191,7 +191,7 @@ interface TestResult {
     ccsFallbacksActive?: string[]; // Active fallbacks
     ccsImportSource?: string; // Import source (_shared/_vendor/inline/unavailable)
     hasCharacterConsistency?: boolean; // Overall CCS status
-    ccsStatus?: {
+    ccsStatus?: string | {
       tier1Loaded: boolean;
       tier25Loaded: boolean;
       directModeLoaded: boolean;
@@ -208,6 +208,13 @@ interface TestResult {
     hairColor?: string; // Hair color used
     skinFeatures?: string; // Skin features used
     ethnicity?: string; // Ethnicity derived from skin tone
+    // Production Scenario specific
+    scenario?: string; // Scenario description for production cascade tests
+    expectedBehavior?: string; // Expected behavior for the scenario
+    criticalFailure?: string; // Critical failure condition
+    stoppedBecause?: string; // Reason why cascade stopped
+    ccsErrors?: string[]; // CCS errors detected during scenario
+    actualTier?: string; // Actual tier used in production cascade
   };
 }
 
@@ -2690,7 +2697,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
     }
   };
 
-  const testArchitectureAwareness = async () => {
+  const testBatchProductionCascade = async () => {
     if (!testStoryText.trim()) {
       alert('Please enter story text first');
       return;
@@ -2700,219 +2707,209 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
     setResults([]);
     
     try {
-      DebugLogger.log('image', '🏗️ Testing mixed architecture cascade flow');
+      DebugLogger.log('image', '🎯 Batch Tier Testing: Production Cascade Scenarios');
       
-      // Updated tier configurations to standardize with Debug Real Routing
-      const tierConfigurations = [
+      // All scenarios route through the orchestrator (runware-generate-image)
+      const productionScenarios = [
         {
-          name: 'Tier 1 (Direct Mode)', // PLAN FIX 2A: Renamed from "Direct Mode (AI Scene Creator)" 
-          function: 'ai-visual-scene-creator',
-          architecture: 'PURE_TYPESCRIPT',
+          name: 'Full Natural Cascade (E2E)',
+          description: 'Complete production flow: Tier 1 → DM → 2.5A → 2.5B → 2.5C → 2.5D',
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
-            sessionId: 'test-session',
+            sessionId: `batch-test-e2e-${Date.now()}`,
             pageNumber: 1,
-            storyId: 'cascade-test-story',
-            isGuestUser: false,
-            isDebugMode: true,
-            directMode: true
-          }
-        },
-        {
-          name: 'Tier 1 (via Orchestrator)', // PLAN FIX 2A: Renamed from "Orchestrator (Health Check)"
-          function: 'runware-generate-image',
-          architecture: 'ORCHESTRATOR_PATTERN',
-          payload: {
-            storyText: testStoryText,
-            userInfo: buildUserInfo(),
-            sessionId: 'test-session',
-            pageNumber: 1,
-            storyId: 'cascade-test-story',
+            storyId: crypto.randomUUID(),
             isGuestUser: false,
             difficultyLevel: 'medium',
             test: true
-          }
+            // No skip flags - natural cascade
+          },
+          expectedBehavior: 'Success at any tier (image generated)',
+          criticalFailure: 'No image after all tiers exhausted'
         },
         {
-          name: 'Template 2.5A (Complexity A)',
-          function: 'runware-template-ab',
-          architecture: 'RECEPTIONIST_PATTERN',
+          name: 'Force Tier 2.5A',
+          description: 'Test 2.5A with CCS prep (STOPS at 2.5A)',
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
-            sessionId: 'test-session',
+            sessionId: `batch-test-2.5a-${Date.now()}`,
             pageNumber: 1,
-            storyId: 'cascade-test-story',
+            storyId: crypto.randomUUID(),
             isGuestUser: false,
             difficultyLevel: 'medium',
-            templateComplexity: 'A'
-          }
+            skipDirectlyToTier: '2.5A',
+            skipTier1AI: true
+          },
+          expectedBehavior: 'Success if CCS complete, Error if CCS broken',
+          criticalFailure: 'Continues cascade (should STOP at 2.5A)'
         },
         {
-          name: 'Template 2.5B (Complexity B)',
-          function: 'runware-template-ab',
-          architecture: 'RECEPTIONIST_PATTERN',
+          name: 'Force Tier 2.5B',
+          description: 'Test 2.5B with inline data (STOPS at 2.5B)',
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
-            sessionId: 'test-session',
+            sessionId: `batch-test-2.5b-${Date.now()}`,
             pageNumber: 1,
-            storyId: 'cascade-test-story',
+            storyId: crypto.randomUUID(),
             isGuestUser: false,
             difficultyLevel: 'medium',
-            templateComplexity: 'B'
-          }
+            skipDirectlyToTier: '2.5B',
+            skipTier1AI: true
+          },
+          expectedBehavior: 'ALWAYS succeeds (logs CCS errors but generates image)',
+          criticalFailure: 'Fails to generate image'
         },
         {
-          name: 'Template 2.5C (Complexity C)',
-          function: 'runware-template-cd',
-          architecture: 'RECEPTIONIST_PATTERN',
+          name: 'Force Tier 2.5C',
+          description: 'Test 2.5C simplified template (STOPS at 2.5C)',
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
-            sessionId: 'test-session', 
+            sessionId: `batch-test-2.5c-${Date.now()}`,
             pageNumber: 1,
-            storyId: 'cascade-test-story',
+            storyId: crypto.randomUUID(),
             isGuestUser: false,
             difficultyLevel: 'medium',
-            templateComplexity: 'C'
-          }
+            skipDirectlyToTier: '2.5C',
+            skipTier1AI: true
+          },
+          expectedBehavior: 'Success if 2.5C execution succeeds',
+          criticalFailure: 'Continues cascade (should STOP at 2.5C)'
         },
         {
-          name: 'Template 2.5D (Complexity D)',
-          function: 'runware-template-cd',
-          architecture: 'RECEPTIONIST_PATTERN',
+          name: 'Force Tier 2.5D',
+          description: 'Test 2.5D emergency fallback (STOPS at 2.5D)',
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
-            sessionId: 'test-session', 
+            sessionId: `batch-test-2.5d-${Date.now()}`,
             pageNumber: 1,
-            storyId: 'cascade-test-story',
+            storyId: crypto.randomUUID(),
             isGuestUser: false,
             difficultyLevel: 'medium',
-            templateComplexity: 'D'
-          }
+            skipDirectlyToTier: '2.5D',
+            skipTier1AI: true
+          },
+          expectedBehavior: 'ALWAYS succeeds (nuclear fallback)',
+          criticalFailure: 'Fails to generate image'
         }
       ];
 
       const testResults: TestResult[] = [];
       
-      for (const tier of tierConfigurations) {
-        const tierStartTime = Date.now();
-        let tierResult: TestResult;
+      for (const scenario of productionScenarios) {
+        const scenarioStartTime = Date.now();
+        let scenarioResult: TestResult;
 
         try {
-          DebugLogger.log('image', `Testing ${tier.name} (${tier.architecture})`);
+          DebugLogger.log('image', `Testing: ${scenario.name}`);
+          console.log(`🎯 ${scenario.name}: ${scenario.description}`);
 
-          const { data, error } = await supabase.functions.invoke(tier.function, {
-            body: tier.payload
+          const { data, error } = await supabase.functions.invoke('runware-generate-image', {
+            body: scenario.payload
           });
 
-          const processingTime = Date.now() - tierStartTime;
+          const processingTime = Date.now() - scenarioStartTime;
           
-          // Only categorize error if there actually is an error
-          const { category, probableCause, errorType } = error ? 
-            categorizeError(error, tier.function, data) : 
-            { category: 'SUCCESS', probableCause: 'Test completed successfully', errorType: 'RUNTIME_ERROR' as const };
-
           if (data?.success && data?.imageURL) {
-            // Tier 1 escalation is healthy behavior - only fail if cascade completely fails
-            if (tier.name === 'Tier 1 (via Orchestrator)') {
-              if (!data.success || !data.imageURL) {
-                throw new Error(`Orchestrator cascade failed: ${data.error || 'Unknown error'}`);
-              }
-              // Track which tier was actually used for debugging
-              const escalatedFromTier1 = data.templateStructure !== 'COMPLETE_TIER_1';
-              if (escalatedFromTier1) {
-                console.log(`✅ Tier 1 escalated to ${data.usedTier || data.tier} (healthy behavior)`);
-              }
-            }
+            // Extract cascade history from response
+            const cascadeHistory = data.metadata?.cascadeHistory || data.cascadeHistory || [];
+            const actualTier = data.tier || data.usedTier || 'UNKNOWN';
+            const primaryScene = data.primaryScene || 
+                               data.metadata?.primaryScene || 
+                               data.tier1?.primaryScene || 
+                               data.directMode?.primaryScene;
+            const ccsErrors = cascadeHistory.filter((line: string) => 
+              line.includes('CCS') && (line.includes('failed') || line.includes('error') || line.includes('❌'))
+            );
             
-            tierResult = {
-              tier: tier.name,
+            scenarioResult = {
+              tier: scenario.name,
               success: true,
               imageURL: data.imageURL,
               details: {
                 processingTime,
-                testType: 'REAL',
-                errorCategory: 'SUCCESS',
-                architecture: tier.architecture,
-                requestId: data.requestId,
-                usedTier: data.usedTier || data.tier,
+                testType: 'PRODUCTION_SCENARIO',
+                scenario: scenario.description,
+                expectedBehavior: scenario.expectedBehavior,
+                actualTier,
+                primaryScene,  // ✅ Will display for Tier 1 / Direct Mode
+                cascadeHistory,
+                ccsErrors: ccsErrors.length > 0 ? ccsErrors : undefined,
+                ccsStatus: ccsErrors.length > 0 ? 'ERRORS_DETECTED' : 'HEALTHY',
+                metadata: data.metadata,
                 tier: data.tier,
-                
-                // Architecture-specific display fields
-                primaryScene: data.primaryScene,
-                templateStructure: data.templateStructure,
-                
-                // Orchestrator-specific fields
-                nextAction: data.nextAction,
-                recommendedAction: data.recommendedAction,
-                
-                // Show payload structure used
-                payloadStructure: Object.keys(tier.payload).join(', '),
-                expectedArchitecture: tier.architecture,
-                
-                // CCS Status Tracking
-                ccsBootStatus: data.ccsBootStatus || data.metadata?.ccsBootStatus || { loaded: false, tier1: false, tier25: false, directMode: false },
-                precomputedCCSUsed: data.precomputedCCSUsed ?? null,
-                ccsMethodStatus: data.ccsMethodStatus || data.metadata?.ccsMethodStatus || {},
-                ccsFallbacksActive: data.ccsFallbacksActive || data.metadata?.ccsFallbacksActive || [],
-                ccsImportSource: data.ccsImportSource || data.metadata?.ccsImportSource || 'unknown',
+                usedTier: data.usedTier,
+                errorCategory: 'SUCCESS'
               }
             };
+            
+            console.log(`✅ ${scenario.name} SUCCESS - Image generated at ${actualTier}`);
+            if (ccsErrors.length > 0) {
+              console.warn(`⚠️ ${scenario.name} had CCS errors but still succeeded:`, ccsErrors);
+            }
           } else {
-            throw new Error(error?.message || `No image returned from ${tier.name}`);
+            throw new Error(error?.message || data?.error || `No image returned from ${scenario.name}`);
           }
         } catch (error: any) {
-          const processingTime = Date.now() - tierStartTime;
-          const { category, probableCause, errorType } = categorizeError(error, tier.function);
+          const processingTime = Date.now() - scenarioStartTime;
+          const { category, probableCause } = categorizeError(error, 'runware-generate-image');
+          
+          // Extract error details from response
+          const cascadeHistory = error?.details?.cascadeHistory || [];
+          const stoppedBecause = error?.details?.stoppedBecause || 'UNKNOWN';
 
-          tierResult = {
-            tier: tier.name,
+          scenarioResult = {
+            tier: scenario.name,
             success: false,
             details: {
               processingTime,
-              testType: 'REAL',
+              testType: 'PRODUCTION_SCENARIO',
+              scenario: scenario.description,
+              expectedBehavior: scenario.expectedBehavior,
               error: error?.message || 'Unknown error',
               probableCause,
               errorCategory: category as any,
-              errorType,
-              architecture: tier.architecture,
-              
-              // Show architecture mismatch indicators
-              payloadStructure: Object.keys(tier.payload).join(', '),
-              expectedArchitecture: tier.architecture,
-              
-              // Detect potential orchestrator guidance
-              orchestratorGuidance: error?.message?.includes('TRY_DIRECT_MODE') ? 'TRY_DIRECT_MODE' : null
+              cascadeHistory,
+              stoppedBecause,
+              criticalFailure: scenario.criticalFailure
             }
           };
+          
+          console.error(`❌ ${scenario.name} FAILED: ${error?.message}`);
         }
 
-        testResults.push(tierResult);
+        testResults.push(scenarioResult);
         setResults([...testResults]); // Update UI progressively
       }
 
-      DebugLogger.log('image', '✅ Architecture awareness test completed', {
-        totalTests: testResults.length,
-        successCount: testResults.filter(r => r.success).length
+      const successCount = testResults.filter(r => r.success).length;
+      const totalCount = testResults.length;
+      
+      DebugLogger.log('image', '✅ Batch Production Cascade Testing completed', {
+        totalTests: totalCount,
+        successCount,
+        failureCount: totalCount - successCount
+      });
+
+      toast({
+        title: successCount === totalCount ? "✅ All Production Scenarios Passed" : "⚠️ Some Scenarios Failed",
+        description: `${successCount}/${totalCount} scenarios succeeded`,
+        variant: successCount === totalCount ? "default" : "destructive",
+        duration: 6000,
       });
 
     } catch (error: any) {
-      DebugLogger.error('image', '❌ Architecture awareness test failed', { error });
-      
-      setResults([{
-        tier: 'architecture-test-error',
-        success: false,
-        details: { 
-          error: error.message,
-          testType: 'REAL',
-          errorCategory: 'INTERNAL',
-          probableCause: 'Test framework error'
-        }
-      }]);
+      DebugLogger.error('image', '❌ Batch testing failed', { error });
+      toast({
+        title: "❌ Batch Testing Error",
+        description: error.message,
+        variant: "destructive",
+        duration: 8000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -3182,13 +3179,14 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             </Button>
             
             <Button
-              onClick={testArchitectureAwareness}
+              onClick={testBatchProductionCascade}
               disabled={isLoading}
               variant="outline"
               className="flex items-center gap-2"
+              title="Tests all tier scenarios using production cascade flow through orchestrator. Shows real CCS errors when they occur. Displays images + primaryScene text for Tier 1 and Direct Mode successes."
             >
               <CheckCircle className="h-4 w-4" />
-              Batch Tier Testing
+              Batch Tier Testing (Production Cascade)
             </Button>
             
             <Button

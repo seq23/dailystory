@@ -1508,6 +1508,7 @@ const executeTier1: TierFn = async (ctx) => {
         provider: "runware-websocket",
         tier: "TIER_1",
         resultType: "TIER_1_SUCCESS",
+        primaryScene: tier1Result.primaryScene,  // ✅ ADD: primaryScene text for display
         positivePrompt: tier1Result.enhancedPrompt, // CORRECT: Use string directly
         negativePrompt: tier1Result.negativePrompt,
         tier1Debug: {
@@ -1516,6 +1517,7 @@ const executeTier1: TierFn = async (ctx) => {
         },
         metadata: {
           cascadeHistory: ["✅ Tier 1 Complete Success"],
+          primaryScene: tier1Result.primaryScene,  // ✅ ADD: Also in metadata for consistency
         },
       },
       meta: { tier: "TIER_1", ms: Date.now() - startMs }
@@ -1640,6 +1642,8 @@ const executeDirectMode: TierFn = async (ctx) => {
           imageURL: data.imageURL,
           tier: "DIRECT_MODE",
           resultType: "DIRECT_MODE_SUCCESS",
+          primaryScene: data.primaryScene,  // ✅ ADD: primaryScene text for display
+          seed: data.seed,                  // ✅ ADD: seed for debugging
           metadata: { 
             cascadeHistory: [
               tier1FailureDetails ? `❌ Tier 1 Failed: ${tier1FailureDetails.failureCategory}` : "⚠️ Tier 1 Failed",
@@ -1648,6 +1652,7 @@ const executeDirectMode: TierFn = async (ctx) => {
             tier1FailureDetails,
             tier1Timeline: tier1FailureDetails?.tier1Timeline || [],
             directModeEntryPoint: 'ORCHESTRATOR', // Track orchestrator-initiated Direct Mode for testing diagnostics
+            primaryScene: data.primaryScene,  // ✅ ADD: Also in metadata for consistency
           },
         },
         meta: { tier: "DIRECT_MODE", ms: Date.now() - startMs }
