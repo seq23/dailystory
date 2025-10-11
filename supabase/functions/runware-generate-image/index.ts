@@ -2363,7 +2363,42 @@ async function runTierCascade(
     
     // Execute target tier directly (whether Tier 1 succeeded or failed)
     console.log(`🎯 Executing target tier: ${skipToTier}`);
-    return await targetTier(ctx);
+    const targetResult = await targetTier(ctx);
+    
+    // Add cascade history and stop confirmation
+    const cascadeHistory = [
+      `✅ Tier 1 CCS prep ${tier1Result.ok ? 'succeeded' : 'failed (emergency fallback used)'}`,
+      `🎯 Skip Mode: Jumped to ${skipToTier}`,
+      `${targetResult.ok ? '✅' : '❌'} ${skipToTier} ${targetResult.ok ? 'Success' : 'Failed'}`,
+      `🛑 Skip Mode Complete: Stopped at ${skipToTier} (no cascade)`
+    ];
+    
+    if (!targetResult.ok && targetResult.reason) {
+      cascadeHistory.push(`💬 Failure Reason: ${targetResult.reason}`);
+    }
+    
+    console.log(`🛑 Skip mode complete: ${skipToTier} → ${targetResult.ok ? 'SUCCESS' : `FAILED (${targetResult.code || 'no code'})`}`);
+    
+    // Add cascade history to response metadata
+    if (targetResult.ok && targetResult.data) {
+      targetResult.data.metadata = targetResult.data.metadata || {};
+      targetResult.data.metadata.cascadeHistory = cascadeHistory;
+      targetResult.data.metadata.skipModeUsed = true;
+      targetResult.data.metadata.targetTier = skipToTier;
+    } else if (!targetResult.ok) {
+      // For failures, add to details or create a minimal response structure
+      const failureDetails = {
+        ...targetResult,
+        metadata: {
+          cascadeHistory,
+          skipModeUsed: true,
+          targetTier: skipToTier
+        }
+      };
+      return failureDetails;
+    }
+    
+    return targetResult;
   }
   
   // Normal cascade (no skip mode)

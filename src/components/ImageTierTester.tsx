@@ -1308,6 +1308,10 @@ export const ImageTierTester = () => {
       }
 
        // STEP 2: Use real frontend routing (generateStoryImage - the actual user entry point)
+       cascadeHistory.push('');
+       cascadeHistory.push('🔄 TEST MODE: E2E Simulation (Natural Cascade)');
+       cascadeHistory.push('📋 Expected: Tier 1 → Direct Mode → 2.5A → 2.5B → ... (until success)');
+       cascadeHistory.push('');
        cascadeHistory.push('🚀 Using SimpleImageService.generateStoryImage (real user flow)...');
        cascadeHistory.push(`⚙️ Smart Bypass: ${userTier === 'guest' ? 'Enabled (Real Guest Experience)' : 'Disabled (Real Premium Experience)'}`);
        cascadeHistory.push('🎯 Attempting Tier 1 via Enhanced Character-First Flow (runware-generate-image)...');
@@ -1734,6 +1738,9 @@ export const ImageTierTester = () => {
       { name: '🎨 Image Generation', status: 'pending' }
     ];
     
+    // Cascade history tracking (declare outside try for catch block access)
+    const cascadeHistory: string[] = [];
+    
     try {
       const logMessage = tier === '1' 
         ? '🎯 Force Tier 1: Testing Complete Orchestrator Flow - NO CASCADE'
@@ -1837,10 +1844,37 @@ export const ImageTierTester = () => {
 
       // Step 3: Template Execution
       steps[2].status = 'running';
+      
+      // Add cascade history tracking
+      cascadeHistory.push('');
+      cascadeHistory.push(`🎯 TEST MODE: Force Tier ${tier} (STOP at ${tier}, no cascade)`);
+      cascadeHistory.push(`📋 Expected: Tier 1 CCS prep → Tier ${tier} → STOP`);
+      cascadeHistory.push('');
+      cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Starting Force Tier ${tier} test...`);
+      
       const response = await supabase.functions.invoke(selectedFunction, { body: payload });
       steps[2].status = !response.error ? 'success' : 'error';
 
       const processingTime = Date.now() - startTime;
+      
+      // Extract cascade history from backend response
+      if (response.data?.metadata?.cascadeHistory && Array.isArray(response.data.metadata.cascadeHistory)) {
+        cascadeHistory.push('');
+        cascadeHistory.push('🔄 Backend Execution Trace:');
+        cascadeHistory.push(...response.data.metadata.cascadeHistory);
+      }
+      
+      // Add result to cascade history
+      if (!response.error && response.data?.success) {
+        cascadeHistory.push('');
+        cascadeHistory.push(`✅ Tier ${tier} Success (${processingTime}ms)`);
+        cascadeHistory.push(`🛑 STOPPED at Tier ${tier} as expected (skip mode)`);
+      } else {
+        cascadeHistory.push('');
+        cascadeHistory.push(`❌ Tier ${tier} Failed (${processingTime}ms)`);
+        cascadeHistory.push(`🛑 STOPPED at Tier ${tier} - No cascade`);
+        cascadeHistory.push(`💬 Error: ${response.error?.message || response.data?.error || 'Unknown error'}`);
+      }
       
       // Step 4: Prompt Generation Validation
       steps[3].status = 'running';
@@ -1929,7 +1963,8 @@ export const ImageTierTester = () => {
           error: response.error?.message || response.data?.error,
           errorCategory,
           probableCause,
-          errorDetails: response.data?.errorDetails
+          errorDetails: response.data?.errorDetails,
+          cascadeHistory  // Add cascade history to results
         }
       }]);
     } catch (error) {
@@ -1938,6 +1973,10 @@ export const ImageTierTester = () => {
       // Update failed step
       const currentStep = steps.find(s => s.status === 'running');
       if (currentStep) currentStep.status = 'error';
+      
+      cascadeHistory.push('');
+      cascadeHistory.push(`❌ Exception thrown: ${error.message}`);
+      cascadeHistory.push(`🛑 Test aborted at Tier ${tier}`);
       
       setResults([{
         tier: `tier-${tier}-error`,
@@ -1949,7 +1988,8 @@ export const ImageTierTester = () => {
           testType: 'FORCED_TEMPLATE_BYPASS',
           stepByStepValidation: steps,
           errorCategory: 'NETWORK',
-          probableCause: 'Network timeout or connection failure'
+          probableCause: 'Network timeout or connection failure',
+          cascadeHistory
         }
       }]);
     } finally {
