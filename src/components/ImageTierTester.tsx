@@ -712,14 +712,14 @@ export const ImageTierTester = () => {
     }
   };
 
-  // Batch timeout testing for all tiers with progress tracking
+  // Batch timeout testing for IMAGE GENERATION Tier 2.5A with progress tracking
   const batchTimeoutTest = async () => {
     setIsLoading(true);
     setResults([]);
     setCurrentTestProgress('');
     
-    const timeoutVariations = [5000, 10000]; // Reduced to 5s, 10s for faster testing
-    const endpoints = ['ai-visual-scene-creator', 'runware-generate-image'];
+    const timeoutVariations = [5000, 10000]; // Test with 5s, 10s timeouts
+    const endpoints = ['runware-generate-image']; // IMAGE GENERATION: Only test orchestrator
     
     const allResults: TestResult[] = [];
     const totalTests = timeoutVariations.length * endpoints.length;
@@ -737,20 +737,29 @@ export const ImageTierTester = () => {
           }
           
           completedTests++;
-          setCurrentTestProgress(`Testing ${endpoint} with ${timeout}ms timeout (${completedTests}/${totalTests})`);
+          setCurrentTestProgress(`Testing IMAGE GENERATION Tier 2.5A with ${timeout}ms timeout (${completedTests}/${totalTests})`);
           
           try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), timeout);
             
             const startTime = Date.now();
+            const userInfo = buildUserInfo();
             const response = await supabase.functions.invoke(endpoint, {
               body: {
-                storyText: testStoryText.substring(0, 100),
-                pageText: testStoryText.substring(0, 100),
-                userInfo: buildUserInfo(),
+                // IMAGE GENERATION: Production-grade payload matching Force Tier 2.5A
+                storyText: testStoryText,  // Full text, not truncated
+                pageText: testStoryText,   // Full text, not truncated
+                userInfo: userInfo,
+                sessionId: crypto.randomUUID(),
+                storyId: crypto.randomUUID(),
                 pageNumber: 1,
-                sessionId: crypto.randomUUID()
+                characterName: userInfo?.name || 'Alex',
+                isGuestUser: true,
+                difficultyLevel: mapDifficultyLevel(userInfo),
+                protectionNegatives: [],
+                skipDirectlyToTier: '2.5A',  // IMAGE GENERATION: Route to Tier 2.5A
+                skipTier1AI: true            // IMAGE GENERATION: Skip AI scene extraction
               }
             });
             
@@ -758,7 +767,7 @@ export const ImageTierTester = () => {
             const processingTime = Date.now() - startTime;
             
             const result = {
-              tier: `${endpoint}-${timeout}ms`,
+              tier: `tier-2.5A-${timeout}ms`,  // Changed from generic endpoint name
               success: !response.error && response.data?.success,
               imageURL: response.data?.imageURL,
               details: {
@@ -766,6 +775,8 @@ export const ImageTierTester = () => {
                 testType: 'REAL' as const,
                 timeoutTest: true,
                 requestId: response.data?.requestId,
+                tier: response.data?.tier,  // NEW: Show which tier succeeded
+                cascadeHistory: response.data?.metadata?.cascadeHistory,  // NEW: Show cascade path
                 error: response.error?.message || response.data?.error
               }
             };
@@ -775,7 +786,7 @@ export const ImageTierTester = () => {
             
           } catch (error) {
             const result = {
-              tier: `${endpoint}-${timeout}ms-error`,
+              tier: `tier-2.5A-${timeout}ms-error`,
               success: false,
               imageURL: undefined,
               details: {
