@@ -1061,6 +1061,25 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
         source: precomputedCCS?.source
       }));
       
+      // ============= NULL-SAFETY CHECK FOR PRECOMPUTED CCS =============
+      if (!precomputedCCS) {
+        console.error(`❌ [${requestId}] [T2.5A] No precomputedCCS object in payload`, {
+          templateComplexity: payload.templateComplexity,
+          hasPayloadKeys: Object.keys(payload),
+          escalation: 'MODE_B'
+        });
+        
+        return createResponse({
+          success: false,
+          error: 'NO_PRECOMPUTED_CCS',
+          escalation: 'NEXT_TIER',
+          tier: 'tier-2.5A',
+          service: SERVICE_NAME,
+          message: 'Tier 2.5A requires precomputedCCS object from orchestrator. Escalating to Mode B.'
+        }, 503);
+      }
+      // ============= END NULL-SAFETY CHECK =============
+      
       // ============= CCS COMPLETENESS VALIDATION =============
       const tier1Complete = precomputedCCS.tier1Complete === true;
       const ccsSource = precomputedCCS.source || 'unknown';
