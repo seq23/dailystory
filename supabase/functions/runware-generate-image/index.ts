@@ -529,9 +529,10 @@ async function bindTierLogger(
 
       supabaseClient = await createVendorFirstSupabaseClient();
 
-    // ✅ DEFENSIVE: Validate tierLogging module loaded correctly
+    // ✅ CRASH-PROOF: Silently detect incomplete tierLogging and fall back to console-only
     if (!tierLogging || typeof tierLogging.logTier1 !== 'function') {
-      throw new Error('tierLogging module incomplete - logTier1 method missing');
+      console.warn('⚠️ [ORCHESTRATOR] tierLogging module incomplete - falling back to console-only logger');
+      throw new Error('tierLogging incomplete'); // Trigger catch block for console-only fallback
     }
 
     // Sampling helper: only log to DB if sampled or failure
@@ -542,7 +543,7 @@ async function bindTierLogger(
       return Math.random() < logSampleRate; // Sample for success/info logs
     };
 
-    // Wrap logging functions with PII redaction and sampling
+    // Wrap logging functions with PII redaction, sampling, and NO-THROW guarantee
     const wrapWithRedactionAndSampling =
       (fn: Function) =>
       (msg: string, ctx: any = {}) => {
@@ -551,10 +552,14 @@ async function bindTierLogger(
         // Always console log
         console.log(`[TIER_LOG] ${msg}`, safeCtx);
 
-        // Conditionally log to DB (sample or failure)
+        // Conditionally log to DB (sample or failure) - wrapped to NEVER throw
         const status = String(safeCtx.status || "info");
         if (shouldLogToDB(status)) {
-          return fn(msg, safeCtx, supabaseClient, sessionId, requestId);
+          try {
+            return fn(msg, safeCtx, supabaseClient, sessionId, requestId);
+          } catch (dbError) {
+            console.warn(`⚠️ [TIER_LOG] DB insert failed (non-fatal):`, dbError);
+          }
         }
       };
 
@@ -565,21 +570,33 @@ async function bindTierLogger(
         const safeCtx = isProd ? redactPII(ctx) : ctx;
         console.log(`[${tier}] Attempting`, safeCtx);
         if (shouldLogToDB("attempting")) {
-          return tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, "attempting", safeCtx);
+          try {
+            return tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, "attempting", safeCtx);
+          } catch (dbError) {
+            console.warn(`⚠️ [${tier}] DB log failed (non-fatal):`, dbError);
+          }
         }
       },
       success: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
         console.log(`[${tier}] Success`, safeCtx);
         if (shouldLogToDB("success")) {
-          return tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, safeCtx);
+          try {
+            return tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, safeCtx);
+          } catch (dbError) {
+            console.warn(`⚠️ [${tier}] DB log failed (non-fatal):`, dbError);
+          }
         }
       },
       failure: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
         console.error(`[${tier}] Failure`, safeCtx);
-        // Always log failures to DB
-        return tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, safeCtx);
+        // Always log failures to DB - wrapped to NEVER throw
+        try {
+          return tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, safeCtx);
+        } catch (dbError) {
+          console.warn(`⚠️ [${tier}] DB log failed (non-fatal):`, dbError);
+        }
       },
     };
   } catch (error) {
