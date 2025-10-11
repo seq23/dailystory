@@ -2189,6 +2189,8 @@ const executeT25A: TierFn = async (ctx) => {
         headers,
         body: JSON.stringify({
           ...ctx.payload,
+          userInfo: ctx.payload.userInfo,      // ✅ EXPLICIT (template-ab needs this)
+          sessionId: ctx.payload.sessionId,    // ✅ EXPLICIT (template-ab needs this)
           templateComplexity, // "A" or "B" based on CCS completeness
           precomputedCCS: precomputedCCS,
           // ✅ Explicitly ensure story content is present (prevents runtime probe response)
@@ -2302,6 +2304,8 @@ const executeT25B: TierFn = async (ctx) => {
         headers,
         body: JSON.stringify({
           ...ctx.payload,
+          userInfo: ctx.payload.userInfo,      // ✅ EXPLICIT (template-ab needs this)
+          sessionId: ctx.payload.sessionId,    // ✅ EXPLICIT (template-ab needs this)
           templateComplexity: "B",
           precomputedCCS: precomputedCCS,
         }),
@@ -3156,8 +3160,34 @@ serve(async (req) => {
       // Store health routing decision in context
       ctx.healthRoutingDecision = healthRoutingDecision;
       
-      // 3. Run cascade
-      const result = await runTierCascade(tiers, ctx);
+      // 3. Run cascade (with test-only Direct Mode enforcement)
+      let result;
+      
+      // 🧪 TEST MODE: Force Direct Mode execution for "Orchestrator Fallback" test
+      if (payload.test === true && payload.__testSimulateT1Failure === true) {
+        console.log(`🧪 [${requestId}] TEST MODE: Forcing Direct Mode execution after Tier 1 simulation`);
+        
+        // Execute Tier 1 (will be simulated failure due to __testSimulateT1Failure flag)
+        const tier1Result = await executeTier1(ctx);
+        
+        if (!tier1Result.ok) {
+          console.log(`🧪 [${requestId}] TEST: Tier 1 failed as expected, executing Direct Mode...`);
+        }
+        
+        // Force Direct Mode execution (must return primaryScene)
+        const dmResult = await executeDirectMode(ctx);
+        
+        if (dmResult.ok) {
+          console.log(`✅ [${requestId}] TEST: Direct Mode succeeded with primaryScene`);
+          result = dmResult;
+        } else {
+          console.error(`❌ [${requestId}] TEST: Direct Mode failed:`, dmResult.reason);
+          result = dmResult;
+        }
+      } else {
+        // Normal production cascade
+        result = await runTierCascade(tiers, ctx);
+      }
       
       // 4. Return result
       if (result.ok) {

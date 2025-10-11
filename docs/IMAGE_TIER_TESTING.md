@@ -80,6 +80,19 @@ The "Force Tier 2.5A" and "Force Tier 2.5B" buttons simulate production escalati
 | Image Generation | Skipped | **Generated** |
 | Purpose | Health check | Production flow simulation |
 
+## Test Mode Enforcement
+
+### Explicit Payload Fields
+The orchestrator explicitly passes `userInfo` and `sessionId` to template functions (Tier 2.5A/B) to ensure validation passes in test mode. This fixes the "Cannot read properties of undefined (reading 'userInfo')" error that occurs when template-ab's strict validation (lines 1115-1128) encounters incomplete payload data.
+
+### Direct Mode Test Guarantee
+When `payload.test === true` AND `payload.__testSimulateT1Failure === true`, the orchestrator:
+1. Executes Tier 1 (simulated failure)
+2. **Forces** Direct Mode execution (not cascade-dependent)
+3. Returns Direct Mode result with `primaryScene` for validation
+
+This ensures the "Direct Mode (Orchestrator Fallback)" test exercises the actual Direct Mode path and validates the `primaryScene` contract, rather than relying on the normal cascade which may skip Direct Mode.
+
 ## SEO
 - Images in this doc should include descriptive alt text if added later
 
