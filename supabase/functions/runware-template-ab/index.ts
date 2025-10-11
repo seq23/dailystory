@@ -1084,23 +1084,41 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
       const skinTone = characterSeed.skinTone || 'medium';
       const culturalProfile = inlineDetectCultural(payload.userInfo, payload.avatarIdentity);
       
-      // Repair missing hair property
-      if (!characterSeed.hair || characterSeed.hair.trim() === '') {
-        characterSeed.hair = inlineGetHairBySkin(skinTone, culturalProfile);
-        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing hair: ${characterSeed.hair}`);
+      // Extract character traits from CCS structure (selectedCulturalHair/Features or physicalTraits)
+      const hairTrait = characterSeed.selectedCulturalHair || 
+                        characterSeed.physicalTraits?.hair || 
+                        '';
+      const skinTrait = characterSeed.selectedCulturalFeatures || 
+                        characterSeed.physicalTraits?.skinFeatures || 
+                        '';
+      const eyesTrait = characterSeed.physicalTraits?.eyes || '';
+
+      // Repair missing traits if extraction failed
+      const repairedHair = hairTrait.trim() || inlineGetHairBySkin(skinTone, culturalProfile);
+      const repairedSkin = skinTrait.trim() || inlineGetSkinBySkin(skinTone);
+      const repairedEyes = eyesTrait.trim() || inlineGetEyesBySkin(skinTone);
+
+      // Log any repairs
+      if (!hairTrait.trim()) {
+        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing hair: ${repairedHair}`);
       }
-      
-      // Repair missing skin property
-      if (!characterSeed.skin || characterSeed.skin.trim() === '') {
-        characterSeed.skin = inlineGetSkinBySkin(skinTone);
-        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing skin: ${characterSeed.skin}`);
+      if (!skinTrait.trim()) {
+        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing skin: ${repairedSkin}`);
       }
-      
-      // Repair missing eyes property
-      if (!characterSeed.eyes || characterSeed.eyes.trim() === '') {
-        characterSeed.eyes = inlineGetEyesBySkin(skinTone);
-        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing eyes: ${characterSeed.eyes}`);
+      if (!eyesTrait.trim()) {
+        console.log(`🔧 [${requestId}] [T2.5A] Repaired missing eyes: ${repairedEyes}`);
       }
+
+      // Create normalized characterSeed with flat structure for downstream use
+      const normalizedCharacterSeed = {
+        hair: repairedHair,
+        skin: repairedSkin,
+        eyes: repairedEyes,
+        skinTone: characterSeed.skinTone || skinTone,
+        seed: characterSeed.seed,
+        source: characterSeed.source || 'orchestrator',
+        _original: characterSeed // Preserve original for debugging
+      };
       
       // ✅ INLINE COMPUTATION: If bundle hair/features empty, compute them
       if (!bundle.hair || !bundle.features) {
