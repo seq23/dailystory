@@ -1280,7 +1280,6 @@ Action: ${simpleScene}.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       
-      const usedPrecomputedData = !!precomputedCCS;
       console.log(`✅ Tier 2.5B: Using pure inline template with simple scene: "${simpleScene}"`, {
         culturalProfile,
         skinTone,
