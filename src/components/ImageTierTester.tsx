@@ -2497,6 +2497,102 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
     }
   };
 
+  const testTier1CCSMethods = async () => {
+    if (!testStoryText.trim()) {
+      toast({
+        title: "⚠️ Missing Story Text",
+        description: "Please enter story text first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setResults([]);
+    
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const sessionId = `test-tier1-ccs-${Date.now()}`;
+    
+    try {
+      DebugLogger.log('image', '🧪 Testing Tier 1 CCS Methods');
+      
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-generate-image`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          pageText: testStoryText,
+          userInfo: buildUserInfo(),
+          sessionId,
+          pageNumber: 1,
+          forceCompleteTier1: true  // Force Tier 1 validation
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.tier === 'TIER_1') {
+        setResults([{
+          tier: 'Tier 1 CCS Methods',
+          success: true,
+          details: {
+            testType: 'TIER_1_COMPLETE_FLOW',
+            tier: data.tier,
+            probableCause: 'All CCS methods succeeded without .order() errors'
+          }
+        }]);
+        
+        toast({
+          title: "✅ Tier 1 CCS Methods PASSED",
+          description: "All CCS methods succeeded without .order() errors",
+          duration: 6000,
+        });
+      } else {
+        setResults([{
+          tier: 'Tier 1 CCS Methods',
+          success: false,
+          details: {
+            testType: 'TIER_1_COMPLETE_FLOW',
+            tier: data.tier,
+            error: data.error || 'Unknown CCS failure',
+            probableCause: 'CCS method failed - check for .order() TypeError in logs',
+            errorCategory: 'INTERNAL' as const
+          }
+        }]);
+        
+        toast({
+          title: "❌ Tier 1 CCS Methods FAILED",
+          description: `Error: ${data.error || 'Unknown CCS failure'}`,
+          variant: "destructive",
+          duration: 8000,
+        });
+      }
+    } catch (error) {
+      setResults([{
+        tier: 'Tier 1 CCS Methods',
+        success: false,
+        details: {
+          testType: 'TIER_1_COMPLETE_FLOW',
+          error: error.message,
+          probableCause: 'Network error or edge function crash - check logs for .order() errors',
+          errorCategory: 'NETWORK' as const
+        }
+      }]);
+      
+      toast({
+        title: "❌ Tier 1 Test ERROR",
+        description: error.message,
+        variant: "destructive",
+        duration: 8000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const testArchitectureAwareness = async () => {
     if (!testStoryText.trim()) {
       alert('Please enter story text first');
@@ -3006,6 +3102,16 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             >
               <Settings className="h-4 w-4" />
               Test AISC Health Endpoint
+            </Button>
+            
+            <Button
+              onClick={testTier1CCSMethods}
+              disabled={isLoading}
+              variant="secondary"
+              className="flex items-center gap-2 border-2 border-blue-500"
+            >
+              <CheckCircle className="h-4 w-4" />
+              Test Tier 1 CCS Methods
             </Button>
           </div>
 

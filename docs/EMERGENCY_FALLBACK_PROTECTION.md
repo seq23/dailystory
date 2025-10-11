@@ -578,6 +578,98 @@ ErrorHandlingManager.getEmergencyContent({ name: 'Test User' });
 ### Impact of Incorrect URL
 
 When the health check URL is wrong:
+
+1. AISC health check fails (404 Not Found)
+2. Tier 1 is skipped entirely
+3. All requests fallback to Direct Mode
+4. Business impact: 0% Tier 1 success rate
+
+### Prevention Safeguards
+
+1. **Critical Documentation Comments** - Warning in runware-generate-image/index.ts (lines 2675-2678)
+2. **Health Check Validation Test** - Self-test logging in runware-generate-image/index.ts (lines 2700-2727)
+3. **Contract Test Logging** - Explicit logging in ai-visual-scene-creator/index.ts (lines 1150-1155)
+4. **Integration Test UI Button** - "Test AISC Health Endpoint" in ImageTierTester.tsx
+5. **Tier Logging Feature Detection** - Safe `.order()` usage in tierLogging.js (lines 52-64)
+6. **Documentation** - This section
+
+---
+
+## Vendor-First Client Compatibility
+
+**⚠️ ALWAYS use feature detection for `.order()` method**
+
+The vendor-first Supabase client used for instant availability (0ms network delay) does not guarantee all query builder methods are available.
+
+### Common Issue: `.order is not a function`
+
+**Problem:**
+```javascript
+// ❌ BROKEN: Assumes .order() exists
+const { data } = await supabase
+  .from('table')
+  .select('*')
+  .eq('id', value)
+  .order('created_at', { ascending: false });
+```
+
+**Solution:**
+```javascript
+// ✅ SAFE: Feature detection
+const query = supabase.from('table').select('*').eq('id', value);
+const canOrder = typeof query.order === 'function';
+const { data } = canOrder 
+  ? await query.order('created_at', { ascending: false })
+  : await query;
+  
+if (!canOrder) {
+  console.warn('⚠️ .order() unavailable - vendor-first client limitation');
+}
+```
+
+### Impact of Not Using Feature Detection
+
+- **TypeError:** `order is not a function`
+- **Tier 1 Failure:** CCS methods throw errors, triggering Direct Mode fallback
+- **Business Impact:** Reduces Tier 1 success rate from 90-95% to 0%
+- **User Experience:** Forces all requests through slower Direct Mode
+
+### Affected Services
+
+- `CharacterConsistencyServiceInline.js` (Tier 1) - Lines 1692-1700, 2076-2090
+- `tierLogging.js` (logging/monitoring) - Lines 52-64
+- Any service using `createVendorFirstSupabaseClient()`
+
+### Reference Implementations
+
+- **tierLogging.js** lines 52-64: POST-INSERT verification with feature detection
+- **CharacterConsistencyServiceInline.js** lines 1692-1710: Batch CCS fetch with graceful degradation
+- **CharacterConsistencyServiceInline.js** lines 2076-2095: Latest clothing retrieval with client-side sorting fallback
+
+### Prevention Safeguards (Phase 2)
+
+1. **Code Fix:** Feature detection for `.order()` in CharacterConsistencyServiceInline.js (2 locations)
+2. **Code Comments:** Vendor-first client warnings before all `.order()` usage
+3. **Self-Test Logging:** Batch fetch validation in runware-generate-image/index.ts (after line 805)
+4. **UI Test:** "Test Tier 1 CCS Methods" button in ImageTierTester.tsx
+5. **Documentation:** This section
+
+### Critical Learning for Future Prevention
+
+**Rule:** Whenever using `createVendorFirstSupabaseClient()`:
+1. ⚠️ **NEVER assume** query builder methods exist
+2. ✅ **ALWAYS use** feature detection for `.order()`, `.limit()`, etc.
+3. ✅ **ALWAYS provide** graceful degradation fallback
+4. ✅ **ALWAYS log** when feature detection triggers (for monitoring)
+
+**Files using vendor-first client:**
+- `CharacterConsistencyServiceInline.js` (Tier 1)
+- `tierLogging.js` (monitoring)
+- Any future services that need instant Supabase availability
+
+---
+
+## Impact of Incorrect URL (Original Section)
 - ❌ False "unhealthy" classification
 - ❌ Tier 1 & Direct Mode skipped completely
 - ❌ 90-95% success rate lost

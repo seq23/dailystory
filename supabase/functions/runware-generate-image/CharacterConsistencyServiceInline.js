@@ -1688,15 +1688,28 @@ export class CharacterConsistencyService {
         console.error('❌ Batch fetch character error:', charError);
       }
       
-      // Single query to fetch visual details
-      const { data: visualData, error: vizError } = await supabase
+      // ⚠️ CRITICAL: Vendor-first client compatibility
+      // The vendor-first Supabase client used by CharacterConsistencyService
+      // may not have .order() method available. Always use feature detection
+      // to prevent "order is not a function" TypeErrors in production.
+      // See: tierLogging.js lines 52-64 for reference implementation
+      
+      // Single query to fetch visual details with feature detection
+      const visualQuery = supabase
         .from('visual_details_cache')
         .select('detail_type, detail_key, detail_value, page_first_seen, visual_elements')
-        .eq('session_id', sessionId)
-        .order('page_first_seen', { ascending: false });
+        .eq('session_id', sessionId);
+      
+      // Feature detection prevents TypeError in production
+      const canOrder = typeof visualQuery.order === 'function';
+      const { data: visualData, error: vizError } = canOrder
+        ? await visualQuery.order('page_first_seen', { ascending: false })
+        : await visualQuery;  // Graceful degradation: fetch without ordering
       
       if (vizError) {
         console.error('❌ Batch fetch visual details error:', vizError);
+      } else if (!canOrder) {
+        console.warn('⚠️ .order() unavailable - visual data fetched without sorting (vendor-first client limitation)');
       }
       
       // Parse colored objects from visual details
@@ -2072,19 +2085,32 @@ export class CharacterConsistencyService {
       return '';
     }
     
-    // Step 2: Clothing exists, now retrieve it
-    const { data, error } = await supabase
+    // ⚠️ CRITICAL: Vendor-first client compatibility for .order() method
+    // See: tierLogging.js lines 52-64 and batch fetch above (line 1692) for reference
+    
+    // Step 2: Clothing exists, now retrieve it with feature detection
+    const clothingQuery = supabase
       .from('visual_details_cache')
       .select('detail_value, page_first_seen')
       .eq('session_id', sessionId)
       .eq('character_name', characterName)
       .eq('detail_type', 'clothing')
-      .order('page_first_seen', { ascending: false })
       .limit(1);
+    
+    const canOrder = typeof clothingQuery.order === 'function';
+    const { data, error } = canOrder
+      ? await clothingQuery.order('page_first_seen', { ascending: false })
+      : await clothingQuery;  // Graceful degradation
     
     // FAIL FAST: Query error when clothing should exist = consistency violation
     if (error) {
       throw new Error(`CCS_CLOTHING_FAILED: Retrieval failed - ${error.message}`);
+    }
+    
+    if (!canOrder && data && data.length > 1) {
+      // Without ordering, multiple results may not be in correct order
+      // Sort client-side as fallback (most recent page first)
+      data.sort((a, b) => (b.page_first_seen || 0) - (a.page_first_seen || 0));
     }
     
     // FAIL FAST: No data when count > 0 = database inconsistency

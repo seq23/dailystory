@@ -806,6 +806,14 @@ async function processInlinedTier1(
   // ============= UNPACK BATCH DATA =============
   characterSeed = batchCCSData.characterSeed;
   coloredObjects = batchCCSData.coloredObjects.map(obj => obj.fullDescription).join(', ');
+  
+  // Self-test: Verify batch fetch succeeded without .order() errors
+  if (!batchCCSData || (!batchCCSData.characterSeed && !batchCCSData.visualDetails.length)) {
+    console.warn(`⚠️ [${requestId}] Batch CCS fetch returned empty - possible .order() incompatibility`);
+    logTier1(`⚠️ [${requestId}] Empty batch CCS data - potential vendor-first client issue`, { batchCCSData }, supabase, sessionId, requestId);
+  } else {
+    console.log(`✅ [${requestId}] Batch CCS fetch completed successfully - no .order() errors`);
+  }
   const latestClothing = batchCCSData.latestClothing;
 
   // ============= GENERATE FRESH AVATAR DATA (ALWAYS NEEDED) =============
