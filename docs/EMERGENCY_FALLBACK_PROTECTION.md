@@ -794,6 +794,96 @@ const { data } = await supabase
 - ❌ Users forced to slow template tiers (2.5A/B/C/D)
 - ❌ Massive degradation in user experience
 
+---
+
+## Vendor Bundle Import Path Validation (REGRESSION PREVENTION)
+
+### Critical Lesson Learned (2025-10-11)
+**Issue**: All vendor-first imports were broken due to filename mismatch:
+- Actual file: `supabase-js@2.57.4.bundle.mjs`
+- Import paths: `supabase-js@2.57.4.mjs` ❌
+
+**Impact**: 100% vendor-first failure rate, forcing all operations to network CDN (7-28s delay)
+
+### Prevention Measures Implemented
+
+#### 1. Automated Filename Validation Script
+Location: `supabase/functions/_vendor/validate-vendor-imports.js`
+
+Run before every deployment:
+```bash
+deno run --allow-read supabase/functions/_vendor/validate-vendor-imports.js
+```
+
+This script:
+- ✅ Scans all vendor files in `_vendor/` directory
+- ✅ Searches all function files for vendor import statements
+- ✅ Flags any import path that doesn't match an actual file
+- ✅ Exits with error code 1 if mismatches found
+
+#### 2. Self-Test Regression Check
+The `vendor-first-selftest` edge function now includes:
+- Import validation test (first test in suite)
+- Verifies vendor bundle file exists and loads correctly
+- Flags filename issues immediately
+
+#### 3. Naming Convention Enforcement
+
+**RULE**: All vendor bundles MUST use `.bundle.mjs` extension
+- ✅ `supabase-js@2.57.4.bundle.mjs` (correct)
+- ❌ `supabase-js@2.57.4.mjs` (missing .bundle)
+
+**RULE**: All import statements MUST include `.bundle.mjs`
+```typescript
+// ✅ CORRECT
+await import('../_vendor/supabase-js@2.57.4.bundle.mjs');
+
+// ❌ WRONG - will fail silently
+await import('../_vendor/supabase-js@2.57.4.mjs');
+```
+
+#### 4. Mandatory Pre-Deployment Checklist
+
+Before deploying ANY changes to vendor system:
+1. ✅ Run `validate-vendor-imports.js` script
+2. ✅ Verify all vendor files end with `.bundle.mjs`
+3. ✅ Test `vendor-first-selftest` endpoint (must show 6/6 tests passed, including import check)
+4. ✅ Grep codebase for old import patterns: `grep -r "supabase-js@2.57.4.mjs" supabase/functions/`
+5. ✅ Verify no results found (all should be `.bundle.mjs`)
+
+### Files Requiring Filename Consistency
+
+All these files MUST use correct `.bundle.mjs` extension:
+
+1. `supabase/functions/_shared/resilientLoader.js` (5 locations)
+2. `supabase/functions/_shared/resilientLoader.ts` (5 locations)
+3. `supabase/functions/_shared/CharacterConsistencyService.ts` (1 location)
+4. `supabase/functions/runware-generate-image/CharacterConsistencyServiceInline.js` (1 location)
+5. `supabase/functions/runware-generate-image/index.ts` (1 location)
+6. `supabase/functions/runware-template-cd/index.ts` (2 locations)
+
+### Quick Validation Command
+
+Check all import paths in codebase:
+```bash
+# Should return NO results (all imports should use .bundle.mjs)
+grep -r "/_vendor/supabase-js@2.57.4.mjs['\"]" supabase/functions/
+
+# Should return 15 results (all correct imports)
+grep -r "/_vendor/supabase-js@2.57.4.bundle.mjs['\"]" supabase/functions/
+```
+
+### Monitoring in Production
+
+Search edge logs weekly for these patterns:
+```
+"Vendor bundle failed"
+"Import timeout"
+"Module not found"
+```
+
+Any occurrence indicates potential filename issue or vendor bundle corruption.
+
 ### Implementation References
 
 **Orchestrator Health Check**: `supabase/functions/runware-generate-image/index.ts` (lines 2675-2723)

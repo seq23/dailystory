@@ -1494,7 +1494,7 @@ export class CharacterConsistencyService {
       try {
         // TIER 1: Try vendor bundle FIRST (static import, no network dependency, no resilientLoader needed)
         try {
-          const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+          const { createClient } = await import('../_vendor/supabase-js@2.57.4.bundle.mjs'); // CRITICAL: Correct filename for CCS vendor bundle
           const supabaseUrl = Deno.env.get('SUPABASE_URL');
           const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
           

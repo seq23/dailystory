@@ -2613,7 +2613,7 @@ serve(async (req) => {
             // Try vendor path first for known packages
             let importPath = href;
             if (href.includes("@supabase/supabase-js")) {
-              importPath = "../_vendor/supabase-js@2.57.4.mjs";
+              importPath = "../_vendor/supabase-js@2.57.4.bundle.mjs"; // CRITICAL: Correct filename for vendor bundle mapping
             } else if (href.includes("openai")) {
               importPath = "../_vendor/openai@4.28.0.mjs";
             }

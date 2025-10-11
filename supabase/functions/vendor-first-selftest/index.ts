@@ -17,14 +17,41 @@ serve(async (req) => {
   }
 
   try {
-    const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.js');
-    const supabase = await createVendorFirstSupabaseClient();
-
+    // CRITICAL REGRESSION CHECK: Verify vendor bundle file exists and is importable
+    console.log('🔍 Regression Check: Verifying vendor bundle file...');
+    
     const results = {
       timestamp: new Date().toISOString(),
       tests: [] as any[],
       summary: { passed: 0, failed: 0, total: 0 }
     };
+    
+    try {
+      const { createClient } = await import('../_vendor/supabase-js@2.57.4.bundle.mjs');
+      results.tests.push({
+        name: 'REGRESSION_CHECK: Vendor bundle file exists and imports correctly',
+        passed: typeof createClient === 'function',
+        details: { 
+          fileName: 'supabase-js@2.57.4.bundle.mjs',
+          importSuccess: true,
+          createClientType: typeof createClient
+        }
+      });
+    } catch (importError: any) {
+      results.tests.push({
+        name: 'REGRESSION_CHECK: Vendor bundle file exists and imports correctly',
+        passed: false,
+        error: importError.message,
+        details: {
+          fileName: 'supabase-js@2.57.4.bundle.mjs',
+          importSuccess: false,
+          criticalIssue: 'VENDOR BUNDLE IMPORT FAILED - CHECK FILENAME'
+        }
+      });
+    }
+    
+    const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.js');
+    const supabase = await createVendorFirstSupabaseClient();
 
     // Test 1: maybeSingle() - 0 rows (should return null, no error)
     try {

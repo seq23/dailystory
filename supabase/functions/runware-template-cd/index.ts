@@ -546,7 +546,7 @@ async function callRunwareAPI(positivePrompt: string, negativePrompt: string, se
           supabaseClient = await createVendorFirstSupabaseClient();
         } catch (cdnError) {
           console.warn('⚠️ CDN import failed, using local vendor fallback');
-          const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+          const { createClient } = await import('../_vendor/supabase-js@2.57.4.bundle.mjs'); // CRITICAL: Correct filename for template vendor bundle
           supabaseClient = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -798,7 +798,7 @@ async function handleRequest(req: Request) {
         supabase = await createVendorFirstSupabaseClient();
       } catch (loaderError) {
         console.warn('⚠️ Loader failed, using fallback');
-        const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+        const { createClient } = await import('../_vendor/supabase-js@2.57.4.bundle.mjs'); // CRITICAL: Correct filename for logging vendor bundle
         supabase = createClient(
           Deno.env.get('SUPABASE_URL') ?? '',
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''

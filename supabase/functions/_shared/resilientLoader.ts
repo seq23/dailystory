@@ -38,7 +38,7 @@ const CDN_FALLBACKS = {
       'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm',
       'https://unpkg.com/@supabase/supabase-js@2.57.4?module'
     ],
-    vendor: '../_vendor/supabase-js@2.57.4.mjs'
+    vendor: '../_vendor/supabase-js@2.57.4.bundle.mjs' // CRITICAL: Must match actual filename to prevent 100% vendor failures
   },
   'openai': {
     primary: 'https://deno.land/x/openai@v4.28.0/mod.ts',
@@ -267,7 +267,7 @@ export async function createTieredSupabaseClient() {
     try {
       // Tier 2: Vendor (local import)
       console.log('📦 Attempting Tier 2: Vendor fallback');
-      const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+      const { createClient } = await import('../_vendor/supabase-js@2.57.4.bundle.mjs'); // CRITICAL: Correct filename for vendor bundle
       
       const supabaseUrl = Deno.env.get('SUPABASE_URL');
       const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
@@ -308,7 +308,7 @@ export async function createDatabaseSupabaseClient() {
     try {
       // Tier 2: Local vendor fallback
       console.log('💾 Database Client Tier 2: Attempting vendor fallback');
-      const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+      const { createClient } = await import('../_vendor/supabase-js@2.57.4.bundle.mjs'); // CRITICAL: Correct filename for vendor bundle
       
       const supabaseUrl = Deno.env.get('SUPABASE_URL');
       const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
@@ -338,7 +338,7 @@ export async function createVendorFirstSupabaseClient() {
   try {
     // Tier 1: Try vendor bundle FIRST (no network delay)
     console.log('📦 Vendor-First Client Tier 1: Attempting local vendor bundle');
-    const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+    const { createClient } = await import('../_vendor/supabase-js@2.57.4.bundle.mjs'); // CRITICAL: Correct filename - this is THE primary vendor-first path
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -382,7 +382,7 @@ export async function createPaymentSupabaseClient() {
     try {
       // Tier 2: Local vendor fallback
       console.log('💳 Payment Client Tier 2: Attempting vendor fallback');
-      const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+      const { createClient } = await import('../_vendor/supabase-js@2.57.4.bundle.mjs'); // CRITICAL: Correct filename for vendor bundle
       
       const supabaseUrl = Deno.env.get('SUPABASE_URL');
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
