@@ -2497,6 +2497,63 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
     }
   };
 
+  const testVendorFirstClient = async () => {
+    setIsLoading(true);
+    setCurrentTestProgress('Testing vendor-first client API...');
+    
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    try {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/vendor-first-selftest`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'PASS') {
+        toast({
+          title: "✅ Vendor-First Client: ALL TESTS PASSED",
+          description: `${data.summary.passed}/${data.summary.total} tests passed. All methods working correctly.`,
+        });
+        setResults([{
+          tier: 'Vendor-First Client',
+          success: true,
+          details: data
+        }]);
+      } else {
+        toast({
+          title: "❌ Vendor-First Client: TESTS FAILED",
+          description: `${data.summary.failed}/${data.summary.total} tests failed. Check details below.`,
+          variant: "destructive"
+        });
+        setResults([{
+          tier: 'Vendor-First Client',
+          success: false,
+          details: data
+        }]);
+      }
+    } catch (error) {
+      toast({
+        title: "❌ Vendor-First Self-Test Error",
+        description: error.message,
+        variant: "destructive"
+      });
+      setResults([{
+        tier: 'Vendor-First Client',
+        success: false,
+        details: { error: error.message }
+      }]);
+    } finally {
+      setIsLoading(false);
+      setCurrentTestProgress('');
+    }
+  };
+
   const testTier1CCSMethods = async () => {
     if (!testStoryText.trim()) {
       toast({
@@ -3112,6 +3169,16 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             >
               <CheckCircle className="h-4 w-4" />
               Test Tier 1 CCS Methods
+            </Button>
+
+            <Button
+              onClick={testVendorFirstClient}
+              disabled={isLoading}
+              variant="secondary"
+              className="flex items-center gap-2 border-2 border-purple-500"
+            >
+              <CheckCircle className="h-4 w-4" />
+              🧪 Test Vendor-First Client API
             </Button>
           </div>
 

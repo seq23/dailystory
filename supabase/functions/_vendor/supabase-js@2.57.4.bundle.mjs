@@ -53,14 +53,40 @@ class SupabaseQueryBuilder {
     this.client = client;
     this.table = table;
     this.queryParams = [];
+    this.headers = {};
+    this.method = 'GET';
+    this.data = undefined;
     this.singleMode = false;
+    this.maybeSingleMode = false;
+    this.wantCount = false;
   }
 
-  select(columns = '*') {
+  // URL encoding helper
+  _encode(v) {
+    return encodeURIComponent(v);
+  }
+
+  // Filter helper
+  _addFilter(op, column, value) {
+    this.queryParams.push(`${this._encode(column)}=${op}.${this._encode(value)}`);
+  }
+
+  // SELECT with count support
+  select(columns = '*', options = undefined) {
     this.queryParams.push(`select=${columns}`);
+    if (options && options.count === 'exact') {
+      // Merge Prefer header to request count in Content-Range
+      const existingPrefer = this.client.headers['Prefer'] || '';
+      const preferParts = new Set(existingPrefer.split(',').map(s => s.trim()).filter(Boolean));
+      preferParts.add('count=exact');
+      this.client.headers['Prefer'] = Array.from(preferParts).join(', ');
+      this.wantCount = true;
+    }
+    // Ignore options.head - always use GET for simplicity
     return this;
   }
 
+  // Write operations
   insert(data) {
     this.method = 'POST';
     this.data = data;
@@ -73,32 +99,62 @@ class SupabaseQueryBuilder {
     return this;
   }
 
+  delete() {
+    this.method = 'DELETE';
+    return this;
+  }
+
   upsert(data, options = {}) {
     this.method = 'POST';
     this.data = data;
-    this.client.headers['Prefer'] = options.onConflict 
-      ? `resolution=merge-duplicates,return=representation`
-      : 'resolution=merge-duplicates,return=representation';
+    // Ensure Prefer has resolution + representation
+    const existingPrefer = this.client.headers['Prefer'] || '';
+    const preferParts = new Set(existingPrefer.split(',').map(s => s.trim()).filter(Boolean));
+    preferParts.add('resolution=merge-duplicates');
+    preferParts.add('return=representation');
+    this.client.headers['Prefer'] = Array.from(preferParts).join(', ');
     return this;
   }
 
-  eq(column, value) {
-    this.queryParams.push(`${column}=eq.${value}`);
+  // Comparison filters
+  eq(column, value) { this._addFilter('eq', column, value); return this; }
+  neq(column, value) { this._addFilter('neq', column, value); return this; }
+  gt(column, value) { this._addFilter('gt', column, value); return this; }
+  gte(column, value) { this._addFilter('gte', column, value); return this; }
+  lt(column, value) { this._addFilter('lt', column, value); return this; }
+  lte(column, value) { this._addFilter('lte', column, value); return this; }
+
+  // Sorting and limiting
+  order(column, { ascending = true } = {}) {
+    const dir = ascending ? 'asc' : 'desc';
+    this.queryParams.push(`order=${this._encode(column)}.${dir}`);
     return this;
   }
 
+  limit(n) {
+    this.queryParams.push(`limit=${Number(n)}`);
+    return this;
+  }
+
+  // Single row helpers
   single() {
     this.singleMode = true;
     return this;
   }
 
+  maybeSingle() {
+    this.maybeSingleMode = true;
+    return this;
+  }
+
   async execute() {
-    const url = `${this.client.supabaseUrl}/rest/v1/${this.table}${this.queryParams.length ? '?' + this.queryParams.join('&') : ''}`;
-    
+    const qs = this.queryParams.length ? ('?' + this.queryParams.join('&')) : '';
+    const url = `${this.client.supabaseUrl}/rest/v1/${this.table}${qs}`;
+
     try {
       const response = await fetch(url, {
         method: this.method || 'GET',
-        headers: this.client.headers,
+        headers: { ...this.client.headers, ...this.headers },
         body: this.data ? JSON.stringify(this.data) : undefined
       });
 
@@ -106,20 +162,55 @@ class SupabaseQueryBuilder {
         throw new Error(`Database operation failed: ${response.status}`);
       }
 
-      const data = await response.json();
-      
-      // Handle single mode
-      if (this.singleMode) {
-        if (Array.isArray(data) && data.length === 0) {
-          return { data: null, error: { message: 'No rows found', code: 'PGRST116' } };
-        }
-        if (Array.isArray(data) && data.length > 1) {
-          return { data: null, error: { message: 'Multiple rows returned', code: 'PGRST116' } };
-        }
-        return { data: Array.isArray(data) ? data[0] : data, error: null };
+      // Try to parse JSON if present (DELETE may return empty)
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
       }
 
-      return { data, error: null };
+      // Count from Content-Range if requested
+      let count = null;
+      if (this.wantCount) {
+        const cr = response.headers.get('Content-Range'); // e.g., "0-0/123"
+        if (cr && cr.includes('/')) {
+          const total = cr.split('/')[1];
+          const parsed = Number(total);
+          if (!Number.isNaN(parsed)) count = parsed;
+        }
+      }
+
+      // Handle single/maybeSingle
+      if (this.singleMode) {
+        if (Array.isArray(data)) {
+          if (data.length === 0) {
+            return { data: null, error: { message: 'No rows found', code: 'PGRST116' }, count };
+          }
+          if (data.length > 1) {
+            return { data: null, error: { message: 'Multiple rows returned', code: 'PGRST116' }, count };
+          }
+          return { data: data[0], error: null, count };
+        }
+        return { data, error: null, count };
+      }
+
+      if (this.maybeSingleMode) {
+        if (Array.isArray(data)) {
+          if (data.length === 0) {
+            return { data: null, error: null, count };
+          }
+          if (data.length === 1) {
+            return { data: data[0], error: null, count };
+          }
+          // More than one row: surface error (matches supabase-js behavior)
+          return { data: null, error: { message: 'Multiple rows returned', code: 'PGRST116' }, count };
+        }
+        // Non-array: treat as single object
+        return { data, error: null, count };
+      }
+
+      return { data, error: null, count };
     } catch (error) {
       return { data: null, error };
     }

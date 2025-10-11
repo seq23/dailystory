@@ -127,6 +127,9 @@ verify_jwt = false
 [functions.validate-discount-code]
 verify_jwt = false
 
+[functions.vendor-first-selftest]
+verify_jwt = false
+
 [functions.voice-to-text]
 verify_jwt = false
 
