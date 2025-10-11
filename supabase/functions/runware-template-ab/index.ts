@@ -1061,20 +1061,81 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
         source: precomputedCCS?.source
       }));
       
+      // ============= CCS COMPLETENESS VALIDATION =============
+      const tier1Complete = precomputedCCS.tier1Complete === true;
+      const ccsSource = precomputedCCS.source || 'unknown';
+      
+      console.log(`🔍 [${requestId}] [T2.5A] CCS completeness check:`, {
+        tier1Complete,
+        ccsSource,
+        hasCharacterSeed: !!precomputedCCS.characterSeed,
+        hasCulturalBundle: !!precomputedCCS.culturalBundle,
+        hasHair: !!precomputedCCS.culturalBundle?.hair,
+        hasFeatures: !!precomputedCCS.culturalBundle?.features
+      });
+      
+      // CRITICAL: If tier1Complete is false, CCS data is incomplete
+      if (!tier1Complete) {
+        console.error(`❌ [${requestId}] [T2.5A] INCOMPLETE CCS (tier1Complete: false)`, {
+          source: ccsSource,
+          hasCharacterSeed: !!precomputedCCS.characterSeed,
+          escalation: 'MODE_B'
+        });
+        
+        // Escalate to Mode B (handles partial CCS gracefully)
+        return createResponse({
+          success: false,
+          error: 'INCOMPLETE_CCS',
+          escalation: 'NEXT_TIER',
+          tier: 'tier-2.5A',
+          service: SERVICE_NAME,
+          message: 'Tier 2.5A requires complete CCS (tier1Complete=true). Escalating to Mode B.'
+        }, 503);
+      }
+      
       // ✅ FIXED VALIDATION: Check if characterSeed is a valid, non-empty object
       if (!precomputedCCS?.characterSeed || 
           typeof precomputedCCS.characterSeed !== 'object' || 
           Object.keys(precomputedCCS.characterSeed).length === 0) {
-        console.error(`❌ Tier 2.5A: Invalid or empty characterSeed from orchestrator, escalating to Tier 2.5B`);
+        console.error(`❌ [${requestId}] [T2.5A] Invalid or empty characterSeed from orchestrator, escalating to Mode B`);
         return createResponse({
           success: false,
           error: 'NO_CHARACTER_SEED',
           escalation: 'NEXT_TIER',
           tier: 'tier-2.5A',
           service: SERVICE_NAME,
-          message: 'Tier 2.5A requires valid characterSeed object from orchestrator. Escalating to Tier 2.5B.'
+          message: 'Tier 2.5A requires valid characterSeed object from orchestrator. Escalating to Mode B.'
         }, 503);
       }
+      
+      // Validate critical properties exist for Mode A
+      const hasMinimalCCS = 
+        precomputedCCS.characterSeed &&
+        precomputedCCS.culturalBundle &&
+        precomputedCCS.culturalBundle.hair &&
+        precomputedCCS.culturalBundle.features;
+      
+      if (!hasMinimalCCS) {
+        console.error(`❌ [${requestId}] [T2.5A] Missing critical CCS properties`, {
+          hasCharacterSeed: !!precomputedCCS.characterSeed,
+          hasHair: !!precomputedCCS.culturalBundle?.hair,
+          hasFeatures: !!precomputedCCS.culturalBundle?.features,
+          escalation: 'MODE_B'
+        });
+        
+        return createResponse({
+          success: false,
+          error: 'INSUFFICIENT_CCS_PROPERTIES',
+          escalation: 'NEXT_TIER',
+          tier: 'tier-2.5A',
+          service: SERVICE_NAME,
+          message: 'Tier 2.5A requires culturalBundle with hair and features. Escalating to Mode B.'
+        }, 503);
+      }
+      
+      console.log(`✅ [${requestId}] [T2.5A] CCS validation passed - proceeding with Mode A`);
+      
+      // ============= END CCS VALIDATION =============
       
       // ✅ BUNDLE VALIDATION: Ensure culturalBundle exists
       const bundle = precomputedCCS.culturalBundle || {};
@@ -1195,25 +1256,19 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
     } else {
       console.log(`🚀 Processing Tier 2.5B: Lightweight template with cultural intelligence`);
       
-      // ✅ OPTIONAL PRECONDITION: Only run Tier 2.5B if Tier 1 CCS completely failed
+      // Use precomputed cultural data if available (works with complete OR partial CCS)
       const precomputedCCS = payload.precomputedCCS || null;
-      const tier1CCSSent = precomputedCCS?.source === 'tier1_ccs_inline';
-      
-      if (tier1CCSSent) {
-        console.log(`⏭️ Tier 2.5B: Tier 1 CCS was sent (should have been handled by Tier 2.5A), skipping Tier 2.5B`);
-        return createResponse({
-          success: false,
-          error: 'TIER1_CCS_PRESENT',
-          escalation: 'NEXT_TIER',
-          tier: 'tier-2.5B',
-          service: SERVICE_NAME,
-          message: 'Tier 2.5B should only run when Tier 1 CCS completely failed. Escalating to next tier.'
-        }, 503);
-      }
-      
-      // Use precomputed cultural data if available (emergency bundle from orchestrator)
       const bundleHair = precomputedCCS?.culturalBundle?.hair || hair;
       const bundleFeatures = precomputedCCS?.culturalBundle?.features || features;
+      
+      const usedPrecomputedData = !!(precomputedCCS?.culturalBundle?.hair || precomputedCCS?.culturalBundle?.features);
+      
+      console.log(`✅ [${requestId}] [T2.5B] Using ${usedPrecomputedData ? 'partial precomputed' : 'inline'} CCS data`, {
+        precomputedSource: precomputedCCS?.source || 'none',
+        tier1Complete: precomputedCCS?.tier1Complete || false,
+        hairSource: precomputedCCS?.culturalBundle?.hair ? 'precomputed' : 'inline',
+        featuresSource: precomputedCCS?.culturalBundle?.features ? 'precomputed' : 'inline'
+      });
       
       // Mode B: Pure inline with enhanced cultural intelligence + simple scene extraction
       const simpleScene = extractSimpleScene(storyText);

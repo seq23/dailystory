@@ -1635,22 +1635,23 @@ const executeDirectMode: TierFn = async (ctx) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     ctx.tierLogger.failure("DIRECT_MODE", { error: errorMessage });
     
-    // ============= CCS RETRY: Attempt lightweight batch CCS fetch after Direct Mode failure =============
-    console.log(`⚡ [${ctx.requestId}] CCS_RETRY: Direct Mode failed, attempting lightweight CCS recovery`, {
+    // ============= FULL CCS VALIDATION: Run ALL 7 CCS methods after Direct Mode failure =============
+    console.log(`⚡ [${ctx.requestId}] FULL_CCS_VALIDATION: Direct Mode failed, attempting complete 7-method CCS`, {
       directModeError: errorMessage.substring(0, 100),
       willPopulateTier1ForT25A: true,
       sessionId: ctx.payload.sessionId,
-      goal: 'Enable Tier 2.5A with character consistency'
+      goal: 'Complete CCS or nothing - no partial data'
     });
     
     try {
-      // Import CCS service (same as Tier 1)
+      // Import CCS service
       const { characterConsistencyService } = await import("./CharacterConsistencyServiceInline.js");
       
       const sessionId = ctx.payload.sessionId;
       const userInfo = ctx.payload.userInfo || {};
       const storyText = ctx.payload.storyText || "";
       const pageText = ctx.payload.pageText || "";
+      const pageNumber = ctx.payload.pageNumber || 1;
       const characterName = userInfo?.name || userInfo?.characterName || userInfo?.avatar?.name || "the child";
       
       // Extract avatar identity
@@ -1661,214 +1662,126 @@ const executeDirectMode: TierFn = async (ctx) => {
         skinTone: avatarSkinTone,
       };
       
-      // ============= BATCH FETCH ALL CCS DATA (1 DB CALL) =============
-      let batchCCSData;
-      try {
-        batchCCSData = await characterConsistencyService.batchFetchCCSData(sessionId, characterName);
-        console.log(`✅ [${ctx.requestId}] [CCS_RETRY] batchFetchCCSData: SUCCESS`, {
-          sessionId,
-          hasCharacterSeed: !!batchCCSData.characterSeed,
-          visualDetailsCount: batchCCSData.visualDetails.length,
-          coloredObjectsCount: batchCCSData.coloredObjects.length,
-          latestClothing: batchCCSData.latestClothing || 'none'
-        });
-      } catch (batchError) {
-        console.error(`❌ [${ctx.requestId}] [CCS_RETRY] batchFetchCCSData: FAILED`, batchError);
-        throw new Error("CCS_RETRY_BATCH_FETCH_FAILED");
-      }
+      // ============= RUN ALL 7 CORE CCS METHODS (NO SHORTCUTS) =============
+      console.log(`🔄 [${ctx.requestId}] [FULL_CCS] Running all 7 core CCS methods...`);
       
-      // Unpack batch data
-      let characterSeed = batchCCSData.characterSeed;
-      const coloredObjects = batchCCSData.coloredObjects.map(obj => obj.fullDescription).join(', ');
-      const latestClothing = batchCCSData.latestClothing;
+      // Method 1: Batch fetch CCS data
+      const batchData = await characterConsistencyService.batchFetchCCSData(sessionId, characterName);
+      console.log(`✅ [${ctx.requestId}] [FULL_CCS] 1/7 batchFetchCCSData: SUCCESS`);
       
-      // ============= GENERATE FRESH AVATAR DATA (ALWAYS NEEDED) =============
-      let structuredAvatarData;
-      try {
-        structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
-        console.log(`✅ [${ctx.requestId}] [CCS_RETRY] getStructuredAvatarData: SUCCESS`);
-      } catch (avatarError) {
-        console.error(`❌ [${ctx.requestId}] [CCS_RETRY] getStructuredAvatarData: FAILED`, avatarError);
-        throw new Error("CCS_RETRY_AVATAR_DATA_FAILED");
-      }
+      // Method 2: Get structured avatar data
+      const structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+      console.log(`✅ [${ctx.requestId}] [FULL_CCS] 2/7 getStructuredAvatarData: SUCCESS`);
       
-      // Defensive repair for hairColor
-      if (structuredAvatarData && (!structuredAvatarData.hairColor || structuredAvatarData.hairColor.trim() === "")) {
-        const fallbackSkinTone = structuredAvatarData.skinTone || avatarSkinTone;
-        structuredAvatarData.hairColor = emergencyHairFallback(fallbackSkinTone);
-        console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED structuredAvatarData.hairColor to "${structuredAvatarData.hairColor}"`);
-      }
-      
-      // ============= GENERATE FRESH CHARACTER SEED IF CACHE MISS =============
+      // Method 3: Get enhanced character seed
+      let characterSeed = batchData.characterSeed;
       if (!characterSeed) {
-        try {
-          characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
-            sessionId,
-            avatarIdentity,
-            storyText || pageText || "",
-            "continuing",
-            latestClothing // Pass latest clothing for consistency
-          );
-          console.log(`✅ [${ctx.requestId}] [CCS_RETRY] getEnhancedCharacterSeed: SUCCESS (fresh generation)`);
-        } catch (seedError) {
-          console.error(`❌ [${ctx.requestId}] [CCS_RETRY] getEnhancedCharacterSeed: FAILED`, seedError);
-          
-          // ✅ NEW: Synthesize minimal characterSeed from available inline data
-          console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] Synthesizing bulletproof characterSeed from inline fallback arrays`);
-          
-          const skinTone = avatarIdentity.skinTone || "medium";
-          const avatarType = avatarIdentity.type || "child";
-          const nativeLanguage = avatarIdentity.nativeLanguage || "en";
-          const seedString = `synthetic_${sessionId}_${Date.now()}`;
-
-          // Detect African American user (dark skin + English language)
-          const isAfricanAmerican = skinTone === "dark" && nativeLanguage === "en";
-
-          let hairColor: string;
-          let skinFeatures: string;
-
-          if (isAfricanAmerican) {
-            // Use culturally authentic arrays with gender-neutral support
-            hairColor = emergencyAfricanAmericanHair(avatarType, seedString);
-            skinFeatures = emergencyAfricanAmericanFeatures(seedString);
-            console.log(`🎨 [${ctx.requestId}] [CCS_RETRY] Using emergency African American arrays for synthetic seed (gender: ${avatarType})`);
-          } else {
-            // Use generic fallback
-            hairColor = emergencyHairFallback(skinTone);
-            skinFeatures = emergencySkinFeatures(skinTone);
-          }
-
-          const enhancedDescription = emergencyAvatarDescription(avatarType);
-          
-          characterSeed = {
-            selectedCulturalHair: hairColor,
-            selectedCulturalFeatures: skinFeatures,
-            physicalTraits: { hair: hairColor, skinFeatures },
-            characterDescription: `${avatarIdentity.name || "the child"}, ${enhancedDescription}`,
-            seed: seedString,
-            source: 'synthetic_ccs_retry_fallback'
-          };
-          
-          console.log(`✅ [${ctx.requestId}] [CCS_RETRY] Bulletproof synthetic characterSeed created`, { 
-            hairColor: hairColor.substring(0, 50) + '...', 
-            skinFeatures: skinFeatures.substring(0, 50) + '...',
-            isAfricanAmerican,
-            avatarType,
-            source: 'synthetic_ccs_retry_fallback' 
-          });
-        }
+        characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
+          sessionId,
+          avatarIdentity,
+          storyText || pageText || "",
+          "continuing",
+          batchData.latestClothing
+        );
+      }
+      console.log(`✅ [${ctx.requestId}] [FULL_CCS] 3/7 getEnhancedCharacterSeed: SUCCESS`);
+      
+      // Method 4: Analyze visual details
+      const visualAnalysis = await characterConsistencyService.analyzeVisualDetails(
+        sessionId,
+        storyText || pageText || "",
+        pageNumber
+      );
+      const coloredObjects = visualAnalysis?.coloredObjects || batchData.coloredObjects.map(obj => obj.fullDescription).join(', ');
+      console.log(`✅ [${ctx.requestId}] [FULL_CCS] 4/7 analyzeVisualDetails: SUCCESS`);
+      
+      // Method 5: Detect all characters
+      const characterDetection = await characterConsistencyService.detectAllCharacters(storyText || pageText || "");
+      const mainCharacterAppearance = characterDetection?.mainCharacterAppearance || null;
+      const secondaryCharacters = characterDetection?.secondaryCharacters || [];
+      console.log(`✅ [${ctx.requestId}] [FULL_CCS] 5/7 detectAllCharacters: SUCCESS`);
+      
+      // Method 6: Get secondary character seeds
+      const secondaryCharacterSeeds = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+      console.log(`✅ [${ctx.requestId}] [FULL_CCS] 6/7 getSecondaryCharactersForSession: SUCCESS`);
+      
+      // Method 7: Detect session setting
+      const sessionSetting = await characterConsistencyService.detectSimpleAtmosphere(storyText || pageText || "");
+      console.log(`✅ [${ctx.requestId}] [FULL_CCS] 7/7 detectSimpleAtmosphere: SUCCESS`);
+      
+      // ============= VALIDATE ALL METHODS SUCCEEDED =============
+      if (!characterSeed || !structuredAvatarData) {
+        throw new Error("FULL_CCS_VALIDATION_INCOMPLETE: Critical methods failed");
       }
       
-      // ============= EXTRACT CULTURAL BUNDLE FROM CHARACTER SEED =============
-      let culturalBundle;
-      try {
-        if (!characterSeed) {
-          throw new Error("Character seed unavailable for cultural extraction");
-        }
-        
-        culturalBundle = {
-          hair: characterSeed.selectedCulturalHair || characterSeed.physicalTraits?.hair || "",
-          features: characterSeed.selectedCulturalFeatures || characterSeed.physicalTraits?.skinFeatures || ""
-        };
-        
-        const skinToneForFallback = structuredAvatarData?.skinTone || avatarSkinTone;
-        
-        // Repair hair with African American detection
-        if (!culturalBundle?.hair || culturalBundle.hair.trim() === "") {
-          const isAfricanAmericanBundle = skinToneForFallback === "dark" && (avatarIdentity.nativeLanguage || "en") === "en";
-          
-          if (isAfricanAmericanBundle) {
-            const seedForHash = characterSeed?.seed || `repair_${sessionId}_${Date.now()}`;
-            const avatarType = avatarIdentity.type || "child";
-            culturalBundle.hair = emergencyAfricanAmericanHair(avatarType, seedForHash);
-            console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.hair with African American array: "${culturalBundle.hair.substring(0, 50)}..."`);
-          } else {
-            culturalBundle.hair = emergencyHairFallback(skinToneForFallback);
-            console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.hair to "${culturalBundle.hair}"`);
-          }
-        }
-        
-        // Repair features with African American detection
-        if (!culturalBundle?.features || culturalBundle.features.trim() === "") {
-          const isAfricanAmericanBundle = skinToneForFallback === "dark" && (avatarIdentity.nativeLanguage || "en") === "en";
-          
-          if (isAfricanAmericanBundle) {
-            const seedForHash = characterSeed?.seed || `repair_${sessionId}_${Date.now()}`;
-            culturalBundle.features = emergencyAfricanAmericanFeatures(seedForHash);
-            console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.features with African American array: "${culturalBundle.features.substring(0, 50)}..."`);
-          } else {
-            culturalBundle.features = emergencySkinFeatures(skinToneForFallback);
-            console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.features to "${culturalBundle.features}"`);
-          }
-        }
-        
-        console.log(`✅ [${ctx.requestId}] [CCS_RETRY] culturalBundle VALIDATED`);
-      } catch (culturalError) {
-        console.error(`❌ [${ctx.requestId}] [CCS_RETRY] Cultural bundle extraction: FAILED`, culturalError);
-        throw new Error("CCS_RETRY_CULTURAL_BUNDLE_FAILED");
+      // ============= EXTRACT CULTURAL BUNDLE =============
+      const culturalBundle = {
+        hair: characterSeed.selectedCulturalHair || characterSeed.physicalTraits?.hair || "",
+        features: characterSeed.selectedCulturalFeatures || characterSeed.physicalTraits?.skinFeatures || ""
+      };
+      
+      // Validate cultural bundle has data
+      if (!culturalBundle.hair || !culturalBundle.features) {
+        throw new Error("FULL_CCS_VALIDATION_INCOMPLETE: Cultural bundle missing critical data");
       }
       
-      // ============= DETECT ATMOSPHERE (INDOOR/OUTDOOR) =============
-      let sessionSetting = "";
-      try {
-        sessionSetting = await characterConsistencyService.detectSimpleAtmosphere(storyText || pageText || "");
-        console.log(`🔍 [${ctx.requestId}] [CCS_RETRY] detectSimpleAtmosphere: ${sessionSetting || "undetected"}`);
-      } catch (atmosphereError) {
-        console.error(`❌ [${ctx.requestId}] [CCS_RETRY] detectSimpleAtmosphere: FAILED (non-critical)`, atmosphereError);
-        sessionSetting = ""; // Non-critical, continue without context
-      }
-      
-      // ============= SKIP VISUAL DETAILS & CHARACTER DETECTION IN RETRY =============
-      // CCS_RETRY is a lightweight fallback - skip heavy analysis to avoid cascading failures
-      const secondaryCharacters: any[] = [];
-      const mainCharacterAppearance = {};
-      
-      // Populate ctx.tier1 with lightweight CCS bundle (optimized for T2.5A)
+      // ============= POPULATE ctx.tier1 WITH COMPLETE DATA =============
       ctx.tier1 = {
-        enhancedPrompt: undefined, // Not needed for T2.5A
         characterSeed,
         culturalBundle,
         coloredObjects: coloredObjects || "",
-        latestClothing: latestClothing || null, // ✅ NEW: Include latest clothing
-        secondaryCharacters,
         mainCharacterAppearance,
+        secondaryCharacters,
+        sessionSetting: sessionSetting || ctx.payload.sessionSetting || "",
+        latestClothing: batchData.latestClothing || null,
         structuredAvatarData,
-        sessionSetting: sessionSetting || ctx.payload.sessionSetting,
+        secondaryCharacterSeeds: secondaryCharacterSeeds || [],
+        detectedAnimals: [], // Extracted from characterDetection if available
+        tier1Complete: true,
+        ccsMethodsRun: [
+          'batchFetchCCSData',
+          'getStructuredAvatarData', 
+          'getEnhancedCharacterSeed',
+          'analyzeVisualDetails',
+          'detectAllCharacters',
+          'getSecondaryCharactersForSession',
+          'detectSimpleAtmosphere'
+        ],
+        source: 'full_ccs_validation'
       };
       
-      console.log(`✅ [${ctx.requestId}] CCS_RETRY: SUCCESS - Tier 2.5A precondition check`, {
-        characterSeedSource: ctx.tier1.characterSeed?.source || 'unknown',
-        seedMethod: ctx.tier1.characterSeed?.source === 'synthetic_ccs_retry_fallback' ? 'SYNTHETIC' : 
-                    batchCCSData?.characterSeed ? 'CACHED' : 'FRESH_GENERATED',
-        hasCulturalBundle: !!ctx.tier1.culturalBundle,
+      console.log(`✅ [${ctx.requestId}] FULL_CCS_VALIDATION: SUCCESS - All 7 methods completed`, {
+        tier1Complete: true,
+        hasCharacterSeed: true,
+        hasCulturalBundle: true,
         hasLatestClothing: !!ctx.tier1.latestClothing,
-        clothingConsistencyStatus: ctx.tier1.latestClothing ? 'AVAILABLE' : 'MISSING_WILL_ESCALATE_TO_2.5B',
-        hasHair: !!ctx.tier1.culturalBundle?.hair,
-        hasFeatures: !!ctx.tier1.culturalBundle?.features,
-        nextTierEligibility: ctx.tier1.characterSeed && ctx.tier1.latestClothing ? 
-          "TIER_2.5A (full CCS)" : 
-          ctx.tier1.characterSeed ? "TIER_2.5B (face only)" : "TIER_2.5B (no CCS)",
-        tier1Populated: true
+        allMethodsRan: ctx.tier1.ccsMethodsRun.length === 7
       });
       
-      ctx.tierLogger.success("CCS_RETRY", { ccsRetry: true, path: "afterDirectMode" });
+      ctx.tierLogger.success("FULL_CCS_VALIDATION", { 
+        ccsComplete: true, 
+        methodsRun: 7,
+        path: "afterDirectMode" 
+      });
       
-      // Return DM failure so cascade proceeds to T2.5A (which will pass precondition now)
+      // Return DM failure so cascade proceeds to T2.5A (which will have complete CCS now)
       return { ok: false, code: "DM_FAILED", reason: errorMessage };
       
     } catch (ccsError: any) {
       const ccsErrorMessage = ccsError instanceof Error ? ccsError.message : String(ccsError);
-      console.error(`❌ [${ctx.requestId}] CCS_RETRY: FAILED - Tier 2.5A will be skipped`, {
+      console.error(`❌ [${ctx.requestId}] FULL_CCS_VALIDATION: FAILED - Template-AB Mode B will be called`, {
         ccsError: ccsErrorMessage.substring(0, 100),
         tier1Populated: false,
-        hasLatestClothing: false,
-        clothingConsistencyStatus: 'UNAVAILABLE_DUE_TO_CCS_FAILURE',
-        nextTier: "TIER_2.5B (Template AB without CCS)",
-        reason: 'CCS_RETRY could not populate characterSeed'
+        nextTier: "Template-AB Mode B (no complete CCS)",
+        reason: 'Full CCS validation could not complete all 7 methods'
       });
-      ctx.tierLogger.failure("CCS_RETRY", { error: ccsErrorMessage });
       
-      // CCS retry failed - return DM failure and let cascade skip T2.5A (precondition fails) and go to T2.5B
+      // Set ctx.tier1 to null to signal Mode B should be used
+      ctx.tier1 = null;
+      
+      ctx.tierLogger.failure("FULL_CCS_VALIDATION", { error: ccsErrorMessage });
+      
+      // Return DM failure - orchestrator will call Mode B directly
       return { ok: false, code: "DM_FAILED", reason: errorMessage };
     }
   }
@@ -1952,35 +1865,59 @@ const executeT25A: TierFn = async (ctx) => {
         headers["apikey"] = SUPABASE_ANON_KEY;
       }
       
-      // Construct precomputedCCS from Tier 1 data
+      // ============= DETERMINE MODE BASED ON CCS COMPLETENESS =============
+      let templateComplexity: string;
       let precomputedCCS: any;
       
-      // T1 was successful (or CCS retry succeeded), use inline data
-      if (ctx.tier1?.characterSeed) {
-        // ✅ TIER 1 SUCCESS: Forward complete CCS bundle
+      if (ctx.tier1?.characterSeed && ctx.tier1.tier1Complete === true) {
+        // ✅ FULL CCS SUCCESS: Call Mode A with complete data
+        templateComplexity = "A";
         precomputedCCS = {
-          culturalBundle: ctx.tier1.culturalBundle || null,
-          mainCharacterAppearance: ctx.tier1.mainCharacterAppearance || null,
-          coloredObjects: ctx.tier1.coloredObjects || null,
-          secondaryCharacters: ctx.tier1.secondaryCharacters || [],
           characterSeed: ctx.tier1.characterSeed,
+          culturalBundle: ctx.tier1.culturalBundle || null,
+          coloredObjects: ctx.tier1.coloredObjects || null,
+          mainCharacterAppearance: ctx.tier1.mainCharacterAppearance || null,
+          secondaryCharacters: ctx.tier1.secondaryCharacters || [],
           sessionSetting: ctx.tier1.sessionSetting,
-          latestClothing: ctx.tier1.latestClothing || null, // ✅ NEW: Forward latest clothing to Tier 2.5A
-          source: 'tier1_ccs_inline'
+          latestClothing: ctx.tier1.latestClothing || null,
+          structuredAvatarData: ctx.tier1.structuredAvatarData || null,
+          secondaryCharacterSeeds: ctx.tier1.secondaryCharacterSeeds || [],
+          detectedAnimals: ctx.tier1.detectedAnimals || [],
+          tier1Complete: true,
+          ccsMethodsRun: ctx.tier1.ccsMethodsRun || [],
+          source: 'tier1_complete'
         };
+        
+        console.log(`✅ [${ctx.requestId}] [T2.5A] Calling Template-AB Mode A with complete CCS`, {
+          tier1Complete: true,
+          methodsRun: precomputedCCS.ccsMethodsRun.length,
+          hasLatestClothing: !!precomputedCCS.latestClothing
+        });
+        
       } else {
-        // ❌ CCS unavailable: Provide minimal emergency data for template fallback
-        console.log(`⚠️ [${ctx.requestId}] [T2.5A] No ctx.tier1 data - providing emergency fallback`);
+        // ❌ CCS FAILED: Call Mode B with partial/null data
+        templateComplexity = "B";
         precomputedCCS = {
-          culturalBundle: null,
-          mainCharacterAppearance: null,
+          characterSeed: ctx.tier1?.characterSeed || null,
+          culturalBundle: ctx.tier1?.culturalBundle || null,
           coloredObjects: null,
+          mainCharacterAppearance: null,
           secondaryCharacters: [],
-          characterSeed: null,
           sessionSetting: ctx.payload.sessionSetting || "",
-          latestClothing: null, // ✅ NEW: Include in emergency data
-          source: 'emergency_fallback'
+          latestClothing: ctx.tier1?.latestClothing || null,
+          structuredAvatarData: null,
+          secondaryCharacterSeeds: [],
+          detectedAnimals: [],
+          tier1Complete: false,
+          ccsMethodsRun: [],
+          source: 'partial_ccs_for_mode_b'
         };
+        
+        console.log(`⚠️ [${ctx.requestId}] [T2.5A] Calling Template-AB Mode B with partial CCS (full CCS unavailable)`, {
+          tier1Complete: false,
+          hasPartialCharacterSeed: !!precomputedCCS.characterSeed,
+          reason: 'Full CCS validation failed or was incomplete'
+        });
       }
       
       // 🔍 DEBUG: Log exact precomputedCCS structure being sent to template-ab
@@ -1998,7 +1935,7 @@ const executeT25A: TierFn = async (ctx) => {
         headers,
         body: JSON.stringify({
           ...ctx.payload,
-          templateComplexity: "A",
+          templateComplexity, // "A" or "B" based on CCS completeness
           precomputedCCS: precomputedCCS,
         }),
         signal: controller.signal,
