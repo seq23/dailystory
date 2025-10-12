@@ -129,8 +129,10 @@ When `payload.test === true` AND `payload.__testSimulateT1Failure === true`, the
 - **Success Criteria**: Test PASSES when backend correctly refuses to cascade without complete CCS
 - **Note**: This validates that 2.5A enforces CCS requirements before allowing template generation
 - **Display Fallback**: After expected stop, tester calls `runware-template-ab` with `templateComplexity: 'A'`
-- **Returns**: `imageURL` (no `primaryScene` - templates use hardcoded prompts)
-- **SessionId**: Suffixed with `-2.5a-display` (tester-only, isolated from production)
+  - If Template A fails (error or non-success), automatically retries with `templateComplexity: 'B'`
+  - This A→B retry ensures display assets (image + prompts) are always returned for visualization
+- **Returns**: `imageURL` + `positivePrompt` + `negativePrompt` (no `primaryScene` - templates use hardcoded prompts)
+- **SessionId**: Prefixed with `force-2.5a-` (tester-only, isolated from production)
 
 **Note**: Display-only fallback calls are **isolated to the tester** and do not affect production flows. These calls use suffixed sessionIds to ensure complete separation from production payloads.
 3. Returns Direct Mode result with `primaryScene` for validation
