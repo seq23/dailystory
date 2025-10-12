@@ -2667,20 +2667,34 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
       
       if (error) throw error;
       
-      if (data.success && data.tier === 'TIER_1') {
+      // ✅ dryRun success detection: check for dryRun flag, TIER_1, and enhancedPrompt
+      const isDryRunSuccess = 
+        data?.dryRun === true && 
+        (data.tier === 'TIER_1' || data.tier === 1) &&
+        (data.enhancedPrompt || 
+         data.tier1Debug?.timeline?.some(step => 
+           step.step?.includes('Template Building') && step.status === 'success'
+         ));
+      
+      if (isDryRunSuccess) {
+        const promptExcerpt = data.enhancedPrompt 
+          ? `${data.enhancedPrompt.substring(0, 100)}...` 
+          : 'Enhanced prompt generated';
+        
         setResults([{
           tier: 'Tier 1 CCS Methods',
           success: true,
           details: {
             testType: 'TIER_1_COMPLETE_FLOW',
             tier: data.tier,
-            probableCause: 'All CCS methods succeeded without .order() errors'
+            probableCause: 'All CCS methods succeeded without .order() errors',
+            enhancedPrompt: promptExcerpt
           }
         }]);
         
         toast({
           title: "✅ Tier 1 CCS Methods PASSED",
-          description: "All CCS methods succeeded without .order() errors",
+          description: `CCS validation succeeded. ${promptExcerpt}`,
           duration: 6000,
         });
       } else {
@@ -3660,10 +3674,10 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                     )}
                   </div>
 
-                  {extractImageUrl(result) && (
+                  {result.imageURL && (
                     <div className="mb-4">
                       <img 
-                        src={extractImageUrl(result)!}
+                        src={result.imageURL}
                         alt="Generated test image" 
                         className="max-w-full h-auto rounded-lg border"
                       />

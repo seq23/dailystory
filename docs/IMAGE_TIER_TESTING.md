@@ -95,6 +95,15 @@ The "Force Tier 2.5A" and "Force Tier 2.5B" buttons simulate production escalati
 ### Explicit Payload Fields
 The orchestrator explicitly passes `userInfo` and `sessionId` to template functions (Tier 2.5A/B) to ensure validation passes in test mode. This fixes the "Cannot read properties of undefined (reading 'userInfo')" error that occurs when template-ab's strict validation (lines 1115-1128) encounters incomplete payload data.
 
+### Test Tier 1 CCS Methods Button
+The "Test Tier 1 CCS Methods" button uses `dryRun: true` to validate CCS methods without generating images:
+- **Success Criteria**: 
+  - `data.dryRun === true`
+  - `data.tier === 'TIER_1'`
+  - `data.enhancedPrompt` present OR Timeline contains successful "Template Building" step
+- **Expected Output**: PASS with enhancedPrompt excerpt, no `imageURL` generated
+- **Purpose**: Validates CCS methods execute without `.order()` errors, ensuring template-building succeeds
+
 ### Direct Mode Test Guarantee
 When `payload.test === true` AND `payload.__testSimulateT1Failure === true`, the orchestrator:
 1. Executes Tier 1 (simulated failure)
