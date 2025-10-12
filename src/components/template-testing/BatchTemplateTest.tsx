@@ -212,8 +212,17 @@ export function BatchTemplateTest() {
             testMode: '2.5D',
             edgeFunction: 'runware-template-cd',
             payload: (basePayload: any) => ({
-              ...basePayload,
+              pageText: basePayload.pageText,
+              storyText: basePayload.storyText,
+              userInfo: {
+                name: basePayload.userInfo.name,
+                age: basePayload.userInfo.age,
+                interests: basePayload.userInfo.interests
+              },
+              sessionId: `batch-test-2.5d-${Date.now()}`,
+              pageNumber: 1,
               templateComplexity: 'D',
+              emergencyMode: true,
               test: true
             })
           }
