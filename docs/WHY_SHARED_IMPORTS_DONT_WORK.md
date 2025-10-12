@@ -265,6 +265,39 @@ try {
 
 ---
 
+## 🔧 Special Case: Local Shim for resilientLoader (2025-10-12)
+
+**For `runware-generate-image` function specifically:**
+
+Cross-folder dynamic imports of `../_shared/resilientLoader.js` intermittently fail in production, causing non-2xx errors. Solution: always route through a local shim file that re-exports the shared version.
+
+```typescript
+// ✅ CORRECT - Use local shim in runware-generate-image
+const { createVendorFirstSupabaseClient } = await memoizedImport("./resilientLoader.js");
+
+// ❌ WRONG - Cross-folder import can fail
+const { createVendorFirstSupabaseClient } = await memoizedImport("../_shared/resilientLoader.js");
+```
+
+**Implementation:**
+- Local shim file: `supabase/functions/runware-generate-image/resilientLoader.js`
+- Contents: `export * from "../_shared/resilientLoader.js";`
+- Always add runtime guard after import:
+
+```typescript
+if (!createVendorFirstSupabaseClient || typeof createVendorFirstSupabaseClient !== 'function') {
+  console.warn('⚠️ resilientLoader missing/invalid - using console-only logger');
+  return createConsoleOnlyLogger(isProd);
+}
+```
+
+**Why:**
+- Logging/analytics is best-effort and must never block image generation with non-2xx errors
+- Local shim bypasses Deno's cross-folder resolution issues
+- Guard ensures graceful degradation when loader unavailable
+
+---
+
 ## 📚 Related Documentation
 
 - **ERROR-046**: CharacterConsistencyService import map failure

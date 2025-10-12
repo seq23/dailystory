@@ -551,9 +551,15 @@ async function bindTierLogger(
   
   try {
     [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
-      memoizedImport("../_shared/resilientLoader.js"),
+      memoizedImport("./resilientLoader.js"),
       memoizedImport("../_shared/tierLogging.js"),
     ]);
+
+    // ✅ Guard: Verify resilientLoader valid before using it
+    if (!createVendorFirstSupabaseClient || typeof createVendorFirstSupabaseClient !== 'function') {
+      console.warn('⚠️ [ORCHESTRATOR] resilientLoader missing/invalid - using console-only logger');
+      return createConsoleOnlyLogger(isProd);
+    }
 
     // ✅ NUCLEAR FIX: Early return if tierLogging invalid (no throw, no crash)
     if (!tierLogging || typeof tierLogging.logTier1 !== 'function') {
@@ -1132,7 +1138,7 @@ async function processInlinedTier1(
   } else {
     try {
       logTier1Step("AI Scene Creator Call", "attempt", "Invoking ai-visual-scene-creator");
-      const { createVendorFirstSupabaseClient } = await memoizedImport("../_shared/resilientLoader.js");
+      const { createVendorFirstSupabaseClient } = await memoizedImport("./resilientLoader.js");
       const supabase = await createVendorFirstSupabaseClient();
 
       // Use raw fetch with proper AbortController signal (supabase.functions.invoke ignores signal)
@@ -1793,7 +1799,7 @@ const executeDirectMode: TierFn = async (ctx) => {
     const timeout = setTimeout(() => controller.abort(), 35000); // Increased from 20s to 35s to accommodate OpenAI + processing time (17-21s typical)
     
     try {
-      const { createVendorFirstSupabaseClient } = await ctx.memoizedImport("../_shared/resilientLoader.js");
+      const { createVendorFirstSupabaseClient } = await ctx.memoizedImport("./resilientLoader.js");
       const supabase = await createVendorFirstSupabaseClient();
       
       // ✅ Call ai-visual-scene-creator for Direct Mode (AISC generates primaryScene + calls template-cd)
@@ -2997,9 +3003,8 @@ serve(async (req) => {
       let memoizedImport: <T = any>(href: string) => Promise<T>;
       let usingResilientLoader = false;
       try {
-        // CRITICAL: Use direct relative import for local files (ERROR-048 prevention)
-        // Never use new URL(..., import.meta.url) for local TypeScript files in Deno edge functions
-        ({ memoizedImport } = await import("../_shared/resilientLoader.js"));
+        // CRITICAL: Use local shim to bypass cross-folder import resolution issues
+        ({ memoizedImport } = await import("./resilientLoader.js"));
         usingResilientLoader = true;
         console.log(`✅ [CDN_HEALTH] Using resilient loader with multi-CDN fallback support`);
       } catch (loaderError) {
