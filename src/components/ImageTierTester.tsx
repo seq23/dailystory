@@ -2648,30 +2648,24 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
     setIsLoading(true);
     setResults([]);
     
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const sessionId = `test-tier1-ccs-${Date.now()}`;
     
     try {
-      DebugLogger.log('image', '🧪 Testing Tier 1 CCS Methods');
+      DebugLogger.log('image', '🧪 Testing Tier 1 CCS Methods with dryRun mode');
       
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-generate-image`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          storyText: testStoryText,  // ✅ Primary validation field
-          pageText: testStoryText,    // ✅ Compatibility field
+      const { data, error } = await supabase.functions.invoke('runware-generate-image', {
+        body: {
+          storyText: testStoryText,
+          pageText: testStoryText,
           userInfo: buildUserInfo(),
           sessionId,
           pageNumber: 1,
-          forceCompleteTier1: true  // Force Tier 1 validation
-        })
+          forceCompleteTier1: true,
+          dryRun: true  // ✅ Validate CCS without image generation
+        }
       });
       
-      const data = await response.json();
+      if (error) throw error;
       
       if (data.success && data.tier === 'TIER_1') {
         setResults([{

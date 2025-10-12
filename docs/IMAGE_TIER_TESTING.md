@@ -103,6 +103,15 @@ When `payload.test === true` AND `payload.__testSimulateT1Failure === true`, the
 
 This ensures the "Direct Mode (Orchestrator Fallback)" test exercises the actual Direct Mode path and validates the `primaryScene` contract, rather than relying on the normal cascade which may skip Direct Mode.
 
+### Test Tier 1 CCS Methods: Dry Run Mode
+The "Test Tier 1 CCS Methods" button uses `dryRun: true` mode to validate CCS without image generation:
+- **What it tests:** All 7 CCS methods (character seed, cultural bundle, visual details, character detection, atmosphere, AI scene generation, template building)
+- **What it validates:** Nuclear negative generation, consistency elements, complete TIER_1 template structure
+- **What it skips:** WebSocket imports and actual image generation (returns before `ResilientRunwareWebSocket` boot)
+- **PASS criteria:** `data.success === true` AND `data.tier === 'TIER_1'`
+- **Why dryRun:** Avoids boot-time `.ts` module import errors from `ResilientRunwareWebSocket` that cause test failures
+- **Production impact:** None (isolated to test button, does not affect production flows or other test buttons)
+
 ## Critical Bug Fix: tier1Complete Propagation (October 2025)
 
 ### Problem
