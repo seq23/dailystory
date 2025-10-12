@@ -524,7 +524,7 @@ async function callRunwareAPI(positivePrompt: string, negativePrompt: string, se
             outputFormat: "WEBP",
             steps: 25,
             CFGScale: 8,
-            ...(seed && { seed: seed })
+            ...(seed !== null && seed !== undefined ? { seed } : {})
           }
         ])
       });
@@ -789,8 +789,9 @@ async function handleRequest(req: Request) {
     const requestHash = UniversalLKGCache.createRequestHash(payload);
     console.log(`🔐 [UNIVERSAL_LKG] Template CD request hash: ${requestHash}`);
     let templateResult: any;
-    try {
-      if (complexityLevel === 'C') {
+    
+    // Template generation (flat architecture - errors propagate to server try/catch)
+    if (complexityLevel === 'C') {
         console.log('🚀 Processing Tier 2.5C: Nuclear hardcoded template');
         templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {}, payload.primaryScene || null);
       } else {
@@ -899,7 +900,6 @@ async function handleRequest(req: Request) {
     }
 
     return result;
-  } // end: template generation try/catch
 } // end: handleRequest
 
 // ========== MAIN SERVER ==========
