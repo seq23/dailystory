@@ -789,54 +789,6 @@ async function handleRequest(req: Request) {
     const requestHash = UniversalLKGCache.createRequestHash(payload);
     console.log(`🔐 [UNIVERSAL_LKG] Template CD request hash: ${requestHash}`);
     let templateResult: any;
-    
-    try {
-      if (complexityLevel === 'C') {
-        console.log('🚀 Processing Tier 2.5C: Nuclear hardcoded template');
-        templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {}, payload.primaryScene || null);
-      } else {
-        console.log('🚀 Processing Tier 2.5D: Ultimate emergency fallback');
-        templateResult = generateTier25D(storyText, userInfo, avatarIdentity, failedTierData || {});
-      }
-
-      console.log('🎨 Template CD: Generating image with Runware API + Request Deduplication + Circuit Breaker');
-      
-      // Configure circuit breaker for Runware API
-      EnhancedCircuitBreaker.configure('runware-template-cd', {
-        failThreshold: 5,
-        cooldownMs: 45000,
-        halfOpenMaxAttempts: 3,
-        halfOpenSuccessThreshold: 2,
-      });
-      
-      // Create deduplication key for Runware API call
-      const dedupeKey = RequestDeduplicator.createKey({
-        functionName: 'runware-template-cd',
-        sessionId,
-        pageNumber,
-        prompt: templateResult.positivePrompt.substring(0, 100)
-      });
-      
-      // Execute with circuit breaker protection + deduplication
-      const imageGenResult = await EnhancedCircuitBreaker.execute(
-        'runware-template-cd',
-        () => RequestDeduplicator.deduplicate(
-          dedupeKey,
-          () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
-          20000 // 20s timeout for Runware
-        ),
-        {
-          onCircuitOpen: () => {
-            console.warn('⚠️ [CIRCUIT] Runware circuit open, checking LKG');
-            const lkg = UniversalLKGCache.getLKG(requestHash, 'runware-template-cd');
-            if (lkg) {
-              return lkg;
-            }
-            throw new Error('Circuit breaker open and no LKG available');
-          }
-        }
-      );
-    
     try {
       if (complexityLevel === 'C') {
         console.log('🚀 Processing Tier 2.5C: Nuclear hardcoded template');
