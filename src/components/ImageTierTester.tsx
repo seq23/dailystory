@@ -3088,25 +3088,96 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           
           if (classifyAsExpectedStop) {
             const isTier1 = scenario.name === 'Tier 1 (Forced)';
-            const usedNote = isTier1
+            const is2_5A = scenario.name === 'Force Tier 2.5A';
+            const baseNote = isTier1
               ? `✅ Expected STOP: Tier 1 correctly blocked cascade in force mode${(isTier1ForcedStop ? '' : ' (invoke masked error body)')}`
               : `✅ Expected STOP: 2.5A correctly refused to cascade without complete CCS${(is25AForcedStop ? '' : ' (invoke masked error body)')}`;
 
-            scenarioResult = {
-              tier: scenario.name,
-              success: true,  // ✅ PASS for expected stop behavior
-              details: {
-                processingTime,
-                testType: scenario.testType,
-                scenario: scenario.description,
-                expectedBehavior: scenario.expectedBehavior,
-                note: usedNote,
-                stoppedBecause: isTier1 ? 'TIER_1_FORCED_FAILURE' : (stoppedBecause || 'CCS_REQUIRED_FOR_2.5A'),
-                cascadeHistory,
-                errorDetails: error?.details,
+            // Display-only fallback to fetch imageURL/primaryScene for debugging
+            let imageURL: string | undefined;
+            let primaryScene: string | undefined;
+            let fallbackPath: string | undefined;
+            
+            try {
+              if (isTier1) {
+                // Tier 1 (Forced): Call orchestrator for COMPLETE Tier 1 processing
+                const displayPayload = {
+                  pageText: scenario.payload.pageText,
+                  storyText: scenario.payload.storyText,
+                  userInfo: scenario.payload.userInfo,
+                  sessionId: `${scenario.payload.sessionId}-tier1-complete`,
+                  pageNumber: scenario.payload.pageNumber || 1
+                  // NO forceCompleteTier1 flag - allow full cascade
+                };
+                
+                const orchRes = await supabase.functions.invoke('runware-generate-image', { 
+                  body: displayPayload 
+                });
+                
+                imageURL = orchRes.data?.imageURL;
+                primaryScene = orchRes.data?.metadata?.primaryScene 
+                  || orchRes.data?.metadata?.tier1?.primaryScene
+                  || orchRes.data?.primaryScene;
+                fallbackPath = 'TIER_1_COMPLETE_ORCHESTRATOR';
+                
+              } else if (is2_5A) {
+                // Force 2.5A: Call template-ab with complexity A
+                const displayPayload = {
+                  pageText: scenario.payload.pageText,
+                  storyText: scenario.payload.storyText,
+                  userInfo: scenario.payload.userInfo,
+                  sessionId: `${scenario.payload.sessionId}-2.5a-display`,
+                  pageNumber: scenario.payload.pageNumber || 1,
+                  templateComplexity: 'A'
+                };
+                
+                const abRes = await supabase.functions.invoke('runware-template-ab', { 
+                  body: displayPayload 
+                });
+                
+                imageURL = abRes.data?.imageURL 
+                  || abRes.data?.templateData?.imageURL;
+                primaryScene = undefined; // Templates don't extract primaryScene
+                fallbackPath = 'TEMPLATE_2.5A';
               }
-            };
-            console.log(`✅ ${scenario.name} PASSED: Expected stop behavior`);
+              
+              scenarioResult = {
+                tier: scenario.name,
+                success: true,
+                imageURL,
+                details: {
+                  processingTime,
+                  testType: scenario.testType,
+                  scenario: scenario.description,
+                  expectedBehavior: scenario.expectedBehavior,
+                  note: `${baseNote} | Display: ${fallbackPath}`,
+                  stoppedBecause: isTier1 ? 'TIER_1_FORCED_FAILURE' : (stoppedBecause || 'CCS_REQUIRED_FOR_2.5A'),
+                  cascadeHistory,
+                  primaryScene,
+                  fallbackPath,
+                  errorDetails: error?.details,
+                }
+              };
+              console.log(`✅ ${scenario.name} PASSED: Expected stop behavior with display assets`);
+              
+            } catch (displayError: any) {
+              // If display fallback fails, keep PASS but note no image
+              scenarioResult = {
+                tier: scenario.name,
+                success: true,
+                details: {
+                  processingTime,
+                  testType: scenario.testType,
+                  scenario: scenario.description,
+                  expectedBehavior: scenario.expectedBehavior,
+                  note: `${baseNote} | Display fallback failed: ${displayError.message}`,
+                  stoppedBecause: isTier1 ? 'TIER_1_FORCED_FAILURE' : (stoppedBecause || 'CCS_REQUIRED_FOR_2.5A'),
+                  cascadeHistory,
+                  errorDetails: error?.details,
+                }
+              };
+              console.log(`✅ ${scenario.name} PASSED: Expected stop behavior (display fallback failed)`);
+            }
           } else {
             // Continue with normal failure handling for all other scenarios
             scenarioResult = {

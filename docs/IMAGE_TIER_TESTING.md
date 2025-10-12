@@ -116,12 +116,23 @@ When `payload.test === true` AND `payload.__testSimulateT1Failure === true`, the
 - **Expected Backend Response**: 500 status with `TIER_1_FORCED_FAILURE`
 - **Success Criteria**: Test PASSES when backend correctly stops without cascading
 - **Note**: This validates that Tier 1 force mode prevents cascade as designed
+- **Display Fallback**: After expected stop, tester calls orchestrator **without force flag** for complete Tier 1 processing:
+  1. `ai-visual-scene-creator` extracts `primaryScene`
+  2. Orchestrator runs 7 CCS methods to build `COMPLETE_TIER_1` template
+  3. Runware generates image
+- **Returns**: `imageURL` + `primaryScene`
+- **SessionId**: Suffixed with `-tier1-complete` (tester-only, isolated from production)
 
 ### Force Tier 2.5A Test
 - **Payload**: `{ skipTier1AI: true }` (forces 2.5A path)
 - **Expected Backend Response**: 500 status with `CCS_REQUIRED_FOR_2.5A` or `T1_FAILED`
 - **Success Criteria**: Test PASSES when backend correctly refuses to cascade without complete CCS
 - **Note**: This validates that 2.5A enforces CCS requirements before allowing template generation
+- **Display Fallback**: After expected stop, tester calls `runware-template-ab` with `templateComplexity: 'A'`
+- **Returns**: `imageURL` (no `primaryScene` - templates use hardcoded prompts)
+- **SessionId**: Suffixed with `-2.5a-display` (tester-only, isolated from production)
+
+**Note**: Display-only fallback calls are **isolated to the tester** and do not affect production flows. These calls use suffixed sessionIds to ensure complete separation from production payloads.
 3. Returns Direct Mode result with `primaryScene` for validation
 
 This ensures the "Direct Mode (Orchestrator Fallback)" test exercises the actual Direct Mode path and validates the `primaryScene` contract, rather than relying on the normal cascade which may skip Direct Mode.
