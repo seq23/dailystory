@@ -1664,18 +1664,47 @@ const executeTier1: TierFn = async (ctx) => {
       };
     }
     
-    // 6. Generate image with RunwareWebSocketService
-    let RunwareWebSocketService;
+    // 6. Generate image with ResilientRunwareWebSocket (Phase 4: Enhanced WebSocket stability)
+    let ResilientRunwareWebSocket;
     try {
-      const vendorModule = await import("../_vendor/RunwareWebSocketService.js");
-      RunwareWebSocketService = vendorModule.RunwareWebSocketService;
-    } catch {
-      const module = await ctx.memoizedImport("../_shared/RunwareWebSocketService.js");
-      RunwareWebSocketService = module.RunwareWebSocketService;
-    }
-    
-    if (!RunwareWebSocketService?.generateImage) {
-      return { ok: false, code: "T1_NO_RUNWARE", reason: "RunwareWebSocketService unavailable" };
+      const module = await ctx.memoizedImport("../_shared/ResilientRunwareWebSocket.ts");
+      ResilientRunwareWebSocket = module.ResilientRunwareWebSocket;
+    } catch (error) {
+      console.error('❌ Failed to load ResilientRunwareWebSocket, falling back to direct service');
+      // Fallback to direct RunwareWebSocketService if resilient wrapper unavailable
+      const module = await ctx.memoizedImport("../_shared/RunwareWebSocketService.ts");
+      const RunwareWebSocketService = module.RunwareWebSocketService;
+      
+      const runwareApiKey = Deno.env.get("RUNWARE_API_KEY");
+      if (!runwareApiKey) {
+        return { ok: false, code: "T1_NO_API_KEY", reason: "Runware API key not configured" };
+      }
+      
+      const imageResult: any = await RunwareWebSocketService.generateImage({
+        apiKey: runwareApiKey,
+        positivePrompt: tier1Result.enhancedPrompt,
+        negativePrompt: tier1Result.negativePrompt || "",
+        parameters: { width: 1024, height: 1024, model: "runware:100@1", numberResults: 1, outputFormat: "WEBP" },
+        timeout: 25000, // Phase 4: Increased timeout
+      });
+      
+      if (!imageResult?.success || !imageResult?.imageURL) {
+        return { ok: false, code: "T1_IMAGE_FAILED", reason: "Image generation failed" };
+      }
+      
+      return {
+        ok: true,
+        data: {
+          imageURL: imageResult.imageURL,
+          seed: imageResult.seed,
+          cost: imageResult.cost || 0.0013,
+          tier1Debug: {
+            timeline: tier1ErrorLog,
+            enhancedPrompt: tier1Result.enhancedPrompt,
+          },
+        },
+        meta: { tier: "TIER_1", ms: Date.now() - startMs, resilience: "fallback" }
+      };
     }
     
     const runwareApiKey = Deno.env.get("RUNWARE_API_KEY");
@@ -1683,46 +1712,61 @@ const executeTier1: TierFn = async (ctx) => {
       return { ok: false, code: "T1_NO_API_KEY", reason: "Runware API key not configured" };
     }
     
-    // 7. Call Runware with 15s timeout
-    const imageResult: any = await Promise.race([
-      RunwareWebSocketService.generateImage({
+    // 7. Call Runware with ResilientRunwareWebSocket (25s timeout, 2 retries on WebSocket failures)
+    try {
+      const imageResult: any = await ResilientRunwareWebSocket.generateImageWithRetry({
         apiKey: runwareApiKey,
-        positivePrompt: tier1Result.enhancedPrompt, // CORRECT: Use string directly
+        positivePrompt: tier1Result.enhancedPrompt,
         negativePrompt: tier1Result.negativePrompt || "",
         parameters: { width: 1024, height: 1024, model: "runware:100@1", numberResults: 1, outputFormat: "WEBP" },
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 15000))
-    ]);
-    
-    if (!imageResult?.success || !imageResult?.imageURL) {
-      return { ok: false, code: "T1_IMAGE_FAILED", reason: "Image generation failed" };
-    }
-    
-    // 8. Success!
-    ctx.tierLogger.success("TIER_1", { imageURL: imageResult.imageURL });
-    
-    return {
-      ok: true,
-      data: {
-        success: true,
-        imageURL: imageResult.imageURL,
-        provider: "runware-websocket",
-        tier: "TIER_1",
-        resultType: "TIER_1_SUCCESS",
-        primaryScene: tier1Result.primaryScene,  // ✅ ADD: primaryScene text for display
-        positivePrompt: tier1Result.enhancedPrompt, // CORRECT: Use string directly
-        negativePrompt: tier1Result.negativePrompt,
-        tier1Debug: {
-          timeline: tier1ErrorLog,
-          enhancedPrompt: tier1Result.enhancedPrompt,
-        },
+      }, {
+        maxGenerateRetries: 2,
+        generateTimeoutMs: 25000, // Increased from 15s to 25s for better stability
+        retryDelayMs: 2000,
+      });
+      
+      if (!imageResult?.success || !imageResult?.imageURL) {
+        return { ok: false, code: "T1_IMAGE_FAILED", reason: "Image generation failed" };
+      }
+      
+      // 8. Success!
+      ctx.tierLogger.success("TIER_1", { imageURL: imageResult.imageURL });
+      
+      return {
+        ok: true,
+        data: {
+          success: true,
+          imageURL: imageResult.imageURL,
+          provider: "runware-websocket",
+          tier: "TIER_1",
+          resultType: "TIER_1_SUCCESS",
+          primaryScene: tier1Result.primaryScene,  // ✅ ADD: primaryScene text for display
+          positivePrompt: tier1Result.enhancedPrompt, // CORRECT: Use string directly
+          negativePrompt: tier1Result.negativePrompt,
+          tier1Debug: {
+            timeline: tier1ErrorLog,
+            enhancedPrompt: tier1Result.enhancedPrompt,
+          },
         metadata: {
           cascadeHistory: ["✅ Tier 1 Complete Success"],
           primaryScene: tier1Result.primaryScene,  // ✅ ADD: Also in metadata for consistency
         },
       },
-      meta: { tier: "TIER_1", ms: Date.now() - startMs }
+      meta: { tier: "TIER_1", ms: Date.now() - startMs, resilience: "enhanced" }
     };
+    } catch (wsError: any) {
+      // ResilientRunwareWebSocket failed after all retries
+      const wsErrorMessage = wsError instanceof Error ? wsError.message : String(wsError);
+      console.error('❌ ResilientRunwareWebSocket failed after retries:', wsErrorMessage);
+      ctx.tierLogger.failure("TIER_1", { error: wsErrorMessage, resilience: "exhausted" });
+      
+      return { 
+        ok: false, 
+        code: "T1_WEBSOCKET_EXHAUSTED", 
+        reason: `WebSocket resilience exhausted: ${wsErrorMessage}`,
+        meta: { retries: 2, timeout: 25000 }
+      };
+    }
     
   } catch (error: any) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -2835,10 +2879,19 @@ serve(async (req) => {
     
     const corsHeaders = generateEchoCorsHeaders(req);
     
-    // Get Phase 1, Phase 2, and Phase 3 statistics
+    // Get Phase 1, Phase 2, Phase 3, and Phase 4 statistics
     const lkgStats = UniversalLKGCache.getStats();
     const dedupeStats = RequestDeduplicator.getStats();
     const circuitStats = EnhancedCircuitBreaker.getAllStats();
+    
+    // Get Phase 4 WebSocket resilience stats
+    let wsResilienceStats = { status: 'unavailable' };
+    try {
+      const { ResilientRunwareWebSocket: RRWS } = await import('../_shared/ResilientRunwareWebSocket.ts');
+      wsResilienceStats = RRWS.getHealthStats();
+    } catch (e) {
+      console.warn('Could not load ResilientRunwareWebSocket stats:', e.message);
+    }
     
     const healthData = {
       status: "healthy",
@@ -2880,6 +2933,16 @@ serve(async (req) => {
           "Half-open state validation",
           "Progressive recovery on success",
           "Network vs API error classification"
+        ]
+      },
+      phase4_websocket_resilience: {
+        description: "Auto-reconnect and retry logic for WebSocket stability",
+        ...wsResilienceStats,
+        features: [
+          "3-attempt connection retry with exponential backoff",
+          "2-attempt generation retry on transient failures",
+          "25s timeout (increased from 20s)",
+          "Smart error classification (network vs API)"
         ]
       }
     };
