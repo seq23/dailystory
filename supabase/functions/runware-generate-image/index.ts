@@ -1814,8 +1814,9 @@ const executeDirectMode: TierFn = async (ctx) => {
       }
       
       // Handle scene-only response (primaryScene but no imageURL)
-      if (!data.imageURL && data.sceneOnly && data.primaryScene) {
-        console.log(`🎯 [${ctx.requestId}] Direct Mode: ai-visual-scene-creator returned scene-only, escalating to template-cd`);
+      // Escalate whenever we have primaryScene but no image (regardless of sceneOnly flag)
+      if (!data.imageURL && data.primaryScene) {
+        console.log(`🎯 [${ctx.requestId}] Direct Mode: ai-visual-scene-creator returned primaryScene without image, escalating to template-cd`);
         
         // Try template-cd with complexity C first
         const templatePayload = {
