@@ -13,7 +13,7 @@ let reliabilityManager: any;
 try {
   // Tier 1: Try vendor bundle FIRST (no network delay)
   console.log('📦 [RELIABILITY] Tier 1: Attempting local vendor bundle');
-  const vendorModule = await import("../_vendor/reliability-manager@1.0.0.mjs");
+  const vendorModule = await import("../_vendor/reliability-manager@1.0.0.bundle.mjs");
   reliabilityManager = vendorModule.reliabilityManager;
   console.log('✅ [RELIABILITY] Tier 1 successful: Using vendor bundle (0ms delay)');
 } catch (vendorError) {
@@ -45,7 +45,7 @@ import * as __bundle_resilientLoader from "../_shared/resilientLoader.js";
 import * as __bundle_tierLogging from "../_shared/tierLogging.js";
 import * as __bundle_nuclearNegatives from "../_shared/NuclearNegativePrompts.js";
 import * as __bundle_idempotency from "../_shared/IdempotencyMemory.js";
-import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.mjs";
+import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.bundle.mjs";
 
 // Prevent tree-shaking of bundled modules
 void _ccsHint;

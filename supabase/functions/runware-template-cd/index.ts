@@ -10,7 +10,7 @@ let reliabilityManager: any;
 try {
   // Tier 1: Try vendor bundle FIRST (no network delay)
   console.log('📦 [RELIABILITY_T25C] Tier 1: Attempting local vendor bundle');
-  const vendorModule = await import("../_vendor/reliability-manager@1.0.0.mjs");
+  const vendorModule = await import("../_vendor/reliability-manager@1.0.0.bundle.mjs");
   reliabilityManager = vendorModule.reliabilityManager;
   console.log('✅ [RELIABILITY_T25C] Tier 1 successful: Using vendor bundle (0ms delay)');
 } catch (vendorError) {
@@ -37,7 +37,7 @@ console.log('🔍 [RELIABILITY_VERIFY_T25C] Stack health:', {
 });
 
 // Bundler hint for vendor bundle
-import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.mjs";
+import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.bundle.mjs";
 void __bundle_reliability;
 
 const TIER_LOGGING_VERSION = '2.0-rls-detection';
