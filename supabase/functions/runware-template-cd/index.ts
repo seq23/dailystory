@@ -777,42 +777,51 @@ async function handleRequest(req: Request) {
     const userInfo = enhancedStoryData.userInfo || {};
     const complexityLevel = getComplexityLevel(userInfo, templateComplexity);
     console.log(`✅ Using complexity level: ${complexityLevel}`);
-
+    
+    // Universal LKG Protection - Phase 1: Bulletproof Reliability
+    const requestHash = UniversalLKGCache.createRequestHash(payload);
+    console.log(`🔐 [UNIVERSAL_LKG] Template CD request hash: ${requestHash}`);
     let templateResult: any;
     
-    if (complexityLevel === 'C') {
-      console.log('🚀 Processing Tier 2.5C: Nuclear hardcoded template');
-      templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {}, payload.primaryScene || null);
-    } else {
-      console.log('🚀 Processing Tier 2.5D: Ultimate emergency fallback');
-      templateResult = generateTier25D(storyText, userInfo, avatarIdentity, failedTierData || {});
-    }
-
-    console.log('🎨 Template CD: Generating image with Runware API');
-    const imageGenResult = await callRunwareAPI(
-      templateResult.positivePrompt,
-      templateResult.negativePrompt,
-      seed
-    );
-    
-    const result = {
-      success: true,
-      imageURL: typeof imageGenResult === 'string' ? imageGenResult : imageGenResult?.imageURL,
-      seed: typeof imageGenResult === 'object' ? (imageGenResult?.seed || null) : null,
-      templateData: templateResult,
-      complexity: complexityLevel,
-      sessionArchitecture: 'parameter-based',
-      processedAt: new Date().toISOString(),
-      positivePrompt: templateResult.positivePrompt,
-      negativePrompt: templateResult.negativePrompt,
-      imageGeneration: {
-        cost: typeof imageGenResult === 'object' ? (imageGenResult?.cost || 0.0013) : 0.0013
+    try {
+      if (complexityLevel === 'C') {
+        console.log('🚀 Processing Tier 2.5C: Nuclear hardcoded template');
+        templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {}, payload.primaryScene || null);
+      } else {
+        console.log('🚀 Processing Tier 2.5D: Ultimate emergency fallback');
+        templateResult = generateTier25D(storyText, userInfo, avatarIdentity, failedTierData || {});
       }
-    };
-    
-    console.log('✅ Template CD: Result prepared', { 
-      hasImageURL: !!result.imageURL
-    });
+
+      console.log('🎨 Template CD: Generating image with Runware API');
+      const imageGenResult = await callRunwareAPI(
+        templateResult.positivePrompt,
+        templateResult.negativePrompt,
+        seed
+      );
+      
+      const result = {
+        success: true,
+        imageURL: typeof imageGenResult === 'string' ? imageGenResult : imageGenResult?.imageURL,
+        seed: typeof imageGenResult === 'object' ? (imageGenResult?.seed || null) : null,
+        templateData: templateResult,
+        complexity: complexityLevel,
+        sessionArchitecture: 'parameter-based',
+        processedAt: new Date().toISOString(),
+        positivePrompt: templateResult.positivePrompt,
+        negativePrompt: templateResult.negativePrompt,
+        imageGeneration: {
+          cost: typeof imageGenResult === 'object' ? (imageGenResult?.cost || 0.0013) : 0.0013
+        }
+      };
+      
+      console.log('✅ Template CD: Result prepared', { 
+        hasImageURL: !!result.imageURL
+      });
+      
+      // Warm LKG cache on success
+      if (result.imageURL) {
+        UniversalLKGCache.warmFromSuccess(requestHash, result, 'TIER_2.5CD', 'runware-template-cd');
+      }
 
     // Log to database
     try {
@@ -863,6 +872,16 @@ async function handleRequest(req: Request) {
     return result;
     
   } catch (error: any) {
+    console.error('❌ Template CD generation failed, checking LKG:', error);
+    
+    // Try to recover from LKG cache
+    const lkgResult = UniversalLKGCache.getLKG(requestHash, 'runware-template-cd');
+    if (lkgResult) {
+      console.log('✅ [LKG_RESCUE] Serving cached template CD result to prevent failure');
+      return lkgResult;
+    }
+    
+    // No LKG available, return error
     const ErrorHandler = await getRunwareErrorHandler();
     const runwareError = ErrorHandler ? ErrorHandler.categorizeRunwareError(error) : {
       type: 'unknown_runware_error',

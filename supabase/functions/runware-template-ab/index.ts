@@ -1,7 +1,9 @@
-// 🚀 DEPLOYMENT MARKER: v2025-01-08-TIER-2.5A-PURE-PRECOMPUTED-CCS
+// 🚀 DEPLOYMENT MARKER: v2025-01-08-TIER-2.5A-PURE-PRECOMPUTED-CCS + UNIVERSAL-LKG
 // Last deployed: 2025-01-08
 // Changes: Tier 2.5A now pure precomputedCCS consumer, escalates to 2.5B if missing
+// PHASE 1: Universal LKG System for bulletproof reliability
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 
 // ========== INLINE CORS (Zero Dependencies) ==========
 function generateEchoCorsHeaders(req: Request): Record<string, string> {
@@ -1230,8 +1232,22 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
             imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL;
             returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
             console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
+            
+            // Warm LKG cache on success
+            if (imageURL) {
+              const successResult = { success: true, imageURL, seed: returnedSeed, positivePrompt, negativePrompt, tier: 'tier-2.5A' };
+              UniversalLKGCache.warmFromSuccess(requestHash, successResult, 'TIER_2.5A', 'runware-template-ab');
+            }
           } catch (imageError: any) {
-            console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
+            console.error(`❌ [${requestId}] Template AB failed, checking LKG:`, imageError.message);
+            
+            // Try to recover from LKG cache
+            const lkgResult = UniversalLKGCache.getLKG(requestHash, 'runware-template-ab');
+            if (lkgResult) {
+              console.log('✅ [LKG_RESCUE] Serving cached template AB result to prevent failure');
+              return createResponse(lkgResult);
+            }
+            
             return createResponse({
               success: false,
               error: `Image generation failed: ${imageError.message}`,

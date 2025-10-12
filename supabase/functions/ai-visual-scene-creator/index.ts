@@ -1,8 +1,10 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-09-FLAT-TIER-PRODUCTION (ZERO-NESTING)
+// 🚀 DEPLOYMENT MARKER: v2025-10-09-FLAT-TIER-PRODUCTION (ZERO-NESTING) + UNIVERSAL-LKG
 // Last deployed: 2025-10-08
 // Changes: Flattened architecture, removed try/catch, preserved unique app functionality & imports
+// PHASE 1: Universal LKG System replacing local 5-min cache with 15-min universal cache
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 
 // CCS completely removed from Direct Mode - using inline static avatar system
 const ccsBootStatus = { loaded: false, error: null as null | string };
@@ -386,66 +388,27 @@ function logNetworkOperation(
   }
 }
 
-// ========== LKG CACHE (5-minute validity) ==========
-interface CacheEntry {
-  data: any;
-  timestamp: number;
-  requestHash: string;
-}
+// ========== LKG CACHE - REPLACED WITH UNIVERSAL LKG SYSTEM ==========
+// Local cache functions replaced with UniversalLKGCache (15-min validity, 500 entries, quality tracking)
 
-const lkgCache = new Map<string, CacheEntry>();
-const LKG_VALIDITY_MS = 5 * 60 * 1000; // 5 minutes
-
-function createRequestHash(body: any): string {
-  const storySnippet = body.storyText?.substring(0, 50) || body.pageText?.substring(0, 50) || '';
-  return `${storySnippet}_${body.pageNumber || 1}_${body.userInfo?.name || 'user'}`;
-}
-
-function getLKG(requestHash: string): any | null {
-  const cached = lkgCache.get(requestHash);
-  if (!cached) return null;
-  
-  const age = Date.now() - cached.timestamp;
-  if (age > LKG_VALIDITY_MS) {
-    lkgCache.delete(requestHash);
-    return null;
-  }
-  
-  console.log(`✅ [LKG] Serving cached result (age: ${Math.round(age / 1000)}s)`);
-  return cached.data;
-}
-
-function setLKG(requestHash: string, data: any): void {
-  lkgCache.set(requestHash, {
-    data,
-    timestamp: Date.now(),
-    requestHash
-  });
-  
-  // Keep cache size reasonable (last 100 entries)
-  if (lkgCache.size > 100) {
-    const oldestKey = Array.from(lkgCache.entries())
-      .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
-    lkgCache.delete(oldestKey);
-  }
-}
-
-// Execute with LKG fallback
+// Execute with Universal LKG fallback
 async function executeWithLKG<T>(
   requestHash: string,
-  operation: () => Promise<T>
+  operation: () => Promise<T>,
+  functionName: string = 'ai-visual-scene-creator'
 ): Promise<T> {
   try {
     const result = await operation();
-    setLKG(requestHash, result); // Cache successful result
+    // Warm cache on successful operation
+    UniversalLKGCache.warmFromSuccess(requestHash, result, 'AISC', functionName);
     return result;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('❌ Operation failed, checking LKG cache:', errorMessage);
+    console.error('❌ Operation failed, checking Universal LKG cache:', errorMessage);
     
-    const lkg = getLKG(requestHash);
+    const lkg = UniversalLKGCache.getLKG(requestHash, functionName);
     if (lkg) {
-      console.log('✅ [LKG] Serving stale result due to error');
+      console.log('✅ [UNIVERSAL_LKG_RESCUE] Serving cached result due to error');
       return lkg;
     }
     
@@ -1258,7 +1221,13 @@ serve((req) => {
       promptSignature: content ? content.substring(0, 100) : ''
     });
     
-    const requestHash = createRequestHash({ storyText: content, pageNumber, userInfo });
+    const requestHash = UniversalLKGCache.createRequestHash({ 
+      pageText: content,
+      storyText: content, 
+      pageNumber, 
+      userInfo,
+      sessionId
+    });
 
     return await IdempotencyMemory.getOrRun(idempotencyKey, 30000, async () => {
       return await executeWithLKG(requestHash, async () => {
