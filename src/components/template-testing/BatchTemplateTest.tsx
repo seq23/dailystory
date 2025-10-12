@@ -14,9 +14,10 @@ interface BatchResult {
   result?: any;
   duration: number;
   sceneExtracted?: boolean;
-  imageTier?: string;          // NEW: Which tier generated images
-  ccsFailed?: boolean;          // NEW: Did CCS fail?
-  ccsFailureReason?: string;    // NEW: Why did CCS fail?
+  imageTier?: string;          // Which tier generated images
+  imageUrl?: string;           // NEW: Actual image URL
+  ccsFailed?: boolean;          // Did CCS fail?
+  ccsFailureReason?: string;    // Why did CCS fail?
 }
 
 const ALL_LEVELS: { value: string; label: string }[] = [
@@ -80,31 +81,62 @@ export function BatchTemplateTest() {
         const metadata = result?.metadata as any;
         const sceneExtracted = metadata?.sceneExtracted || false;
 
-        // CRITICAL: Detect image generation tier and CCS failures
+        // NEW: Generate image for page 1 to test image tier system
+        let imageResult: any = null;
         let imageTier = 'UNKNOWN';
+        let imageUrl: string | null = null;
         let ccsFailed = false;
         let ccsFailureReason = '';
 
-        // Check if story has images (generated stories have image metadata)
-        if (metadata?.images && Array.isArray(metadata.images) && metadata.images.length > 0) {
-          const firstImage = metadata.images[0];
-          imageTier = firstImage?.tier || firstImage?.metadata?.tier || 'UNKNOWN';
-          
-          // Check for CCS failures
-          const ccsMethodStatus = firstImage?.metadata?.ccsMethodStatus || {};
-          ccsFailed = Object.values(ccsMethodStatus).some(status => 
-            status === 'failed' || String(status).includes('fallback')
-          );
-          
-          // Check for .maybeSingle() errors
-          const hasMaybeSingleError = firstImage?.metadata?.cascadeHistory?.some((line: string) =>
-            line.includes('maybeSingle is not a function') ||
-            line.includes('TypeError')
-          );
-          
-          if (hasMaybeSingleError) {
+        if (result?.pages && result.pages.length > 0) {
+          try {
+            const sessionId = crypto.randomUUID();
+            const { supabase } = await import('@/integrations/supabase/client');
+            
+            const imageResponse = await supabase.functions.invoke('runware-generate-image', {
+              body: {
+                pageText: result.pages[0],
+                storyText: result.pages.join(' '),
+                userInfo: userInfo,
+                sessionId: sessionId,
+                pageNumber: 1,
+                test: true
+              }
+            });
+            
+            if (!imageResponse.error && imageResponse.data) {
+              imageResult = imageResponse.data;
+              imageTier = imageResponse.data.tier || 
+                          imageResponse.data.usedTier || 
+                          imageResponse.data.templateStructure || 
+                          'UNKNOWN';
+              imageUrl = imageResponse.data.imageURL || 
+                         imageResponse.data.image_url || 
+                         imageResponse.data.imageUrl ||
+                         imageResponse.data.url;
+                         
+              // Check if Tier 2.5D - should have fallback image
+              if (imageTier === 'TIER_2.5D' || imageTier === 'tier-2.5D') {
+                const isFallbackImage = imageUrl?.includes('images-not-working-') || 
+                                        imageUrl?.includes('/assets/');
+                if (!isFallbackImage) {
+                  console.warn('⚠️ Tier 2.5D image is not a fallback image:', imageUrl);
+                  ccsFailureReason = 'Tier 2.5D should use fallback image';
+                }
+              }
+              
+              // Check for CCS failures from response metadata
+              if (imageResponse.data.metadata?.ccsMethodStatus) {
+                const ccsMethodStatus = imageResponse.data.metadata.ccsMethodStatus;
+                ccsFailed = Object.values(ccsMethodStatus).some(status => 
+                  status === 'failed' || String(status).includes('fallback')
+                );
+              }
+            }
+          } catch (imgError) {
+            console.warn('Image generation failed for level', level.label, imgError);
             ccsFailed = true;
-            ccsFailureReason = '.maybeSingle() not supported in vendor bundle v2.57.4';
+            ccsFailureReason = imgError instanceof Error ? imgError.message : 'Image generation error';
           }
         }
 
@@ -114,9 +146,10 @@ export function BatchTemplateTest() {
           result,
           duration,
           sceneExtracted,
-          imageTier,        // NEW: Track which tier generated images
-          ccsFailed,        // NEW: Track CCS failures
-          ccsFailureReason, // NEW: Track failure reason
+          imageTier,        // Now from actual image generation
+          imageUrl,         // NEW: Store the actual image URL
+          ccsFailed,        // Track CCS failures
+          ccsFailureReason, // Track failure reason
         });
       } catch (error) {
         const duration = Date.now() - startTime;
@@ -288,6 +321,13 @@ export function BatchTemplateTest() {
                                 </span>
                               )}
                             </div>
+                          )}
+                          {result.imageUrl && (
+                            <img 
+                              src={result.imageUrl} 
+                              alt={`Generated for ${result.level}`}
+                              className="mt-2 w-32 h-32 object-cover rounded border"
+                            />
                           )}
                           {result.ccsFailureReason && (
                             <div className="text-xs text-destructive">

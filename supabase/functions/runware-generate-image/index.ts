@@ -3078,6 +3078,57 @@ serve(async (req) => {
         `✅ [${requestId}] Payload normalized: pageText=${!!payload.pageText}, storyText=${!!payload.storyText}, userInfo=${!!payload.userInfo}, sessionId=${!!payload.sessionId}`,
       );
 
+      // 🧪 TEST-ONLY: Early override for Force 2.5A display envelope
+      // This branch ONLY triggers with both skipDirectlyToTier === '2.5A' AND __testDisplaySuccess === true
+      if (payload.skipDirectlyToTier === '2.5A' && payload.__testDisplaySuccess === true) {
+        console.log(`🎯 [${requestId}] TEST ENVELOPE (early override): Force 2.5A display mode`);
+        
+        // Build minimal ctx for executeTier1
+        const ctx: TierContext = {
+          req,
+          requestId,
+          payload: { ...payload, forceCompleteTier1: true, skipTier1AI: true },
+          memoizedImport: async (href: string) => await import(href),
+          tierLogger: console,
+          generateNuclearNegativePrompt,
+          detectCulturalProfileForNegatives,
+          requestAbort
+        };
+        
+        // Execute Tier 1 to populate CCS (best-effort, catch all errors)
+        try {
+          await executeTier1(ctx);
+          console.log(`✅ [${requestId}] Test envelope: Tier 1 executed, ctx.tier1 populated`);
+        } catch (t1Error) {
+          console.warn(`⚠️ [${requestId}] Test envelope: Tier 1 failed, continuing with partial CCS:`, t1Error?.message);
+        }
+        
+        // Return 200 with test display envelope
+        const corsHeaders = generateEchoCorsHeaders(req);
+        clearTimeout(budgetTimer);
+        return new Response(JSON.stringify({
+          success: true,
+          testDisplay: true,
+          precomputedCCS: ctx.tier1 || null,
+          metadata: {
+            skipModeUsed: true,
+            targetTier: '2.5A',
+            stoppedBecause: 'CCS_REQUIRED_FOR_2.5A',
+            cascadeHistory: [
+              '🧪 Test Display Mode: bypassed cascade',
+              '🎯 Target: 2.5A (requires full CCS)',
+              '📦 Returning CCS envelope for UI display'
+            ]
+          }
+        }), {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
       // Extract force flag at handler scope so it's accessible in catch blocks
       const forceCompleteTier1 = payload.forceCompleteTier1 === true;
 

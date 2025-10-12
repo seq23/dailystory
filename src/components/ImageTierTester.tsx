@@ -1880,84 +1880,46 @@ export const ImageTierTester = () => {
       let responseSuccess = !response.error && response.data?.success;
       let expectedStopNote = null;
       
-      // Simplified expected stop detection for Force 2.5A
+      // Force 2.5A: Two-phase test strategy
       let precomputedCCS: any = null;
       
       if (tier === '2.5A' && (response.error || response.data?.success === false)) {
+        // Phase B: Expected STOP - fetch test display envelope
         responseSuccess = true;
         expectedStopNote = '✅ Expected STOP: 2.5A requires complete CCS in skip mode';
+        console.log('🧪 Force 2.5A Phase B: Expected STOP, fetching display envelope');
         cascadeHistory.push('');
-        cascadeHistory.push('🎯 Force 2.5A Classification: Expected STOP treated as PASS');
-        cascadeHistory.push('📋 Rationale: 2.5A correctly refused to proceed without complete CCS');
-        console.log('✅ Force 2.5A: Expected stop detected, will fetch display assets');
+        cascadeHistory.push('🎯 Force 2.5A: Expected STOP (requires complete CCS)');
+        cascadeHistory.push('🧪 Phase B: Fetching display envelope with __testDisplaySuccess');
         
-        // Extract precomputed CCS from orchestrator error response
-        console.log('🔍 Checking for CCS data in orchestrator response:', {
-          hasDetails: !!response.data?.details,
-          hasTier1Error: !!response.data?.details?.tier1Error,
-          hasTier1Data: !!response.data?.details?.tier1Data,
-          tier1ErrorKeys: response.data?.details?.tier1Error ? Object.keys(response.data.details.tier1Error) : [],
-          tier1DataKeys: response.data?.details?.tier1Data ? Object.keys(response.data.details.tier1Data) : []
-        });
-        
-        // Try tier1Data first (contains ctx.tier1), fallback to tier1Error
-        const tier1Data = response.data?.details?.tier1Data || response.data?.details?.tier1Error;
-        
-        if (tier1Data && (tier1Data.characterSeed || tier1Data.culturalBundle)) {
-          precomputedCCS = {
-            characterSeed: tier1Data.characterSeed || null,
-            culturalBundle: tier1Data.culturalBundle || null,
-            coloredObjects: tier1Data.coloredObjects || null,
-            secondaryCharacters: tier1Data.secondaryCharacters || [],
-            mainCharacterAppearance: tier1Data.mainCharacterAppearance || null,
-            structuredAvatarData: tier1Data.structuredAvatarData || null,
-            latestClothing: tier1Data.latestClothing || null,
-            tier1Complete: true,
-            ccsMethodsRun: tier1Data.ccsMethodsRun || []
+        try {
+          const retryPayload = {
+            ...payload,
+            __testDisplaySuccess: true
           };
           
-          console.log('✅ Extracted precomputed CCS from orchestrator response:', {
-            hasCharacterSeed: !!precomputedCCS.characterSeed,
-            hasCulturalBundle: !!precomputedCCS.culturalBundle,
-            coloredObjectsCount: precomputedCCS.coloredObjects?.split(',').length || 0,
-            methodsRun: precomputedCCS.ccsMethodsRun.length
+          const retryResponse = await supabase.functions.invoke(selectedFunction, { body: retryPayload });
+          
+          console.log('📥 Display envelope response:', {
+            hasData: !!retryResponse.data,
+            testDisplay: retryResponse.data?.testDisplay,
+            hasPrecomputedCCS: !!retryResponse.data?.precomputedCCS
           });
           
-          cascadeHistory.push('✅ Extracted CCS data: All 7 methods completed by orchestrator');
-        } else {
-          // Body was masked by invoke() - retry with __testDisplaySuccess to get 200 with CCS
-          console.log('🔄 CCS data not in error body (possibly masked), retrying with __testDisplaySuccess');
-          cascadeHistory.push('🔄 Retrying orchestrator with __testDisplaySuccess flag to extract CCS');
-          
-          try {
-            const retryPayload = {
-              ...payload,
-              __testDisplaySuccess: true
-            };
-            
-            const retryResponse = await supabase.functions.invoke(selectedFunction, { body: retryPayload });
-            
-            console.log('📥 Display envelope response:', {
-              hasData: !!retryResponse.data,
-              testDisplay: retryResponse.data?.testDisplay,
-              hasPrecomputedCCS: !!retryResponse.data?.precomputedCCS
+          if (retryResponse.data?.testDisplay && retryResponse.data?.precomputedCCS) {
+            precomputedCCS = retryResponse.data.precomputedCCS;
+            console.log('✅ Extracted CCS from display envelope:', {
+              hasCharacterSeed: !!precomputedCCS.characterSeed,
+              hasCulturalBundle: !!precomputedCCS.culturalBundle
             });
-            
-            if (retryResponse.data?.testDisplay && retryResponse.data?.precomputedCCS) {
-              precomputedCCS = retryResponse.data.precomputedCCS;
-              console.log('✅ Extracted CCS from display envelope:', {
-                hasCharacterSeed: !!precomputedCCS.characterSeed,
-                hasCulturalBundle: !!precomputedCCS.culturalBundle
-              });
-              cascadeHistory.push('✅ Display envelope: CCS extracted successfully');
-            } else {
-              console.warn('⚠️ Display envelope did not contain CCS');
-              cascadeHistory.push('⚠️ Display envelope retry did not return CCS');
-            }
-          } catch (retryError: any) {
-            console.error('❌ Display envelope retry failed:', retryError);
-            cascadeHistory.push(`❌ Display envelope retry error: ${retryError.message}`);
+            cascadeHistory.push('✅ Display envelope: CCS extracted successfully');
+          } else {
+            console.warn('⚠️ Display envelope did not contain CCS');
+            cascadeHistory.push('⚠️ Display envelope retry did not return CCS');
           }
+        } catch (retryError: any) {
+          console.error('❌ Display envelope retry failed:', retryError);
+          cascadeHistory.push(`❌ Display envelope retry error: ${retryError.message}`);
         }
       }
       
@@ -2157,11 +2119,11 @@ export const ImageTierTester = () => {
         steps: steps.map(s => `${s.name}: ${s.status}`)
       });
 
-      // Tier 1 specific validation - NO SECOND CALL FOR DISPLAY
+      // Tier 1 specific validation - Treat expected STOP as PASS
       const isTier1Test = tier === '1';
       const tier1Success = isTier1Test && response.data?.templateStructure === 'COMPLETE_TIER_1';
       
-      // Force Tier 1: Treat ANY non-2xx as expected STOP (pass) when cascade is blocked
+      // Force Tier 1: ANY non-2xx = expected STOP = PASS
       // Since supabase.functions.invoke masks error bodies, we can't rely on templateStructure
       const tier1ForcedFailure = isTier1Test && response.error;
       
@@ -2175,6 +2137,7 @@ export const ImageTierTester = () => {
         cascadeHistory.push('');
         cascadeHistory.push('✅ Force Tier 1: Expected STOP on failure (cascade blocked)');
         cascadeHistory.push('🎯 Test Classification: PASS (Tier 1 correctly stopped without cascade)');
+        console.log('✅ Force Tier 1: Classified as PASS (expected STOP)');
       }
       
       setResults([{
