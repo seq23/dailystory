@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-REMOVE-TIERLOGGING-REFS
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-FORCE-FRESH-DEPLOYMENT
 // Last deployed: 2025-10-12
-// Changes: Removed all tierLogging.js references - using console-only logger (tierLogging.js doesn't exist)
-// Previous: v2025-10-12-FIX-CCS-DYNAMIC-IMPORT
+// Changes: Force fresh deployment to clear stale cache and fix Tier 1 CCS dynamic import (CharacterConsistencyServiceInline.js)
+// Previous: v2025-10-12-REMOVE-TIERLOGGING-REFS
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
