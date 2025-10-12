@@ -38,7 +38,7 @@ interface TestResult {
       status?: number;
       triageResult?: string;
     }; // NEW: Health check results
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO' | 'FRONTEND_BYPASS' | 'ORCHESTRATOR_CALL'; // Enhanced test types
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO' | 'FRONTEND_BYPASS' | 'ORCHESTRATOR_CALL' | 'PRODUCTION_FLOW'; // Enhanced test types
     timeoutTest?: boolean;
     abortReason?: string;
     // AI Scene Creator specific
@@ -2846,40 +2846,48 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           criticalFailure: 'Failed to generate image'
         },
         {
-          name: 'Force Tier 2.5C',
-          description: 'Tier 1 prep → Jump to 2.5C (STOPS at 2.5C)',
-          testType: 'ORCHESTRATOR_CALL' as const,
+          name: 'Force Tier 2.5C (Production Flow)',
+          description: 'Orchestrator down → Emergency bypass → Template-CD complexity C',
+          testType: 'PRODUCTION_FLOW' as const,
+          mockHealthStatus: {
+            orchestrator: 'server' as const,
+            runwareAPI: 'healthy' as const,
+            serviceDependencies: 'server' as const,
+            templateCD: 'healthy' as const,
+            overallHealth: 'server' as const
+          },
           payload: {
             storyText: testStoryText,
             userInfo: userInfo,
             sessionId: `batch-test-2.5c-${Date.now()}`,
             pageNumber: 1,
-            storyId: crypto.randomUUID(),
             isGuestUser: false,
-            difficultyLevel: 'medium',
-            skipDirectlyToTier: '2.5C',
-            skipTier1AI: true
+            difficultyLevel: 'medium'
           },
-          expectedBehavior: 'Success if 2.5C execution succeeds',
-          criticalFailure: 'Continued cascade (should STOP at 2.5C)'
+          expectedBehavior: 'Health check selects TIER_2_5C → Direct template-cd call with complexity C',
+          criticalFailure: 'Did not route to template-cd despite healthy status'
         },
         {
-          name: 'Force Tier 2.5D',
-          description: 'Tier 1 prep → Jump to 2.5D (STOPS at 2.5D)',
-          testType: 'ORCHESTRATOR_CALL' as const,
+          name: 'Force Tier 2.5D (Nuclear Fallback)',
+          description: 'All services down → Emergency bypass → Template-CD complexity D (nuclear)',
+          testType: 'PRODUCTION_FLOW' as const,
+          mockHealthStatus: {
+            orchestrator: 'server' as const,
+            runwareAPI: 'server' as const,
+            serviceDependencies: 'server' as const,
+            templateCD: 'healthy' as const,
+            overallHealth: 'server' as const
+          },
           payload: {
             storyText: testStoryText,
             userInfo: userInfo,
             sessionId: `batch-test-2.5d-${Date.now()}`,
             pageNumber: 1,
-            storyId: crypto.randomUUID(),
             isGuestUser: false,
-            difficultyLevel: 'medium',
-            skipDirectlyToTier: '2.5D',
-            skipTier1AI: true
+            difficultyLevel: 'medium'
           },
-          expectedBehavior: 'ALWAYS succeeds (nuclear fallback)',
-          criticalFailure: 'Failed to generate image'
+          expectedBehavior: 'TIER_4 selected → Emergency bypass → Template-cd nuclear fallback (complexity D)',
+          criticalFailure: 'Nuclear fallback failed to generate image'
         }
       ];
 
@@ -2896,41 +2904,76 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           let data: any;
           let error: any;
 
-          // PATH 1: Frontend Bypass Test - Simulate orchestrator failure
-          if (scenario.testType === 'FRONTEND_BYPASS') {
-            // Try orchestrator with simulation flag
-            const orchestratorResult = await supabase.functions.invoke('runware-generate-image', {
-              body: {
-                ...scenario.payload,
-                __testSimulateOrchestratorFailure: true // ✅ Clean simulation
-              }
+          // Mock health status if provided (for production flow testing)
+          const originalCheckSystemHealth = (scenario as any).mockHealthStatus 
+            ? HealthCheckService.checkSystemHealth.bind(HealthCheckService)
+            : null;
+          
+          if ((scenario as any).mockHealthStatus) {
+            // Temporarily override health check with mock status
+            HealthCheckService.checkSystemHealth = async () => ({
+              ...(scenario as any).mockHealthStatus,
+              timestamp: new Date().toISOString(),
+              checkDuration: 0
             });
-            
-            // Check if orchestrator failed (simulated 503 or real error)
-            if (orchestratorResult.error || !orchestratorResult.data?.success) {
-              // Orchestrator failed, call Direct Mode as fallback (mimics production catch block)
-              const directModeResult = await supabase.functions.invoke('ai-visual-scene-creator', {
+          }
+
+          try {
+            // PATH 1: Frontend Bypass Test - Simulate orchestrator failure
+            if (scenario.testType === 'FRONTEND_BYPASS') {
+              // Try orchestrator with simulation flag
+              const orchestratorResult = await supabase.functions.invoke('runware-generate-image', {
                 body: {
                   ...scenario.payload,
-                  directMode: true
+                  __testSimulateOrchestratorFailure: true // ✅ Clean simulation
                 }
               });
               
-              data = directModeResult.data;
-              error = directModeResult.error;
-            } else {
-              // Orchestrator succeeded (shouldn't happen with simulation flag)
-              data = orchestratorResult.data;
-              error = orchestratorResult.error;
-            }
+              // Check if orchestrator failed (simulated 503 or real error)
+              if (orchestratorResult.error || !orchestratorResult.data?.success) {
+                // Orchestrator failed, call Direct Mode as fallback (mimics production catch block)
+                const directModeResult = await supabase.functions.invoke('ai-visual-scene-creator', {
+                  body: {
+                    ...scenario.payload,
+                    directMode: true
+                  }
+                });
+                
+                data = directModeResult.data;
+                error = directModeResult.error;
+              } else {
+                // Orchestrator succeeded (shouldn't happen with simulation flag)
+                data = orchestratorResult.data;
+                error = orchestratorResult.error;
+              }
 
-          } else {
-            // PATH 2: Orchestrator Call
-            const response = await supabase.functions.invoke('runware-generate-image', {
-              body: scenario.payload
-            });
-            data = response.data;
-            error = response.error;
+            } else if (scenario.testType === 'PRODUCTION_FLOW') {
+              // PATH 3: Production Flow Test - Call through SimpleImageService
+              console.log(`🧪 Production Flow Test - Mock Health Status:`, (scenario as any).mockHealthStatus);
+              const result = await SimpleImageService.generateStoryImage(
+                scenario.payload.storyText,
+                scenario.payload.userInfo,
+                scenario.payload.sessionId,
+                scenario.payload.pageNumber,
+                false, // isPremium
+                undefined // smartBypassEnabled (let health check decide)
+              );
+              data = result;
+              error = result.success ? null : new Error('Image generation failed');
+              console.log(`🧪 Production Flow Result:`, { success: result.success, tier: result.tier, imageURL: result.imageURL?.substring(0, 50) });
+            } else {
+              // PATH 2: Orchestrator Call
+              const response = await supabase.functions.invoke('runware-generate-image', {
+                body: scenario.payload
+              });
+              data = response.data;
+              error = response.error;
+            }
+          } finally {
+            // Restore original health check
+            if (originalCheckSystemHealth) {
+              HealthCheckService.checkSystemHealth = originalCheckSystemHealth;
+            }
           }
 
           const processingTime = Date.now() - scenarioStartTime;
