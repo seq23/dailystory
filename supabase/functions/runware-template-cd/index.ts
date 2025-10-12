@@ -899,6 +899,7 @@ async function handleRequest(req: Request) {
     }
 
     return result;
+  } // Close outer try block
     
   } catch (error: any) {
     console.error('❌ Template CD generation failed, checking LKG:', error);
