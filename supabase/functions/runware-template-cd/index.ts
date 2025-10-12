@@ -655,9 +655,9 @@ async function handleRequest(req: Request) {
     });
   }
 
-  try {
-    let payload = await req.json();
-    console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
+  // Request parsing (no outer try - flat architecture)
+  let payload = await req.json();
+  console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
     
     // Convert test probe payloads to production format
     if (payload.test === true) {
@@ -899,12 +899,10 @@ async function handleRequest(req: Request) {
     }
 
     return result;
-  } // Close outer try block
-    
   } catch (error: any) {
+    // Template generation failed - try LKG rescue
     console.error('❌ Template CD generation failed, checking LKG:', error);
     
-    // Try to recover from LKG cache
     const lkgResult = UniversalLKGCache.getLKG(requestHash, 'runware-template-cd');
     if (lkgResult) {
       console.log('✅ [LKG_RESCUE] Serving cached template CD result to prevent failure');
@@ -929,7 +927,7 @@ async function handleRequest(req: Request) {
       retry: runwareError.retry,
       code: runwareError.code
     };
-  }
+  } // end: template-generation try/catch (flat architecture - single safety net)
 }
 
 // ========== MAIN SERVER ==========
