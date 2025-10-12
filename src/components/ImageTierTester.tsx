@@ -1863,23 +1863,39 @@ export const ImageTierTester = () => {
       
       const response = await supabase.functions.invoke(selectedFunction, { body: payload });
       
+      // Debug logging for Force 2.5A
+      console.log('🔍 Force 2.5A Debug:', {
+        tier,
+        hasError: !!response.error,
+        errorStatus: response.error?.status,
+        errorMessage: response.error?.message,
+        dataSuccess: response.data?.success,
+        dataError: response.data?.error,
+        dataReason: response.data?.reason,
+        dataDetails: response.data?.details
+      });
+      
       // Special handling for Force 2.5A: expected STOP is a PASS
       let responseSuccess = !response.error && response.data?.success;
       let expectedStopNote = null;
       
-      if (tier === '2.5A' && response.error) {
+      // Check both response.error AND response.data for failure indicators
+      if (tier === '2.5A' && (response.error || (response.data && response.data.success === false))) {
         const status = response.error?.status;
-        const message = response.error?.message || '';
+        const message = response.error?.message || response.data?.error || '';
+        const reason = response.data?.reason || '';
         const details = response.data?.details || response.error?.details || {};
         
         if (status === 500 || status === 503 || 
             message.includes('CCS_REQUIRED') || message.includes('T25A') || message.includes('T1_FAILED') ||
+            reason.includes('CCS_REQUIRED') || reason.includes('T1_FAILED') ||
             details.stoppedBecause === 'CCS_REQUIRED_FOR_2.5A') {
           responseSuccess = true;
           expectedStopNote = '✅ Expected STOP: 2.5A requires complete CCS in skip mode';
           cascadeHistory.push('');
           cascadeHistory.push('🎯 Force 2.5A Classification: Expected STOP treated as PASS');
           cascadeHistory.push('📋 Rationale: 2.5A correctly refused to proceed without complete CCS');
+          console.log('✅ Force 2.5A: Expected stop detected, will fetch display assets');
         }
       }
       
@@ -1889,34 +1905,50 @@ export const ImageTierTester = () => {
       let displayNegativePrompt: string | undefined;
 
       if (expectedStopNote) {
+        console.log('🎨 Force 2.5A: Starting display fallback');
         try {
           const displayPayload = {
-            pageText: enhancedPrompt,
-            storyText: enhancedPrompt,
+            pageText: enhancedPrompt || testStoryText,
+            storyText: enhancedPrompt || testStoryText,
             userInfo: userInfo,
-            sessionId: `${crypto.randomUUID()}-2.5a-display`,
+            sessionId: `force-2.5a-${crypto.randomUUID()}`,
             pageNumber: 1,
             templateComplexity: 'A'
           };
           
+          console.log('📤 Calling runware-template-ab for display');
           const abRes = await supabase.functions.invoke('runware-template-ab', { 
             body: displayPayload 
           });
           
-          displayImageURL = abRes.data?.imageURL || abRes.data?.templateData?.imageURL;
+          console.log('📥 Template-ab response:', {
+            hasData: !!abRes.data,
+            hasError: !!abRes.error,
+            imageURL: abRes.data?.imageURL,
+            templateImageURL: abRes.data?.templateData?.imageURL,
+            hasPrompts: !!(abRes.data?.positivePrompt || abRes.data?.templateData?.positivePrompt)
+          });
+          
+          displayImageURL = abRes.data?.imageURL 
+            || abRes.data?.templateData?.imageURL
+            || abRes.data?.image?.url;
           displayPositivePrompt = abRes.data?.positivePrompt 
             || abRes.data?.prompt 
-            || abRes.data?.templateData?.positivePrompt;
+            || abRes.data?.templateData?.positivePrompt
+            || abRes.data?.prompts?.positive;
           displayNegativePrompt = abRes.data?.negativePrompt 
-            || abRes.data?.templateData?.negativePrompt;
+            || abRes.data?.templateData?.negativePrompt
+            || abRes.data?.prompts?.negative;
           
           cascadeHistory.push('');
           cascadeHistory.push('🎨 Display-only fallback: Fetched Template 2.5A for visualization');
           cascadeHistory.push(`✅ Display assets: imageURL=${!!displayImageURL}, prompts=${!!displayPositivePrompt}`);
+          console.log('✅ Force 2.5A: Display assets fetched', { hasImage: !!displayImageURL, hasPrompt: !!displayPositivePrompt });
           
         } catch (displayError: any) {
+          console.error('❌ Force 2.5A display fallback failed:', displayError);
           cascadeHistory.push('');
-          cascadeHistory.push(`⚠️ Display fallback failed: ${displayError.message}`);
+          cascadeHistory.push(`⚠️ Display fallback failed: ${displayError.message || displayError}`);
         }
       }
       
