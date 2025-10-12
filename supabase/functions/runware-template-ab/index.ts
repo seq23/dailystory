@@ -1239,52 +1239,24 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
               halfOpenSuccessThreshold: 2,
             });
             
-            // Create deduplication key for Runware API call
-            const dedupeKey = RequestDeduplicator.createKey({
-              functionName: 'runware-template-ab',
-              sessionId,
-              pageNumber,
-              prompt: positivePrompt.substring(0, 100)
-            });
-            
-            // Execute with circuit breaker protection + deduplication
-            const runwareResult = await EnhancedCircuitBreaker.execute(
-              'runware-template-ab',
-              () => RequestDeduplicator.deduplicate(
-                dedupeKey,
-                () => callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' }),
-                20000 // 20s timeout for Runware
-              ),
+            // Execute with unified reliability stack (includes LKG rescue on failure)
+            const runwareResult = await reliabilityManager.executeResilient(
+              positivePrompt.substring(0, 100), // operationKey for deduplication
+              () => callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' }),
               {
-                onCircuitOpen: () => {
-                  console.warn('⚠️ [CIRCUIT] Runware circuit open, checking LKG');
-                  const lkg = UniversalLKGCache.getLKG(requestHash, 'runware-template-ab');
-                  if (lkg) {
-                    return lkg;
-                  }
-                  throw new Error('Circuit breaker open and no LKG available');
-                }
+                functionName: 'runware-template-ab',
+                sessionId,
+                tier: 'TIER_2.5AB',
+                quality: 'high',
+                timeout: 20000
               }
             );
             
             imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL;
             returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
             console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
-            
-            // Warm LKG cache on success
-            if (imageURL) {
-              const successResult = { success: true, imageURL, seed: returnedSeed, positivePrompt, negativePrompt, tier: 'tier-2.5A' };
-              UniversalLKGCache.warmFromSuccess(requestHash, successResult, 'TIER_2.5A', 'runware-template-ab');
-            }
           } catch (imageError: any) {
-            console.error(`❌ [${requestId}] Template AB failed, checking LKG:`, imageError.message);
-            
-            // Try to recover from LKG cache
-            const lkgResult = UniversalLKGCache.getLKG(requestHash, 'runware-template-ab');
-            if (lkgResult) {
-              console.log('✅ [LKG_RESCUE] Serving cached template AB result to prevent failure');
-              return createResponse(lkgResult);
-            }
+            console.error(`❌ [${requestId}] Template AB failed after reliability stack:`, imageError.message);
             
             return createResponse({
               success: false,

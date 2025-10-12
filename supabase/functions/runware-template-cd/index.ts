@@ -797,33 +797,18 @@ async function handleRequest(req: Request) {
         templateResult = generateTier25D(storyText, userInfo, avatarIdentity, failedTierData || {});
       }
 
-      console.log('🎨 Template CD: Generating image with Runware API + Request Deduplication + Circuit Breaker');
+      console.log('🎨 Template CD: Generating image with Runware API via ReliabilityManager');
       
-      // Create deduplication key for Runware API call
-      const dedupeKey = RequestDeduplicator.createKey({
-        functionName: 'runware-template-cd',
-        sessionId,
-        pageNumber,
-        prompt: templateResult.positivePrompt.substring(0, 100)
-      });
-      
-      // Execute with circuit breaker protection + deduplication
-      const imageGenResult = await EnhancedCircuitBreaker.execute(
-        'runware-template-cd',
-        () => RequestDeduplicator.deduplicate(
-          dedupeKey,
-          () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
-          20000 // 20s timeout for Runware
-        ),
+      // Execute with unified reliability stack (Circuit Breaker → Deduplication → LKG Cache)
+      const imageGenResult = await reliabilityManager.executeResilient(
+        templateResult.positivePrompt.substring(0, 100), // operationKey for deduplication
+        () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
         {
-          onCircuitOpen: () => {
-            console.warn('⚠️ [CIRCUIT] Runware circuit open, checking LKG');
-            const lkg = UniversalLKGCache.getLKG(requestHash, 'runware-template-cd');
-            if (lkg) {
-              return lkg;
-            }
-            throw new Error('Circuit breaker open and no LKG available');
-          }
+          functionName: 'runware-template-cd',
+          sessionId,
+          tier: 'TIER_2.5CD',
+          quality: 'high',
+          timeout: 20000 // 20s timeout for Runware
         }
       );
       
@@ -845,11 +830,6 @@ async function handleRequest(req: Request) {
       console.log('✅ Template CD: Result prepared', { 
         hasImageURL: !!result.imageURL
       });
-      
-      // Warm LKG cache on success
-      if (result.imageURL) {
-        UniversalLKGCache.warmFromSuccess(requestHash, result, 'TIER_2.5CD', 'runware-template-cd');
-      }
 
     // Log to database
     try {

@@ -406,13 +406,7 @@ async function executeWithLKG<T>(
     return result;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('❌ Operation failed, checking Universal LKG cache:', errorMessage);
-    
-    const lkg = UniversalLKGCache.getLKG(requestHash, functionName);
-    if (lkg) {
-      console.log('✅ [UNIVERSAL_LKG_RESCUE] Serving cached result due to error');
-      return lkg;
-    }
+    console.error('❌ Operation failed (LKG rescue already attempted by reliabilityManager):', errorMessage);
     
     throw error; // No LKG available
   }
@@ -798,20 +792,10 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
       halfOpenSuccessThreshold: 2,
     });
     
-    // Create deduplication key for OpenAI call
-    const dedupeKey = RequestDeduplicator.createKey({
-      functionName: 'ai-visual-scene-creator',
-      sessionId,
-      pageNumber,
-      prompt: prompts.userPrompt.substring(0, 100)
-    });
-    
-    // Execute with circuit breaker protection + deduplication
-    return EnhancedCircuitBreaker.execute(
-      'openai-visual',
-      () => RequestDeduplicator.deduplicate(
-        dedupeKey,
-        () => safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
+    // Execute OpenAI call with unified reliability stack
+    return reliabilityManager.executeResilient(
+      prompts.userPrompt.substring(0, 100), // operationKey for deduplication
+      () => safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -824,13 +808,12 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
           const content = res.json?.choices?.[0]?.message?.content?.trim?.();
           return { ok: !!(res.ok && content), content, status: res.status };
         }),
-        15000 // 15s timeout for deduplication wrapper
-      ),
       {
-        onCircuitOpen: () => {
-          console.warn('⚠️ [CIRCUIT] OpenAI circuit open, returning failure');
-          return { ok: false, status: 503 };
-        }
+        functionName: 'ai-visual-scene-creator',
+        sessionId,
+        tier: 'AISC',
+        quality: 'high',
+        timeout: 25000
       }
     );
   }
