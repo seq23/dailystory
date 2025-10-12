@@ -103,6 +103,43 @@ When `payload.test === true` AND `payload.__testSimulateT1Failure === true`, the
 
 This ensures the "Direct Mode (Orchestrator Fallback)" test exercises the actual Direct Mode path and validates the `primaryScene` contract, rather than relying on the normal cascade which may skip Direct Mode.
 
+## Critical Bug Fix: tier1Complete Propagation (October 2025)
+
+### Problem
+Force Tier 2.5A tests were failing with "CCS_REQUIRED_FOR_2.5A" error despite all 7 CCS methods completing successfully.
+
+### Root Cause
+The `ctx.tier1` assignment (line 1611) was missing 4 critical fields from `processInlinedTier1` return value:
+- `tier1Complete` (boolean)
+- `ccsMethodsRun` (array of 7 method names)
+- `secondaryCharacterSeeds` (array)
+- `detectedAnimals` (array)
+
+Without `tier1Complete: true`, the Mode A/B selection logic (line 2243) incorrectly treated complete CCS as incomplete.
+
+### Solution
+Added all 4 missing fields to `ctx.tier1` assignment, ensuring complete CCS data propagates from Tier 1 to Tier 2.5A.
+
+### Impact
+- ✅ Force Tier 2.5A tests now work correctly
+- ✅ Production cascade (Tier 1 → Direct Mode → Full CCS → Tier 2.5A Mode A) now works correctly
+- ✅ Full CCS Validation path (line 2131) continues to work (separate code path, already had `tier1Complete: true`)
+
+### Verification
+Check logs for:
+```
+🔍 [requestId] ctx.tier1 populated from processInlinedTier1: {
+  tier1Complete: true,
+  ccsMethodsCount: 7,
+  ...
+}
+```
+
+Then verify Tier 2.5A logs show:
+```
+✅ [requestId] [T2.5A] Calling Template-AB Mode A with complete CCS
+```
+
 ## SEO
 - Images in this doc should include descriptive alt text if added later
 

@@ -1,6 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-VENDOR-RELIABILITY-BUNDLE
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-FIX-TIER1-COMPLETE-PROPAGATION
 // Last deployed: 2025-10-12
-// Changes: Vendor-first ReliabilityManager consolidated bundle (vendor → shared fallback)
+// Changes: Fixed tier1Complete flag propagation in ctx.tier1 assignment (line 1611)
+// Previous: v2025-10-12-VENDOR-RELIABILITY-BUNDLE
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
@@ -1619,7 +1620,23 @@ const executeTier1: TierFn = async (ctx) => {
       structuredAvatarData: tier1Result.structuredAvatarData,
       sessionSetting: tier1Result.sessionSetting || ctx.payload.sessionSetting, // ✅ Capture session setting
       latestClothing: tier1Result.latestClothing || null, // ✅ NEW: Capture latest clothing
+      
+      // ✅ FIX: Add missing fields from tier1Result (critical for Force Tier 2.5A tests)
+      tier1Complete: tier1Result.tier1Complete || false,
+      ccsMethodsRun: tier1Result.ccsMethodsRun || [],
+      secondaryCharacterSeeds: tier1Result.secondaryCharacters || [],
+      detectedAnimals: tier1Result.detectedAnimals || []
     };
+    
+    // Verification: Log tier1Complete propagation
+    console.log(`🔍 [${ctx.requestId}] ctx.tier1 populated from processInlinedTier1:`, {
+      tier1Complete: ctx.tier1.tier1Complete,
+      ccsMethodsCount: ctx.tier1.ccsMethodsRun?.length || 0,
+      hasCharacterSeed: !!ctx.tier1.characterSeed,
+      hasLatestClothing: !!ctx.tier1.latestClothing,
+      skipAIMode: ctx.payload.skipTier1AI === true,
+      forceMode: ctx.payload.forceCompleteTier1 === true
+    });
     
     // Make primaryScene available in payload for cascade (including Direct Mode)
     ctx.payload.primaryScene = tier1Result.primaryScene;
