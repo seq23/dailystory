@@ -2149,7 +2149,21 @@ const executeT25A: TierFn = async (ctx) => {
         });
         
       } else {
-        // ❌ CCS FAILED: Call Mode B with partial/null data
+        // In skip-to-2.5A paths, do not downgrade to Mode B — STOP for strict production parity
+        if (ctx.payload?.skipDirectlyToTier === '2.5A') {
+          console.error(`❌ [${ctx.requestId}] [T2.5A] STOP: Full CCS required but incomplete - refusing Mode B in skip mode`);
+          return { 
+            ok: false, 
+            code: "T25A_REQUIRES_FULL_CCS", 
+            reason: "Tier 2.5A requires complete CCS (skip mode).",
+            details: { 
+              stoppedBecause: "CCS_REQUIRED_FOR_2.5A", 
+              skipModeUsed: true, 
+              targetTier: "2.5A" 
+            } 
+          };
+        }
+        // Non-skip cascade may still use Mode B (legacy behavior)
         templateComplexity = "B";
         precomputedCCS = {
           characterSeed: ctx.tier1?.characterSeed || null,
@@ -2166,7 +2180,6 @@ const executeT25A: TierFn = async (ctx) => {
           ccsMethodsRun: [],
           source: 'partial_ccs_for_mode_b'
         };
-        
         console.log(`⚠️ [${ctx.requestId}] [T2.5A] Calling Template-AB Mode B with partial CCS (full CCS unavailable)`, {
           tier1Complete: false,
           hasPartialCharacterSeed: !!precomputedCCS.characterSeed,
@@ -2608,10 +2621,52 @@ async function runTierCascade(
     const tier1Result = await executeTier1(ctx);
     if (tier1Result.ok) {
       console.log(`✅ Tier 1 CCS prep complete (ctx.tier1 populated), continuing to ${skipToTier}`);
+      
+      // Strict CCS validation for Force Tier 2.5A mode
+      if (skipToTier === '2.5A') {
+        const ok = !!(ctx.tier1?.tier1Complete === true 
+          && ctx.tier1?.culturalBundle?.hair 
+          && ctx.tier1?.culturalBundle?.features 
+          && ctx.tier1?.latestClothing);
+        if (!ok) {
+          console.error(`❌ Force Tier 2.5A: Tier 1 reported success but CCS is missing critical fields - STOPPING`);
+          return {
+            ok: false,
+            code: 'T1_CCS_INCOMPLETE_FOR_T25A',
+            reason: 'Tier 2.5A requires complete CCS (hair, features, latestClothing, tier1Complete=true)',
+            details: {
+              skipModeUsed: true,
+              targetTier: '2.5A',
+              stoppedBecause: 'CCS_REQUIRED_FOR_2.5A'
+            }
+          };
+        }
+      }
       // Don't return here - let it continue to target tier
     } else {
-      console.log(`⚠️ Tier 1 failed, but continuing to ${skipToTier} (template-ab auto-selects Mode A/B based on CCS)`);
-      // ctx.tier1 might be incomplete, but template functions handle missing CCS with fallbacks
+      if (skipToTier === '2.5A') {
+        console.error(`❌ Force Tier 2.5A: CCS prep failed - STOPPING (2.5A requires complete CCS)`);
+        const cascadeHistory = [
+          `❌ Tier 1 CCS prep failed: ${tier1Result.code || 'Unknown error'}`,
+          `💬 Reason: ${tier1Result.reason || 'CCS import or computation failed'}`,
+          `🛑 Force Tier 2.5A: STOPPED (requires complete CCS)`
+        ];
+        return {
+          ok: false,
+          code: tier1Result.code || 'T1_CCS_FAILED',
+          reason: `Tier 2.5A requires complete CCS but Tier 1 failed: ${tier1Result.reason}`,
+          details: {
+            tier1Error: tier1Result,
+            cascadeHistory,
+            skipModeUsed: true,
+            targetTier: '2.5A',
+            stoppedBecause: 'CCS_REQUIRED_FOR_2.5A'
+          }
+        };
+      } else {
+        console.log(`⚠️ Tier 1 failed, but continuing to ${skipToTier} (this tier handles missing CCS)`);
+        // 2.5B/C/D may handle missing CCS with inline data
+      }
     }
     
     // Now skip to the requested tier
