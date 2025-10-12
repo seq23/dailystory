@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-FIX-TIER1-COMPLETE-PROPAGATION
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-REMOVE-BUNDLER-HINTS
 // Last deployed: 2025-10-12
-// Changes: Fixed tier1Complete flag propagation in ctx.tier1 assignment (line 1611)
-// Previous: v2025-10-12-VENDOR-RELIABILITY-BUNDLE
+// Changes: Removed all top-level bundler hint imports to prevent boot failures
+// Previous: v2025-10-12-FIX-TIER1-COMPLETE-PROPAGATION
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
@@ -35,21 +35,10 @@ async function getReliabilityManager() {
   }
 }
 
-// ✅ BUNDLER HINTS: Force shared modules into deployment bundle (prevent tree-shaking)
-import { characterConsistencyService as _ccsHint } from "./CharacterConsistencyServiceInline.js";
-import * as __bundle_resilientLoader from "../_shared/resilientLoader.js";
-import * as __bundle_tierLogging from "../_shared/tierLogging.js";
-import * as __bundle_nuclearNegatives from "../_shared/NuclearNegativePrompts.js";
-import * as __bundle_idempotency from "../_shared/IdempotencyMemory.js";
-import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.bundle.mjs";
-
-// Prevent tree-shaking of bundled modules
-void _ccsHint;
-void __bundle_resilientLoader;
-void __bundle_tierLogging;
-void __bundle_nuclearNegatives;
-void __bundle_idempotency;
-void __bundle_reliability;
+// NOTE: All modules are loaded lazily at runtime to prevent boot failures
+// CCS is loaded dynamically in Tier 1 handler
+// ReliabilityManager loaded via getReliabilityManager()
+// All other modules loaded on-demand via dynamic imports
 
 // CCS boot status tracking (referenced throughout orchestrator metadata)
 const ccsBootStatus = { loaded: false, error: null };

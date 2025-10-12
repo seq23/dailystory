@@ -1,6 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-VENDOR-RELIABILITY-BUNDLE
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-REMOVE-BUNDLER-HINTS
 // Last deployed: 2025-10-12
-// Changes: Vendor-first ReliabilityManager consolidated bundle (vendor → shared fallback)
+// Changes: Removed all top-level bundler hint imports to prevent boot failures
+// Previous: v2025-10-12-VENDOR-RELIABILITY-BUNDLE
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
@@ -32,9 +33,7 @@ async function getReliabilityManager() {
   }
 }
 
-// Bundler hint for vendor bundle
-import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.bundle.mjs";
-void __bundle_reliability;
+// NOTE: ReliabilityManager loaded lazily via getReliabilityManager() to prevent boot failures
 
 // CCS completely removed from Direct Mode - using inline static avatar system
 const ccsBootStatus = { loaded: false, error: null as null | string };
