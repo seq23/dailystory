@@ -1880,6 +1880,8 @@ export const ImageTierTester = () => {
       let expectedStopNote = null;
       
       // Simplified expected stop detection for Force 2.5A
+      let precomputedCCS: any = null;
+      
       if (tier === '2.5A' && (response.error || response.data?.success === false)) {
         responseSuccess = true;
         expectedStopNote = '✅ Expected STOP: 2.5A requires complete CCS in skip mode';
@@ -1887,6 +1889,41 @@ export const ImageTierTester = () => {
         cascadeHistory.push('🎯 Force 2.5A Classification: Expected STOP treated as PASS');
         cascadeHistory.push('📋 Rationale: 2.5A correctly refused to proceed without complete CCS');
         console.log('✅ Force 2.5A: Expected stop detected, will fetch display assets');
+        
+        // Extract precomputed CCS from orchestrator error response
+        console.log('🔍 Checking for CCS data in orchestrator response:', {
+          hasDetails: !!response.data?.details,
+          hasTier1Error: !!response.data?.details?.tier1Error,
+          tier1ErrorKeys: response.data?.details?.tier1Error ? Object.keys(response.data.details.tier1Error) : []
+        });
+        
+        const tier1Data = response.data?.details?.tier1Error;
+        
+        if (tier1Data && (tier1Data.characterSeed || tier1Data.culturalBundle)) {
+          precomputedCCS = {
+            characterSeed: tier1Data.characterSeed || null,
+            culturalBundle: tier1Data.culturalBundle || null,
+            coloredObjects: tier1Data.coloredObjects || null,
+            secondaryCharacters: tier1Data.secondaryCharacters || [],
+            mainCharacterAppearance: tier1Data.mainCharacterAppearance || null,
+            structuredAvatarData: tier1Data.structuredAvatarData || null,
+            latestClothing: tier1Data.latestClothing || null,
+            tier1Complete: true,
+            ccsMethodsRun: tier1Data.ccsMethodsRun || []
+          };
+          
+          console.log('✅ Extracted precomputed CCS from orchestrator response:', {
+            hasCharacterSeed: !!precomputedCCS.characterSeed,
+            hasCulturalBundle: !!precomputedCCS.culturalBundle,
+            coloredObjectsCount: precomputedCCS.coloredObjects?.split(',').length || 0,
+            methodsRun: precomputedCCS.ccsMethodsRun.length
+          });
+          
+          cascadeHistory.push('✅ Extracted CCS data: All 7 methods completed by orchestrator');
+        } else {
+          console.warn('⚠️ No CCS data found in orchestrator error response');
+          cascadeHistory.push('⚠️ CCS data not available in error response');
+        }
       }
       
       // Display-only fallback for Force 2.5A expected stop
@@ -1901,10 +1938,16 @@ export const ImageTierTester = () => {
             pageText: enhancedPrompt || testStoryText,
             storyText: enhancedPrompt || testStoryText,
             userInfo: userInfo,
-            sessionId: `force-2.5a-${crypto.randomUUID()}`,
+            sessionId: `force-2.5a-display-${crypto.randomUUID()}`,
             pageNumber: 1,
-            templateComplexity: 'A'
+            templateComplexity: 'A',
+            ...(precomputedCCS && { precomputedCCS })
           };
+          
+          console.log('📤 Display fallback payload:', {
+            hasPrecomputedCCS: !!displayPayload.precomputedCCS,
+            sessionId: displayPayload.sessionId
+          });
           
           console.log('📤 Calling runware-template-ab with Template 2.5A');
           let abRes = await supabase.functions.invoke('runware-template-ab', { 
@@ -1919,42 +1962,63 @@ export const ImageTierTester = () => {
             hasPrompts: !!(abRes.data?.positivePrompt || abRes.data?.templateData?.positivePrompt)
           });
           
-          // If Template A failed, retry with Template B
+          // Strict validation: Must get authentic Tier 2.5A or fail
           if (abRes.error || abRes.data?.success === false) {
-            console.log('↩️ Template 2.5A returned no usable result – retrying with 2.5B');
+            const errorCode = abRes.data?.error || abRes.error?.message || 'TEMPLATE_2.5A_FAILED';
+            const errorDetails = abRes.data?.details || {};
+            
+            console.error('❌ Force 2.5A: Template 2.5A failed to generate display assets', {
+              error: errorCode,
+              hadPrecomputedCCS: !!precomputedCCS,
+              details: errorDetails
+            });
+            
             cascadeHistory.push('');
-            cascadeHistory.push('↩️ Template 2.5A returned no usable result – retrying with 2.5B');
+            cascadeHistory.push(`❌ Display Error: ${errorCode}`);
             
-            const displayPayloadB = { ...displayPayload, templateComplexity: 'B' };
-            abRes = await supabase.functions.invoke('runware-template-ab', { 
-              body: displayPayloadB 
-            });
+            if (!precomputedCCS) {
+              cascadeHistory.push('🔴 Failure Reason: No precomputed CCS available from orchestrator');
+              cascadeHistory.push('💡 This means orchestrator did not complete all 7 CCS methods');
+            } else {
+              cascadeHistory.push('🔴 Failure Reason: Template 2.5A rejected CCS data or generation failed');
+              cascadeHistory.push(`💬 Template Response: ${errorCode}`);
+            }
             
-            console.log('📥 Template 2.5B response:', {
-              hasData: !!abRes.data,
-              hasError: !!abRes.error,
-              success: abRes.data?.success,
-              imageURL: abRes.data?.imageURL,
-              hasPrompts: !!(abRes.data?.positivePrompt || abRes.data?.templateData?.positivePrompt)
-            });
+            cascadeHistory.push('🚫 REFUSING to show Tier 2.5B prompts for Tier 2.5A test');
+            
+            // Mark as failed - this is a real error
+            responseSuccess = false;
+            expectedStopNote = '';
+            
+            // Throw to be caught by outer catch block
+            throw new Error(`Cannot display Tier 2.5A: ${errorCode}`);
           }
           
-          // Extract display assets from whichever template succeeded
-          displayImageURL = abRes.data?.imageURL 
-            || abRes.data?.templateData?.imageURL
-            || abRes.data?.image?.url;
-          displayPositivePrompt = abRes.data?.positivePrompt 
-            || abRes.data?.prompt 
-            || abRes.data?.templateData?.positivePrompt
-            || abRes.data?.prompts?.positive;
-          displayNegativePrompt = abRes.data?.negativePrompt 
-            || abRes.data?.templateData?.negativePrompt
-            || abRes.data?.prompts?.negative;
+          // Extract display assets
+          displayImageURL = abRes.data.imageURL || abRes.data.templateData?.imageURL || abRes.data.image?.url;
+          displayPositivePrompt = abRes.data.positivePrompt || abRes.data.prompt || abRes.data.templateData?.positivePrompt || abRes.data.prompts?.positive;
+          displayNegativePrompt = abRes.data.negativePrompt || abRes.data.templateData?.negativePrompt || abRes.data.prompts?.negative;
+          
+          // Verify we got 2.5A assets (semantic scene structure)
+          const confirmedTier = abRes.data.tier || abRes.data.templateData?.tier;
+          const isAuthentic25A = confirmedTier === 'tier-2.5A' || displayPositivePrompt?.includes('Character Description:');
+          
+          console.log('✅ Force 2.5A: Display assets fetched', {
+            tier: confirmedTier,
+            hasImage: !!displayImageURL,
+            hasPrompt: !!displayPositivePrompt,
+            isAuthentic25A,
+            promptPreview: displayPositivePrompt?.substring(0, 100)
+          });
           
           cascadeHistory.push('');
-          cascadeHistory.push('🎨 Display-only fallback: Fetched template for visualization');
-          cascadeHistory.push(`✅ Display assets: imageURL=${!!displayImageURL}, prompts=${!!displayPositivePrompt}`);
-          console.log('✅ Force 2.5A: Display assets fetched', { hasImage: !!displayImageURL, hasPrompt: !!displayPositivePrompt });
+          if (isAuthentic25A) {
+            cascadeHistory.push('✅ Authentic Tier 2.5A display assets fetched');
+            cascadeHistory.push('🎯 Confirmed: Using extractSemanticScene() with "Character Description:" structure');
+          } else {
+            cascadeHistory.push('⚠️ Display assets fetched but tier confirmation unclear');
+            cascadeHistory.push(`💬 Response tier: ${confirmedTier || 'unknown'}`);
+          }
           
         } catch (displayError: any) {
           console.error('❌ Force 2.5A display fallback failed:', displayError);
