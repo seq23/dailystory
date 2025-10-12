@@ -2744,26 +2744,6 @@ async function runTierCascade(
       // Don't return here - let it continue to target tier
     } else {
       if (skipToTier === '2.5A') {
-        console.error(`❌ Force Tier 2.5A: CCS prep failed - STOPPING (2.5A requires complete CCS)`);
-        const cascadeHistory = [
-          `❌ Tier 1 CCS prep failed: ${tier1Result.code || 'Unknown error'}`,
-          `💬 Reason: ${tier1Result.reason || 'CCS import or computation failed'}`,
-          `🛑 Force Tier 2.5A: STOPPED (requires complete CCS)`
-        ];
-        return {
-          ok: false,
-          code: tier1Result.code || 'T1_CCS_FAILED',
-          reason: `Tier 2.5A requires complete CCS but Tier 1 failed: ${tier1Result.reason}`,
-          details: {
-            tier1Error: tier1Result,
-            tier1Data: ctx.tier1 || null,
-            cascadeHistory,
-            skipModeUsed: true,
-            targetTier: '2.5A',
-            stoppedBecause: 'CCS_REQUIRED_FOR_2.5A'
-          }
-        };
-      } else {
         // Test-only __testDisplaySuccess: return 200 with CCS for UI display on expected STOP
         if ((ctx.payload as any).__testDisplaySuccess === true) {
           console.log(`🎯 __testDisplaySuccess: Returning 200 envelope with CCS for display (no cascade)`);
@@ -2788,6 +2768,26 @@ async function runTierCascade(
           };
         }
         
+        console.error(`❌ Force Tier 2.5A: CCS prep failed - STOPPING (2.5A requires complete CCS)`);
+        const cascadeHistory = [
+          `❌ Tier 1 CCS prep failed: ${tier1Result.code || 'Unknown error'}`,
+          `💬 Reason: ${tier1Result.reason || 'CCS import or computation failed'}`,
+          `🛑 Force Tier 2.5A: STOPPED (requires complete CCS)`
+        ];
+        return {
+          ok: false,
+          code: tier1Result.code || 'T1_CCS_FAILED',
+          reason: `Tier 2.5A requires complete CCS but Tier 1 failed: ${tier1Result.reason}`,
+          details: {
+            tier1Error: tier1Result,
+            tier1Data: ctx.tier1 || null,
+            cascadeHistory,
+            skipModeUsed: true,
+            targetTier: '2.5A',
+            stoppedBecause: 'CCS_REQUIRED_FOR_2.5A'
+          }
+        };
+      } else {
         console.log(`⚠️ Tier 1 failed, but continuing to ${skipToTier} (this tier handles missing CCS)`);
         // 2.5B/C/D may handle missing CCS with inline data
       }
