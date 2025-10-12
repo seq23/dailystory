@@ -649,8 +649,34 @@ async function handleRequest(req: Request) {
   }
 
   try {
-    const payload = await req.json();
+    let payload = await req.json();
     console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
+    
+    // Convert test probe payloads to production format
+    if (payload.test === true) {
+      console.log('🔍 Runtime probe detected - converting to production payload format');
+      payload = {
+        pageText: 'Health check story text',
+        storyText: 'Health check story text',
+        primaryScene: 'A friendly scene for testing',
+        userInfo: {
+          name: 'Test User',
+          age: 8,
+          grade: '2nd',
+          avatar: {
+            type: 'child',
+            skinTone: 'light'
+          }
+        },
+        sessionId: 'health-check-session',
+        pageNumber: 1,
+        templateComplexity: 'C',
+        seed: null,
+        isGuestUser: false,
+        difficultyLevel: 'medium'
+      };
+      console.log('✅ Converted test payload to production format');
+    }
     
     // Detect emergency mode
     const isEmergencyMode = payload.emergencyMode === true || payload.templateComplexity === 'D';
