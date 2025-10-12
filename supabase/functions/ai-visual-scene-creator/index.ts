@@ -5,36 +5,32 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
 
-// Vendor-first import pattern for ReliabilityManager stack
-let reliabilityManager: any;
-try {
-  // Tier 1: Try vendor bundle FIRST (no network delay)
-  console.log('📦 [RELIABILITY_DM] Tier 1: Attempting local vendor bundle');
-  const vendorModule = await import("../_vendor/reliability-manager@1.0.0.bundle.mjs");
-  reliabilityManager = vendorModule.reliabilityManager;
-  console.log('✅ [RELIABILITY_DM] Tier 1 successful: Using vendor bundle (0ms delay)');
-} catch (vendorError) {
-  console.warn('📦 [RELIABILITY_DM] Tier 1 failed, attempting Tier 2:', vendorError?.message || 'Unknown error');
+// ========== LAZY RELIABILITY MANAGER (loaded on first POST) ==========
+let reliabilityManager: any = null;
+
+async function getReliabilityManager() {
+  if (reliabilityManager) return reliabilityManager;
   
   try {
-    // Tier 2: Fallback to _shared (bundled TypeScript)
-    console.log('🔄 [RELIABILITY_DM] Tier 2: Attempting _shared fallback');
-    const sharedModule = await import("../_shared/ReliabilityManager.ts");
-    reliabilityManager = sharedModule.reliabilityManager;
-    console.log('✅ [RELIABILITY_DM] Tier 2 successful: Using _shared bundle');
-  } catch (sharedError) {
-    console.error('❌ [RELIABILITY_DM] Both vendor and _shared failed:', { vendorError, sharedError });
-    throw new Error('RELIABILITY_IMPORT_FAILURE: Both vendor and shared paths failed');
+    console.log('📦 [LAZY_RELIABILITY_DM] Loading vendor bundle');
+    const vendorModule = await import("../_vendor/reliability-manager@1.0.0.bundle.mjs");
+    reliabilityManager = vendorModule.reliabilityManager;
+    console.log('✅ [LAZY_RELIABILITY_DM] Vendor bundle loaded');
+    return reliabilityManager;
+  } catch (vendorError) {
+    console.warn('⚠️ [LAZY_RELIABILITY_DM] Vendor failed, trying shared:', vendorError?.message);
+    
+    try {
+      const sharedModule = await import("../_shared/ReliabilityManager.ts");
+      reliabilityManager = sharedModule.reliabilityManager;
+      console.log('✅ [LAZY_RELIABILITY_DM] Shared bundle loaded');
+      return reliabilityManager;
+    } catch (sharedError) {
+      console.error('❌ [LAZY_RELIABILITY_DM] Both imports failed, operations will run without reliability wrapper');
+      return null;
+    }
   }
 }
-
-// Verify ReliabilityManager loaded successfully
-console.log('🔍 [RELIABILITY_VERIFY_DM] Stack health:', {
-  hasReliabilityManager: !!reliabilityManager,
-  hasExecuteResilient: typeof reliabilityManager?.executeResilient === 'function',
-  hasGetHealthDashboard: typeof reliabilityManager?.getHealthDashboard === 'function',
-  importTier: reliabilityManager?._importSource || 'vendor-or-shared'
-});
 
 // Bundler hint for vendor bundle
 import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.bundle.mjs";
@@ -807,10 +803,12 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
       halfOpenSuccessThreshold: 2,
     });
     
-    // Execute OpenAI call with unified reliability stack
-    return reliabilityManager.executeResilient(
-      prompts.userPrompt.substring(0, 100), // operationKey for deduplication
-      () => safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
+    // Execute OpenAI call with unified reliability stack (lazy-loaded)
+    const rm = await getReliabilityManager();
+    if (rm) {
+      return rm.executeResilient(
+        prompts.userPrompt.substring(0, 100), // operationKey for deduplication
+        () => safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -823,14 +821,30 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
           const content = res.json?.choices?.[0]?.message?.content?.trim?.();
           return { ok: !!(res.ok && content), content, status: res.status };
         }),
-      {
-        functionName: 'ai-visual-scene-creator',
-        sessionId,
-        tier: 'AISC',
-        quality: 'high',
-        timeout: 25000
-      }
-    );
+        {
+          functionName: 'ai-visual-scene-creator',
+          sessionId,
+          tier: 'AISC_OPENAI',
+          quality: 'high',
+          timeout: 25000
+        }
+      );
+    } else {
+      // Fallback: execute without reliability wrapper
+      return safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'system', content: prompts.systemPrompt }, { role: 'user', content: prompts.userPrompt }],
+          max_tokens: 500,
+          temperature: 0.7
+        })
+      }, 25000).then((res) => {
+        const content = res.json?.choices?.[0]?.message?.content?.trim?.();
+        return { ok: !!(res.ok && content), content, status: res.status };
+      });
+    }
   }
 
   function parseVisual(content: string): Promise<{ 
@@ -1253,9 +1267,9 @@ serve((req) => {
     });
 
     return await IdempotencyMemory.getOrRun(idempotencyKey, 30000, async () => {
-      return await reliabilityManager.executeResilient(
-        `ai-scene-${sessionId}-${pageNumber}`,
-        async () => {
+      const rm = await getReliabilityManager();
+      
+      const executeOperation = async () => {
         // generate complete visual schema
         const gen = await generateCompleteVisualSchema(
           content, userInfo, sessionId, pageNumber, directMode, null, mainCharacterAppearance, secondaryCharacters, testMode // NEW: Pass testMode for prompt capture
@@ -1380,15 +1394,24 @@ serve((req) => {
       };
 
       return corsResponse(response, req, 200);
-        }, // Close operation
-        {
-          functionName: 'ai-visual-scene-creator',
-          sessionId,
-          tier: 'AISC',
-          quality: 'high',
-          timeout: 30000
-        }
-      ); // Close reliabilityManager.executeResilient
+      }; // Close operation
+      
+      if (rm) {
+        return await rm.executeResilient(
+          `ai-scene-${sessionId}-${pageNumber}`,
+          executeOperation,
+          {
+            functionName: 'ai-visual-scene-creator',
+            sessionId,
+            tier: 'AISC',
+            quality: 'high',
+            timeout: 30000
+          }
+        );
+      } else {
+        // Fallback: execute without reliability wrapper
+        return await executeOperation();
+      }
     }).then((result) => {
       // Result handling within the promise chain
       if (result instanceof Response) {

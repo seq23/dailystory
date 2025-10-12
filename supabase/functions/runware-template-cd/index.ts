@@ -5,36 +5,32 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
 
-// Vendor-first import pattern for ReliabilityManager stack
-let reliabilityManager: any;
-try {
-  // Tier 1: Try vendor bundle FIRST (no network delay)
-  console.log('📦 [RELIABILITY_T25C] Tier 1: Attempting local vendor bundle');
-  const vendorModule = await import("../_vendor/reliability-manager@1.0.0.bundle.mjs");
-  reliabilityManager = vendorModule.reliabilityManager;
-  console.log('✅ [RELIABILITY_T25C] Tier 1 successful: Using vendor bundle (0ms delay)');
-} catch (vendorError) {
-  console.warn('📦 [RELIABILITY_T25C] Tier 1 failed, attempting Tier 2:', vendorError?.message || 'Unknown error');
+// ========== LAZY RELIABILITY MANAGER (loaded on first POST) ==========
+let reliabilityManager: any = null;
+
+async function getReliabilityManager() {
+  if (reliabilityManager) return reliabilityManager;
   
   try {
-    // Tier 2: Fallback to _shared (bundled TypeScript)
-    console.log('🔄 [RELIABILITY_T25C] Tier 2: Attempting _shared fallback');
-    const sharedModule = await import("../_shared/ReliabilityManager.ts");
-    reliabilityManager = sharedModule.reliabilityManager;
-    console.log('✅ [RELIABILITY_T25C] Tier 2 successful: Using _shared bundle');
-  } catch (sharedError) {
-    console.error('❌ [RELIABILITY_T25C] Both vendor and _shared failed:', { vendorError, sharedError });
-    throw new Error('RELIABILITY_IMPORT_FAILURE: Both vendor and shared paths failed');
+    console.log('📦 [LAZY_RELIABILITY_T25C] Loading vendor bundle');
+    const vendorModule = await import("../_vendor/reliability-manager@1.0.0.bundle.mjs");
+    reliabilityManager = vendorModule.reliabilityManager;
+    console.log('✅ [LAZY_RELIABILITY_T25C] Vendor bundle loaded');
+    return reliabilityManager;
+  } catch (vendorError) {
+    console.warn('⚠️ [LAZY_RELIABILITY_T25C] Vendor failed, trying shared:', vendorError?.message);
+    
+    try {
+      const sharedModule = await import("../_shared/ReliabilityManager.ts");
+      reliabilityManager = sharedModule.reliabilityManager;
+      console.log('✅ [LAZY_RELIABILITY_T25C] Shared bundle loaded');
+      return reliabilityManager;
+    } catch (sharedError) {
+      console.error('❌ [LAZY_RELIABILITY_T25C] Both imports failed, template will run without reliability wrapper');
+      return null;
+    }
   }
 }
-
-// Verify ReliabilityManager loaded successfully
-console.log('🔍 [RELIABILITY_VERIFY_T25C] Stack health:', {
-  hasReliabilityManager: !!reliabilityManager,
-  hasExecuteResilient: typeof reliabilityManager?.executeResilient === 'function',
-  hasGetHealthDashboard: typeof reliabilityManager?.getHealthDashboard === 'function',
-  importTier: reliabilityManager?._importSource || 'vendor-or-shared'
-});
 
 // Bundler hint for vendor bundle
 import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.bundle.mjs";
@@ -830,18 +826,26 @@ async function handleRequest(req: Request) {
 
       console.log('🎨 Template CD: Generating image with Runware API via ReliabilityManager');
       
-      // Execute with unified reliability stack (Circuit Breaker → Deduplication → LKG Cache)
-      const imageGenResult = await reliabilityManager.executeResilient(
-        templateResult.positivePrompt.substring(0, 100), // operationKey for deduplication
-        () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
-        {
-          functionName: 'runware-template-cd',
-          sessionId,
-          tier: 'TIER_2.5CD',
-          quality: 'high',
-          timeout: 20000 // 20s timeout for Runware
-        }
-      );
+      // Execute with unified reliability stack (Circuit Breaker → Deduplication → LKG Cache) - lazy-loaded
+      const rm = await getReliabilityManager();
+      let imageGenResult;
+      
+      if (rm) {
+        imageGenResult = await rm.executeResilient(
+          templateResult.positivePrompt.substring(0, 100), // operationKey for deduplication
+          () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
+          {
+            functionName: 'runware-template-cd',
+            sessionId,
+            tier: 'TIER_2.5CD',
+            quality: 'high',
+            timeout: 20000 // 20s timeout for Runware
+          }
+        );
+      } else {
+        // Fallback: execute without reliability wrapper
+        imageGenResult = await callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed);
+      }
       
       const result = {
         success: true,

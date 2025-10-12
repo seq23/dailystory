@@ -8,36 +8,32 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
 
-// Vendor-first import pattern for ReliabilityManager stack
-let reliabilityManager: any;
-try {
-  // Tier 1: Try vendor bundle FIRST (no network delay)
-  console.log('📦 [RELIABILITY] Tier 1: Attempting local vendor bundle');
-  const vendorModule = await import("../_vendor/reliability-manager@1.0.0.bundle.mjs");
-  reliabilityManager = vendorModule.reliabilityManager;
-  console.log('✅ [RELIABILITY] Tier 1 successful: Using vendor bundle (0ms delay)');
-} catch (vendorError) {
-  console.warn('📦 [RELIABILITY] Tier 1 failed, attempting Tier 2:', vendorError?.message || 'Unknown error');
+// ========== LAZY RELIABILITY MANAGER (loaded on first POST) ==========
+let reliabilityManager: any = null;
+
+async function getReliabilityManager() {
+  if (reliabilityManager) return reliabilityManager;
   
   try {
-    // Tier 2: Fallback to _shared (bundled TypeScript)
-    console.log('🔄 [RELIABILITY] Tier 2: Attempting _shared fallback');
-    const sharedModule = await import("../_shared/ReliabilityManager.ts");
-    reliabilityManager = sharedModule.reliabilityManager;
-    console.log('✅ [RELIABILITY] Tier 2 successful: Using _shared bundle');
-  } catch (sharedError) {
-    console.error('❌ [RELIABILITY] Both vendor and _shared failed:', { vendorError, sharedError });
-    throw new Error('RELIABILITY_IMPORT_FAILURE: Both vendor and shared paths failed');
+    console.log('📦 [LAZY_RELIABILITY_ORCH] Loading vendor bundle');
+    const vendorModule = await import("../_vendor/reliability-manager@1.0.0.bundle.mjs");
+    reliabilityManager = vendorModule.reliabilityManager;
+    console.log('✅ [LAZY_RELIABILITY_ORCH] Vendor bundle loaded');
+    return reliabilityManager;
+  } catch (vendorError) {
+    console.warn('⚠️ [LAZY_RELIABILITY_ORCH] Vendor failed, trying shared:', vendorError?.message);
+    
+    try {
+      const sharedModule = await import("../_shared/ReliabilityManager.ts");
+      reliabilityManager = sharedModule.reliabilityManager;
+      console.log('✅ [LAZY_RELIABILITY_ORCH] Shared bundle loaded');
+      return reliabilityManager;
+    } catch (sharedError) {
+      console.error('❌ [LAZY_RELIABILITY_ORCH] Both imports failed, orchestrator will run without reliability wrapper');
+      return null;
+    }
   }
 }
-
-// Verify ReliabilityManager loaded successfully
-console.log('🔍 [RELIABILITY_VERIFY] Stack health:', {
-  hasReliabilityManager: !!reliabilityManager,
-  hasExecuteResilient: typeof reliabilityManager?.executeResilient === 'function',
-  hasGetHealthDashboard: typeof reliabilityManager?.getHealthDashboard === 'function',
-  importTier: reliabilityManager?._importSource || 'vendor-or-shared'
-});
 
 // ✅ BUNDLER HINTS: Force shared modules into deployment bundle (prevent tree-shaking)
 import { characterConsistencyService as _ccsHint } from "./CharacterConsistencyServiceInline.js";
