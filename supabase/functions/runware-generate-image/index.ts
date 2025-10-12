@@ -2610,37 +2610,8 @@ async function runTierCascade(
       console.log(`✅ Tier 1 CCS prep complete (ctx.tier1 populated), continuing to ${skipToTier}`);
       // Don't return here - let it continue to target tier
     } else {
-      console.log(`⚠️ Tier 1 CCS prep failed`);
-      
-      // TIER-SPECIFIC BEHAVIOR:
-      // - Tier 2.5A REQUIRES complete CCS → Stop and return error
-      // - Tier 2.5B does NOT require CCS → Continue with inline data
-      
-      if (skipToTier === '2.5A') {
-        console.error(`❌ Force Tier 2.5A: CCS prep failed - STOPPING (2.5A requires precomputed CCS)`);
-        
-        const cascadeHistory = [
-          `❌ Tier 1 CCS prep failed: ${tier1Result.code || 'Unknown error'}`,
-          `💬 Reason: ${tier1Result.reason || 'CCS import or computation failed'}`,
-          `🛑 Force Tier 2.5A: STOPPED (requires complete CCS)`
-        ];
-        
-        return {
-          ok: false,
-          code: tier1Result.code || 'T1_CCS_FAILED',
-          reason: `Tier 2.5A requires complete CCS but Tier 1 failed: ${tier1Result.reason}`,
-          details: {
-            tier1Error: tier1Result,
-            cascadeHistory,
-            skipModeUsed: true,
-            targetTier: '2.5A',
-            stoppedBecause: 'CCS_REQUIRED_FOR_2.5A'
-          }
-        };
-      } else {
-        console.log(`⚠️ Tier 1 failed, but continuing to ${skipToTier} (this tier handles missing CCS)`);
-        // ctx.tier1 might be incomplete, but 2.5B/C/D can handle it with inline data
-      }
+      console.log(`⚠️ Tier 1 failed, but continuing to ${skipToTier} (template-ab auto-selects Mode A/B based on CCS)`);
+      // ctx.tier1 might be incomplete, but template functions handle missing CCS with fallbacks
     }
     
     // Now skip to the requested tier
