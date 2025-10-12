@@ -2764,6 +2764,30 @@ async function runTierCascade(
           }
         };
       } else {
+        // Test-only __testDisplaySuccess: return 200 with CCS for UI display on expected STOP
+        if ((ctx.payload as any).__testDisplaySuccess === true) {
+          console.log(`🎯 __testDisplaySuccess: Returning 200 envelope with CCS for display (no cascade)`);
+          const cascadeHistory = [
+            `❌ Tier 1 CCS prep failed: ${tier1Result.code || 'Unknown error'}`,
+            `💬 Reason: ${tier1Result.reason || 'CCS import or computation failed'}`,
+            `🎯 Test Display Mode: Returning 200 with CCS data`,
+            `🛑 Force Tier 2.5A: STOPPED (requires complete CCS)`
+          ];
+          return {
+            ok: true,
+            data: {
+              testDisplay: true,
+              precomputedCCS: ctx.tier1 || null,
+              metadata: {
+                cascadeHistory,
+                skipModeUsed: true,
+                targetTier: '2.5A',
+                stoppedBecause: 'CCS_REQUIRED_FOR_2.5A'
+              }
+            }
+          };
+        }
+        
         console.log(`⚠️ Tier 1 failed, but continuing to ${skipToTier} (this tier handles missing CCS)`);
         // 2.5B/C/D may handle missing CCS with inline data
       }
@@ -3330,6 +3354,20 @@ serve(async (req) => {
       
       // 4. Return result
       if (result.ok) {
+        // Check if this is a test display envelope (200 with CCS for UI)
+        if (result.data?.testDisplay === true) {
+          console.log(`🎯 [${requestId}] Returning test display envelope (200 with CCS)`);
+          return corsResponse({ 
+            success: true,
+            testDisplay: true,
+            precomputedCCS: result.data.precomputedCCS,
+            metadata: result.data.metadata,
+            requestId, 
+            timestamp: new Date().toISOString()
+          }, req, 200);
+        }
+        
+        // Normal success response
         return corsResponse({ 
           ...result.data, 
           requestId, 

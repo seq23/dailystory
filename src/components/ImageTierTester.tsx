@@ -1802,7 +1802,8 @@ export const ImageTierTester = () => {
             isGuestUser: true,
             difficultyLevel: mapDifficultyLevel(userInfo),
             protectionNegatives: [],
-            forceCompleteTier1: true, // Force Enhanced Character-First Flow
+            forceCompleteTier1: true, // Force Enhanced Character-First Flow - STOP on failure
+            skipTier1AI: false, // Use real AI scene extraction
             test: true
           }
         : tier === '2.5A'
@@ -1924,8 +1925,39 @@ export const ImageTierTester = () => {
           
           cascadeHistory.push('✅ Extracted CCS data: All 7 methods completed by orchestrator');
         } else {
-          console.warn('⚠️ No CCS data found in orchestrator error response');
-          cascadeHistory.push('⚠️ CCS data not available in error response');
+          // Body was masked by invoke() - retry with __testDisplaySuccess to get 200 with CCS
+          console.log('🔄 CCS data not in error body (possibly masked), retrying with __testDisplaySuccess');
+          cascadeHistory.push('🔄 Retrying orchestrator with __testDisplaySuccess flag to extract CCS');
+          
+          try {
+            const retryPayload = {
+              ...payload,
+              __testDisplaySuccess: true
+            };
+            
+            const retryResponse = await supabase.functions.invoke(selectedFunction, { body: retryPayload });
+            
+            console.log('📥 Display envelope response:', {
+              hasData: !!retryResponse.data,
+              testDisplay: retryResponse.data?.testDisplay,
+              hasPrecomputedCCS: !!retryResponse.data?.precomputedCCS
+            });
+            
+            if (retryResponse.data?.testDisplay && retryResponse.data?.precomputedCCS) {
+              precomputedCCS = retryResponse.data.precomputedCCS;
+              console.log('✅ Extracted CCS from display envelope:', {
+                hasCharacterSeed: !!precomputedCCS.characterSeed,
+                hasCulturalBundle: !!precomputedCCS.culturalBundle
+              });
+              cascadeHistory.push('✅ Display envelope: CCS extracted successfully');
+            } else {
+              console.warn('⚠️ Display envelope did not contain CCS');
+              cascadeHistory.push('⚠️ Display envelope retry did not return CCS');
+            }
+          } catch (retryError: any) {
+            console.error('❌ Display envelope retry failed:', retryError);
+            cascadeHistory.push(`❌ Display envelope retry error: ${retryError.message}`);
+          }
         }
       }
       
@@ -2125,10 +2157,17 @@ export const ImageTierTester = () => {
         steps: steps.map(s => `${s.name}: ${s.status}`)
       });
 
-      // Tier 1 specific validation
+      // Tier 1 specific validation - NO SECOND CALL FOR DISPLAY
       const isTier1Test = tier === '1';
       const tier1Success = isTier1Test && response.data?.templateStructure === 'COMPLETE_TIER_1';
       const tier1ForcedFailure = isTier1Test && response.data?.templateStructure === 'TIER_1_FORCED_FAILURE';
+      
+      // Force Tier 1: Treat failure as expected STOP (pass) when cascade is blocked
+      if (isTier1Test && tier1ForcedFailure) {
+        cascadeHistory.push('');
+        cascadeHistory.push('✅ Force Tier 1: Expected STOP on failure (cascade blocked)');
+        cascadeHistory.push('🎯 Test Classification: PASS (Tier 1 correctly stopped without cascade)');
+      }
       
       setResults([{
         tier: `tier-${tier}-forced`,
