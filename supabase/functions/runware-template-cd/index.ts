@@ -1,12 +1,44 @@
-// 🚀 DEPLOYMENT MARKER: v2025-01-10-SINGLE-FILE-TS
-// Last deployed: 2025-01-10
-// Changes: Converted to single-file TypeScript architecture (no dynamic import)
-// PHASE 1: Universal LKG System for bulletproof reliability
-// PHASE 2: Request Deduplication to eliminate duplicate API calls
-// PHASE 3: Enhanced Circuit Breaker with smart failure classification
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-VENDOR-RELIABILITY-BUNDLE
+// Last deployed: 2025-10-12
+// Changes: Vendor-first ReliabilityManager consolidated bundle (vendor → shared fallback)
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { reliabilityManager } from '../_shared/ReliabilityManager.ts';
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
+
+// Vendor-first import pattern for ReliabilityManager stack
+let reliabilityManager: any;
+try {
+  // Tier 1: Try vendor bundle FIRST (no network delay)
+  console.log('📦 [RELIABILITY_T25C] Tier 1: Attempting local vendor bundle');
+  const vendorModule = await import("../_vendor/reliability-manager@1.0.0.mjs");
+  reliabilityManager = vendorModule.reliabilityManager;
+  console.log('✅ [RELIABILITY_T25C] Tier 1 successful: Using vendor bundle (0ms delay)');
+} catch (vendorError) {
+  console.warn('📦 [RELIABILITY_T25C] Tier 1 failed, attempting Tier 2:', vendorError?.message || 'Unknown error');
+  
+  try {
+    // Tier 2: Fallback to _shared (bundled TypeScript)
+    console.log('🔄 [RELIABILITY_T25C] Tier 2: Attempting _shared fallback');
+    const sharedModule = await import("../_shared/ReliabilityManager.ts");
+    reliabilityManager = sharedModule.reliabilityManager;
+    console.log('✅ [RELIABILITY_T25C] Tier 2 successful: Using _shared bundle');
+  } catch (sharedError) {
+    console.error('❌ [RELIABILITY_T25C] Both vendor and _shared failed:', { vendorError, sharedError });
+    throw new Error('RELIABILITY_IMPORT_FAILURE: Both vendor and shared paths failed');
+  }
+}
+
+// Verify ReliabilityManager loaded successfully
+console.log('🔍 [RELIABILITY_VERIFY_T25C] Stack health:', {
+  hasReliabilityManager: !!reliabilityManager,
+  hasExecuteResilient: typeof reliabilityManager?.executeResilient === 'function',
+  hasGetHealthDashboard: typeof reliabilityManager?.getHealthDashboard === 'function',
+  importTier: reliabilityManager?._importSource || 'vendor-or-shared'
+});
+
+// Bundler hint for vendor bundle
+import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.mjs";
+void __bundle_reliability;
 
 const TIER_LOGGING_VERSION = '2.0-rls-detection';
 

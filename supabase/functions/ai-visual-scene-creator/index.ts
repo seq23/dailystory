@@ -1,12 +1,44 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-09-FLAT-TIER-PRODUCTION (ZERO-NESTING) + UNIVERSAL-LKG + DEDUPE
-// Last deployed: 2025-10-08
-// Changes: Flattened architecture, removed try/catch, preserved unique app functionality & imports
-// PHASE 1: Universal LKG System replacing local 5-min cache with 15-min universal cache
-// PHASE 2: Request Deduplication to eliminate duplicate OpenAI calls
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-VENDOR-RELIABILITY-BUNDLE
+// Last deployed: 2025-10-12
+// Changes: Vendor-first ReliabilityManager consolidated bundle (vendor → shared fallback)
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { reliabilityManager } from '../_shared/ReliabilityManager.ts';
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
+
+// Vendor-first import pattern for ReliabilityManager stack
+let reliabilityManager: any;
+try {
+  // Tier 1: Try vendor bundle FIRST (no network delay)
+  console.log('📦 [RELIABILITY_DM] Tier 1: Attempting local vendor bundle');
+  const vendorModule = await import("../_vendor/reliability-manager@1.0.0.mjs");
+  reliabilityManager = vendorModule.reliabilityManager;
+  console.log('✅ [RELIABILITY_DM] Tier 1 successful: Using vendor bundle (0ms delay)');
+} catch (vendorError) {
+  console.warn('📦 [RELIABILITY_DM] Tier 1 failed, attempting Tier 2:', vendorError?.message || 'Unknown error');
+  
+  try {
+    // Tier 2: Fallback to _shared (bundled TypeScript)
+    console.log('🔄 [RELIABILITY_DM] Tier 2: Attempting _shared fallback');
+    const sharedModule = await import("../_shared/ReliabilityManager.ts");
+    reliabilityManager = sharedModule.reliabilityManager;
+    console.log('✅ [RELIABILITY_DM] Tier 2 successful: Using _shared bundle');
+  } catch (sharedError) {
+    console.error('❌ [RELIABILITY_DM] Both vendor and _shared failed:', { vendorError, sharedError });
+    throw new Error('RELIABILITY_IMPORT_FAILURE: Both vendor and shared paths failed');
+  }
+}
+
+// Verify ReliabilityManager loaded successfully
+console.log('🔍 [RELIABILITY_VERIFY_DM] Stack health:', {
+  hasReliabilityManager: !!reliabilityManager,
+  hasExecuteResilient: typeof reliabilityManager?.executeResilient === 'function',
+  hasGetHealthDashboard: typeof reliabilityManager?.getHealthDashboard === 'function',
+  importTier: reliabilityManager?._importSource || 'vendor-or-shared'
+});
+
+// Bundler hint for vendor bundle
+import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.mjs";
+void __bundle_reliability;
 
 // CCS completely removed from Direct Mode - using inline static avatar system
 const ccsBootStatus = { loaded: false, error: null as null | string };

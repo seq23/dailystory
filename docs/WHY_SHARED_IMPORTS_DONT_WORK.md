@@ -300,12 +300,131 @@ if (!createVendorFirstSupabaseClient || typeof createVendorFirstSupabaseClient !
 
 ---
 
+---
+
+## ⚠️ CRITICAL: TypeScript Nested Import Chains Fail to Bundle (2025-10-12)
+
+### The Problem
+
+When a TypeScript file imports multiple other TypeScript files that themselves have imports, **Deno Deploy's bundler fails to recursively include all dependencies**, causing "Module not found" errors at runtime.
+
+### Example That Failed
+
+```typescript
+// ReliabilityManager.ts imports 4 dependencies:
+import { UniversalLKGCache } from './UniversalLKGCache.ts';
+import { RequestDeduplicator } from './RequestDeduplicator.ts';
+import { EnhancedCircuitBreaker } from './EnhancedCircuitBreaker.ts';
+import { monitoringService } from './MonitoringService.ts';
+
+// Worker function tries to import:
+import { reliabilityManager } from '../_shared/ReliabilityManager.ts';
+
+// Result: "Module not found: ReliabilityManager.ts" (bundler didn't follow import chain)
+```
+
+Even with `"_shared/**/*"` in `deno.jsonc` include paths, the bundler fails to recursively bundle the entire import chain.
+
+### Root Cause
+
+- **Deno Deploy's bundler** processes direct imports but doesn't recursively follow TypeScript import chains
+- When `ReliabilityManager.ts` imports 4 other `.ts` files, the bundler doesn't bundle those dependencies
+- At runtime, the missing dependencies cause "Module not found" errors
+- This is a **bundling limitation**, not a missing file issue
+
+### Solution: Consolidated Vendor Bundle with Vendor-First Pattern
+
+**1. Create Single Consolidated Vendor Bundle**
+
+All 5 modules bundled together in one file:
+- File: `_vendor/reliability-manager@1.0.0.bundle.mjs`
+- Contains: `ReliabilityManager`, `UniversalLKGCache`, `RequestDeduplicator`, `EnhancedCircuitBreaker`, `MonitoringService`
+- Zero external dependencies
+- Self-contained JavaScript module
+
+**2. Use Vendor-First Import Pattern** (Tier 1: vendor → Tier 2: shared)
+
+```typescript
+let reliabilityManager: any;
+try {
+  // Tier 1: Try vendor bundle FIRST (0ms, local)
+  console.log('📦 [RELIABILITY] Tier 1: Attempting local vendor bundle');
+  const vendorModule = await import("../_vendor/reliability-manager@1.0.0.mjs");
+  reliabilityManager = vendorModule.reliabilityManager;
+  console.log('✅ [RELIABILITY] Tier 1 successful: Using vendor bundle (0ms delay)');
+} catch (vendorError) {
+  console.warn('📦 [RELIABILITY] Tier 1 failed, attempting Tier 2:', vendorError?.message);
+  
+  try {
+    // Tier 2: Fallback to _shared (bundled TypeScript)
+    console.log('🔄 [RELIABILITY] Tier 2: Attempting _shared fallback');
+    const sharedModule = await import("../_shared/ReliabilityManager.ts");
+    reliabilityManager = sharedModule.reliabilityManager;
+    console.log('✅ [RELIABILITY] Tier 2 successful: Using _shared bundle');
+  } catch (sharedError) {
+    console.error('❌ [RELIABILITY] Both vendor and _shared failed:', { vendorError, sharedError });
+    throw new Error('RELIABILITY_IMPORT_FAILURE: Both vendor and shared paths failed');
+  }
+}
+
+// Verify stack health after import
+console.log('🔍 [RELIABILITY_VERIFY] Stack health:', {
+  hasReliabilityManager: !!reliabilityManager,
+  hasExecuteResilient: typeof reliabilityManager?.executeResilient === 'function',
+  hasGetHealthDashboard: typeof reliabilityManager?.getHealthDashboard === 'function'
+});
+```
+
+**3. Add Bundler Hints** (prevent tree-shaking)
+
+```typescript
+import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.mjs";
+void __bundle_reliability;
+```
+
+### Affected Functions
+
+- ✅ `runware-generate-image` (orchestrator) - Updated with vendor-first pattern
+- ✅ `ai-visual-scene-creator` (Direct Mode) - Updated with vendor-first pattern
+- ✅ `runware-template-cd` (Tier 2.5C Nuclear) - Updated with vendor-first pattern
+
+### Benefits of This Approach
+
+1. **0ms import time** - Local vendor bundle, no network delay
+2. **Eliminates boot failures** - Bypasses TypeScript import chain bundling issues
+3. **Maintains _shared fallback** - Development flexibility preserved
+4. **Follows system architecture** - Matches vendor-first pattern used for Supabase client
+5. **Single consolidated bundle** - 1 vendor file instead of 5 separate bundles
+
+### Verification
+
+After deployment, edge function logs should show:
+```
+✅ [RELIABILITY] Tier 1 successful: Using vendor bundle (0ms delay)
+🔍 [RELIABILITY_VERIFY] Stack health: { hasReliabilityManager: true, hasExecuteResilient: true, ... }
+```
+
+If vendor bundle fails (should be rare), logs show Tier 2 fallback:
+```
+📦 [RELIABILITY] Tier 1 failed, attempting Tier 2: Module not found
+✅ [RELIABILITY] Tier 2 successful: Using _shared bundle
+```
+
+### Related Issues
+
+- **Boot Failures**: All 3 worker functions failed with "Module not found: ReliabilityManager.ts"
+- **Impact**: Image generation completely broken due to missing reliability stack
+- **Resolution**: Consolidated vendor bundle + vendor-first import pattern
+
+---
+
 ## 📚 Related Documentation
 
 - **ERROR-046**: CharacterConsistencyService import map failure
 - **ERROR-048**: RunwareWebSocketService import.meta.url failure  
 - **ERROR-052**: Second attempt at #shared/ aliases
 - **ERROR-053**: Final standardization on relative paths
+- **2025-10-12**: ReliabilityManager bundling failure + consolidated vendor solution
 
 ---
 
@@ -320,5 +439,6 @@ if (!createVendorFirstSupabaseClient || typeof createVendorFirstSupabaseClient !
 ## 📅 Document History
 
 - **Created**: 2025-10-03 (after ERROR-046, ERROR-048, ERROR-052, ERROR-053)
-- **Purpose**: Prevent future attempts to use #shared/ aliases or import.meta.url for local files
-- **Status**: **PERMANENT REFERENCE** - These patterns have failed 4+ times in production
+- **Updated**: 2025-10-12 (added TypeScript nested import chain bundling failure + consolidated vendor solution)
+- **Purpose**: Prevent future attempts to use #shared/ aliases, import.meta.url for local files, or complex TypeScript import chains
+- **Status**: **PERMANENT REFERENCE** - These patterns have failed 5+ times in production
