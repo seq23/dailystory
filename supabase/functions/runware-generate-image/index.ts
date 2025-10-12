@@ -2890,9 +2890,9 @@ serve(async (req) => {
       console.warn('Could not load ResilientRunwareWebSocket stats:', e.message);
     }
     
-    // Phase 5: Get monitoring & alerts stats
-    const monitoringStats = monitoringService.getDetailedStats();
-    const activeAlerts = monitoringService.getMetrics().alerts;
+    // Phase 5: Get monitoring & alerts stats (from consolidated dashboard)
+    const monitoringStats = reliabilityDashboard.monitoring;
+    const activeAlerts = reliabilityDashboard.monitoring.alerts || [];
     
     const healthData = {
       status: "healthy",
