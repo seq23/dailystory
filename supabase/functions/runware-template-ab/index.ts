@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-VENDOR-FIRST-RELIABILITY-LOADER
-// Last deployed: 2025-10-12
-// Changes: Replace static ReliabilityManager import with vendor-first lazy loader (fix boot failures)
-// PHASE 1: Universal LKG System for bulletproof reliability
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-LAZY-LOADER-WITH-BUNDLER-HINT
+// Last deployed: 2025-10-12 15:30 UTC
+// Changes: Vendor-first lazy loader + bundler hint import + null-safe ReliabilityManager usage
+// Previous: v2025-10-12-VENDOR-FIRST-RELIABILITY-LOADER
 // PHASE 2: Request Deduplication to eliminate duplicate API calls
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
