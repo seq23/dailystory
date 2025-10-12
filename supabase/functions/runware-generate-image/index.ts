@@ -817,9 +817,6 @@ async function processInlinedTier1(
     
     // Otherwise, escalate to Direct Mode
     throw new Error("INLINE_CCS_FAILED_ESCALATE_DIRECT_MODE");
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-    }
   }
 
   // Check for force flag (now passed from handler scope)
