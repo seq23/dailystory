@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Play, Download, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, Play, Download, CheckCircle, XCircle, AlertCircle, Clock } from 'lucide-react';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import type { UserInfo, DifficultyLevel } from '@/types';
 
@@ -21,9 +21,12 @@ interface BatchResult {
   imageTiers?: Array<{         // NEW: Array of tier test results
     tier: string;
     imageUrl: string;
+    testMode: string;
     ccsFailed?: boolean;
     ccsFailureReason?: string;
     processingTime?: number;
+    edgeFunction?: string;
+    actualTierReturned?: string;
   }>;
 }
 
@@ -63,6 +66,58 @@ export function BatchTemplateTest() {
   };
 
   const runBatchTest = async () => {
+    // Mock Complete CCS for Tier 2.5A
+    const mockFullCCS = {
+      characterSeed: {
+        primaryCharacter: {
+          name: baseUserInfo.name,
+          age: baseUserInfo.age,
+          skinTone: "light",
+          hairColor: "brown",
+          hairStyle: "short curly",
+          eyeColor: "brown"
+        }
+      },
+      culturalBundle: {
+        culturalContext: "Western",
+        appropriateImagery: ["playground", "school", "park"]
+      },
+      latestClothing: {
+        outfit: "blue t-shirt and jeans"
+      },
+      coloredObjects: ["red backpack", "yellow ball"],
+      mainCharacterAppearance: "young child with brown hair",
+      secondaryCharacters: [],
+      sessionSetting: "outdoor adventure",
+      structuredAvatarData: {
+        skinTone: "light",
+        hairColor: "brown",
+        eyeColor: "brown"
+      },
+      secondaryCharacterSeeds: [],
+      detectedAnimals: [],
+      tier1Complete: true,
+      ccsMethodsRun: ["characterSeed", "culturalBundle", "latestClothing"],
+      source: 'test_mock'
+    };
+
+    // Mock Partial CCS for Tier 2.5B
+    const mockPartialCCS = {
+      characterSeed: mockFullCCS.characterSeed,
+      culturalBundle: null,
+      coloredObjects: null,
+      mainCharacterAppearance: null,
+      secondaryCharacters: [],
+      sessionSetting: "",
+      latestClothing: null,
+      structuredAvatarData: null,
+      secondaryCharacterSeeds: [],
+      detectedAnimals: [],
+      tier1Complete: false,
+      ccsMethodsRun: [],
+      source: 'test_partial'
+    };
+
     setIsRunning(true);
     setResults([]);
     setProgress(0);
@@ -88,11 +143,80 @@ export function BatchTemplateTest() {
         const metadata = result?.metadata as any;
         const sceneExtracted = metadata?.sceneExtracted || false;
 
-        // NEW: Test 3 tiers - Natural, Force 2.5A, Force 2.5D
+        // Define 7-Tier Test Configuration
         const tierTests = [
-          { name: 'Natural (No Targeting)', skip: undefined },
-          { name: 'Force 2.5A', skip: '2.5A' },
-          { name: 'Force 2.5D', skip: '2.5D' }
+          {
+            name: 'Direct Mode (Frontend)',
+            testMode: 'direct-frontend',
+            edgeFunction: 'runware-template-cd',
+            payload: (basePayload: any) => ({
+              ...basePayload,
+              templateComplexity: 'C',
+              test: true
+            })
+          },
+          {
+            name: 'Direct Mode (Orchestrator)',
+            testMode: 'direct-orchestrator',
+            edgeFunction: 'runware-generate-image',
+            payload: (basePayload: any) => ({
+              ...basePayload,
+              directMode: true,
+              test: true
+            })
+          },
+          {
+            name: 'Tier 1 (AI Generation)',
+            testMode: 'tier1',
+            edgeFunction: 'runware-generate-image',
+            payload: (basePayload: any) => ({
+              ...basePayload,
+              skipDirectlyToTier: '1',
+              test: true
+            })
+          },
+          {
+            name: 'Tier 2.5A (Full CCS)',
+            testMode: '2.5A',
+            edgeFunction: 'runware-template-ab',
+            payload: (basePayload: any) => ({
+              ...basePayload,
+              templateComplexity: 'A',
+              precomputedCCS: mockFullCCS,
+              test: true
+            })
+          },
+          {
+            name: 'Tier 2.5B (Partial CCS)',
+            testMode: '2.5B',
+            edgeFunction: 'runware-template-ab',
+            payload: (basePayload: any) => ({
+              ...basePayload,
+              templateComplexity: 'B',
+              precomputedCCS: mockPartialCCS,
+              test: true
+            })
+          },
+          {
+            name: 'Tier 2.5C (Nuclear Hardcoded)',
+            testMode: '2.5C',
+            edgeFunction: 'runware-template-cd',
+            payload: (basePayload: any) => ({
+              ...basePayload,
+              templateComplexity: 'C',
+              test: true
+            })
+          },
+          {
+            name: 'Tier 2.5D (Emergency)',
+            testMode: '2.5D',
+            edgeFunction: 'runware-template-cd',
+            payload: (basePayload: any) => ({
+              ...basePayload,
+              templateComplexity: 'D',
+              test: true
+            })
+          }
         ];
 
         const imageTiers: BatchResult['imageTiers'] = [];
@@ -102,94 +226,115 @@ export function BatchTemplateTest() {
         let primaryCcsFailureReason = '';
 
         if (result?.pages && result.pages.length > 0) {
+          // Base payload shared by all tier tests
+          const basePayload = {
+            pageText: result.pages[0],
+            storyText: result.pages.join(' '),
+            userInfo: userInfo,
+            pageNumber: 1,
+            isGuestUser: false,
+            difficultyLevel: level.value
+          };
+
           for (const tierTest of tierTests) {
             const tierStartTime = Date.now();
             try {
               const sessionId = crypto.randomUUID();
               const { supabase } = await import('@/integrations/supabase/client');
               
-              console.log(`🧪 Testing ${tierTest.name} for ${level.label}`);
+              console.log(`🧪 [BATCH] Testing ${tierTest.name} for ${level.label}`);
               
-              const payload: any = {
-                pageText: result.pages[0],
-                storyText: result.pages.join(' '),
-                userInfo: userInfo,
-                sessionId: sessionId,
-                pageNumber: 1,
-                test: true
-              };
+              // Build tier-specific payload
+              const tierPayload = tierTest.payload({
+                ...basePayload,
+                sessionId
+              });
               
-              // Add tier targeting if specified
-              if (tierTest.skip) {
-                payload.skipDirectlyToTier = tierTest.skip;
-              }
-              
-              const imageResponse = await supabase.functions.invoke('runware-generate-image', {
-                body: payload
+              // Call the specific edge function for this tier
+              const imageResponse = await supabase.functions.invoke(tierTest.edgeFunction, {
+                body: tierPayload
               });
               
               const tierDuration = Date.now() - tierStartTime;
               
               if (!imageResponse.error && imageResponse.data) {
-                const imageTier = imageResponse.data.tier || 
-                              imageResponse.data.usedTier || 
-                              imageResponse.data.templateStructure || 
-                              'UNKNOWN';
                 const imageUrl = imageResponse.data.imageURL || 
-                             imageResponse.data.image_url || 
-                             imageResponse.data.imageUrl ||
-                             imageResponse.data.url;
+                               imageResponse.data.image_url || 
+                               imageResponse.data.imageUrl ||
+                               imageResponse.data.url;
                 
-                let ccsFailed = false;
-                let ccsFailureReason = '';
+                const actualTier = imageResponse.data.tier || 
+                                 imageResponse.data.usedTier || 
+                                 tierTest.testMode;
                 
-                // Check for CCS failures from response metadata
+                let tierCcsFailed = false;
+                let tierCcsFailureReason = '';
+                
+                // Check CCS status from metadata
                 if (imageResponse.data.metadata?.ccsMethodStatus) {
                   const ccsMethodStatus = imageResponse.data.metadata.ccsMethodStatus;
-                  ccsFailed = Object.values(ccsMethodStatus).some(status => 
+                  const hasCcsFailure = Object.values(ccsMethodStatus).some(status => 
                     status === 'failed' || String(status).includes('fallback')
                   );
-                  if (ccsFailed) {
-                    ccsFailureReason = 'CCS method failed per metadata';
+                  if (hasCcsFailure) {
+                    tierCcsFailed = true;
+                    tierCcsFailureReason = 'CCS method failed per metadata';
                   }
                 }
                 
-                // Store first result as primary (for backward compatibility)
+                // Tier 2.5D specific validation
+                if (tierTest.testMode === '2.5D') {
+                  const prompt = imageResponse.data.positivePrompt || '';
+                  if (!prompt.toLowerCase().includes('sorry')) {
+                    console.warn(`⚠️ Tier 2.5D prompt missing "SORRY" theme`);
+                  }
+                }
+                
+                // Store first successful image as primary (for backward compatibility)
                 if (!primaryImageUrl) {
                   primaryImageUrl = imageUrl;
-                  primaryImageTier = imageTier;
-                  primaryCcsFailed = ccsFailed;
-                  primaryCcsFailureReason = ccsFailureReason;
+                  primaryImageTier = actualTier;
+                  primaryCcsFailed = tierCcsFailed;
+                  primaryCcsFailureReason = tierCcsFailureReason;
                 }
                 
                 imageTiers.push({
-                  tier: `${tierTest.name}: ${imageTier}`,
+                  tier: `${tierTest.name} → ${actualTier}`,
                   imageUrl: imageUrl || '',
-                  ccsFailed,
-                  ccsFailureReason,
-                  processingTime: tierDuration
+                  testMode: tierTest.testMode,
+                  ccsFailed: tierCcsFailed,
+                  ccsFailureReason: tierCcsFailureReason,
+                  processingTime: tierDuration,
+                  edgeFunction: tierTest.edgeFunction,
+                  actualTierReturned: actualTier
                 });
                 
-                console.log(`✅ ${tierTest.name} generated ${imageTier} in ${tierDuration}ms`);
+                console.log(`✅ ${tierTest.name} generated in ${tierDuration}ms (returned: ${actualTier})`);
               } else {
-                console.warn(`⚠️ ${tierTest.name} failed:`, imageResponse.error);
+                console.warn(`⚠️ ${tierTest.name} generation failed:`, imageResponse.error);
                 imageTiers.push({
-                  tier: `${tierTest.name}: FAILED`,
+                  tier: `${tierTest.name} → FAILED`,
                   imageUrl: '',
+                  testMode: tierTest.testMode,
                   ccsFailed: true,
                   ccsFailureReason: imageResponse.error?.message || 'Generation failed',
-                  processingTime: tierDuration
+                  processingTime: tierDuration,
+                  edgeFunction: tierTest.edgeFunction,
+                  actualTierReturned: 'ERROR'
                 });
               }
             } catch (imgError) {
               const tierDuration = Date.now() - tierStartTime;
               console.error(`❌ Error testing ${tierTest.name}:`, imgError);
               imageTiers.push({
-                tier: `${tierTest.name}: ERROR`,
+                tier: `${tierTest.name} → ERROR`,
                 imageUrl: '',
+                testMode: tierTest.testMode,
                 ccsFailed: true,
                 ccsFailureReason: imgError instanceof Error ? imgError.message : 'Unknown error',
-                processingTime: tierDuration
+                processingTime: tierDuration,
+                edgeFunction: tierTest.edgeFunction,
+                actualTierReturned: 'ERROR'
               });
             }
           }
@@ -373,33 +518,66 @@ export function BatchTemplateTest() {
                           </div>
                           {result.imageTiers && result.imageTiers.length > 0 && (
                             <div className="mt-2 space-y-2">
-                              <div className="text-sm font-medium">Tier Testing Results ({result.imageTiers.length} tests):</div>
-                              <div className="grid grid-cols-3 gap-2">
+                              <div className="text-sm font-medium">Tier Testing Results ({result.imageTiers.length} paths tested):</div>
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                 {result.imageTiers.map((tierResult, idx) => (
-                                  <div key={idx} className="border rounded p-2">
-                                    <div className="text-xs font-medium mb-1 truncate" title={tierResult.tier}>
-                                      {tierResult.tier}
-                                    </div>
-                                    {tierResult.imageUrl ? (
-                                      <img 
-                                        src={tierResult.imageUrl} 
-                                        alt={tierResult.tier}
-                                        className="w-full h-24 object-cover rounded"
-                                        title={`Generated in ${tierResult.processingTime}ms`}
-                                      />
-                                    ) : (
-                                      <div className="w-full h-24 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
-                                        No image
+                                  <div 
+                                    key={idx} 
+                                    className={`border rounded-lg p-2 ${
+                                      tierResult.ccsFailed ? 'border-destructive bg-destructive/5' : 'border-primary bg-primary/5'
+                                    }`}
+                                  >
+                                    <div className="space-y-1">
+                                      {/* Tier Name */}
+                                      <div className="text-xs font-medium truncate" title={tierResult.tier}>
+                                        {tierResult.tier.split(' → ')[0]}
                                       </div>
-                                    )}
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      {tierResult.processingTime}ms
-                                    </div>
-                                    {tierResult.ccsFailed && (
-                                      <div className="text-xs text-destructive mt-1">
-                                        ⚠️ {tierResult.ccsFailureReason}
+                                      
+                                      {/* Edge Function Badge */}
+                                      {tierResult.edgeFunction && (
+                                        <Badge variant="outline" className="text-xs truncate w-full">
+                                          {tierResult.edgeFunction}
+                                        </Badge>
+                                      )}
+                                      
+                                      {/* Image */}
+                                      {tierResult.imageUrl ? (
+                                        <img 
+                                          src={tierResult.imageUrl} 
+                                          alt={tierResult.tier}
+                                          className="w-full h-28 object-cover rounded border"
+                                          title={`Generated in ${tierResult.processingTime}ms`}
+                                        />
+                                      ) : (
+                                        <div className="w-full h-28 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground border border-dashed">
+                                          No image
+                                        </div>
+                                      )}
+                                      
+                                      {/* Processing Time */}
+                                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        {tierResult.processingTime}ms
                                       </div>
-                                    )}
+                                      
+                                      {/* Actual Tier Returned */}
+                                      {tierResult.actualTierReturned && (
+                                        <div className="text-xs">
+                                          <span className="font-medium">Returned:</span>{' '}
+                                          <Badge variant={tierResult.ccsFailed ? 'destructive' : 'default'} className="text-xs">
+                                            {tierResult.actualTierReturned}
+                                          </Badge>
+                                        </div>
+                                      )}
+                                      
+                                      {/* CCS Failure Warning */}
+                                      {tierResult.ccsFailed && (
+                                        <div className="text-xs text-destructive flex items-start gap-1">
+                                          <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                          <span className="break-words">{tierResult.ccsFailureReason}</span>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 ))}
                               </div>
