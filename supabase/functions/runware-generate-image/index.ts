@@ -1799,11 +1799,16 @@ const executeDirectMode: TierFn = async (ctx) => {
       const supabase = await createVendorFirstSupabaseClient();
       
       // ✅ Call ai-visual-scene-creator for Direct Mode (AISC generates primaryScene + calls template-cd)
+      // Sanitize payload: remove test flags so AISC performs real scene generation
+      const dmBody = {
+        ...ctx.payload,
+        directMode: true, // AISC handles: OpenAI primaryScene generation → template-cd with complexity C
+      };
+      delete dmBody.test;
+      delete dmBody.__testSimulateT1Failure;
+
       const { data, error } = await supabase.functions.invoke("ai-visual-scene-creator", {
-        body: {
-          ...ctx.payload,
-          directMode: true, // AISC handles: OpenAI primaryScene generation → template-cd with complexity C
-        },
+        body: dmBody,
         signal: controller.signal,
       });
       

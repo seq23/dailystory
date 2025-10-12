@@ -31,6 +31,7 @@ Meta: Connectivity tester treats Tier 2.5A 503 NO_PRECOMPUTED_CCS as HEALTHY_ESC
   - Returns `tier: 'DIRECT_MODE'` in response
 - **Tester treats both as equivalent:** Success via either path is labeled "Direct Mode (ai-visual-scene-creator → template-cd)"
 - **Orchestrator fallback escalation:** If `ai-visual-scene-creator` returns `primaryScene` but no `imageURL`, orchestrator escalates to `runware-template-cd` (C → D) regardless of `sceneOnly` flag
+- **Test mode sanitization:** The orchestrator removes `test` and `__testSimulateT1Failure` flags before invoking `ai-visual-scene-creator` in Direct Mode to ensure real scene generation occurs during testing
 
 ## Scope and Safety
 - Applies only to template endpoints on 503
@@ -83,8 +84,9 @@ The "Force Tier 2.5A" and "Force Tier 2.5B" buttons simulate production escalati
 
 ### Force Tier 2.5A Expected Behavior (Tester Classification)
 - **Expected outcome:** Orchestrator returns non-2xx (T1_FAILED/CCS_REQUIRED_FOR_2.5A)
-- **Tester classification:** Treats non-2xx with `T1_FAILED` or status 500/503 as **PASS** (expected STOP)
+- **Tester classification:** Treats non-2xx with `T1_FAILED`, `CCS_REQUIRED`, `T25A` or status 500/503 as **PASS** (expected STOP)
 - **Rationale:** `supabase.functions.invoke` returns error status/message but not JSON body, so tester uses fallback classification based on error status and message patterns
+- **Button test alignment:** The Force 2.5A button applies the same classification logic as the batch test to show ✅ for expected STOP scenarios
 
 ## Test Mode Enforcement
 
