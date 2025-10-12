@@ -783,9 +783,8 @@ async function handleRequest(req: Request) {
     const complexityLevel = getComplexityLevel(userInfo, templateComplexity);
     console.log(`✅ Using complexity level: ${complexityLevel}`);
     
-    // Universal LKG Protection - Phase 1: Bulletproof Reliability
-    const requestHash = UniversalLKGCache.createRequestHash(payload);
-    console.log(`🔐 [UNIVERSAL_LKG] Template CD request hash: ${requestHash}`);
+    // Universal LKG Protection now handled by ReliabilityManager
+    console.log(`🔐 [RELIABILITY_MANAGER] Template CD using consolidated reliability stack`);
     let templateResult: any;
     
     // Template generation (flat architecture - errors propagate to server try/catch)

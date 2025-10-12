@@ -392,25 +392,8 @@ function logNetworkOperation(
 
 // ========== LKG CACHE - REPLACED WITH UNIVERSAL LKG SYSTEM ==========
 // Local cache functions replaced with UniversalLKGCache (15-min validity, 500 entries, quality tracking)
-
-// Execute with Universal LKG fallback
-async function executeWithLKG<T>(
-  requestHash: string,
-  operation: () => Promise<T>,
-  functionName: string = 'ai-visual-scene-creator'
-): Promise<T> {
-  try {
-    const result = await operation();
-    // Warm cache on successful operation
-    UniversalLKGCache.warmFromSuccess(requestHash, result, 'AISC', functionName);
-    return result;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('❌ Operation failed (LKG rescue already attempted by reliabilityManager):', errorMessage);
-    
-    throw error; // No LKG available
-  }
-}
+// executeWithLKG() removed - now using reliabilityManager.executeResilient() for full reliability stack
+// (Circuit Breaker → Deduplication → LKG Cache)
 
 // ========= Provider Gate (unchanged structure) =========
 interface GateConfig { maxConcurrency: number; failThreshold: number; cooldownMs: number; maxWaitMs: number; }
@@ -1236,17 +1219,11 @@ serve((req) => {
       operationName: 'ai-visual-scene',
       promptSignature: content ? content.substring(0, 100) : ''
     });
-    
-    const requestHash = UniversalLKGCache.createRequestHash({ 
-      pageText: content,
-      storyText: content, 
-      pageNumber, 
-      userInfo,
-      sessionId
-    });
 
     return await IdempotencyMemory.getOrRun(idempotencyKey, 30000, async () => {
-      return await executeWithLKG(requestHash, async () => {
+      return await reliabilityManager.executeResilient(
+        `ai-scene-${sessionId}-${pageNumber}`,
+        async () => {
         // generate complete visual schema
         const gen = await generateCompleteVisualSchema(
           content, userInfo, sessionId, pageNumber, directMode, null, mainCharacterAppearance, secondaryCharacters, testMode // NEW: Pass testMode for prompt capture
@@ -1371,7 +1348,15 @@ serve((req) => {
       };
 
       return corsResponse(response, req, 200);
-      }); // Close executeWithLKG
+        }, // Close operation
+        {
+          functionName: 'ai-visual-scene-creator',
+          sessionId,
+          tier: 'AISC',
+          quality: 'high',
+          timeout: 30000
+        }
+      ); // Close reliabilityManager.executeResilient
     }).then((result) => {
       // Result handling within the promise chain
       if (result instanceof Response) {
