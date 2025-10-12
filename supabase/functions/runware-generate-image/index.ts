@@ -6,6 +6,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
+import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
 
 // ✅ BUNDLER HINTS: Force shared modules into deployment bundle (prevent tree-shaking)
 import { characterConsistencyService as _ccsHint } from "./CharacterConsistencyServiceInline.js";
@@ -2825,13 +2826,18 @@ serve(async (req) => {
     });
   }
 
-  // PHASE 2: GET/HEAD health checks with environment info
+  // PHASE 2: GET/HEAD health checks with environment info + Phase 2 statistics
   if (req.method === "GET" || req.method === "HEAD") {
     const runwareKey = Deno.env.get("RUNWARE_API_KEY");
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
     const corsHeaders = generateEchoCorsHeaders(req);
+    
+    // Get Phase 1 & Phase 2 statistics
+    const lkgStats = UniversalLKGCache.getStats();
+    const dedupeStats = RequestDeduplicator.getStats();
+    
     const healthData = {
       status: "healthy",
       service: "runware-generate-image",
@@ -2844,6 +2850,26 @@ serve(async (req) => {
         hasSupabaseServiceRoleKey: !!supabaseKey,
       },
       capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_DirectMode_2.5A_2.5B_2.5C_2.5D"],
+      phase1_lkg_cache: {
+        description: "Universal Last Known Good cache (15-min validity, 500 entries)",
+        totalEntries: lkgStats.totalEntries,
+        byQuality: lkgStats.byQuality,
+        byFunction: lkgStats.byFunction,
+        averageAge: `${lkgStats.averageAge}s`,
+        averageUseCount: lkgStats.averageUseCount,
+        capacity: "500 entries",
+        validity: "15 minutes"
+      },
+      phase2_request_deduplication: {
+        description: "Eliminates duplicate network calls",
+        totalRequests: dedupeStats.totalRequests,
+        duplicatesAvoided: dedupeStats.duplicatesAvoided,
+        activeRequests: dedupeStats.activeRequests,
+        collisionsSaved: dedupeStats.collisionsSaved,
+        deduplicationRate: dedupeStats.deduplicationRate,
+        inFlightRequests: dedupeStats.inFlightRequests.slice(0, 5), // Show first 5
+        estimatedApiCostSavings: `${dedupeStats.deduplicationRate} reduction`
+      }
     };
 
     // HEAD should return no body

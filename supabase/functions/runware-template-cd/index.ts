@@ -792,11 +792,47 @@ async function handleRequest(req: Request) {
         templateResult = generateTier25D(storyText, userInfo, avatarIdentity, failedTierData || {});
       }
 
-      console.log('🎨 Template CD: Generating image with Runware API');
-      const imageGenResult = await callRunwareAPI(
-        templateResult.positivePrompt,
-        templateResult.negativePrompt,
-        seed
+      console.log('🎨 Template CD: Generating image with Runware API + Request Deduplication');
+      
+      // Create deduplication key for Runware API call
+      const dedupeKey = RequestDeduplicator.createKey({
+        functionName: 'runware-template-cd',
+        sessionId,
+        pageNumber,
+        prompt: templateResult.positivePrompt.substring(0, 100)
+      });
+      
+      // Deduplicate Runware API call
+      const imageGenResult = await RequestDeduplicator.deduplicate(
+        dedupeKey,
+        () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
+        20000 // 20s timeout for Runware
+      );
+    
+    try {
+      if (complexityLevel === 'C') {
+        console.log('🚀 Processing Tier 2.5C: Nuclear hardcoded template');
+        templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {}, payload.primaryScene || null);
+      } else {
+        console.log('🚀 Processing Tier 2.5D: Ultimate emergency fallback');
+        templateResult = generateTier25D(storyText, userInfo, avatarIdentity, failedTierData || {});
+      }
+
+      console.log('🎨 Template CD: Generating image with Runware API + Request Deduplication');
+      
+      // Create deduplication key for Runware API call
+      const dedupeKey = RequestDeduplicator.createKey({
+        functionName: 'runware-template-cd',
+        sessionId,
+        pageNumber,
+        prompt: templateResult.positivePrompt.substring(0, 100)
+      });
+      
+      // Deduplicate Runware API call
+      const imageGenResult = await RequestDeduplicator.deduplicate(
+        dedupeKey,
+        () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
+        20000 // 20s timeout for Runware
       );
       
       const result = {

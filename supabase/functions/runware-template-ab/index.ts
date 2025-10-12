@@ -1,9 +1,11 @@
-// 🚀 DEPLOYMENT MARKER: v2025-01-08-TIER-2.5A-PURE-PRECOMPUTED-CCS + UNIVERSAL-LKG
+// 🚀 DEPLOYMENT MARKER: v2025-01-08-TIER-2.5A-PURE-PRECOMPUTED-CCS + UNIVERSAL-LKG + DEDUPE
 // Last deployed: 2025-01-08
 // Changes: Tier 2.5A now pure precomputedCCS consumer, escalates to 2.5B if missing
 // PHASE 1: Universal LKG System for bulletproof reliability
+// PHASE 2: Request Deduplication to eliminate duplicate API calls
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
+import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
 
 // ========== INLINE CORS (Zero Dependencies) ==========
 function generateEchoCorsHeaders(req: Request): Record<string, string> {
@@ -1225,10 +1227,25 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         let returnedSeed: number | null = null;
         
         if (isRealMode) {
-          // REAL mode: Generate image with Runware API
+          // REAL mode: Generate image with Runware API + Request Deduplication
           try {
-            console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A`);
-            const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+            console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A with deduplication`);
+            
+            // Create deduplication key for Runware API call
+            const dedupeKey = RequestDeduplicator.createKey({
+              functionName: 'runware-template-ab',
+              sessionId,
+              pageNumber,
+              prompt: positivePrompt.substring(0, 100)
+            });
+            
+            // Deduplicate Runware API call
+            const runwareResult = await RequestDeduplicator.deduplicate(
+              dedupeKey,
+              () => callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' }),
+              20000 // 20s timeout for Runware
+            );
+            
             imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL;
             returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
             console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });

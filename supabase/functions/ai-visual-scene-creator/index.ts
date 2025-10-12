@@ -1,10 +1,12 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-09-FLAT-TIER-PRODUCTION (ZERO-NESTING) + UNIVERSAL-LKG
+// 🚀 DEPLOYMENT MARKER: v2025-10-09-FLAT-TIER-PRODUCTION (ZERO-NESTING) + UNIVERSAL-LKG + DEDUPE
 // Last deployed: 2025-10-08
 // Changes: Flattened architecture, removed try/catch, preserved unique app functionality & imports
 // PHASE 1: Universal LKG System replacing local 5-min cache with 15-min universal cache
+// PHASE 2: Request Deduplication to eliminate duplicate OpenAI calls
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
+import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
 
 // CCS completely removed from Direct Mode - using inline static avatar system
 const ccsBootStatus = { loaded: false, error: null as null | string };
@@ -785,21 +787,35 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
     return { systemPrompt, userPrompt, isNonEnglish };
   }
 
-  function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number): Promise<{ ok:boolean; content?: string; status?: number }> {
+  function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number, sessionId: string = '', pageNumber: number = 1): Promise<{ ok:boolean; content?: string; status?: number }> {
     if (!openaiApiKey) return Promise.resolve({ ok: false, status: 0 });
-    return safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'system', content: prompts.systemPrompt }, { role: 'user', content: prompts.userPrompt }],
-        max_tokens: 500,
-        temperature: 0.7
-      })
-    }, 25000).then((res) => {
-      const content = res.json?.choices?.[0]?.message?.content?.trim?.();
-      return { ok: !!(res.ok && content), content, status: res.status };
+    
+    // Create deduplication key for OpenAI call
+    const dedupeKey = RequestDeduplicator.createKey({
+      functionName: 'ai-visual-scene-creator',
+      sessionId,
+      pageNumber,
+      prompt: prompts.userPrompt.substring(0, 100)
     });
+    
+    // Deduplicate OpenAI API call to prevent duplicate requests
+    return RequestDeduplicator.deduplicate(
+      dedupeKey,
+      () => safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'system', content: prompts.systemPrompt }, { role: 'user', content: prompts.userPrompt }],
+          max_tokens: 500,
+          temperature: 0.7
+        })
+      }, 25000).then((res) => {
+        const content = res.json?.choices?.[0]?.message?.content?.trim?.();
+        return { ok: !!(res.ok && content), content, status: res.status };
+      }),
+      15000 // 15s timeout for deduplication wrapper
+    );
   }
 
   function parseVisual(content: string): Promise<{ 
@@ -929,7 +945,7 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
           attemptsUsed = 3;
           return Promise.resolve({ ok: false, visual: null, upstreamBackoff: lastBackoff });
         }
-        return callOpenAI({ systemPrompt: prompts!.systemPrompt, userPrompt: prompts!.userPrompt }, attempt).then((res) => {
+        return callOpenAI({ systemPrompt: prompts!.systemPrompt, userPrompt: prompts!.userPrompt }, attempt, sessionId, pageNumber).then((res) => {
           lastOpenAIResponse = res;
           attemptsUsed = attempt + 1;
           if (!res.ok || !res.content) {
