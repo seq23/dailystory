@@ -1168,6 +1168,31 @@ serve((req) => {
   // Parse JSON non-throwing
   return req.json().catch(()=>null).then(async (payload) => {
     const requestId = `${Math.random().toString(36).substring(2)}`;
+    
+    // Convert test probe payloads to production format
+    if (payload?.test === true) {
+      console.log('🔍 AISC: Test mode detected - converting to production payload format');
+      payload = {
+        pageText: 'Health check story text for AISC',
+        storyText: 'Health check story text for AISC',
+        userInfo: {
+          name: 'Test User',
+          age: 8,
+          grade: '2nd',
+          avatar: {
+            type: 'child',
+            skinTone: 'light'
+          }
+        },
+        sessionId: 'health-check-session-aisc',
+        pageNumber: 1,
+        seed: null,
+        isGuestUser: false,
+        difficultyLevel: 'medium'
+      };
+      console.log('✅ Converted AISC test payload to production format');
+    }
+    
     const gateStartTime = Date.now();
     let gateAcquired = false;
     let handlerSuccess = false;

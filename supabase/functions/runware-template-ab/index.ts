@@ -953,13 +953,34 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
     // Handle test/dryRun mode only when no story content is provided
     const hasStoryContentEarly = rawPayload?.pageText || rawPayload?.storyText || rawPayload?.enhancedStoryData?.storyText;
     if ((rawPayload.test === true || rawPayload.dryRun === true) && !hasStoryContentEarly) {
-      console.log('🧪 Template AB: Test mode detected without story content - returning runtime OK');
-      return createResponse({
-        success: true,
-        message: 'Template AB runtime OK',
-        service: SERVICE_NAME,
-        timestamp: new Date().toISOString()
-      });
+      console.log('🔍 Template AB: Test mode detected - converting to production payload format');
+      rawPayload = {
+        pageText: 'Health check story text for template AB',
+        storyText: 'Health check story text for template AB',
+        userInfo: {
+          name: 'Test User',
+          age: 8,
+          grade: '2nd',
+          avatar: {
+            type: 'child',
+            skinTone: 'light'
+          }
+        },
+        sessionId: 'health-check-session-ab',
+        pageNumber: 1,
+        templateComplexity: 'A',
+        seed: null,
+        precomputedCCS: {
+          characterName: 'Test User',
+          characterType: 'child',
+          visualTraits: {
+            skinTone: 'light',
+            hairColor: 'brown',
+            eyeColor: 'brown'
+          }
+        }
+      };
+      console.log('✅ Converted template AB test payload to production format');
     }
     
     // Detect nested payload structure
