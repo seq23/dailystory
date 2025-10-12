@@ -1894,10 +1894,13 @@ export const ImageTierTester = () => {
         console.log('🔍 Checking for CCS data in orchestrator response:', {
           hasDetails: !!response.data?.details,
           hasTier1Error: !!response.data?.details?.tier1Error,
-          tier1ErrorKeys: response.data?.details?.tier1Error ? Object.keys(response.data.details.tier1Error) : []
+          hasTier1Data: !!response.data?.details?.tier1Data,
+          tier1ErrorKeys: response.data?.details?.tier1Error ? Object.keys(response.data.details.tier1Error) : [],
+          tier1DataKeys: response.data?.details?.tier1Data ? Object.keys(response.data.details.tier1Data) : []
         });
         
-        const tier1Data = response.data?.details?.tier1Error;
+        // Try tier1Data first (contains ctx.tier1), fallback to tier1Error
+        const tier1Data = response.data?.details?.tier1Data || response.data?.details?.tier1Error;
         
         if (tier1Data && (tier1Data.characterSeed || tier1Data.culturalBundle)) {
           precomputedCCS = {

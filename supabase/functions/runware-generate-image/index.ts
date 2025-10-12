@@ -2756,6 +2756,7 @@ async function runTierCascade(
           reason: `Tier 2.5A requires complete CCS but Tier 1 failed: ${tier1Result.reason}`,
           details: {
             tier1Error: tier1Result,
+            tier1Data: ctx.tier1 || null,
             cascadeHistory,
             skipModeUsed: true,
             targetTier: '2.5A',
