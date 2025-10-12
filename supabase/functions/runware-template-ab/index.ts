@@ -1,11 +1,41 @@
-// 🚀 DEPLOYMENT MARKER: v2025-01-08-TIER-2.5A-PURE-PRECOMPUTED-CCS + UNIVERSAL-LKG + DEDUPE
-// Last deployed: 2025-01-08
-// Changes: Tier 2.5A now pure precomputedCCS consumer, escalates to 2.5B if missing
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-VENDOR-FIRST-RELIABILITY-LOADER
+// Last deployed: 2025-10-12
+// Changes: Replace static ReliabilityManager import with vendor-first lazy loader (fix boot failures)
 // PHASE 1: Universal LKG System for bulletproof reliability
 // PHASE 2: Request Deduplication to eliminate duplicate API calls
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { reliabilityManager } from '../_shared/ReliabilityManager.ts';
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
+
+// ========== BUNDLER HINT: Include vendor reliability bundle ==========
+// This import is for the bundler only - not executed at runtime
+import '../_vendor/reliability-manager@1.0.0.bundle.mjs';
+
+// ========== LAZY RELIABILITY MANAGER (vendor-first loader) ==========
+let reliabilityManager: any = null;
+
+async function getReliabilityManager() {
+  if (reliabilityManager) return reliabilityManager;
+  
+  try {
+    console.log('📦 [LAZY_RELIABILITY_T25A] Loading vendor bundle');
+    const vendorModule = await import("../_vendor/reliability-manager@1.0.0.bundle.mjs");
+    reliabilityManager = vendorModule.reliabilityManager;
+    console.log('✅ [LAZY_RELIABILITY_T25A] Vendor bundle loaded');
+    return reliabilityManager;
+  } catch (vendorError) {
+    console.warn('⚠️ [LAZY_RELIABILITY_T25A] Vendor failed, trying shared:', vendorError?.message);
+    
+    try {
+      const sharedModule = await import("../_shared/ReliabilityManager.ts");
+      reliabilityManager = sharedModule.reliabilityManager;
+      console.log('✅ [LAZY_RELIABILITY_T25A] Shared bundle loaded');
+      return reliabilityManager;
+    } catch (sharedError) {
+      console.error('❌ [LAZY_RELIABILITY_T25A] Both imports failed, template-ab will call Runware API directly');
+      return null;
+    }
+  }
+}
 
 // ========== INLINE CORS (Zero Dependencies) ==========
 function generateEchoCorsHeaders(req: Request): Record<string, string> {
@@ -1229,18 +1259,13 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         if (isRealMode) {
           // REAL mode: Generate image with Runware API + Request Deduplication + Circuit Breaker
           try {
-            console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A with deduplication + circuit breaker`);
+            console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A with unified reliability stack`);
             
-            // Configure circuit breaker for Runware API
-            EnhancedCircuitBreaker.configure('runware-template-ab', {
-              failThreshold: 5,
-              cooldownMs: 45000,
-              halfOpenMaxAttempts: 3,
-              halfOpenSuccessThreshold: 2,
-            });
+            // Load ReliabilityManager (vendor-first, falls back to shared, handles null)
+            const rm = await getReliabilityManager();
             
-            // Execute with unified reliability stack (includes LKG rescue on failure)
-            const runwareResult = await reliabilityManager.executeResilient(
+            // Execute with unified reliability stack (includes circuit breaker, deduplication, LKG)
+            const runwareResult = rm ? await rm.executeResilient(
               positivePrompt.substring(0, 100), // operationKey for deduplication
               () => callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' }),
               {
@@ -1250,7 +1275,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
                 quality: 'high',
                 timeout: 20000
               }
-            );
+            ) : await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' }); // Fallback: call API directly if RM unavailable
             
             imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL;
             returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;

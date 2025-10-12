@@ -2892,8 +2892,15 @@ serve(async (req) => {
     
     const corsHeaders = generateEchoCorsHeaders(req);
     
-    // Get consolidated reliability statistics via ReliabilityManager
-    const reliabilityDashboard = reliabilityManager.getHealthDashboard();
+    // SAFEGUARD: Get consolidated reliability statistics via ReliabilityManager
+    // Load RM if not yet loaded, handle null gracefully (GET happens before POST)
+    const rm = await getReliabilityManager().catch(() => null);
+    const reliabilityDashboard = rm?.getHealthDashboard() || {
+      lkgCache: { totalEntries: 0, byQuality: {}, byFunction: {}, averageAge: 0, averageUseCount: 0 },
+      deduplication: { totalRequests: 0, duplicatesAvoided: 0, activeRequests: 0, collisionsSaved: 0, deduplicationRate: '0%', inFlightRequests: [] },
+      circuitBreakers: {},
+      monitoring: { alerts: [] }
+    };
     
     // Get Phase 4 WebSocket resilience stats
     let wsResilienceStats = { status: 'unavailable' };
@@ -2912,7 +2919,7 @@ serve(async (req) => {
       status: "healthy",
       service: "runware-generate-image",
       tier: "Main Orchestrator",
-      deployment_version: "2025-10-03T00:30:00Z",
+      deployment_version: "2025-10-12T19:20:00Z",
       timestamp: new Date().toISOString(),
       environment: {
         hasRunwareApiKey: !!runwareKey,
@@ -2974,13 +2981,15 @@ serve(async (req) => {
       }
     };
 
-    // HEAD should return no body
+    // HEAD should return no body with proper cache control
     if (req.method === "HEAD") {
       return new Response(null, {
         status: 200,
         headers: {
           ...corsHeaders,
           "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+          "Content-Length": "0"
         },
       });
     }
