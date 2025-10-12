@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-REMOVE-BUNDLER-HINTS
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-FIX-CCS-DYNAMIC-IMPORT
 // Last deployed: 2025-10-12
-// Changes: Removed all top-level bundler hint imports to prevent boot failures
-// Previous: v2025-10-12-FIX-TIER1-COMPLETE-PROPAGATION
+// Changes: Replaced undefined _ccsHint references with dynamic imports (lines 809-840, 2046-2052)
+// Previous: v2025-10-12-REMOVE-BUNDLER-HINTS
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
@@ -806,21 +806,21 @@ async function processInlinedTier1(
   let ccsImportAttempts = 0;
   const MAX_CCS_IMPORT_ATTEMPTS = 2;
   
-  // Static-first CCS import: prefer bundled singleton, fallback to dynamic
-  if (_ccsHint) {
-    characterConsistencyService = _ccsHint;
-    console.log(`✅ [CCS_INLINE] Using statically imported singleton - proceeding with Tier 1`);
+  // Dynamic CCS import: load at runtime to prevent boot failures
+  try {
+    console.log(`📦 [CCS_INLINE] Loading CharacterConsistencyServiceInline.js dynamically`);
+    const ccsModule = await import("./CharacterConsistencyServiceInline.js");
+    characterConsistencyService = ccsModule.characterConsistencyService;
+    console.log(`✅ [CCS_INLINE] CharacterConsistencyService loaded successfully`);
     ccsBootStatus.loaded = true;
     ccsBootStatus.error = null;
-    logTier1Step("CharacterConsistencyService Import", "success", "Inline CCS (static import) ready");
-  } else {
-    // ❌ CRITICAL: Static CCS hint unavailable - cannot proceed with Tier 1
+    logTier1Step("CharacterConsistencyService Import", "success", "Inline CCS (dynamic import) ready");
+  } catch (ccsError) {
     ccsBootStatus.loaded = false;
-    ccsBootStatus.error = "CCS_STATIC_HINT_UNAVAILABLE";
-    console.log(`❌ [CCS_INLINE] Static CCS hint unavailable - escalating to Direct Mode`);
-    logTier1Step("CharacterConsistencyService Import", "failed", "Static CCS hint unavailable");
+    ccsBootStatus.error = "CCS_DYNAMIC_IMPORT_FAILED";
+    console.error(`❌ [CCS_INLINE] Dynamic CCS import failed:`, ccsError);
+    logTier1Step("CharacterConsistencyService Import", "failed", `Dynamic import error: ${ccsError.message}`);
     
-    // If forceCompleteTier1 is set, return explicit failure (preserves test behavior)
     if (payload.forceCompleteTier1) {
       console.log("🚫 forceCompleteTier1: Blocking Direct Mode fallback");
       return {
@@ -830,12 +830,11 @@ async function processInlinedTier1(
           message: "Tier 1 failed in force mode - cascade blocked",
           tier: "TIER_1",
           cascadeBlocked: true,
-          errorDetails: "CCS_STATIC_HINT_UNAVAILABLE"
+          errorDetails: "CCS_DYNAMIC_IMPORT_FAILED"
         }
       };
     }
     
-    // Otherwise, escalate to Direct Mode
     throw new Error("INLINE_CCS_FAILED_ESCALATE_DIRECT_MODE");
   }
 
@@ -2044,8 +2043,17 @@ const executeDirectMode: TierFn = async (ctx) => {
     });
     
     try {
-      // ✅ CRITICAL: Use static bundler hint only - never dynamic import
-      const ccs = _ccsHint;
+      // Dynamic CCS import: load at runtime to prevent boot failures
+      let ccs: any;
+      try {
+        console.log(`📦 [FULL_CCS_VALIDATION] Loading CharacterConsistencyServiceInline.js dynamically`);
+        const ccsModule = await import("./CharacterConsistencyServiceInline.js");
+        ccs = ccsModule.characterConsistencyService;
+        console.log(`✅ [FULL_CCS_VALIDATION] CharacterConsistencyService loaded successfully`);
+      } catch (importError) {
+        console.error(`❌ [FULL_CCS_VALIDATION] Failed to import CCS:`, importError);
+        throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+      }
       
       if (!ccs) {
         throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
