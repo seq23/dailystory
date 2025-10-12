@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-FIX-CCS-DYNAMIC-IMPORT
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-REMOVE-TIERLOGGING-REFS
 // Last deployed: 2025-10-12
-// Changes: Replaced undefined _ccsHint references with dynamic imports (lines 809-840, 2046-2052)
-// Previous: v2025-10-12-REMOVE-BUNDLER-HINTS
+// Changes: Removed all tierLogging.js references - using console-only logger (tierLogging.js doesn't exist)
+// Previous: v2025-10-12-FIX-CCS-DYNAMIC-IMPORT
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
@@ -567,13 +567,10 @@ async function bindTierLogger(
   const debugTierSample = Deno.env.get("DEBUG_TIER_LOG_SAMPLE");
   const logSampleRate = debugTierSample === "1" ? 1.0 : parseFloat(debugTierSample || "0.1");
 
-  let createVendorFirstSupabaseClient, tierLogging, supabaseClient;
+  let createVendorFirstSupabaseClient, supabaseClient;
   
   try {
-    [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
-      memoizedImport("./resilientLoader.js"),
-      memoizedImport("../_shared/tierLogging.js"),
-    ]);
+    ({ createVendorFirstSupabaseClient } = await memoizedImport("./resilientLoader.js"));
 
     // ✅ Guard: Verify resilientLoader valid before using it
     if (!createVendorFirstSupabaseClient || typeof createVendorFirstSupabaseClient !== 'function') {
@@ -581,11 +578,7 @@ async function bindTierLogger(
       return createConsoleOnlyLogger(isProd);
     }
 
-    // ✅ NUCLEAR FIX: Early return if tierLogging invalid (no throw, no crash)
-    if (!tierLogging || typeof tierLogging.logTier1 !== 'function') {
-      console.warn('⚠️ [ORCHESTRATOR] tierLogging module incomplete - using console-only logger');
-      return createConsoleOnlyLogger(isProd);
-    }
+    // Removed: tierLogging validation - using console-only logger (tierLogging.js doesn't exist)
 
     supabaseClient = await createVendorFirstSupabaseClient();
 
@@ -625,46 +618,25 @@ async function bindTierLogger(
       };
     };
 
-    // ✅ NUCLEAR FIX: Optional chaining on tierLogging as final safety net
+    // Use console-only logger (tierLogging.js doesn't exist, fallback is complete)
     return {
-      t1: tierLogging?.logTier1 ? wrapWithRedactionAndSampling(tierLogging.logTier1) : wrapConsoleWithRedaction("T1"),
-      t2: tierLogging?.logTier2 ? wrapWithRedactionAndSampling(tierLogging.logTier2) : wrapConsoleWithRedaction("T2"),
+      t1: wrapConsoleWithRedaction("T1"),
+      t2: wrapConsoleWithRedaction("T2"),
       attempt: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
         console.log(`[${tier}] Attempting`, safeCtx);
-        if (shouldLogToDB("attempting") && tierLogging?.logTierAttempt) {
-          try {
-            return tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, "attempting", safeCtx);
-          } catch (dbError) {
-            console.warn(`⚠️ [${tier}] DB log failed (non-fatal):`, dbError);
-          }
-        }
       },
       success: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
         console.log(`[${tier}] Success`, safeCtx);
-        if (shouldLogToDB("success") && tierLogging?.logTierSuccess) {
-          try {
-            return tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, safeCtx);
-          } catch (dbError) {
-            console.warn(`⚠️ [${tier}] DB log failed (non-fatal):`, dbError);
-          }
-        }
       },
       failure: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
         console.error(`[${tier}] Failure`, safeCtx);
-        if (tierLogging?.logTierFailure) {
-          try {
-            return tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, safeCtx);
-          } catch (dbError) {
-            console.warn(`⚠️ [${tier}] DB log failed (non-fatal):`, dbError);
-          }
-        }
       },
     };
   } catch (error) {
-    console.warn(`⚠️ [ORCHESTRATOR] resilientLoader/tierLogging unavailable (NON-FATAL), using console-only logger:`, error);
+    console.warn(`⚠️ [ORCHESTRATOR] resilientLoader unavailable (NON-FATAL), using console-only logger:`, error);
     return createConsoleOnlyLogger(isProd);
   }
 }
