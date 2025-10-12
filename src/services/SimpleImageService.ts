@@ -398,6 +398,192 @@ export class SimpleImageService {
           }
         });
 
+        // CRITICAL: Handle AISC scene-only response (orchestrator outage scenario)
+        // When AISC is called via Smart Bypass and returns scene but no image, escalate to template-cd
+        if (bypassDecision.targetTemplate === 'ai-visual-scene-creator') {
+          const data = templateResult.data;
+          
+          // Exhaustive scene detection from all possible AISC response locations
+          const extractedScene = data?.primaryScene || 
+                                data?.aiSchema?.primaryScene || 
+                                data?.enhancedPrompt || 
+                                data?.failedTierData?.enhancedSceneData;
+          
+          // If AISC returned scene but no image, escalate to template-cd immediately
+          if (!data?.imageURL && extractedScene) {
+            cascadePathTaken = ['AISC_ATTEMPT', 'AISC_SCENE_ONLY'];
+            DebugLogger.log('image', '🎯 Smart Bypass: AISC returned scene-only, escalating to template-cd', {
+              sessionId: normalizedSessionId,
+              sceneLength: extractedScene.length,
+              sceneSource: data?.primaryScene ? 'primaryScene' : 
+                          data?.aiSchema?.primaryScene ? 'aiSchema.primaryScene' :
+                          data?.enhancedPrompt ? 'enhancedPrompt' : 'failedTierData'
+            });
+            
+            // Try template-cd with complexity C
+            cascadePathTaken.push('T25C_ATTEMPT');
+            let cdResult = await supabase.functions.invoke('runware-template-cd', {
+              body: {
+                pageText: storyText,
+                storyText: storyText,
+                primaryScene: extractedScene, // Pass the scene from AISC
+                userInfo,
+                sessionId: normalizedSessionId,
+                pageNumber,
+                templateComplexity: 'C',
+                seed: existingSeed,
+                isGuestUser: !isPremium,
+                difficultyLevel: 'medium'
+              }
+            });
+            
+            if (cdResult.data?.success && cdResult.data?.imageURL?.trim()) {
+              cascadePathTaken.push('T25C_SUCCESS');
+              const imageURL = cdResult.data.imageURL;
+              
+              OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
+              
+              if (!existingSeed && cdResult.data?.seed) {
+                OptimizedImageCache.setStorySeed(normalizedSessionId, cdResult.data.seed);
+                DebugLogger.log('image', '🌱 SEED STORED from template-cd after AISC scene-only', { 
+                  sessionId: normalizedSessionId, 
+                  seed: cdResult.data.seed 
+                });
+              }
+              
+              const responseTime = Date.now() - startTime;
+              SmartOrchestrationBypass.recordTemplateResponse(normalizedSessionId, responseTime);
+              
+              try {
+                window.dispatchEvent(new CustomEvent('image:generation:complete'));
+              } catch {}
+              
+              (globalThis as any).__LAST_STORY_SOURCE__ = 'template';
+              
+              return {
+                success: true,
+                url: imageURL,
+                generatedAt: new Date().toISOString(),
+                tier: 'SB_AISC_TEMPLATE_C',
+                metadata: { 
+                  ...cdResult.data, 
+                  bypassReason: bypassDecision.reason,
+                  responseTime,
+                  cascadeHistory: cascadePathTaken,
+                  sceneSource: 'aisc'
+                }
+              };
+            } else {
+              // Template-cd C failed, try D
+              cascadePathTaken.push('T25C_FAILED', 'T25D_ATTEMPT');
+              DebugLogger.log('image', '⚡ Smart Bypass: Template C failed, trying D', {
+                sessionId: normalizedSessionId
+              });
+              
+              cdResult = await supabase.functions.invoke('runware-template-cd', {
+                body: {
+                  pageText: storyText,
+                  storyText: storyText,
+                  primaryScene: extractedScene,
+                  userInfo,
+                  sessionId: normalizedSessionId,
+                  pageNumber,
+                  templateComplexity: 'D',
+                  seed: existingSeed,
+                  isGuestUser: !isPremium,
+                  difficultyLevel: 'medium'
+                }
+              });
+              
+              if (cdResult.data?.success && cdResult.data?.imageURL?.trim()) {
+                cascadePathTaken.push('T25D_SUCCESS');
+                const imageURL = cdResult.data.imageURL;
+                
+                OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
+                
+                if (!existingSeed && cdResult.data?.seed) {
+                  OptimizedImageCache.setStorySeed(normalizedSessionId, cdResult.data.seed);
+                  DebugLogger.log('image', '🌱 SEED STORED from template-cd D after AISC scene-only', { 
+                    sessionId: normalizedSessionId, 
+                    seed: cdResult.data.seed 
+                  });
+                }
+                
+                const responseTime = Date.now() - startTime;
+                SmartOrchestrationBypass.recordTemplateResponse(normalizedSessionId, responseTime);
+                
+                try {
+                  window.dispatchEvent(new CustomEvent('image:generation:complete'));
+                } catch {}
+                
+                (globalThis as any).__LAST_STORY_SOURCE__ = 'template';
+                
+                return {
+                  success: true,
+                  url: imageURL,
+                  generatedAt: new Date().toISOString(),
+                  tier: 'SB_AISC_TEMPLATE_D',
+                  metadata: { 
+                    ...cdResult.data, 
+                    bypassReason: bypassDecision.reason,
+                    responseTime,
+                    cascadeHistory: cascadePathTaken,
+                    sceneSource: 'aisc'
+                  }
+                };
+              } else {
+                // Both C and D failed - fall through to Tier 4 SVG
+                cascadePathTaken.push('T25D_FAILED', 'FALLBACK_TO_SVG');
+                DebugLogger.warn('image', '⚡ Smart Bypass: AISC scene-only → template-cd C+D both failed → SVG fallback', {
+                  sessionId: normalizedSessionId,
+                  cascadeHistory: cascadePathTaken
+                });
+                // Will hit the Tier 4 logic below
+              }
+            }
+          } else if (data?.success && data?.imageURL?.trim()) {
+            // AISC succeeded with full image - normal success path
+            cascadePathTaken = ['AISC_ATTEMPT', 'AISC_SUCCESS'];
+            const imageURL = data.imageURL;
+            
+            OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
+            
+            if (!existingSeed && data?.seed) {
+              OptimizedImageCache.setStorySeed(normalizedSessionId, data.seed);
+              DebugLogger.log('image', '🌱 SEED STORED from AISC', { 
+                sessionId: normalizedSessionId, 
+                seed: data.seed 
+              });
+            }
+            
+            const responseTime = Date.now() - startTime;
+            SmartOrchestrationBypass.recordTemplateResponse(normalizedSessionId, responseTime);
+            
+            try {
+              window.dispatchEvent(new CustomEvent('image:generation:complete'));
+            } catch {}
+            
+            (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+            
+            return {
+              success: true,
+              url: imageURL,
+              generatedAt: new Date().toISOString(),
+              tier: 'AI_VISUAL_SCENE_DIRECT',
+              metadata: { 
+                ...data, 
+                bypassReason: bypassDecision.reason,
+                responseTime,
+                cascadeHistory: cascadePathTaken
+              }
+            };
+          } else {
+            // AISC failed completely (no scene, no image) - update cascade and fall through
+            cascadePathTaken = ['AISC_ATTEMPT', 'AISC_FAILED'];
+            templateResult = { data: { success: false }, error: null };
+          }
+        }
+
         // If Complexity C fails, check orchestrator health before escalating
         if (!templateResult.data?.success && (bypassDecision.templateComplexity === 'C' || !bypassDecision.templateComplexity)) {
           cascadePathTaken.push('2.5C_FAILED');
