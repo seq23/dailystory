@@ -1818,9 +1818,17 @@ const executeDirectMode: TierFn = async (ctx) => {
         return { ok: false, code: "DM_INVOKE_FAILED", reason: error?.message || "Direct mode failed" };
       }
       
+      // Exhaustive primaryScene detection from all possible AISC response locations
+      const hasScene = !!(
+        data.primaryScene || 
+        data.aiSchema?.primaryScene || 
+        data.enhancedPrompt || 
+        data.failedTierData?.enhancedSceneData
+      );
+      
       // Handle scene-only response (primaryScene but no imageURL)
       // Escalate whenever we have primaryScene but no image (regardless of sceneOnly flag)
-      if (!data.imageURL && data.primaryScene) {
+      if (!data.imageURL && hasScene) {
         console.log(`🎯 [${ctx.requestId}] Direct Mode: ai-visual-scene-creator returned primaryScene without image, escalating to template-cd`);
         
         // Try template-cd with complexity C first
