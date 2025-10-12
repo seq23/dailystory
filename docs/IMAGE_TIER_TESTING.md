@@ -108,6 +108,20 @@ The "Test Tier 1 CCS Methods" button uses `dryRun: true` to validate CCS methods
 When `payload.test === true` AND `payload.__testSimulateT1Failure === true`, the orchestrator:
 1. Executes Tier 1 (simulated failure)
 2. **Forces** Direct Mode execution (not cascade-dependent)
+
+## Batch Tier Testing - Expected Stop Behaviors
+
+### Tier 1 (Forced) Test
+- **Payload**: `{ forceCompleteTier1: true }`
+- **Expected Backend Response**: 500 status with `TIER_1_FORCED_FAILURE`
+- **Success Criteria**: Test PASSES when backend correctly stops without cascading
+- **Note**: This validates that Tier 1 force mode prevents cascade as designed
+
+### Force Tier 2.5A Test
+- **Payload**: `{ skipTier1AI: true }` (forces 2.5A path)
+- **Expected Backend Response**: 500 status with `CCS_REQUIRED_FOR_2.5A` or `T1_FAILED`
+- **Success Criteria**: Test PASSES when backend correctly refuses to cascade without complete CCS
+- **Note**: This validates that 2.5A enforces CCS requirements before allowing template generation
 3. Returns Direct Mode result with `primaryScene` for validation
 
 This ensures the "Direct Mode (Orchestrator Fallback)" test exercises the actual Direct Mode path and validates the `primaryScene` contract, rather than relying on the normal cascade which may skip Direct Mode.
