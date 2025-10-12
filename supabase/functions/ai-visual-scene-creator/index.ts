@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-REMOVE-BUNDLER-HINTS
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-FIX-ASYNC-CALLOPENAI
 // Last deployed: 2025-10-12
-// Changes: Removed all top-level bundler hint imports to prevent boot failures
-// Previous: v2025-10-12-VENDOR-RELIABILITY-BUNDLE
+// Changes: Added missing async keyword to callOpenAI function (line 794)
+// Previous: v2025-10-12-REMOVE-BUNDLER-HINTS
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
@@ -791,7 +791,7 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
     return { systemPrompt, userPrompt, isNonEnglish };
   }
 
-  function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number, sessionId: string = '', pageNumber: number = 1): Promise<{ ok:boolean; content?: string; status?: number }> {
+  async function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number, sessionId: string = '', pageNumber: number = 1): Promise<{ ok:boolean; content?: string; status?: number }> {
     if (!openaiApiKey) return Promise.resolve({ ok: false, status: 0 });
     
     // Configure circuit breaker for OpenAI API
