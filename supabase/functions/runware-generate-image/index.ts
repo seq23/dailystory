@@ -6,8 +6,19 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// ✅ BUNDLER HINT: Force inline CCS inclusion in deployment bundle (dynamic import used inside handler)
+// ✅ BUNDLER HINTS: Force shared modules into deployment bundle (prevent tree-shaking)
 import { characterConsistencyService as _ccsHint } from "./CharacterConsistencyServiceInline.js";
+import * as __bundle_resilientLoader from "../_shared/resilientLoader.js";
+import * as __bundle_tierLogging from "../_shared/tierLogging.js";
+import * as __bundle_nuclearNegatives from "../_shared/NuclearNegativePrompts.js";
+import * as __bundle_idempotency from "../_shared/IdempotencyMemory.js";
+
+// Prevent tree-shaking of bundled modules
+void _ccsHint;
+void __bundle_resilientLoader;
+void __bundle_tierLogging;
+void __bundle_nuclearNegatives;
+void __bundle_idempotency;
 
 // CCS boot status tracking (referenced throughout orchestrator metadata)
 const ccsBootStatus = { loaded: false, error: null };

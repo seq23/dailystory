@@ -7,5 +7,13 @@
     "**/*.js",
     "_shared/**/*",
     "_vendor/**/*"
-  ]
+  ],
+  "imports": {
+    "../_shared/resilientLoader.js": "./functions/_shared/resilientLoader.js",
+    "../_shared/tierLogging.js": "./functions/_shared/tierLogging.js",
+    "../_shared/NuclearNegativePrompts.js": "./functions/_shared/NuclearNegativePrompts.js",
+    "../_shared/IdempotencyMemory.js": "./functions/_shared/IdempotencyMemory.js",
+    "./CharacterConsistencyServiceInline.js": "./functions/runware-generate-image/CharacterConsistencyServiceInline.js",
+    "../_vendor/supabase-js@2.57.4.bundle.mjs": "./functions/_vendor/supabase-js@2.57.4.bundle.mjs"
+  }
 }
