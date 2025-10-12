@@ -2878,10 +2878,8 @@ serve(async (req) => {
     
     const corsHeaders = generateEchoCorsHeaders(req);
     
-    // Get Phase 1-5 statistics
-    const lkgStats = UniversalLKGCache.getStats();
-    const dedupeStats = RequestDeduplicator.getStats();
-    const circuitStats = EnhancedCircuitBreaker.getAllStats();
+    // Get consolidated reliability statistics via ReliabilityManager
+    const reliabilityDashboard = reliabilityManager.getHealthDashboard();
     
     // Get Phase 4 WebSocket resilience stats
     let wsResilienceStats = { status: 'unavailable' };
@@ -2910,27 +2908,27 @@ serve(async (req) => {
       capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_DirectMode_2.5A_2.5B_2.5C_2.5D"],
       phase1_lkg_cache: {
         description: "Universal Last Known Good cache (15-min validity, 500 entries)",
-        totalEntries: lkgStats.totalEntries,
-        byQuality: lkgStats.byQuality,
-        byFunction: lkgStats.byFunction,
-        averageAge: `${lkgStats.averageAge}s`,
-        averageUseCount: lkgStats.averageUseCount,
+        totalEntries: reliabilityDashboard.lkgCache.totalEntries,
+        byQuality: reliabilityDashboard.lkgCache.byQuality,
+        byFunction: reliabilityDashboard.lkgCache.byFunction,
+        averageAge: `${reliabilityDashboard.lkgCache.averageAge}s`,
+        averageUseCount: reliabilityDashboard.lkgCache.averageUseCount,
         capacity: "500 entries",
         validity: "15 minutes"
       },
       phase2_request_deduplication: {
         description: "Eliminates duplicate network calls",
-        totalRequests: dedupeStats.totalRequests,
-        duplicatesAvoided: dedupeStats.duplicatesAvoided,
-        activeRequests: dedupeStats.activeRequests,
-        collisionsSaved: dedupeStats.collisionsSaved,
-        deduplicationRate: dedupeStats.deduplicationRate,
-        inFlightRequests: dedupeStats.inFlightRequests.slice(0, 5), // Show first 5
-        estimatedApiCostSavings: `${dedupeStats.deduplicationRate} reduction`
+        totalRequests: reliabilityDashboard.deduplication.totalRequests,
+        duplicatesAvoided: reliabilityDashboard.deduplication.duplicatesAvoided,
+        activeRequests: reliabilityDashboard.deduplication.activeRequests,
+        collisionsSaved: reliabilityDashboard.deduplication.collisionsSaved,
+        deduplicationRate: reliabilityDashboard.deduplication.deduplicationRate,
+        inFlightRequests: reliabilityDashboard.deduplication.inFlightRequests.slice(0, 5),
+        estimatedApiCostSavings: `${reliabilityDashboard.deduplication.deduplicationRate} reduction`
       },
       phase3_circuit_breakers: {
         description: "Smart failure recovery with network/API error classification",
-        circuits: circuitStats,
+        circuits: reliabilityDashboard.circuitBreakers,
         features: [
           "Graduated cooldown (22.5s network, 45s API)",
           "Half-open state validation",
