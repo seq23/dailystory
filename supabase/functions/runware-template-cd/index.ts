@@ -32,10 +32,6 @@ async function getReliabilityManager() {
   }
 }
 
-// Bundler hint for vendor bundle
-import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.bundle.mjs";
-void __bundle_reliability;
-
 const TIER_LOGGING_VERSION = '2.0-rls-detection';
 
 // ========== INLINE CORS (Zero Dependencies) ==========
