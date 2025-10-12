@@ -1,14 +1,10 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-LAZY-LOADER-WITH-BUNDLER-HINT
-// Last deployed: 2025-10-12 15:30 UTC
-// Changes: Vendor-first lazy loader + bundler hint import + null-safe ReliabilityManager usage
-// Previous: v2025-10-12-VENDOR-FIRST-RELIABILITY-LOADER
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-REMOVE-BUNDLER-HINT-BOOT-FIX
+// Last deployed: 2025-10-12 15:45 UTC
+// Changes: Remove static bundler hint import to fix boot failures - rely on lazy loader only
+// Previous: v2025-10-12-LAZY-LOADER-WITH-BUNDLER-HINT
 // PHASE 2: Request Deduplication to eliminate duplicate API calls
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
-
-// ========== BUNDLER HINT: Include vendor reliability bundle ==========
-// This import is for the bundler only - not executed at runtime
-import '../_vendor/reliability-manager@1.0.0.bundle.mjs';
 
 // ========== LAZY RELIABILITY MANAGER (vendor-first loader) ==========
 let reliabilityManager: any = null;
