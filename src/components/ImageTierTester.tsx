@@ -2662,7 +2662,8 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          pageText: testStoryText,
+          storyText: testStoryText,  // ✅ Primary validation field
+          pageText: testStoryText,    // ✅ Compatibility field
           userInfo: buildUserInfo(),
           sessionId,
           pageNumber: 1,
