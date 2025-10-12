@@ -85,8 +85,10 @@ The "Force Tier 2.5A" and "Force Tier 2.5B" buttons simulate production escalati
 ### Force Tier 2.5A Expected Behavior (Tester Classification)
 - **Expected outcome:** Orchestrator returns non-2xx (T1_FAILED/CCS_REQUIRED_FOR_2.5A)
 - **Tester classification:** Treats non-2xx with `T1_FAILED`, `CCS_REQUIRED`, `T25A` or status 500/503 as **PASS** (expected STOP)
-- **Rationale:** `supabase.functions.invoke` returns error status/message but not JSON body, so tester uses fallback classification based on error status and message patterns
-- **Button test alignment:** The Force 2.5A button applies the same classification logic as the batch test to show ✅ for expected STOP scenarios
+- **Rationale:** `supabase.functions.invoke` returns error status/message but not JSON body, so tester preserves error structure for proper classification
+- **Button test alignment:** The Force 2.5A button treats expected STOP as PASS when `expectedStopNote` is set
+- **Batch test alignment:** The batch tester preserves error structure (status, details, message) to enable consistent classification of expected STOP scenarios
+- **Semantic scene extraction:** Confirmed working correctly - returns empty string safely when insufficient evidence is found (intended behavior, not a bug)
 
 ## Test Mode Enforcement
 

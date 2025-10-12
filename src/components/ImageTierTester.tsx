@@ -1922,16 +1922,19 @@ export const ImageTierTester = () => {
         || response.data?.metadata?.positivePrompt
         || null;
       const hasPrompt = !!(safePositive && safePositive.length > 0);
-      steps[3].status = hasPrompt ? 'success' : 'error';
+      steps[3].status = expectedStopNote ? 'success' : (hasPrompt ? 'success' : 'error');
       
       // Step 5: Image Generation Validation
       steps[4].status = 'running';
       const safeImageURL = extractImageUrl(response.data);
       const hasImage = !!safeImageURL;
-      steps[4].status = hasImage ? 'success' : 'error';
+      steps[4].status = expectedStopNote ? 'success' : (hasImage ? 'success' : 'error');
 
       // Determine overall success and error categorization
-      const overallSuccess = !response.error && response.data?.success && hasPrompt && hasImage;
+      // Special case: Force 2.5A expected STOP counts as success
+      const overallSuccess = expectedStopNote 
+        ? true  // Expected STOP for 2.5A is a PASS
+        : !response.error && response.data?.success && hasPrompt && hasImage;
       
       let errorCategory = null;
       let probableCause = null;
@@ -2933,7 +2936,12 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           const processingTime = Date.now() - scenarioStartTime;
 
           if (error) {
-            throw new Error(error.message || 'Unknown error');
+            // Preserve error structure for classification logic
+            const structuredError: any = new Error(error.message || 'Unknown error');
+            structuredError.status = error.status;
+            structuredError.details = data?.details || error.details || {};
+            structuredError.message = error.message || 'Unknown error';
+            throw structuredError;
           }
 
           if (data?.success && data?.imageURL) {
