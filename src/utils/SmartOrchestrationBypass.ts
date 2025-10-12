@@ -36,19 +36,8 @@ export class SmartOrchestrationBypass {
     orchestratorHealth: healthStatus?.orchestrator
   });
   
-  // Testing mode: Force disable bypass when requested
-  if (forceDisable) {
-    DebugLogger.log('image', '⚡ Smart Bypass disabled for testing - forcing full orchestrator path', {
-      contentLength: content.length,
-      sessionId
-    });
-    return {
-      shouldBypass: false,
-      reason: 'Smart Bypass disabled for testing - forcing full orchestrator path'
-    };
-  }
-  
-  // 🚨 EMERGENCY: Orchestrator unhealthy - bypass for ALL users
+  // 🚨 EMERGENCY PRIORITY: Orchestrator unhealthy - bypass for ALL users (UNSTOPPABLE)
+  // This check MUST come before forceDisable to ensure emergency path always works
   if (healthStatus?.orchestrator === 'server') {
     DebugLogger.log('image', '🚨 EMERGENCY BYPASS: Orchestrator unhealthy', {
       orchestratorHealth: healthStatus.orchestrator,
@@ -74,6 +63,18 @@ export class SmartOrchestrationBypass {
         templateComplexity: 'C'
       };
     }
+  }
+  
+  // Testing mode: Force disable bypass when requested (but emergency bypass above overrides this)
+  if (forceDisable) {
+    DebugLogger.log('image', '⚡ Smart Bypass disabled for testing - forcing full orchestrator path', {
+      contentLength: content.length,
+      sessionId
+    });
+    return {
+      shouldBypass: false,
+      reason: 'Smart Bypass disabled for testing - forcing full orchestrator path'
+    };
   }
   
   // CRITICAL: Premium users NEVER get bypassed (in normal conditions) - always use full orchestrator

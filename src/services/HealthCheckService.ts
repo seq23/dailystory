@@ -12,6 +12,7 @@ export interface HealthStatus {
   orchestrator: 'healthy' | 'network' | 'server';
   runwareAPI: 'healthy' | 'network' | 'server';
   serviceDependencies: 'healthy' | 'network' | 'server';
+  templateCD: 'healthy' | 'network' | 'server'; // NEW: Track template-cd health
   overallHealth: 'healthy' | 'network' | 'server';
   timestamp: string;
   checkDuration: number;
@@ -50,6 +51,7 @@ export class HealthCheckService {
         orchestrator: 'healthy',
         runwareAPI: 'healthy', 
         serviceDependencies: 'healthy',
+        templateCD: 'healthy', // NEW: Include in optimistic default
         overallHealth: 'healthy',
         timestamp: new Date().toISOString(),
         checkDuration: 0
@@ -95,17 +97,18 @@ export class HealthCheckService {
     const startTime = Date.now();
 
     // PARALLEL health checks - all run simultaneously for maximum speed
-    const [orchestrator, runwareAPI, serviceDependencies] = await Promise.all([
+    const [orchestrator, runwareAPI, serviceDependencies, templateCD] = await Promise.all([
       this.checkOrchestrator(),
       this.checkRunwareAPI(), 
-      this.checkServiceDependencies()
+      this.checkServiceDependencies(),
+      this.checkTemplateCD() // NEW: Check template-cd health
     ]);
 
     // Determine overall health with network awareness
     let overallHealth: 'healthy' | 'network' | 'server';
-    if (orchestrator === 'healthy' && runwareAPI === 'healthy' && serviceDependencies === 'healthy') {
+    if (orchestrator === 'healthy' && runwareAPI === 'healthy' && serviceDependencies === 'healthy' && templateCD === 'healthy') {
       overallHealth = 'healthy';
-    } else if (orchestrator === 'network' || runwareAPI === 'network' || serviceDependencies === 'network') {
+    } else if (orchestrator === 'network' || runwareAPI === 'network' || serviceDependencies === 'network' || templateCD === 'network') {
       overallHealth = 'network'; // Network issues take precedence
     } else {
       overallHealth = 'server'; // Server-side issues
@@ -115,6 +118,7 @@ export class HealthCheckService {
       orchestrator,
       runwareAPI,
       serviceDependencies,
+      templateCD, // NEW: Include template-cd health
       overallHealth,
       timestamp: new Date().toISOString(),
       checkDuration: Date.now() - startTime
@@ -209,22 +213,70 @@ export class HealthCheckService {
   }
 
   /**
+   * Check template-cd health endpoint
+   */
+  private static async checkTemplateCD(): Promise<'healthy' | 'network' | 'server'> {
+    const url = 'https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-template-cd/health';
+    
+    try {
+      const isHealthy = await simpleHealth(url, this.HEALTH_CHECK_TIMEOUT);
+      if (isHealthy) {
+        return 'healthy';
+      } else {
+        DebugLogger.warn('network', 'Template-CD health check failed - treating as server issue');
+        return 'server';
+      }
+    } catch (error: any) {
+      const isNetworkError = error?.name === 'AbortError' || error?.message?.includes('network');
+      if (isNetworkError) {
+        DebugLogger.warn('network', 'Template-CD network error', error);
+        return 'network';
+      } else {
+        DebugLogger.error('network', 'Template-CD server error', error);
+        return 'server';
+      }
+    }
+  }
+
+  /**
    * ERROR-001 FIX: Updated tier selection with network awareness
    */
   static selectOptimalTier(healthStatus: HealthStatus): TierStrategy {
     DebugLogger.log('network', 'Selecting tier based on health', healthStatus);
 
-    // Server failures → Use appropriate fallbacks
-    if (healthStatus.runwareAPI === 'server') {
+    // NEW: Priority 1 - If orchestrator AND/OR AISC are down but template-cd is healthy → Use template-cd directly
+    if (
+      (healthStatus.orchestrator === 'server' || healthStatus.serviceDependencies === 'server') &&
+      healthStatus.templateCD === 'healthy'
+    ) {
+      DebugLogger.log('network', '✅ TIER_2_5C selected: Orchestrator/AISC down but template-cd healthy', {
+        orchestrator: healthStatus.orchestrator,
+        serviceDependencies: healthStatus.serviceDependencies,
+        templateCD: healthStatus.templateCD
+      });
+      return {
+        tier: 'TIER_2_5C',
+        endpoint: 'runware-template-cd',
+        fallback: 'template',
+        reason: 'Orchestrator/AISC down but template-cd healthy - routing to Tier 2.5C'
+      };
+    }
+
+    // Priority 2 - Runware API server failures (AND template-cd not healthy) → Use SVG fallback
+    if (healthStatus.runwareAPI === 'server' && healthStatus.templateCD !== 'healthy') {
+      DebugLogger.log('network', '⚠️ TIER_4 selected: Runware API and template-cd both down', {
+        runwareAPI: healthStatus.runwareAPI,
+        templateCD: healthStatus.templateCD
+      });
       return {
         tier: 'TIER_4',
         endpoint: null,
         fallback: 'SVG',
-        reason: 'Runware API server failure - using SVG fallback'
+        reason: 'Runware API server failure and template-cd unavailable - using SVG fallback'
       };
     }
 
-    // Network issues → Orchestrator-first; direct mode attempted only if orchestrator fails
+    // Priority 3 - Network issues → Orchestrator-first; direct mode attempted only if orchestrator fails
     if (healthStatus.overallHealth === 'network') {
       return {
         tier: 'TIER_1',
@@ -234,7 +286,7 @@ export class HealthCheckService {
       };
     }
 
-    // Service dependencies or orchestrator server issues → Still orchestrator-first
+    // Priority 4 - Service dependencies or orchestrator server issues (but template-cd also down) → Orchestrator-first
     if (healthStatus.serviceDependencies === 'server' || healthStatus.orchestrator === 'server') {
       return {
         tier: 'TIER_1',
@@ -244,7 +296,7 @@ export class HealthCheckService {
       };
     }
 
-    // All healthy → Standard Tier 1 with orchestrator
+    // Priority 5 - All healthy → Standard Tier 1 with orchestrator
     return {
       tier: 'TIER_1',
       endpoint: 'runware-generate-image',

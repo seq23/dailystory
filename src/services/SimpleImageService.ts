@@ -190,11 +190,91 @@ export class SimpleImageService {
     DebugLogger.log('image', 'Health validation comparison', {
       orchestratorSpecific: orchestratorServiceHealth,
       generalHealth: healthStatus.overallHealth,
+      templateCDHealth: healthStatus.templateCD, // NEW: Log template-cd health
       correlation: orchestratorServiceHealth === 'healthy' && healthStatus.overallHealth === 'healthy' ? 'MATCH' : 'MISMATCH',
       health: healthStatus,
       selectedTier: tierStrategy.tier,
       reason: tierStrategy.reason
     });
+
+    // EMERGENCY SMART BYPASS OVERRIDE: If TIER_4 selected but orchestrator/AISC are down, try emergency bypass first
+    if (
+      tierStrategy.tier === 'TIER_4' && 
+      (healthStatus?.orchestrator === 'server' || healthStatus?.serviceDependencies === 'server')
+    ) {
+      DebugLogger.log('image', '🚨 EMERGENCY Smart Bypass check before TIER_4', {
+        orchestrator: healthStatus.orchestrator,
+        serviceDependencies: healthStatus.serviceDependencies,
+        templateCD: healthStatus.templateCD,
+        isPremium
+      });
+
+      const effectiveTier = userInfo?.userTier || (isPremium ? 'premium' : 'guest');
+      const emergencyBypass = SmartOrchestrationBypass.shouldBypassOrchestrator(
+        storyText,
+        sessionId || 'unknown',
+        healthStatus,
+        false, // forceDisable = false (emergency override)
+        effectiveTier
+      );
+
+      if (emergencyBypass.shouldBypass) {
+        DebugLogger.log('image', '🚨 EMERGENCY BYPASS ENGAGED (pre-TIER_4)', {
+          reason: emergencyBypass.reason,
+          targetTemplate: emergencyBypass.targetTemplate,
+          userTier: effectiveTier
+        });
+
+        try {
+          const normalizedSessionId = sessionId?.toString() || 'unknown';
+          const existingSeed = OptimizedImageCache.getStorySeed(normalizedSessionId);
+
+          const emergencyResult = await supabase.functions.invoke(
+            emergencyBypass.targetTemplate || 'runware-template-cd',
+            {
+              body: {
+                pageText: storyText,
+                userInfo,
+                sessionId: normalizedSessionId,
+                pageNumber,
+                templateComplexity: emergencyBypass.templateComplexity || 'C',
+                seed: existingSeed,
+                isGuestUser: !isPremium,
+                difficultyLevel: 'medium'
+              }
+            }
+          );
+
+          if (emergencyResult.data?.success && emergencyResult.data?.imageURL?.trim()) {
+            const imageURL = emergencyResult.data.imageURL;
+            OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
+
+            if (!existingSeed && emergencyResult.data?.seed) {
+              OptimizedImageCache.setStorySeed(normalizedSessionId, emergencyResult.data.seed);
+            }
+
+            try {
+              window.dispatchEvent(new CustomEvent('image:generation:complete'));
+            } catch {}
+
+            (globalThis as any).__LAST_STORY_SOURCE__ = 'template';
+
+            return {
+              success: true,
+              url: imageURL,
+              tier: 'EMERGENCY_BYPASS_T2.5C',
+              metadata: {
+                emergencyBypass: true,
+                bypassReason: emergencyBypass.reason,
+                healthStatus
+              }
+            };
+          }
+        } catch (emergencyError) {
+          DebugLogger.warn('image', 'Emergency bypass attempt failed, falling through to TIER_4', emergencyError);
+        }
+      }
+    }
 
     // PHASE 2: Orchestrator-first routing - always attempt orchestrator first
 
