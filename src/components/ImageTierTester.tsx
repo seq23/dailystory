@@ -1883,6 +1883,43 @@ export const ImageTierTester = () => {
         }
       }
       
+      // Display-only fallback for Force 2.5A expected stop
+      let displayImageURL: string | undefined;
+      let displayPositivePrompt: string | undefined;
+      let displayNegativePrompt: string | undefined;
+
+      if (expectedStopNote) {
+        try {
+          const displayPayload = {
+            pageText: enhancedPrompt,
+            storyText: enhancedPrompt,
+            userInfo: userInfo,
+            sessionId: `${crypto.randomUUID()}-2.5a-display`,
+            pageNumber: 1,
+            templateComplexity: 'A'
+          };
+          
+          const abRes = await supabase.functions.invoke('runware-template-ab', { 
+            body: displayPayload 
+          });
+          
+          displayImageURL = abRes.data?.imageURL || abRes.data?.templateData?.imageURL;
+          displayPositivePrompt = abRes.data?.positivePrompt 
+            || abRes.data?.prompt 
+            || abRes.data?.templateData?.positivePrompt;
+          displayNegativePrompt = abRes.data?.negativePrompt 
+            || abRes.data?.templateData?.negativePrompt;
+          
+          cascadeHistory.push('');
+          cascadeHistory.push('🎨 Display-only fallback: Fetched Template 2.5A for visualization');
+          cascadeHistory.push(`✅ Display assets: imageURL=${!!displayImageURL}, prompts=${!!displayPositivePrompt}`);
+          
+        } catch (displayError: any) {
+          cascadeHistory.push('');
+          cascadeHistory.push(`⚠️ Display fallback failed: ${displayError.message}`);
+        }
+      }
+      
       steps[2].status = responseSuccess ? 'success' : 'error';
 
       const processingTime = Date.now() - startTime;
@@ -1916,19 +1953,27 @@ export const ImageTierTester = () => {
       
       // Step 4: Prompt Generation Validation
       steps[3].status = 'running';
-      const safePositive = response.data?.positivePrompt
+      const safePositive = expectedStopNote && displayPositivePrompt
+        ? displayPositivePrompt  // Use display fallback for expected stops
+        : response.data?.positivePrompt
         || response.data?.prompt
         || response.data?.metadata?.enhancedPrompt
         || response.data?.metadata?.positivePrompt
         || null;
+      const safeNegative = expectedStopNote && displayNegativePrompt
+        ? displayNegativePrompt  // Use display fallback for expected stops
+        : response.data?.negativePrompt
+        || null;
       const hasPrompt = !!(safePositive && safePositive.length > 0);
-      steps[3].status = expectedStopNote ? 'success' : (hasPrompt ? 'success' : 'error');
+      steps[3].status = hasPrompt ? 'success' : (expectedStopNote ? 'success' : 'error');
       
       // Step 5: Image Generation Validation
       steps[4].status = 'running';
-      const safeImageURL = extractImageUrl(response.data);
+      const safeImageURL = expectedStopNote && displayImageURL
+        ? displayImageURL  // Use display fallback for expected stops
+        : extractImageUrl(response.data);
       const hasImage = !!safeImageURL;
-      steps[4].status = expectedStopNote ? 'success' : (hasImage ? 'success' : 'error');
+      steps[4].status = hasImage ? 'success' : (expectedStopNote ? 'success' : 'error');
 
       // Determine overall success and error categorization
       // Special case: Force 2.5A expected STOP counts as success
@@ -1985,7 +2030,7 @@ export const ImageTierTester = () => {
           tier: response.data?.tier,
           templateComplexity: isTier1Test ? 'COMPLETE_TIER_1' : templateMap[tier],
           positivePrompt: safePositive,
-          negativePrompt: response.data?.negativePrompt,
+          negativePrompt: safeNegative,
           styleFramework: response.data?.styleFrameworkUsed,
           forcedTier: tier,
           testType: isTier1Test ? 'TIER_1_FORCE_TEST' : 'FORCED_TEMPLATE_BYPASS',
