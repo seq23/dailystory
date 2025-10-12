@@ -899,36 +899,8 @@ async function handleRequest(req: Request) {
     }
 
     return result;
-  } catch (error: any) {
-    // Template generation failed - try LKG rescue
-    console.error('❌ Template CD generation failed, checking LKG:', error);
-    
-    const lkgResult = UniversalLKGCache.getLKG(requestHash, 'runware-template-cd');
-    if (lkgResult) {
-      console.log('✅ [LKG_RESCUE] Serving cached template CD result to prevent failure');
-      return lkgResult;
-    }
-    
-    // No LKG available, return error
-    const ErrorHandler = await getRunwareErrorHandler();
-    const runwareError = ErrorHandler ? ErrorHandler.categorizeRunwareError(error) : {
-      type: 'unknown_runware_error',
-      message: error.message || String(error),
-      escalation: 'TIER_4',
-      retry: false
-    };
-    console.error('Template CD generation failed:', runwareError);
-    
-    return {
-      success: false,
-      error: runwareError.message,
-      errorType: runwareError.type,
-      escalation: runwareError.escalation,
-      retry: runwareError.retry,
-      code: runwareError.code
-    };
-  } // end: template-generation try/catch (flat architecture - single safety net)
-}
+  } // end: template generation try/catch
+} // end: handleRequest
 
 // ========== MAIN SERVER ==========
 serve(async (req) => {
