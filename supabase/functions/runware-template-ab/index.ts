@@ -4,10 +4,8 @@
 // PHASE 1: Universal LKG System for bulletproof reliability
 // PHASE 2: Request Deduplication to eliminate duplicate API calls
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
-import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
-import { EnhancedCircuitBreaker } from '../_shared/EnhancedCircuitBreaker.ts';
-import { monitoringService } from '../_shared/MonitoringService.ts';
+import { reliabilityManager } from '../_shared/ReliabilityManager.ts';
+import { UniversalLogger } from '../_shared/UniversalLogger.ts';
 
 // ========== INLINE CORS (Zero Dependencies) ==========
 function generateEchoCorsHeaders(req: Request): Record<string, string> {

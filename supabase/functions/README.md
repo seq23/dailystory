@@ -42,6 +42,53 @@ This directory contains all Edge Functions for the project. GitHub is the source
 - `runware-template-ab` - JWT: false (Single-file TypeScript, thin JS wrapper)
 - `runware-template-cd` - JWT: false (Single-file TypeScript)
 
+## Reliability Architecture (October 2025)
+
+### Unified Reliability Stack
+
+All image generation functions use a **3-layer reliability stack**:
+
+1. **ReliabilityManager** - Orchestrates circuit breaker, deduplication, LKG cache
+2. **UniversalLogger** - Structured logging with tier cascade tracking
+3. **SupabaseClientFactory** - Vendor-first client creation (5ms local imports)
+
+### Import Pattern
+
+```typescript
+// ✅ DO: Use unified facades
+import { reliabilityManager } from '../_shared/ReliabilityManager.ts';
+import { UniversalLogger } from '../_shared/UniversalLogger.ts';
+
+// ❌ DON'T: Import individual services
+import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
+import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
+import { EnhancedCircuitBreaker } from '../_shared/EnhancedCircuitBreaker.ts';
+```
+
+### Usage Example
+
+```typescript
+const result = await reliabilityManager.executeResilient(
+  operationKey,
+  () => callExternalAPI(...),
+  {
+    functionName: 'my-function',
+    sessionId: 'sess_123',
+    tier: 'tier-1',
+    quality: 'high',
+    timeout: 30000
+  }
+);
+```
+
+### Legacy Services (Deprecated)
+
+The following services are **deprecated** and should not be imported directly:
+- `UniversalLKGCache` → Use `reliabilityManager.executeResilient()`
+- `RequestDeduplicator` → Use `reliabilityManager.executeResilient()`
+- `EnhancedCircuitBreaker` → Use `reliabilityManager.executeResilient()`
+- `tierLogging.js` → Use `UniversalLogger`
+
 ### Security & Monitoring Functions
 - `log-personal-info-incident` - JWT: true
 - `log-security-event` - JWT: true

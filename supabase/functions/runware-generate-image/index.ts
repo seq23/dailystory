@@ -5,10 +5,8 @@
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
-import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
-import { EnhancedCircuitBreaker } from '../_shared/EnhancedCircuitBreaker.ts';
-import { monitoringService } from '../_shared/MonitoringService.ts';
+import { reliabilityManager } from '../_shared/ReliabilityManager.ts';
+import { UniversalLogger } from '../_shared/UniversalLogger.ts';
 
 // ✅ BUNDLER HINTS: Force shared modules into deployment bundle (prevent tree-shaking)
 import { characterConsistencyService as _ccsHint } from "./CharacterConsistencyServiceInline.js";

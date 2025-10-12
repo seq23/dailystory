@@ -5,10 +5,8 @@
 // PHASE 2: Request Deduplication to eliminate duplicate OpenAI calls
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
-import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
-import { EnhancedCircuitBreaker } from '../_shared/EnhancedCircuitBreaker.ts';
-import { monitoringService } from '../_shared/MonitoringService.ts';
+import { reliabilityManager } from '../_shared/ReliabilityManager.ts';
+import { UniversalLogger } from '../_shared/UniversalLogger.ts';
 
 // CCS completely removed from Direct Mode - using inline static avatar system
 const ccsBootStatus = { loaded: false, error: null as null | string };
