@@ -8,6 +8,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
 import { EnhancedCircuitBreaker } from '../_shared/EnhancedCircuitBreaker.ts';
+import { monitoringService } from '../_shared/MonitoringService.ts';
 
 const TIER_LOGGING_VERSION = '2.0-rls-detection';
 

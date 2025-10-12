@@ -8,6 +8,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
 import { EnhancedCircuitBreaker } from '../_shared/EnhancedCircuitBreaker.ts';
+import { monitoringService } from '../_shared/MonitoringService.ts';
 
 // ✅ BUNDLER HINTS: Force shared modules into deployment bundle (prevent tree-shaking)
 import { characterConsistencyService as _ccsHint } from "./CharacterConsistencyServiceInline.js";
@@ -2879,7 +2880,7 @@ serve(async (req) => {
     
     const corsHeaders = generateEchoCorsHeaders(req);
     
-    // Get Phase 1, Phase 2, Phase 3, and Phase 4 statistics
+    // Get Phase 1-5 statistics
     const lkgStats = UniversalLKGCache.getStats();
     const dedupeStats = RequestDeduplicator.getStats();
     const circuitStats = EnhancedCircuitBreaker.getAllStats();
@@ -2892,6 +2893,10 @@ serve(async (req) => {
     } catch (e) {
       console.warn('Could not load ResilientRunwareWebSocket stats:', e.message);
     }
+    
+    // Phase 5: Get monitoring & alerts stats
+    const monitoringStats = monitoringService.getDetailedStats();
+    const activeAlerts = monitoringService.getMetrics().alerts;
     
     const healthData = {
       status: "healthy",
@@ -2943,6 +2948,18 @@ serve(async (req) => {
           "2-attempt generation retry on transient failures",
           "25s timeout (increased from 20s)",
           "Smart error classification (network vs API)"
+        ]
+      },
+      phase5_monitoring_and_alerts: {
+        description: "Real-time error tracking, cost anomaly detection, performance monitoring",
+        ...monitoringStats,
+        activeAlerts: activeAlerts,
+        features: [
+          "Rolling 5-minute window",
+          "Error rate thresholds (15% warning, 30% critical)",
+          "API call spike detection (>50 calls/min)",
+          "Performance degradation alerts (>8s avg)",
+          "Cost anomaly detection"
         ]
       }
     };
