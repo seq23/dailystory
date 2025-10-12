@@ -2789,7 +2789,6 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             storyId: crypto.randomUUID(),
             isGuestUser: false,
             difficultyLevel: 'medium',
-            forceCompleteTier1: true,  // ✅ Force all 7 CCS methods to run
             skipTier1AI: true,          // ✅ Skip AI scene extraction
             skipDirectlyToTier: '2.5A'  // ✅ Jump to 2.5A after Tier 1 prep
           },
