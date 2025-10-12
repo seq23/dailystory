@@ -382,6 +382,33 @@ import * as __bundle_reliability from "../_vendor/reliability-manager@1.0.0.mjs"
 void __bundle_reliability;
 ```
 
+### **CRITICAL: deno.jsonc Import Mapping Required for Vendor Bundles**
+
+When adding vendor bundles to `_vendor/`, you **MUST** update `supabase/deno.jsonc` to map the import paths, or the Deno bundler will **NOT include the vendor files in deployments**.
+
+**Required mappings in `supabase/deno.jsonc`:**
+
+```jsonc
+"imports": {
+  "../_vendor/your-bundle@1.0.0.mjs": "./functions/_vendor/your-bundle@1.0.0.mjs",
+  "../_vendor/your-bundle@1.0.0.bundle.mjs": "./functions/_vendor/your-bundle@1.0.0.bundle.mjs"
+}
+```
+
+**Without these mappings:**
+- Vendor files exist in repository ✅
+- Functions reference vendor files ✅
+- **Deno bundler excludes vendor files from deployment** ❌
+- **Result: "Module not found" errors in production** ❌
+
+**Example: reliability-manager@1.0.0**
+```jsonc
+"imports": {
+  "../_vendor/reliability-manager@1.0.0.mjs": "./functions/_vendor/reliability-manager@1.0.0.mjs",
+  "../_vendor/reliability-manager@1.0.0.bundle.mjs": "./functions/_vendor/reliability-manager@1.0.0.bundle.mjs"
+}
+```
+
 ### Affected Functions
 
 - ✅ `runware-generate-image` (orchestrator) - Updated with vendor-first pattern
