@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-FIX-ASYNC-CALLOPENAI
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-REMOVE-CIRCUIT-BREAKER-CONFIGURE
 // Last deployed: 2025-10-12
-// Changes: Added missing async keyword to callOpenAI function (line 794)
-// Previous: v2025-10-12-REMOVE-BUNDLER-HINTS
+// Changes: Removed direct EnhancedCircuitBreaker.configure() call - uses reliabilityManager defaults
+// Previous: v2025-10-12-FIX-ASYNC-CALLOPENAI
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
@@ -794,15 +794,7 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
   async function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number, sessionId: string = '', pageNumber: number = 1): Promise<{ ok:boolean; content?: string; status?: number }> {
     if (!openaiApiKey) return Promise.resolve({ ok: false, status: 0 });
     
-    // Configure circuit breaker for OpenAI API
-    EnhancedCircuitBreaker.configure('openai-visual', {
-      failThreshold: 5,
-      cooldownMs: 45000,
-      halfOpenMaxAttempts: 3,
-      halfOpenSuccessThreshold: 2,
-    });
-    
-    // Execute OpenAI call with unified reliability stack (lazy-loaded)
+    // Execute OpenAI call with unified reliability stack (lazy-loaded, uses default circuit breaker config)
     const rm = await getReliabilityManager();
     if (rm) {
       return rm.executeResilient(
