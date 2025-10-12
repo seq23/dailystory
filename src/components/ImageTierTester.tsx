@@ -1733,6 +1733,17 @@ export const ImageTierTester = () => {
 
   // Force specific tier tests - FIXED: Correct payload structure and fields
   const forceTier = async (tier: string) => {
+    // Validate testStoryText
+    if (!testStoryText || testStoryText.trim().length === 0) {
+      toast({
+        title: "❌ No Story Text",
+        description: "Please enter story text in the 'Story Text' field above before testing.",
+        variant: "destructive",
+        duration: 5000,
+      });
+      return;
+    }
+    
     setIsLoading(true);
     setResults([]);
     
@@ -1771,7 +1782,7 @@ export const ImageTierTester = () => {
       steps[0].status = 'running';
       const functionMap: { [key: string]: string } = {
         '1': 'runware-generate-image',  // Test Enhanced Character-First Flow orchestrator
-        '2.5A': 'runware-generate-image', // Use orchestrator with skipDirectlyToTier
+        '2.5A': 'runware-template-ab', // Direct call to template-ab with mock CCS
         '2.5B': 'runware-generate-image', // FIXED: Use orchestrator for 2.5B too
         '2.5C': 'runware-template-cd',
         '2.5D': 'runware-template-cd'
@@ -1808,19 +1819,50 @@ export const ImageTierTester = () => {
           }
         : tier === '2.5A'
         ? {
-            // FIXED: Use orchestrator with skip logic to prep CCS then jump to 2.5A
-            storyText: enhancedPrompt,
+            // Direct call to template-ab with mock CCS (bypass orchestrator)
             pageText: enhancedPrompt,
-            userInfo: userInfo,
-            sessionId: crypto.randomUUID(),
-            storyId: crypto.randomUUID(),
+            storyText: enhancedPrompt,
+            userInfo: {
+              ...userInfo,
+              difficultyLevel: mapDifficultyLevel(userInfo)
+            },
+            sessionId: `force-2.5a-${Date.now()}`,
             pageNumber: 1,
-            characterName: userInfo?.name || 'Alex',
-            isGuestUser: true,
-            difficultyLevel: mapDifficultyLevel(userInfo),
-            protectionNegatives: [],
-            skipDirectlyToTier: '2.5A', // NEW: Skip to Tier 2.5A after Tier 1 CCS prep
-            skipTier1AI: true // Skip AI scene extraction, simulate AI failure with successful CCS
+            templateComplexity: 'A',
+            precomputedCCS: {
+              characterSeed: {
+                primaryCharacter: {
+                  name: userInfo?.name || 'TestChild',
+                  age: userInfo?.age || 8,
+                  skinTone: userInfo?.skinTone || "light",
+                  hairColor: "brown",
+                  hairStyle: "short curly",
+                  eyeColor: "brown"
+                }
+              },
+              culturalBundle: {
+                culturalContext: "Western",
+                appropriateImagery: ["playground", "school", "park"]
+              },
+              latestClothing: {
+                outfit: "blue t-shirt and jeans"
+              },
+              coloredObjects: ["red backpack", "yellow ball"],
+              mainCharacterAppearance: "young child with brown hair",
+              secondaryCharacters: [],
+              sessionSetting: "outdoor adventure",
+              structuredAvatarData: {
+                skinTone: userInfo?.skinTone || "light",
+                hairColor: "brown",
+                eyeColor: "brown"
+              },
+              secondaryCharacterSeeds: [],
+              detectedAnimals: [],
+              tier1Complete: true,
+              ccsMethodsRun: ["characterSeed", "culturalBundle", "latestClothing"],
+              source: 'force_test_mock'
+            },
+            test: true
           }
         : tier === '2.5B'
         ? {
@@ -1876,153 +1918,10 @@ export const ImageTierTester = () => {
         dataDetails: response.data?.details
       });
       
-      // Special handling for Force 2.5A: expected STOP is a PASS
+      // Standard response validation (2.5A now directly calls template-ab, no expected STOP)
       let responseSuccess = !response.error && response.data?.success;
       let expectedStopNote = null;
       
-      // Force 2.5A: Two-phase test strategy
-      let precomputedCCS: any = null;
-      
-      if (tier === '2.5A' && (response.error || response.data?.success === false)) {
-        // Phase B: Expected STOP - fetch test display envelope
-        responseSuccess = true;
-        expectedStopNote = '✅ Expected STOP: 2.5A requires complete CCS in skip mode';
-        console.log('🧪 Force 2.5A Phase B: Expected STOP, fetching display envelope');
-        cascadeHistory.push('');
-        cascadeHistory.push('🎯 Force 2.5A: Expected STOP (requires complete CCS)');
-        cascadeHistory.push('🧪 Phase B: Fetching display envelope with __testDisplaySuccess');
-        
-        try {
-          const retryPayload = {
-            ...payload,
-            __testDisplaySuccess: true
-          };
-          
-          const retryResponse = await supabase.functions.invoke(selectedFunction, { body: retryPayload });
-          
-          console.log('📥 Display envelope response:', {
-            hasData: !!retryResponse.data,
-            testDisplay: retryResponse.data?.testDisplay,
-            hasPrecomputedCCS: !!retryResponse.data?.precomputedCCS
-          });
-          
-          if (retryResponse.data?.testDisplay && retryResponse.data?.precomputedCCS) {
-            precomputedCCS = retryResponse.data.precomputedCCS;
-            console.log('✅ Extracted CCS from display envelope:', {
-              hasCharacterSeed: !!precomputedCCS.characterSeed,
-              hasCulturalBundle: !!precomputedCCS.culturalBundle
-            });
-            cascadeHistory.push('✅ Display envelope: CCS extracted successfully');
-          } else {
-            console.warn('⚠️ Display envelope did not contain CCS');
-            cascadeHistory.push('⚠️ Display envelope retry did not return CCS');
-          }
-        } catch (retryError: any) {
-          console.error('❌ Display envelope retry failed:', retryError);
-          cascadeHistory.push(`❌ Display envelope retry error: ${retryError.message}`);
-        }
-      }
-      
-      // Display-only fallback for Force 2.5A expected stop
-      let displayImageURL: string | undefined;
-      let displayPositivePrompt: string | undefined;
-      let displayNegativePrompt: string | undefined;
-
-      if (expectedStopNote) {
-        console.log('🎨 Force 2.5A: Starting display fallback');
-        try {
-          const displayPayload = {
-            pageText: enhancedPrompt || testStoryText,
-            storyText: enhancedPrompt || testStoryText,
-            userInfo: userInfo,
-            sessionId: `force-2.5a-display-${crypto.randomUUID()}`,
-            pageNumber: 1,
-            templateComplexity: 'A',
-            ...(precomputedCCS && { precomputedCCS })
-          };
-          
-          console.log('📤 Display fallback payload:', {
-            hasPrecomputedCCS: !!displayPayload.precomputedCCS,
-            sessionId: displayPayload.sessionId
-          });
-          
-          console.log('📤 Calling runware-template-ab with Template 2.5A');
-          let abRes = await supabase.functions.invoke('runware-template-ab', { 
-            body: displayPayload 
-          });
-          
-          console.log('📥 Template 2.5A response:', {
-            hasData: !!abRes.data,
-            hasError: !!abRes.error,
-            success: abRes.data?.success,
-            imageURL: abRes.data?.imageURL,
-            hasPrompts: !!(abRes.data?.positivePrompt || abRes.data?.templateData?.positivePrompt)
-          });
-          
-          // Strict validation: Must get authentic Tier 2.5A or fail
-          if (abRes.error || abRes.data?.success === false) {
-            const errorCode = abRes.data?.error || abRes.error?.message || 'TEMPLATE_2.5A_FAILED';
-            const errorDetails = abRes.data?.details || {};
-            
-            console.error('❌ Force 2.5A: Template 2.5A failed to generate display assets', {
-              error: errorCode,
-              hadPrecomputedCCS: !!precomputedCCS,
-              details: errorDetails
-            });
-            
-            cascadeHistory.push('');
-            cascadeHistory.push(`❌ Display Error: ${errorCode}`);
-            
-            if (!precomputedCCS) {
-              cascadeHistory.push('🔴 Failure Reason: No precomputed CCS available from orchestrator');
-              cascadeHistory.push('💡 This means orchestrator did not complete all 7 CCS methods');
-            } else {
-              cascadeHistory.push('🔴 Failure Reason: Template 2.5A rejected CCS data or generation failed');
-              cascadeHistory.push(`💬 Template Response: ${errorCode}`);
-            }
-            
-            cascadeHistory.push('🚫 REFUSING to show Tier 2.5B prompts for Tier 2.5A test');
-            
-            // Mark as failed - this is a real error
-            responseSuccess = false;
-            expectedStopNote = '';
-            
-            // Throw to be caught by outer catch block
-            throw new Error(`Cannot display Tier 2.5A: ${errorCode}`);
-          }
-          
-          // Extract display assets
-          displayImageURL = abRes.data.imageURL || abRes.data.templateData?.imageURL || abRes.data.image?.url;
-          displayPositivePrompt = abRes.data.positivePrompt || abRes.data.prompt || abRes.data.templateData?.positivePrompt || abRes.data.prompts?.positive;
-          displayNegativePrompt = abRes.data.negativePrompt || abRes.data.templateData?.negativePrompt || abRes.data.prompts?.negative;
-          
-          // Verify we got 2.5A assets (semantic scene structure)
-          const confirmedTier = abRes.data.tier || abRes.data.templateData?.tier;
-          const isAuthentic25A = confirmedTier === 'tier-2.5A' || displayPositivePrompt?.includes('Character Description:');
-          
-          console.log('✅ Force 2.5A: Display assets fetched', {
-            tier: confirmedTier,
-            hasImage: !!displayImageURL,
-            hasPrompt: !!displayPositivePrompt,
-            isAuthentic25A,
-            promptPreview: displayPositivePrompt?.substring(0, 100)
-          });
-          
-          cascadeHistory.push('');
-          if (isAuthentic25A) {
-            cascadeHistory.push('✅ Authentic Tier 2.5A display assets fetched');
-            cascadeHistory.push('🎯 Confirmed: Using extractSemanticScene() with "Character Description:" structure');
-          } else {
-            cascadeHistory.push('⚠️ Display assets fetched but tier confirmation unclear');
-            cascadeHistory.push(`💬 Response tier: ${confirmedTier || 'unknown'}`);
-          }
-          
-        } catch (displayError: any) {
-          console.error('❌ Force 2.5A display fallback failed:', displayError);
-          cascadeHistory.push('');
-          cascadeHistory.push(`⚠️ Display fallback failed: ${displayError.message || displayError}`);
-        }
-      }
       
       steps[2].status = responseSuccess ? 'success' : 'error';
 
@@ -2040,14 +1939,10 @@ export const ImageTierTester = () => {
       }
       
       // Add result to cascade history
-      if (expectedStopNote) {
-        cascadeHistory.push('');
-        cascadeHistory.push(expectedStopNote);
-        cascadeHistory.push(`🛑 STOPPED at Tier ${tier} as expected (CCS validation)`);
-      } else if (responseSuccess) {
+      if (responseSuccess) {
         cascadeHistory.push('');
         cascadeHistory.push(`✅ Tier ${tier} Success (${processingTime}ms)`);
-        cascadeHistory.push(`🛑 STOPPED at Tier ${tier} as expected (skip mode)`);
+        cascadeHistory.push(`🛑 STOPPED at Tier ${tier} as expected (force mode)`);
       } else {
         cascadeHistory.push('');
         cascadeHistory.push(`❌ Tier ${tier} Failed (${processingTime}ms)`);
@@ -2057,33 +1952,24 @@ export const ImageTierTester = () => {
       
       // Step 4: Prompt Generation Validation
       steps[3].status = 'running';
-      const safePositive = expectedStopNote && displayPositivePrompt
-        ? displayPositivePrompt  // Use display fallback for expected stops
-        : response.data?.positivePrompt
+      const safePositive = response.data?.positivePrompt
         || response.data?.prompt
         || response.data?.metadata?.enhancedPrompt
         || response.data?.metadata?.positivePrompt
         || null;
-      const safeNegative = expectedStopNote && displayNegativePrompt
-        ? displayNegativePrompt  // Use display fallback for expected stops
-        : response.data?.negativePrompt
+      const safeNegative = response.data?.negativePrompt
         || null;
       const hasPrompt = !!(safePositive && safePositive.length > 0);
-      steps[3].status = hasPrompt ? 'success' : (expectedStopNote ? 'success' : 'error');
+      steps[3].status = hasPrompt ? 'success' : 'error';
       
       // Step 5: Image Generation Validation
       steps[4].status = 'running';
-      const safeImageURL = expectedStopNote && displayImageURL
-        ? displayImageURL  // Use display fallback for expected stops
-        : extractImageUrl(response.data);
+      const safeImageURL = extractImageUrl(response.data);
       const hasImage = !!safeImageURL;
-      steps[4].status = hasImage ? 'success' : (expectedStopNote ? 'success' : 'error');
+      steps[4].status = hasImage ? 'success' : 'error';
 
       // Determine overall success and error categorization
-      // Special case: Force 2.5A expected STOP counts as success
-      const overallSuccess = expectedStopNote 
-        ? true  // Expected STOP for 2.5A is a PASS
-        : !response.error && response.data?.success && hasPrompt && hasImage;
+      const overallSuccess = !response.error && response.data?.success && hasPrompt && hasImage;
       
       let errorCategory = null;
       let probableCause = null;

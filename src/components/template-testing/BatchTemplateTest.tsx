@@ -180,7 +180,14 @@ export function BatchTemplateTest() {
             testMode: '2.5A',
             edgeFunction: 'runware-template-ab',
             payload: (basePayload: any) => ({
-              ...basePayload,
+              pageText: basePayload.pageText,
+              storyText: basePayload.storyText,
+              userInfo: {
+                ...basePayload.userInfo,
+                difficultyLevel: basePayload.difficultyLevel
+              },
+              sessionId: `batch-test-2.5a-${Date.now()}`,
+              pageNumber: 1,
               templateComplexity: 'A',
               precomputedCCS: mockFullCCS,
               test: true
@@ -191,7 +198,14 @@ export function BatchTemplateTest() {
             testMode: '2.5B',
             edgeFunction: 'runware-template-ab',
             payload: (basePayload: any) => ({
-              ...basePayload,
+              pageText: basePayload.pageText,
+              storyText: basePayload.storyText,
+              userInfo: {
+                ...basePayload.userInfo,
+                difficultyLevel: basePayload.difficultyLevel
+              },
+              sessionId: `batch-test-2.5b-${Date.now()}`,
+              pageNumber: 1,
               templateComplexity: 'B',
               precomputedCCS: mockPartialCCS,
               test: true
