@@ -794,30 +794,29 @@ async function processInlinedTier1(
     ccsBootStatus.error = null;
     logTier1Step("CharacterConsistencyService Import", "success", "Inline CCS (static import) ready");
   } else {
-    while (ccsImportAttempts < MAX_CCS_IMPORT_ATTEMPTS) {
-      try {
-        logTier1Step("CharacterConsistencyService Import", "attempt", `Attempting inline CCS (fail-fast mode) - attempt ${ccsImportAttempts + 1}/${MAX_CCS_IMPORT_ATTEMPTS}`);
-        console.log(`[TIER_1] Inline CCS attempt ${ccsImportAttempts + 1}/${MAX_CCS_IMPORT_ATTEMPTS} - escalates to Direct Mode on final failure`);
-
-        const inlineModule = await import("./CharacterConsistencyServiceInline.js");
-        characterConsistencyService = inlineModule.characterConsistencyService;
-
-        console.log(`✅ [CCS_INLINE] Loaded successfully on attempt ${ccsImportAttempts + 1} - proceeding with Tier 1`);
-        ccsBootStatus.loaded = true;
-        ccsBootStatus.error = null;
-        logTier1Step("CharacterConsistencyService Import", "success", `Inline CCS loaded on attempt ${ccsImportAttempts + 1}`);
-        break;
-      } catch (inlineError) {
-        ccsImportAttempts++;
-        const errorMessage = inlineError instanceof Error ? inlineError.message : String(inlineError);
-
-        if (ccsImportAttempts >= MAX_CCS_IMPORT_ATTEMPTS) {
-          console.log(`⚠️ [CCS_INLINE] Failed after ${MAX_CCS_IMPORT_ATTEMPTS} attempts - escalating to Direct Mode: ${errorMessage}`);
-          logTier1Step("CharacterConsistencyService Import", "failed", `Inline CCS failed after ${MAX_CCS_IMPORT_ATTEMPTS} attempts - escalating to Direct Mode`);
-          throw new Error("INLINE_CCS_FAILED_ESCALATE_DIRECT_MODE");
+    // ❌ CRITICAL: Static CCS hint unavailable - cannot proceed with Tier 1
+    ccsBootStatus.loaded = false;
+    ccsBootStatus.error = "CCS_STATIC_HINT_UNAVAILABLE";
+    console.log(`❌ [CCS_INLINE] Static CCS hint unavailable - escalating to Direct Mode`);
+    logTier1Step("CharacterConsistencyService Import", "failed", "Static CCS hint unavailable");
+    
+    // If forceCompleteTier1 is set, return explicit failure (preserves test behavior)
+    if (payload.forceCompleteTier1) {
+      console.log("🚫 forceCompleteTier1: Blocking Direct Mode fallback");
+      return {
+        ok: false,
+        code: "TIER_1_FORCED_FAILURE",
+        details: {
+          message: "Tier 1 failed in force mode - cascade blocked",
+          tier: "TIER_1",
+          cascadeBlocked: true,
+          errorDetails: "CCS_STATIC_HINT_UNAVAILABLE"
         }
-
-        console.log(`⚠️ [CCS_INLINE] Attempt ${ccsImportAttempts} failed, retrying after 200ms: ${errorMessage}`);
+      };
+    }
+    
+    // Otherwise, escalate to Direct Mode
+    throw new Error("INLINE_CCS_FAILED_ESCALATE_DIRECT_MODE");
         await new Promise(resolve => setTimeout(resolve, 200));
       }
     }
@@ -1954,8 +1953,12 @@ const executeDirectMode: TierFn = async (ctx) => {
     });
     
     try {
-      // Prefer statically bundled singleton; fallback to dynamic load
-      const ccs = _ccsHint || (await import("./CharacterConsistencyServiceInline.js")).characterConsistencyService;
+      // ✅ CRITICAL: Use static bundler hint only - never dynamic import
+      const ccs = _ccsHint;
+      
+      if (!ccs) {
+        throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+      }
       
       const sessionId = ctx.payload.sessionId;
       const userInfo = ctx.payload.userInfo || {};

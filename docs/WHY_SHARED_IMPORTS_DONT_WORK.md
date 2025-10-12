@@ -271,6 +271,8 @@ try {
 
 Cross-folder dynamic imports of `../_shared/resilientLoader.js` intermittently fail in production, causing non-2xx errors. Solution: always route through a local shim file that re-exports the shared version.
 
+**CRITICAL: CharacterConsistencyService must NEVER use dynamic imports.** Always acquire CCS via the static bundler hint (`_ccsHint`). Dynamic CCS imports cause intermittent "Module not found" errors in production, even when the file exists. The orchestrator statically imports CCS at boot time and uses that singleton throughout.
+
 ```typescript
 // ✅ CORRECT - Use local shim in runware-generate-image
 const { createVendorFirstSupabaseClient } = await memoizedImport("./resilientLoader.js");
