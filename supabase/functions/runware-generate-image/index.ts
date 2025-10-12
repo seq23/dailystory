@@ -7,6 +7,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
+import { EnhancedCircuitBreaker } from '../_shared/EnhancedCircuitBreaker.ts';
 
 // ✅ BUNDLER HINTS: Force shared modules into deployment bundle (prevent tree-shaking)
 import { characterConsistencyService as _ccsHint } from "./CharacterConsistencyServiceInline.js";
@@ -2834,9 +2835,10 @@ serve(async (req) => {
     
     const corsHeaders = generateEchoCorsHeaders(req);
     
-    // Get Phase 1 & Phase 2 statistics
+    // Get Phase 1, Phase 2, and Phase 3 statistics
     const lkgStats = UniversalLKGCache.getStats();
     const dedupeStats = RequestDeduplicator.getStats();
+    const circuitStats = EnhancedCircuitBreaker.getAllStats();
     
     const healthData = {
       status: "healthy",
@@ -2869,6 +2871,16 @@ serve(async (req) => {
         deduplicationRate: dedupeStats.deduplicationRate,
         inFlightRequests: dedupeStats.inFlightRequests.slice(0, 5), // Show first 5
         estimatedApiCostSavings: `${dedupeStats.deduplicationRate} reduction`
+      },
+      phase3_circuit_breakers: {
+        description: "Smart failure recovery with network/API error classification",
+        circuits: circuitStats,
+        features: [
+          "Graduated cooldown (22.5s network, 45s API)",
+          "Half-open state validation",
+          "Progressive recovery on success",
+          "Network vs API error classification"
+        ]
       }
     };
 

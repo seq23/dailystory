@@ -6,6 +6,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
+import { EnhancedCircuitBreaker } from '../_shared/EnhancedCircuitBreaker.ts';
 
 // ========== INLINE CORS (Zero Dependencies) ==========
 function generateEchoCorsHeaders(req: Request): Record<string, string> {
@@ -1227,9 +1228,17 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         let returnedSeed: number | null = null;
         
         if (isRealMode) {
-          // REAL mode: Generate image with Runware API + Request Deduplication
+          // REAL mode: Generate image with Runware API + Request Deduplication + Circuit Breaker
           try {
-            console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A with deduplication`);
+            console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A with deduplication + circuit breaker`);
+            
+            // Configure circuit breaker for Runware API
+            EnhancedCircuitBreaker.configure('runware-template-ab', {
+              failThreshold: 5,
+              cooldownMs: 45000,
+              halfOpenMaxAttempts: 3,
+              halfOpenSuccessThreshold: 2,
+            });
             
             // Create deduplication key for Runware API call
             const dedupeKey = RequestDeduplicator.createKey({
@@ -1239,11 +1248,24 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
               prompt: positivePrompt.substring(0, 100)
             });
             
-            // Deduplicate Runware API call
-            const runwareResult = await RequestDeduplicator.deduplicate(
-              dedupeKey,
-              () => callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' }),
-              20000 // 20s timeout for Runware
+            // Execute with circuit breaker protection + deduplication
+            const runwareResult = await EnhancedCircuitBreaker.execute(
+              'runware-template-ab',
+              () => RequestDeduplicator.deduplicate(
+                dedupeKey,
+                () => callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' }),
+                20000 // 20s timeout for Runware
+              ),
+              {
+                onCircuitOpen: () => {
+                  console.warn('⚠️ [CIRCUIT] Runware circuit open, checking LKG');
+                  const lkg = UniversalLKGCache.getLKG(requestHash, 'runware-template-ab');
+                  if (lkg) {
+                    return lkg;
+                  }
+                  throw new Error('Circuit breaker open and no LKG available');
+                }
+              }
             );
             
             imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL;

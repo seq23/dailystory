@@ -1,7 +1,13 @@
 // 🚀 DEPLOYMENT MARKER: v2025-01-10-SINGLE-FILE-TS
 // Last deployed: 2025-01-10
 // Changes: Converted to single-file TypeScript architecture (no dynamic import)
+// PHASE 1: Universal LKG System for bulletproof reliability
+// PHASE 2: Request Deduplication to eliminate duplicate API calls
+// PHASE 3: Enhanced Circuit Breaker with smart failure classification
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
+import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
+import { EnhancedCircuitBreaker } from '../_shared/EnhancedCircuitBreaker.ts';
 
 const TIER_LOGGING_VERSION = '2.0-rls-detection';
 
@@ -792,7 +798,15 @@ async function handleRequest(req: Request) {
         templateResult = generateTier25D(storyText, userInfo, avatarIdentity, failedTierData || {});
       }
 
-      console.log('🎨 Template CD: Generating image with Runware API + Request Deduplication');
+      console.log('🎨 Template CD: Generating image with Runware API + Request Deduplication + Circuit Breaker');
+      
+      // Configure circuit breaker for Runware API
+      EnhancedCircuitBreaker.configure('runware-template-cd', {
+        failThreshold: 5,
+        cooldownMs: 45000,
+        halfOpenMaxAttempts: 3,
+        halfOpenSuccessThreshold: 2,
+      });
       
       // Create deduplication key for Runware API call
       const dedupeKey = RequestDeduplicator.createKey({
@@ -802,11 +816,24 @@ async function handleRequest(req: Request) {
         prompt: templateResult.positivePrompt.substring(0, 100)
       });
       
-      // Deduplicate Runware API call
-      const imageGenResult = await RequestDeduplicator.deduplicate(
-        dedupeKey,
-        () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
-        20000 // 20s timeout for Runware
+      // Execute with circuit breaker protection + deduplication
+      const imageGenResult = await EnhancedCircuitBreaker.execute(
+        'runware-template-cd',
+        () => RequestDeduplicator.deduplicate(
+          dedupeKey,
+          () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
+          20000 // 20s timeout for Runware
+        ),
+        {
+          onCircuitOpen: () => {
+            console.warn('⚠️ [CIRCUIT] Runware circuit open, checking LKG');
+            const lkg = UniversalLKGCache.getLKG(requestHash, 'runware-template-cd');
+            if (lkg) {
+              return lkg;
+            }
+            throw new Error('Circuit breaker open and no LKG available');
+          }
+        }
       );
     
     try {
@@ -818,7 +845,7 @@ async function handleRequest(req: Request) {
         templateResult = generateTier25D(storyText, userInfo, avatarIdentity, failedTierData || {});
       }
 
-      console.log('🎨 Template CD: Generating image with Runware API + Request Deduplication');
+      console.log('🎨 Template CD: Generating image with Runware API + Request Deduplication + Circuit Breaker');
       
       // Create deduplication key for Runware API call
       const dedupeKey = RequestDeduplicator.createKey({
@@ -828,11 +855,24 @@ async function handleRequest(req: Request) {
         prompt: templateResult.positivePrompt.substring(0, 100)
       });
       
-      // Deduplicate Runware API call
-      const imageGenResult = await RequestDeduplicator.deduplicate(
-        dedupeKey,
-        () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
-        20000 // 20s timeout for Runware
+      // Execute with circuit breaker protection + deduplication
+      const imageGenResult = await EnhancedCircuitBreaker.execute(
+        'runware-template-cd',
+        () => RequestDeduplicator.deduplicate(
+          dedupeKey,
+          () => callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt, seed),
+          20000 // 20s timeout for Runware
+        ),
+        {
+          onCircuitOpen: () => {
+            console.warn('⚠️ [CIRCUIT] Runware circuit open, checking LKG');
+            const lkg = UniversalLKGCache.getLKG(requestHash, 'runware-template-cd');
+            if (lkg) {
+              return lkg;
+            }
+            throw new Error('Circuit breaker open and no LKG available');
+          }
+        }
       );
       
       const result = {

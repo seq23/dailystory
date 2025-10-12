@@ -7,6 +7,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
+import { EnhancedCircuitBreaker } from '../_shared/EnhancedCircuitBreaker.ts';
 
 // CCS completely removed from Direct Mode - using inline static avatar system
 const ccsBootStatus = { loaded: false, error: null as null | string };
@@ -790,6 +791,14 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
   function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number, sessionId: string = '', pageNumber: number = 1): Promise<{ ok:boolean; content?: string; status?: number }> {
     if (!openaiApiKey) return Promise.resolve({ ok: false, status: 0 });
     
+    // Configure circuit breaker for OpenAI API
+    EnhancedCircuitBreaker.configure('openai-visual', {
+      failThreshold: 5,
+      cooldownMs: 45000,
+      halfOpenMaxAttempts: 3,
+      halfOpenSuccessThreshold: 2,
+    });
+    
     // Create deduplication key for OpenAI call
     const dedupeKey = RequestDeduplicator.createKey({
       functionName: 'ai-visual-scene-creator',
@@ -798,23 +807,32 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
       prompt: prompts.userPrompt.substring(0, 100)
     });
     
-    // Deduplicate OpenAI API call to prevent duplicate requests
-    return RequestDeduplicator.deduplicate(
-      dedupeKey,
-      () => safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [{ role: 'system', content: prompts.systemPrompt }, { role: 'user', content: prompts.userPrompt }],
-          max_tokens: 500,
-          temperature: 0.7
-        })
-      }, 25000).then((res) => {
-        const content = res.json?.choices?.[0]?.message?.content?.trim?.();
-        return { ok: !!(res.ok && content), content, status: res.status };
-      }),
-      15000 // 15s timeout for deduplication wrapper
+    // Execute with circuit breaker protection + deduplication
+    return EnhancedCircuitBreaker.execute(
+      'openai-visual',
+      () => RequestDeduplicator.deduplicate(
+        dedupeKey,
+        () => safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'system', content: prompts.systemPrompt }, { role: 'user', content: prompts.userPrompt }],
+            max_tokens: 500,
+            temperature: 0.7
+          })
+        }, 25000).then((res) => {
+          const content = res.json?.choices?.[0]?.message?.content?.trim?.();
+          return { ok: !!(res.ok && content), content, status: res.status };
+        }),
+        15000 // 15s timeout for deduplication wrapper
+      ),
+      {
+        onCircuitOpen: () => {
+          console.warn('⚠️ [CIRCUIT] OpenAI circuit open, returning failure');
+          return { ok: false, status: 503 };
+        }
+      }
     );
   }
 
