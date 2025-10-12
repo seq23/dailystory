@@ -780,32 +780,40 @@ async function processInlinedTier1(
   let ccsImportAttempts = 0;
   const MAX_CCS_IMPORT_ATTEMPTS = 2;
   
-  while (ccsImportAttempts < MAX_CCS_IMPORT_ATTEMPTS) {
-    try {
-      logTier1Step("CharacterConsistencyService Import", "attempt", `Attempting inline CCS (fail-fast mode) - attempt ${ccsImportAttempts + 1}/${MAX_CCS_IMPORT_ATTEMPTS}`);
-      console.log(`[TIER_1] Inline CCS attempt ${ccsImportAttempts + 1}/${MAX_CCS_IMPORT_ATTEMPTS} - escalates to Direct Mode on final failure`);
+  // Static-first CCS import: prefer bundled singleton, fallback to dynamic
+  if (_ccsHint) {
+    characterConsistencyService = _ccsHint;
+    console.log(`✅ [CCS_INLINE] Using statically imported singleton - proceeding with Tier 1`);
+    ccsBootStatus.loaded = true;
+    ccsBootStatus.error = null;
+    logTier1Step("CharacterConsistencyService Import", "success", "Inline CCS (static import) ready");
+  } else {
+    while (ccsImportAttempts < MAX_CCS_IMPORT_ATTEMPTS) {
+      try {
+        logTier1Step("CharacterConsistencyService Import", "attempt", `Attempting inline CCS (fail-fast mode) - attempt ${ccsImportAttempts + 1}/${MAX_CCS_IMPORT_ATTEMPTS}`);
+        console.log(`[TIER_1] Inline CCS attempt ${ccsImportAttempts + 1}/${MAX_CCS_IMPORT_ATTEMPTS} - escalates to Direct Mode on final failure`);
 
-      // INLINE-ONLY CCS - NO FALLBACK CHAIN
-      const inlineModule = await import("./CharacterConsistencyServiceInline.js");
-      characterConsistencyService = inlineModule.characterConsistencyService;
-      
-      console.log(`✅ [CCS_INLINE] Loaded successfully on attempt ${ccsImportAttempts + 1} - proceeding with Tier 1`);
-      ccsBootStatus.loaded = true;
-      ccsBootStatus.error = null;
-      logTier1Step("CharacterConsistencyService Import", "success", `Inline CCS loaded on attempt ${ccsImportAttempts + 1}`);
-      break; // Success, exit retry loop
-    } catch (inlineError) {
-      ccsImportAttempts++;
-      const errorMessage = inlineError instanceof Error ? inlineError.message : String(inlineError);
-      
-      if (ccsImportAttempts >= MAX_CCS_IMPORT_ATTEMPTS) {
-        console.log(`⚠️ [CCS_INLINE] Failed after ${MAX_CCS_IMPORT_ATTEMPTS} attempts - escalating to Direct Mode: ${errorMessage}`);
-        logTier1Step("CharacterConsistencyService Import", "failed", `Inline CCS failed after ${MAX_CCS_IMPORT_ATTEMPTS} attempts - escalating to Direct Mode`);
-        throw new Error("INLINE_CCS_FAILED_ESCALATE_DIRECT_MODE");
+        const inlineModule = await import("./CharacterConsistencyServiceInline.js");
+        characterConsistencyService = inlineModule.characterConsistencyService;
+
+        console.log(`✅ [CCS_INLINE] Loaded successfully on attempt ${ccsImportAttempts + 1} - proceeding with Tier 1`);
+        ccsBootStatus.loaded = true;
+        ccsBootStatus.error = null;
+        logTier1Step("CharacterConsistencyService Import", "success", `Inline CCS loaded on attempt ${ccsImportAttempts + 1}`);
+        break;
+      } catch (inlineError) {
+        ccsImportAttempts++;
+        const errorMessage = inlineError instanceof Error ? inlineError.message : String(inlineError);
+
+        if (ccsImportAttempts >= MAX_CCS_IMPORT_ATTEMPTS) {
+          console.log(`⚠️ [CCS_INLINE] Failed after ${MAX_CCS_IMPORT_ATTEMPTS} attempts - escalating to Direct Mode: ${errorMessage}`);
+          logTier1Step("CharacterConsistencyService Import", "failed", `Inline CCS failed after ${MAX_CCS_IMPORT_ATTEMPTS} attempts - escalating to Direct Mode`);
+          throw new Error("INLINE_CCS_FAILED_ESCALATE_DIRECT_MODE");
+        }
+
+        console.log(`⚠️ [CCS_INLINE] Attempt ${ccsImportAttempts} failed, retrying after 200ms: ${errorMessage}`);
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
-      
-      console.log(`⚠️ [CCS_INLINE] Attempt ${ccsImportAttempts} failed, retrying after 200ms: ${errorMessage}`);
-      await new Promise(resolve => setTimeout(resolve, 200)); // Brief delay before retry
     }
   }
 
@@ -1940,8 +1948,8 @@ const executeDirectMode: TierFn = async (ctx) => {
     });
     
     try {
-      // Import CCS service
-      const { characterConsistencyService } = await import("./CharacterConsistencyServiceInline.js");
+      // Prefer statically bundled singleton; fallback to dynamic load
+      const ccs = _ccsHint || (await import("./CharacterConsistencyServiceInline.js")).characterConsistencyService;
       
       const sessionId = ctx.payload.sessionId;
       const userInfo = ctx.payload.userInfo || {};
@@ -1962,17 +1970,17 @@ const executeDirectMode: TierFn = async (ctx) => {
       console.log(`🔄 [${ctx.requestId}] [FULL_CCS] Running all 7 core CCS methods...`);
       
       // Method 1: Batch fetch CCS data
-      const batchData = await characterConsistencyService.batchFetchCCSData(sessionId, characterName);
+      const batchData = await ccs.batchFetchCCSData(sessionId, characterName);
       console.log(`✅ [${ctx.requestId}] [FULL_CCS] 1/7 batchFetchCCSData: SUCCESS`);
       
       // Method 2: Get structured avatar data
-      const structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+      const structuredAvatarData = await ccs.getStructuredAvatarData(sessionId, userInfo);
       console.log(`✅ [${ctx.requestId}] [FULL_CCS] 2/7 getStructuredAvatarData: SUCCESS`);
       
       // Method 3: Get enhanced character seed
       let characterSeed = batchData.characterSeed;
       if (!characterSeed) {
-        characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
+        characterSeed = await ccs.getEnhancedCharacterSeed(
           sessionId,
           avatarIdentity,
           storyText || pageText || "",
@@ -1983,7 +1991,7 @@ const executeDirectMode: TierFn = async (ctx) => {
       console.log(`✅ [${ctx.requestId}] [FULL_CCS] 3/7 getEnhancedCharacterSeed: SUCCESS`);
       
       // Method 4: Analyze visual details
-      const visualAnalysis = await characterConsistencyService.analyzeVisualDetails(
+      const visualAnalysis = await ccs.analyzeVisualDetails(
         sessionId,
         storyText || pageText || "",
         pageNumber
@@ -1992,17 +2000,17 @@ const executeDirectMode: TierFn = async (ctx) => {
       console.log(`✅ [${ctx.requestId}] [FULL_CCS] 4/7 analyzeVisualDetails: SUCCESS`);
       
       // Method 5: Detect all characters
-      const characterDetection = await characterConsistencyService.detectAllCharacters(storyText || pageText || "");
+      const characterDetection = await ccs.detectAllCharacters(storyText || pageText || "");
       const mainCharacterAppearance = characterDetection?.mainCharacterAppearance || null;
       const secondaryCharacters = characterDetection?.secondaryCharacters || [];
       console.log(`✅ [${ctx.requestId}] [FULL_CCS] 5/7 detectAllCharacters: SUCCESS`);
       
       // Method 6: Get secondary character seeds
-      const secondaryCharacterSeeds = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+      const secondaryCharacterSeeds = await ccs.getSecondaryCharactersForSession(sessionId);
       console.log(`✅ [${ctx.requestId}] [FULL_CCS] 6/7 getSecondaryCharactersForSession: SUCCESS`);
       
       // Method 7: Detect session setting
-      const sessionSetting = await characterConsistencyService.detectSimpleAtmosphere(storyText || pageText || "");
+      const sessionSetting = await ccs.detectSimpleAtmosphere(storyText || pageText || "");
       console.log(`✅ [${ctx.requestId}] [FULL_CCS] 7/7 detectSimpleAtmosphere: SUCCESS`);
       
       // ============= VALIDATE ALL METHODS SUCCEEDED =============
