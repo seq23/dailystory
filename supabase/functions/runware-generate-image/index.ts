@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-FIX-HEALTH-HANDLER-NULL-SAFE
-// Last deployed: 2025-10-12 15:30 UTC
-// Changes: Add null-safe reliabilityManager check in GET/HEAD handler + proper HEAD response headers
-// Previous: v2025-10-12-FORCE-FRESH-DEPLOYMENT
+// 🚀 DEPLOYMENT MARKER: v2025-10-12-HEALTH-PATH-IMPORT-FREE
+// Last deployed: 2025-10-12 20:00 UTC
+// Changes: Remove dynamic imports from GET/HEAD health path for instant liveness - POST unchanged
+// Previous: v2025-10-12-FIX-HEALTH-HANDLER-NULL-SAFE
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
@@ -2884,7 +2884,8 @@ serve(async (req) => {
     });
   }
 
-  // PHASE 2: GET/HEAD health checks with environment info + Phase 2 statistics
+  // PHASE 2: GET/HEAD health checks - IMPORT-FREE for instant liveness
+  // POST requests lazy-load ReliabilityManager and ResilientRunwareWebSocket
   if (req.method === "GET" || req.method === "HEAD") {
     const runwareKey = Deno.env.get("RUNWARE_API_KEY");
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
@@ -2892,34 +2893,11 @@ serve(async (req) => {
     
     const corsHeaders = generateEchoCorsHeaders(req);
     
-    // SAFEGUARD: Get consolidated reliability statistics via ReliabilityManager
-    // Load RM if not yet loaded, handle null gracefully (GET happens before POST)
-    const rm = await getReliabilityManager().catch(() => null);
-    const reliabilityDashboard = rm?.getHealthDashboard() || {
-      lkgCache: { totalEntries: 0, byQuality: {}, byFunction: {}, averageAge: 0, averageUseCount: 0 },
-      deduplication: { totalRequests: 0, duplicatesAvoided: 0, activeRequests: 0, collisionsSaved: 0, deduplicationRate: '0%', inFlightRequests: [] },
-      circuitBreakers: {},
-      monitoring: { alerts: [] }
-    };
-    
-    // Get Phase 4 WebSocket resilience stats
-    let wsResilienceStats = { status: 'unavailable' };
-    try {
-      const { ResilientRunwareWebSocket: RRWS } = await import('../_shared/ResilientRunwareWebSocket.ts');
-      wsResilienceStats = RRWS.getHealthStats();
-    } catch (e) {
-      console.warn('Could not load ResilientRunwareWebSocket stats:', e.message);
-    }
-    
-    // Phase 5: Get monitoring & alerts stats (from consolidated dashboard)
-    const monitoringStats = reliabilityDashboard.monitoring;
-    const activeAlerts = reliabilityDashboard.monitoring.alerts || [];
-    
     const healthData = {
       status: "healthy",
       service: "runware-generate-image",
       tier: "Main Orchestrator",
-      deployment_version: "2025-10-12T19:20:00Z",
+      deployment_version: "2025-10-12T20:00:00Z-HEALTH-PATH-IMPORT-FREE",
       timestamp: new Date().toISOString(),
       environment: {
         hasRunwareApiKey: !!runwareKey,
@@ -2927,58 +2905,7 @@ serve(async (req) => {
         hasSupabaseServiceRoleKey: !!supabaseKey,
       },
       capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_DirectMode_2.5A_2.5B_2.5C_2.5D"],
-      phase1_lkg_cache: {
-        description: "Universal Last Known Good cache (15-min validity, 500 entries)",
-        totalEntries: reliabilityDashboard.lkgCache.totalEntries,
-        byQuality: reliabilityDashboard.lkgCache.byQuality,
-        byFunction: reliabilityDashboard.lkgCache.byFunction,
-        averageAge: `${reliabilityDashboard.lkgCache.averageAge}s`,
-        averageUseCount: reliabilityDashboard.lkgCache.averageUseCount,
-        capacity: "500 entries",
-        validity: "15 minutes"
-      },
-      phase2_request_deduplication: {
-        description: "Eliminates duplicate network calls",
-        totalRequests: reliabilityDashboard.deduplication.totalRequests,
-        duplicatesAvoided: reliabilityDashboard.deduplication.duplicatesAvoided,
-        activeRequests: reliabilityDashboard.deduplication.activeRequests,
-        collisionsSaved: reliabilityDashboard.deduplication.collisionsSaved,
-        deduplicationRate: reliabilityDashboard.deduplication.deduplicationRate,
-        inFlightRequests: reliabilityDashboard.deduplication.inFlightRequests.slice(0, 5),
-        estimatedApiCostSavings: `${reliabilityDashboard.deduplication.deduplicationRate} reduction`
-      },
-      phase3_circuit_breakers: {
-        description: "Smart failure recovery with network/API error classification",
-        circuits: reliabilityDashboard.circuitBreakers,
-        features: [
-          "Graduated cooldown (22.5s network, 45s API)",
-          "Half-open state validation",
-          "Progressive recovery on success",
-          "Network vs API error classification"
-        ]
-      },
-      phase4_websocket_resilience: {
-        description: "Auto-reconnect and retry logic for WebSocket stability",
-        ...wsResilienceStats,
-        features: [
-          "3-attempt connection retry with exponential backoff",
-          "2-attempt generation retry on transient failures",
-          "25s timeout (increased from 20s)",
-          "Smart error classification (network vs API)"
-        ]
-      },
-      phase5_monitoring_and_alerts: {
-        description: "Real-time error tracking, cost anomaly detection, performance monitoring",
-        ...monitoringStats,
-        activeAlerts: activeAlerts,
-        features: [
-          "Rolling 5-minute window",
-          "Error rate thresholds (15% warning, 30% critical)",
-          "API call spike detection (>50 calls/min)",
-          "Performance degradation alerts (>8s avg)",
-          "Cost anomaly detection"
-        ]
-      }
+      note: "Runtime statistics available via POST requests - health path is import-free for liveness stability"
     };
 
     // HEAD should return no body with proper cache control
@@ -2989,13 +2916,22 @@ serve(async (req) => {
           ...corsHeaders,
           "Content-Type": "application/json",
           "Cache-Control": "no-store",
-          "Content-Length": "0"
+          "Content-Length": "0",
+          "X-Health-Ready": "1"
         },
       });
     }
 
     // GET returns full health data
-    return corsResponse(healthData, req);
+    return new Response(JSON.stringify(healthData, null, 2), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+        "X-Health-Ready": "1"
+      }
+    });
   }
 
   // PHASE 3: Method validation before JSON parsing
