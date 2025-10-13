@@ -3078,15 +3078,16 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
       for (const scenario of productionScenarios) {
         const scenarioStartTime = Date.now();
         let scenarioResult: TestResult;
+        
+        // Declare variables before try block so they're accessible in catch block
+        let data: any;
+        let error: any;
+        let twoStepTestData: any;
+        let hasTwoStepCCS: boolean = false;
 
         try {
           DebugLogger.log('image', `Testing: ${scenario.name}`);
           console.log(`🎯 ${scenario.name}: ${scenario.description}`);
-
-          let data: any;
-          let error: any;
-          let twoStepTestData: any;
-          let hasTwoStepCCS: boolean = false;
 
           // Mock health status if provided (for production flow testing)
           const originalCheckSystemHealth = (scenario as any).mockHealthStatus 
@@ -3363,7 +3364,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             let primaryScene: string | undefined;
             let fallbackPath: string | undefined;
             
-            // Capture two-step test data before nested scope
+            // Capture two-step test data from outer scope
             const displayTwoStepData = twoStepTestData;
             const displayHasTwoStepCCS = hasTwoStepCCS;
             
