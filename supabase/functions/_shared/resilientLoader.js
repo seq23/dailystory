@@ -140,6 +140,29 @@ export async function memoizedImport(path) {
  * Attempt import with timeout protection and CDN fallbacks
  */
 async function attemptImportWithTimeoutAndFallbacks(path) {
+  // Special case for local _shared modules - try direct import first
+  if (path.startsWith('../_shared/') || path.startsWith('./_shared/') || path.startsWith('_shared/')) {
+    console.log(`📦 [LOCAL_MODULE] Attempting direct import: ${path}`);
+    try {
+      const result = await timeoutImport(path);
+      console.log(`✅ [LOCAL_MODULE] Successfully imported: ${path}`);
+      return result;
+    } catch (error) {
+      console.error(`❌ [LOCAL_MODULE] Failed to import ${path}:`, error);
+      // Try with .js extension if not already present
+      if (!path.endsWith('.js') && !path.endsWith('.ts')) {
+        try {
+          const jsPath = path + '.js';
+          console.log(`📦 [LOCAL_MODULE] Retrying with .js extension: ${jsPath}`);
+          return await timeoutImport(jsPath);
+        } catch (jsError) {
+          console.error(`❌ [LOCAL_MODULE] .js retry also failed:`, jsError);
+        }
+      }
+      throw new Error(`Local module not found: ${path} - ${error.message}`);
+    }
+  }
+  
   // Try to find matching package in our CDN configuration
   const packageName = extractPackageName(path);
   const cdnConfig = CDN_FALLBACKS[packageName];
@@ -231,6 +254,12 @@ function extractPackageName(path) {
   if (path.includes('@supabase/supabase-js')) return '@supabase/supabase-js';
   if (path.includes('openai')) return 'openai';
   if (path.includes('stripe')) return 'stripe';
+  
+  // Handle relative shared module paths (return as-is for local resolution)
+  if (path.startsWith('../_shared/') || path.startsWith('./_shared/') || path.startsWith('_shared/')) {
+    return path; // Return as-is for local modules
+  }
+  
   return path;
 }
 

@@ -3015,6 +3015,17 @@ serve(async (req) => {
         };
       }
 
+      // Lazy load resilientLoader for proper module resolution with CDN fallbacks
+      let resilientMemoizedImport: any;
+      try {
+        const loaderModule = await import("./resilientLoader.js");
+        resilientMemoizedImport = loaderModule.memoizedImport;
+        console.log("✅ [RESILIENT_LOADER] Loaded memoizedImport with CDN fallbacks");
+      } catch (loaderError) {
+        console.error("❌ [RESILIENT_LOADER] Failed to load, using basic import:", loaderError);
+        resilientMemoizedImport = async (href: string) => await import(href); // Fallback to basic
+      }
+
       // Lazy load NuclearNegativePrompts to prevent boot delay
       let generateNuclearNegativePrompt: any;
       let detectCulturalProfileForNegatives: any;
@@ -3088,7 +3099,7 @@ serve(async (req) => {
           req,
           requestId,
           payload: { ...payload, forceCompleteTier1: true, skipTier1AI: true },
-          memoizedImport: async (href: string) => await import(href),
+          memoizedImport: resilientMemoizedImport,
           tierLogger: console,
           generateNuclearNegativePrompt,
           detectCulturalProfileForNegatives,
