@@ -343,16 +343,49 @@ export const ImageTierTester = () => {
       secondaryCharacters
     });
     
+    const skinTone = userInfo?.skinTone || "light";
+    const avatarType = userInfo?.avatar?.type || 'child';
+    const age = userInfo?.age || 8;
+    const name = userInfo?.name || 'TestChild';
+    
     return {
       characterSeed: {
+        // REQUIRED: characterDescription field for orchestrator validation
+        characterDescription: `${name}, age ${age}, ${userInfo?.hairColor || 'brown'} ${userInfo?.hairStyle || 'short'} hair, ${skinTone} skin tone, ${getEthnicityFromSkinTone(skinTone)} background`,
         primaryCharacter: {
-          name: userInfo?.name || 'TestChild',
-          age: userInfo?.age || 8,
-          skinTone: userInfo?.skinTone || "light",
+          name: name,
+          age: age,
+          skinTone: skinTone,
           hairColor: userInfo?.hairColor || "brown",
           hairStyle: userInfo?.hairStyle || "short",
           eyeColor: userInfo?.eyeColor || "brown"
-        }
+        },
+        // Complete characterSeed fields for template-ab compatibility
+        seed: Math.floor(Math.random() * 1000000),
+        avatarIdentity: {
+          type: avatarType,
+          skinTone: skinTone
+        },
+        physicalTraits: {
+          hair: getTestHairVariation(
+            skinTone,
+            'test-session-' + Date.now(),
+            avatarType
+          ),
+          skinFeatures: getTestSkinFeatures(
+            skinTone,
+            'test-session-' + Date.now()
+          )
+        },
+        consistentClothingStyle: outfit,
+        selectedCulturalHair: null,
+        selectedCulturalFeatures: null,
+        characterName: name,
+        age: age,
+        ageGroup: age <= 5 ? 'toddler' : age <= 8 ? 'child' : 'preteen',
+        ethnicity: getEthnicityFromSkinTone(skinTone),
+        gender: avatarType === 'boy' ? 'male' : avatarType === 'girl' ? 'female' : 'neutral',
+        generatedAt: Date.now()
       },
       culturalBundle: {
         culturalContext: userInfo?.culturalContext || "Western",
