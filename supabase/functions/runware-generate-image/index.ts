@@ -1901,10 +1901,9 @@ const executeDirectMode: TierFn = async (ctx) => {
     const timeout = setTimeout(() => controller.abort(), 35000); // Increased from 20s to 35s to accommodate OpenAI + processing time (17-21s typical)
     
     try {
-      const { createVendorFirstSupabaseClient } = await import("./resilientLoader.js");
-      const supabase = await createVendorFirstSupabaseClient();
+      // Direct HTTP invocation (no dynamic imports - mirrors template-cd escalation pattern)
+      console.log(`🚀 [${ctx.requestId}] DIRECT_MODE_HTTP: invoking ai-visual-scene-creator via service role`);
       
-      // ✅ Call ai-visual-scene-creator for Direct Mode (AISC generates primaryScene + calls template-cd)
       // Sanitize payload: remove test flags so AISC performs real scene generation
       const dmBody = {
         ...ctx.payload,
@@ -1913,10 +1912,28 @@ const executeDirectMode: TierFn = async (ctx) => {
       delete dmBody.test;
       delete dmBody.__testSimulateT1Failure;
 
-      const { data, error } = await supabase.functions.invoke("ai-visual-scene-creator", {
-        body: dmBody,
-        signal: controller.signal,
+      const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+      const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+      const dmResponse = await fetch(`${SUPABASE_URL}/functions/v1/ai-visual-scene-creator`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        },
+        body: JSON.stringify(dmBody),
+        signal: controller.signal
       });
+
+      if (!dmResponse.ok) {
+        const errorText = await dmResponse.text().catch(() => 'Unknown error');
+        console.error(`❌ [${ctx.requestId}] DIRECT_MODE_HTTP failed:`, dmResponse.status, errorText);
+        clearTimeout(timeout);
+        return { ok: false, code: "DM_INVOKE_FAILED", reason: `HTTP ${dmResponse.status}: ${errorText}` };
+      }
+
+      const data = await dmResponse.json();
+      const error = null; // HTTP succeeded
       
       clearTimeout(timeout);
       
