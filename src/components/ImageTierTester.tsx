@@ -344,7 +344,11 @@ export const ImageTierTester = () => {
       culturalBundle: {
         culturalContext: userInfo?.culturalContext || "Western",
         appropriateImagery: ["playground", "school", "park", "forest"],
-        hair: `${userInfo?.hairColor || "brown"} ${userInfo?.hairStyle || "short"} hair`,
+      hair: getTestHairVariation(
+        userInfo?.skinTone || 'light',
+        userInfo?.sessionId || 'default-session',
+        userInfo?.avatarType || userInfo?.avatar?.type || 'child'
+      ),
         features: `${userInfo?.skinTone || "light"} skin tone with warm expression`
       },
       latestClothing: {
