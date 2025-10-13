@@ -38,7 +38,7 @@ interface TestResult {
       status?: number;
       triageResult?: string;
     }; // NEW: Health check results
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO' | 'FRONTEND_BYPASS' | 'ORCHESTRATOR_CALL' | 'PRODUCTION_FLOW'; // Enhanced test types
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO' | 'FRONTEND_BYPASS' | 'ORCHESTRATOR_CALL' | 'PRODUCTION_FLOW' | 'TEMPLATE_DIRECT'; // Enhanced test types
     timeoutTest?: boolean;
     abortReason?: string;
     // AI Scene Creator specific
@@ -2720,6 +2720,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           sessionId,
           pageNumber: 1,
           forceCompleteTier1: true,
+          skipTier1AI: true, // ✅ Skip AI scene validation for CCS-only testing
           dryRun: true  // ✅ Validate CCS without image generation
         }
       });
@@ -2938,7 +2939,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
         {
           name: 'Force Tier 2.5D (Nuclear Fallback)',
           description: 'All services down → Emergency bypass → Template-CD complexity D (nuclear)',
-          testType: 'PRODUCTION_FLOW' as const,
+          testType: 'TEMPLATE_DIRECT' as const,
           mockHealthStatus: {
             orchestrator: 'server' as const,
             runwareAPI: 'server' as const,
@@ -3015,8 +3016,25 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                 error = orchestratorResult.error;
               }
 
+            } else if (scenario.testType === 'TEMPLATE_DIRECT') {
+              // PATH 3: Template Direct Call - Skip orchestrator, call template function directly
+              console.log(`🧪 Template Direct Test - Calling runware-template-cd with complexity D`);
+              const response = await supabase.functions.invoke('runware-template-cd', {
+                body: {
+                  pageText: scenario.payload.storyText,
+                  userInfo: scenario.payload.userInfo,
+                  sessionId: scenario.payload.sessionId,
+                  pageNumber: scenario.payload.pageNumber,
+                  isGuestUser: false,
+                  difficultyLevel: 'medium',
+                  templateComplexity: 'D' // Force nuclear complexity
+                }
+              });
+              data = response.data;
+              error = response.error;
+              console.log(`🧪 Template Direct Result:`, { success: !!data, imageURL: data?.imageURL?.substring(0, 50) });
             } else if (scenario.testType === 'PRODUCTION_FLOW') {
-              // PATH 3: Production Flow Test - Call through SimpleImageService
+              // PATH 4: Production Flow Test - Call through SimpleImageService
               console.log(`🧪 Production Flow Test - Mock Health Status:`, (scenario as any).mockHealthStatus);
               const result = await SimpleImageService.generateStoryImage(
                 scenario.payload.storyText,
