@@ -4537,8 +4537,8 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                         </div>
                       )}
                       
-                      {/* COMPREHENSIVE DEBUG PLAN: Runware Debug Info Section - Hide for Scene-Only mode and Force Tier 1 */}
-                      {!result.details.sceneGenerationOnly && result.tier !== 'tier-1-forced' && (result.details.positivePrompt || result.details.negativePrompt || result.details.promptSource || 
+                      {/* COMPREHENSIVE DEBUG PLAN: Runware Debug Info Section - Hide for Scene-Only mode */}
+                      {!result.details.sceneGenerationOnly && (result.details.positivePrompt || result.details.negativePrompt || result.details.promptSource || 
                         (result.tier === 'tier-1-forced-failure' && result.details.errorDetails?.attemptedPrompts)) && (
                         <div className="text-sm border-2 border-orange-300 rounded p-3 bg-orange-50 mt-3">
                           <div className="font-bold text-orange-700 mb-2">🎨 Runware Debug Info - Prompts Sent to Image API</div>
