@@ -2724,24 +2724,44 @@ async function runTierCascade(
     if (tier1Result.ok) {
       console.log(`✅ Tier 1 CCS prep complete (ctx.tier1 populated), continuing to ${skipToTier}`);
       
-      // Strict CCS validation for Force Tier 2.5A mode
+      // Validation for Force Tier 2.5A mode
       if (skipToTier === '2.5A') {
-        const ok = !!(ctx.tier1?.tier1Complete === true 
+        // Critical fields (MUST have)
+        const hasMinimalCCS = !!(
+          ctx.tier1?.tier1Complete === true 
           && ctx.tier1?.culturalBundle?.hair 
-          && ctx.tier1?.culturalBundle?.features 
-          && ctx.tier1?.latestClothing);
-        if (!ok) {
-          console.error(`❌ Force Tier 2.5A: Tier 1 reported success but CCS is missing critical fields - STOPPING`);
+          && ctx.tier1?.culturalBundle?.features
+        );
+        
+        // Optional fields (extracted from story text, may be empty on fresh sessions)
+        const hasOptionalData = !!(
+          ctx.tier1?.latestClothing 
+          || ctx.tier1?.coloredObjects 
+          || ctx.tier1?.secondaryCharacters?.length
+        );
+        
+        if (!hasMinimalCCS) {
+          console.error(`❌ Force Tier 2.5A: Missing critical CCS (tier1Complete, hair, features) - STOPPING`);
           return {
             ok: false,
             code: 'T1_CCS_INCOMPLETE_FOR_T25A',
-            reason: 'Tier 2.5A requires complete CCS (hair, features, latestClothing, tier1Complete=true)',
+            reason: 'Tier 2.5A requires tier1Complete=true, hair, and features (minimal CCS)',
             details: {
               skipModeUsed: true,
               targetTier: '2.5A',
-              stoppedBecause: 'CCS_REQUIRED_FOR_2.5A'
+              stoppedBecause: 'CRITICAL_CCS_MISSING',
+              hasTier1Complete: ctx.tier1?.tier1Complete === true,
+              hasHair: !!ctx.tier1?.culturalBundle?.hair,
+              hasFeatures: !!ctx.tier1?.culturalBundle?.features
             }
           };
+        }
+        
+        if (!hasOptionalData) {
+          console.warn(`⚠️ Force Tier 2.5A: Optional CCS data missing (clothes/objects/secondary) - continuing with minimal CCS`);
+          console.warn(`   This is expected for fresh test sessions. Story text will still be processed by CCS methods.`);
+        } else {
+          console.log(`✅ Force Tier 2.5A: Complete CCS validation passed (including optional data)`);
         }
       }
       // Don't return here - let it continue to target tier

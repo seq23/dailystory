@@ -2888,6 +2888,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             sessionId: `batch-test-2.5a-${Date.now()}`,
             pageNumber: 1,
             storyId: crypto.randomUUID(),
+            characterName: userInfo?.name || 'Alex',  // ✅ Required by CCS methods
             isGuestUser: false,
             difficultyLevel: 'medium',
             skipTier1AI: true,          // ✅ Skip AI scene extraction
