@@ -1953,27 +1953,74 @@ export const ImageTierTester = () => {
       
       // Step 2: Payload Construction - FIXED: Use orchestrator for 2.5A with skip logic
       steps[1].status = 'running';
-    const payload = tier === '1'
-      ? {
-          // Tier 1 with Mock CCS: Fast isolated test (like Force 2.5B)
-          storyText: enhancedPrompt,
-          pageText: enhancedPrompt,
-          userInfo: userInfo,
-          sessionId: crypto.randomUUID(),
-          storyId: crypto.randomUUID(),
-          pageNumber: 1,
-          characterName: userInfo?.name || 'Alex',
-          isGuestUser: true,
-          difficultyLevel: mapDifficultyLevel(userInfo),
-          protectionNegatives: [],
-          forceCompleteTier1: true, // Force Tier 1 CCS prep
-          skipTier1AI: true, // Skip AI scene extraction (use mock CCS)
-          precomputedCCS: extractCCSFromTestStory(enhancedPrompt, userInfo), // Mock CCS for speed
-          skipDirectlyToTier: '2.5A', // CRITICAL: After Tier 1 CCS prep, skip to 2.5A for prompts/images
-          test: true
+    
+    // TIER 1 TWO-STEP FLOW: First secure primaryScene from AI, then call orchestrator
+    let payload: any;
+    if (tier === '1') {
+      // Step 2A: Call ai-visual-scene-creator to get robust primaryScene
+      steps[1].status = 'running';
+      
+      const scenePayload = {
+        storyText: enhancedPrompt,
+        pageText: enhancedPrompt,
+        userInfo: userInfo,
+        sessionId: crypto.randomUUID(),
+        pageNumber: 1
+      };
+      
+      cascadeHistory.push(`🎯 TIER 1 STEP A: Calling ai-visual-scene-creator for primaryScene...`);
+      
+      let aiPrimaryScene: string | null = null;
+      try {
+        const sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', { 
+          body: scenePayload 
+        });
+        
+        if (!sceneResponse.error && sceneResponse.data?.primaryScene) {
+          aiPrimaryScene = sceneResponse.data.primaryScene;
+          cascadeHistory.push(`✅ TIER 1 STEP A: AI generated primaryScene (${aiPrimaryScene.length} chars)`);
+        } else {
+          cascadeHistory.push(`⚠️ TIER 1 STEP A: AI scene failed, will synthesize fallback`);
         }
-        : tier === '2.5A'
-        ? {
+      } catch (error) {
+        cascadeHistory.push(`⚠️ TIER 1 STEP A: AI scene error, will synthesize fallback`);
+      }
+      
+      steps[1].status = 'success';
+      
+      // Step 2B: Build Tier 1 payload with AI-generated or synthesized primaryScene
+      const baseCCS = extractCCSFromTestStory(enhancedPrompt, userInfo);
+      
+      // Use AI primaryScene if available, otherwise synthesize with context
+      const finalPrimaryScene = aiPrimaryScene || 
+        `${userInfo?.name || 'Alex'} in ${baseCCS.sessionSetting} with ${baseCCS.coloredObjects.slice(0, 2).join(', ')} wearing ${baseCCS.latestClothing.outfit}`;
+      
+      cascadeHistory.push(`🎯 TIER 1 STEP B: Building orchestrator payload with primaryScene (${finalPrimaryScene.length} chars)`);
+      
+      payload = {
+        // Tier 1: Test CCS → Template → Prompt → Image (NO 2.5A SKIP)
+        storyText: enhancedPrompt,
+        pageText: enhancedPrompt,
+        userInfo: userInfo,
+        sessionId: crypto.randomUUID(),
+        storyId: crypto.randomUUID(),
+        pageNumber: 1,
+        characterName: userInfo?.name || 'Alex',
+        isGuestUser: true,
+        difficultyLevel: mapDifficultyLevel(userInfo),
+        protectionNegatives: [],
+        forceCompleteTier1: true, // Force Tier 1 CCS prep
+        skipTier1AI: true, // Skip AI scene extraction (we have primaryScene)
+        precomputedCCS: {
+          ...baseCCS,
+          primaryScene: finalPrimaryScene // AI-generated or synthesized
+        },
+        // REMOVED: skipDirectlyToTier - let Tier 1 complete naturally
+        test: true
+      };
+    }
+    else if (tier === '2.5A') {
+      payload = {
             // Direct call to template-ab with CCS extracted from test story
             pageText: enhancedPrompt,
             storyText: enhancedPrompt,
@@ -1986,9 +2033,9 @@ export const ImageTierTester = () => {
             templateComplexity: 'A',
             precomputedCCS: extractCCSFromTestStory(enhancedPrompt, userInfo),
             test: false
-          }
-        : tier === '2.5B'
-        ? {
+      };
+    } else if (tier === '2.5B') {
+      payload = {
             // FIXED: Use orchestrator with skip logic (works with inline data)
             storyText: enhancedPrompt,
             pageText: enhancedPrompt,
@@ -2002,8 +2049,9 @@ export const ImageTierTester = () => {
             protectionNegatives: [],
             skipDirectlyToTier: '2.5B',
             skipTier1AI: true // Skip AI scene extraction, 2.5B uses inline data
-          }
-        : {
+      };
+    } else {
+      payload = {
             // Template CD expects flat payload
             pageText: enhancedPrompt,
             userInfo: userInfo,
@@ -2014,8 +2062,9 @@ export const ImageTierTester = () => {
             difficultyLevel: mapDifficultyLevel(userInfo),
             protectionNegatives: [],
             templateComplexity: templateMap[tier],
-          };
-      steps[1].status = 'success';
+      };
+    }
+    steps[1].status = 'success';
 
       // Step 3: Template Execution
       steps[2].status = 'running';
