@@ -567,9 +567,9 @@ export class SimpleImageService {
                   sessionId: normalizedSessionId,
                   pageNumber,
                   templateComplexity: 'D',  // This alone triggers emergency template
+                  seed: existingSeed,  // Maintains visual consistency across pages
                   isGuestUser: !isPremium,
                   difficultyLevel: 'medium'
-                  // seed intentionally omitted for 2.5D diversity
                 }
               });
               
