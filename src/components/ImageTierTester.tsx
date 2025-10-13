@@ -38,7 +38,7 @@ interface TestResult {
       status?: number;
       triageResult?: string;
     }; // NEW: Health check results
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO' | 'FRONTEND_BYPASS' | 'ORCHESTRATOR_CALL' | 'PRODUCTION_FLOW' | 'TEMPLATE_DIRECT' | 'TWO_STEP_CCS_CAPTURE'; // Enhanced test types
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO' | 'FRONTEND_BYPASS' | 'ORCHESTRATOR_CALL' | 'PRODUCTION_FLOW' | 'TEMPLATE_DIRECT' | 'TWO_STEP_CCS_CAPTURE' | 'CCS_LOAD_TEST'; // Enhanced test types
     timeoutTest?: boolean;
     abortReason?: string;
     // AI Scene Creator specific
@@ -224,6 +224,12 @@ interface TestResult {
     note?: string; // Additional note for test result (e.g., expected behavior)
     ccsErrors?: string[]; // CCS errors detected during scenario
     actualTier?: string; // Actual tier used in production cascade
+    // CCS Load Test specific
+    methodsSucceeded?: number; // Number of CCS methods that succeeded
+    totalMethods?: number; // Total number of CCS methods attempted
+    message?: string; // Success/failure message
+    failedMethods?: Array<{ method: string; error: string }>; // Failed methods with errors
+    timeline?: Array<{ step: string; status: string; message?: string }>; // Execution timeline
   };
 }
 
@@ -2850,71 +2856,112 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
       
       if (error) throw error;
       
-      // ✅ dryRun success detection: check for dryRun flag, TIER_1, and enhancedPrompt
-      const isDryRunSuccess = 
-        data?.dryRun === true && 
-        (data.tier === 'TIER_1' || data.tier === 1) &&
-        (data.enhancedPrompt || 
-         data.tier1Debug?.timeline?.some(step => 
-           step.step?.includes('Template Building') && step.status === 'success'
-         ));
+      // Parse timeline to check CCS method results
+      const timeline = data?.tier1Debug?.timeline || [];
       
-      if (isDryRunSuccess) {
-        const promptExcerpt = data.enhancedPrompt 
-          ? `${data.enhancedPrompt.substring(0, 100)}...` 
-          : 'Enhanced prompt generated';
-        
+      // Check if CCS imported successfully
+      const ccsImportStep = timeline.find(step => step.step?.includes('CharacterConsistencyService Import'));
+      const ccsImportSuccess = ccsImportStep?.status === 'success';
+      const ccsImportSource = ccsImportStep?.message?.match(/\(([^)]+)\)/)?.[1] || 'unknown';
+      
+      // Count CCS method successes (exclude import, template, and prompt steps)
+      const ccsMethodSteps = timeline.filter(step => 
+        step.status && 
+        !step.step?.includes('Import') &&
+        !step.step?.includes('Template') &&
+        !step.step?.includes('Prompt') &&
+        !step.step?.includes('Enhanced')
+      );
+      
+      const ccsMethodsSucceeded = ccsMethodSteps.filter(step => step.status === 'success').length;
+      const ccsMethodsFailed = ccsMethodSteps.filter(step => step.status === 'failed');
+      
+      // SUCCESS = CCS imported AND at least 5 core methods succeeded
+      const isCCSSuccess = ccsImportSuccess && ccsMethodsSucceeded >= 5 && !data.error;
+      
+      if (isCCSSuccess) {
         setResults([{
           tier: 'Tier 1 CCS Methods',
           success: true,
           details: {
-            testType: 'TIER_1_COMPLETE_FLOW',
-            tier: data.tier,
-            probableCause: 'All CCS methods succeeded without .order() errors',
-            enhancedPrompt: promptExcerpt
+            testType: 'CCS_LOAD_TEST',
+            ccsImportSource,
+            methodsSucceeded: ccsMethodsSucceeded,
+            totalMethods: ccsMethodSteps.length,
+            message: `✅ ${ccsMethodsSucceeded}/${ccsMethodSteps.length} CCS methods loaded successfully`,
+            timeline: timeline.map(step => ({
+              step: step.step,
+              status: step.status,
+              message: step.message
+            }))
           }
         }]);
         
         toast({
-          title: "✅ Tier 1 CCS Methods PASSED",
-          description: `CCS validation succeeded. ${promptExcerpt}`,
-          duration: 6000,
+          title: "✅ CCS Methods Loaded",
+          description: `${ccsMethodsSucceeded}/${ccsMethodSteps.length} methods passed. Import: ${ccsImportSource}`,
+          duration: 5000,
         });
       } else {
+        // Determine error category from timeline
+        let errorCategory: 'NETWORK' | 'TIMEOUT' | 'AUTH' | 'CONFIG' | 'INTERNAL' | 'UNKNOWN' | 'SUCCESS' | 'VALIDATION' = 'UNKNOWN';
+        let errorDetails = data.error || 'CCS methods failed to load';
+        
+        if (!ccsImportSuccess) {
+          errorCategory = 'INTERNAL';
+          errorDetails = ccsImportStep?.message || 'CCS service failed to import';
+        } else if (ccsMethodsFailed.length > 0) {
+          errorCategory = 'INTERNAL';
+          const failedMethodNames = ccsMethodsFailed.map(step => step.step).join(', ');
+          errorDetails = `Methods failed: ${failedMethodNames}`;
+        }
+        
         setResults([{
           tier: 'Tier 1 CCS Methods',
           success: false,
           details: {
-            testType: 'TIER_1_COMPLETE_FLOW',
-            tier: data.tier,
-            error: data.error || 'Unknown CCS failure',
-            probableCause: 'CCS method failed - check for .order() TypeError in logs',
-            errorCategory: 'INTERNAL' as const
+            testType: 'CCS_LOAD_TEST',
+            errorCategory,
+            error: errorDetails,
+            methodsSucceeded: ccsMethodsSucceeded,
+            totalMethods: ccsMethodSteps.length,
+            failedMethods: ccsMethodsFailed.map(step => ({
+              method: step.step,
+              error: step.message
+            })),
+            ccsImportSource: ccsImportSuccess ? ccsImportSource : 'FAILED',
+            timeline: timeline.map(step => ({
+              step: step.step,
+              status: step.status,
+              message: step.message
+            }))
           }
         }]);
         
         toast({
-          title: "❌ Tier 1 CCS Methods FAILED",
-          description: `Error: ${data.error || 'Unknown CCS failure'}`,
+          title: `❌ CCS Failed`,
+          description: errorDetails,
           variant: "destructive",
           duration: 8000,
         });
       }
     } catch (error) {
+      const errorMessage = error.message || String(error);
+      
       setResults([{
         tier: 'Tier 1 CCS Methods',
         success: false,
         details: {
-          testType: 'TIER_1_COMPLETE_FLOW',
-          error: error.message,
-          probableCause: 'Network error or edge function crash - check logs for .order() errors',
-          errorCategory: 'NETWORK' as const
+          testType: 'CCS_LOAD_TEST',
+          errorCategory: 'NETWORK',
+          error: errorMessage,
+          probableCause: 'Edge function timeout or network failure'
         }
       }]);
       
       toast({
-        title: "❌ Tier 1 Test ERROR",
-        description: error.message,
+        title: "❌ Network Error",
+        description: errorMessage,
         variant: "destructive",
         duration: 8000,
       });
