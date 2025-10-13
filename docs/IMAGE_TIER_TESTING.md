@@ -113,12 +113,17 @@ When `payload.test === true` AND `payload.__testSimulateT1Failure === true`, the
 ## Batch Tier Testing - Expected Stop Behaviors
 
 ### Tier 1 (Forced) Test
-- **Payload**: `{ forceCompleteTier1: true }`
-- **Expected Backend Response**: 500 status with `TIER_1_FORCED_FAILURE`
-- **Success Criteria**: Test PASSES when backend correctly stops without cascading (any non-2xx = PASS)
-- **Tester Classification**: Treats any error response as expected STOP
-- **Note**: This validates that Tier 1 force mode prevents cascade as designed
-- **No secondary calls**: Tester does not attempt any display fallback or second orchestrator call
+- **Payload**: `{ forceCompleteTier1: true, skipTier1AI: false }`
+- **Expected Backend Response**: 200 status with `imageURL`, prompts, and `COMPLETE_TIER_1` template
+- **Success Criteria**: Test PASSES when Tier 1 completes successfully without cascading (200 with image = PASS)
+- **Tester Classification**: Success with tier classification 'tier-1-forced'
+- **Note**: This validates that complete Tier 1 pipeline works standalone when all components function correctly
+- **Configuration Critical**: `skipTier1AI: false` is essential to preserve `primaryScene` from Step A
+- **Two-Step Process**: 
+  - **Step A**: Call `ai-visual-scene-creator` to generate `primaryScene` (~1034 chars)
+  - **Step B**: Call orchestrator with `forceCompleteTier1: true`, `skipTier1AI: false`, and fake `characterSeed`
+- **Fake CharacterSeed**: Complete structure includes `characterDescription`, `physicalTraits`, `avatarIdentity` (all required fields for template compatibility)
+- **Display**: Prompts and debug info now shown in tester UI (display filter removed October 2025)
 
 ### Force Tier 2.5A Test
 - **Phase A (Production-like)**: Attempts with `skipTier1AI: false` (real CCS)
@@ -141,7 +146,7 @@ The batch template test now generates one image per difficulty level:
 
 This ensures the "Direct Mode (Orchestrator Fallback)" test exercises the actual Direct Mode path and validates the `primaryScene` contract, rather than relying on the normal cascade which may skip Direct Mode.
 
-### Test Tier 1 CCS Methods: Dry Run Mode
+### Test Tier 1 CCS Methods: Dry Run Mode (Legacy)
 The "Test Tier 1 CCS Methods" button uses `dryRun: true` mode to validate CCS without image generation:
 - **What it tests:** All 7 CCS methods (character seed, cultural bundle, visual details, character detection, atmosphere, AI scene generation, template building)
 - **What it validates:** Nuclear negative generation, consistency elements, complete TIER_1 template structure
@@ -149,6 +154,7 @@ The "Test Tier 1 CCS Methods" button uses `dryRun: true` mode to validate CCS wi
 - **PASS criteria:** `data.success === true` AND `data.tier === 'TIER_1'`
 - **Why dryRun:** Avoids boot-time `.ts` module import errors from `ResilientRunwareWebSocket` that cause test failures
 - **Production impact:** None (isolated to test button, does not affect production flows or other test buttons)
+- **Note**: This is a legacy dry-run mode. For real Tier 1 validation with image generation, use **Force Tier 1** test instead (see above)
 
 ## Critical Bug Fix: tier1Complete Propagation (October 2025)
 

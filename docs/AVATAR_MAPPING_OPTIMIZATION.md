@@ -133,11 +133,51 @@ Frontend → runware-generate-image (Avatar Mapper) → Enhanced Tiers
 - Performance metrics show reduced processing time
 - Error handling maintains backward compatibility
 
+## Test Infrastructure Integration (October 2025)
+
+### Fake AvatarIdentity for Force Tier 1 Tests
+
+The **ImageTierTester** component generates complete fake `avatarIdentity` objects for Force Tier 1 testing to ensure template compatibility.
+
+**Fake Avatar Structure:**
+```typescript
+const fakeAvatarIdentity = {
+  type: 'boy' | 'girl' | 'child',           // Matches user selection
+  skinTone: 'dark' | 'light' | 'medium',   // From avatar config
+  hairColor: 'black' | 'brown' | 'blonde',  // Mapped from skin tone
+  culturalProfile: 'multicultural-american', // Default for tests
+  nativeLanguage: 'en',                     // Default for tests
+  name: 'Test Character'                    // Fake name
+};
+```
+
+**Integration with CharacterSeed:**
+```typescript
+const fakeCharacterSeed = {
+  // ... other fields
+  avatarIdentity: fakeAvatarIdentity,  // Ensures fallback pattern works
+  physicalTraits: {
+    skinTone: fakeAvatarIdentity.skinTone,
+    hairColor: fakeAvatarIdentity.hairColor,
+    // ... other traits
+  }
+};
+```
+
+**Why This Matters:**
+- Templates use fallback pattern: `avatarIdentity?.type || userInfo?.avatar?.type || 'child'`
+- Without `avatarIdentity` in fake seed, templates fall back to default 'child' type
+- Complete `avatarIdentity` ensures test reflects production template behavior
+
+**Test Validation:**
+Force Tier 1 tests verify that templates correctly process `avatarIdentity` from characterSeed, ensuring the optimization works as designed in production.
+
 ## Known Limitations
 
 1. **Backward Compatibility**: Some older functions may not immediately benefit from optimization
 2. **Migration Period**: Mixed usage of optimized and legacy methods during transition
 3. **Edge Cases**: Unusual avatar configurations may require additional mapping
+4. **Test Infrastructure**: Fake avatarIdentity uses simplified cultural profiles (not full production logic)
 
 ## Future Enhancements
 

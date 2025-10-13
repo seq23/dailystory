@@ -139,24 +139,52 @@ if (userTier === 'premium') {
 └── System Monitor      # Performance monitoring
 ```
 
-## Image Generation Flow (Updated)
+## Image Generation Flow (Updated - October 2025)
 
 ```mermaid
 graph TD
     A[User Requests Image] --> B{Check User Tier}
     B -->|Premium| C[Always Use Full Orchestrator]
     B -->|Guest| D{Content Length Check}
-    D -->|< 100 chars| E[Bypass to Template CD]
+    D -->|< 100 chars| E[Smart Bypass to Template CD]
     D -->|≥ 100 chars| F[Use Full Orchestrator]
     
-    C --> G[Character Consistency + Full Pipeline]
+    C --> G[6-Tier Cascade System]
     E --> H[Direct Template CD Generation]
-    F --> I[Full Processing Pipeline]
+    F --> G
     
-    G --> J[High Quality Image]
-    H --> K[Fast Template Image]
-    I --> L[Standard Quality Image]
+    G --> I[Tier 1: ai-visual-scene-creator]
+    I --> J{Success?}
+    J -->|Yes| K[✅ Image]
+    J -->|No| L[Direct Mode]
+    
+    L --> M{Success?}
+    M -->|Yes| K
+    M -->|No| N[Tier 2.5A: Template-AB Mode A]
+    
+    N --> O{Success?}
+    O -->|Yes| K
+    O -->|No| P[Tier 2.5B: Template-AB Mode B]
+    
+    P --> Q{Success?}
+    Q -->|Yes| K
+    Q -->|No| R[Tier 2.5C: Template-CD Lean]
+    
+    R --> S{Success?}
+    S -->|Yes| K
+    S -->|No| T[Tier 2.5D: Template-CD Emergency]
+    
+    T --> K
+    
+    H --> U[Fast Template Image]
+    K --> V[High Quality Image]
 ```
+
+**Architecture Notes:**
+- **6-Tier System**: Tier 1 → Direct Mode → 2.5A → 2.5B → 2.5C → 2.5D
+- **Tier 2.5D**: Emergency hardcoded template that never fails (100% success rate)
+- **Direct Mode**: Independent fallback when Tier 1 fails, calls template-cd directly
+- **Smart Bypass**: Guest users with short stories (<100 chars) skip to template-cd
 
 ## Business Logic Compliance
 

@@ -43,13 +43,19 @@ The Phase Integration Orchestrator combines the functionality of Phase 1 (Charac
 
 ## Tier Configuration Matrix
 
-| Tier | Character Consistency | Visual Tracking | Cultural Enhancement |
-|------|---------------------|-----------------|-------------------|
-| 1    | ❌ No              | ❌ No           | ✅ Yes            |
-| 2.5A | ✅ Yes             | ✅ Yes          | ✅ Yes            |
-| 2.5B | ✅ Yes             | ✅ Yes          | ✅ Yes            |
-| 2.5C | ❌ No              | ✅ Yes          | ❌ No             |
-| 2.5D | ❌ No              | ✅ Yes          | ❌ No             |
+| Tier | Character Consistency | Visual Tracking | Cultural Enhancement | Notes |
+|------|---------------------|-----------------|-------------------|-------|
+| 1    | ✅ Yes (inlined)    | ❌ No           | ✅ Yes            | Uses inlined CCS methods, not database-backed service |
+| Direct | ✅ Yes (simplified) | ❌ No           | ✅ Yes            | Fallback when Tier 1 fails, calls template-cd directly |
+| 2.5A | ✅ Yes             | ✅ Yes          | ✅ Yes            | Premium template with complete CCS (Mode A) |
+| 2.5B | ✅ Yes             | ✅ Yes          | ✅ Yes            | Basic template fallback (Mode B) |
+| 2.5C | ❌ No              | ✅ Yes          | ❌ No             | Lean nuclear template with visual details only |
+| 2.5D | ❌ No              | ✅ Yes          | ❌ No             | Emergency hardcoded template (never fails) |
+
+**Important Notes:**
+- **Tier 1 CCS**: Uses inlined methods within orchestrator, not the database-backed `CharacterConsistencyService`
+- **Database Tables**: `character_traits` and `visual_details` are used for Phase 2 visual tracking only (Tiers 2.5A-D)
+- **Direct Mode**: Independent fallback path that bypasses orchestrator complexity when Tier 1 fails
 
 ## Integration Points
 
@@ -79,6 +85,47 @@ The Phase Integration Orchestrator combines the functionality of Phase 1 (Charac
 - **ImageTierTester** integration with `/prompt-testing?debug=1`
 - **Real-time system status** monitoring
 - **Routing decision transparency**
+- **Force Tier 1 Test**: Validates complete Tier 1 pipeline with fake characterSeed
+
+## Test Infrastructure (October 2025)
+
+### Force Tier 1 Test Implementation
+The **Force Tier 1** test validates that the complete Tier 1 image generation pipeline works correctly without cascading to lower tiers.
+
+**Test Components:**
+1. **Fake CharacterSeed Generation**: Complete structure with all required fields
+2. **Two-Step Process**: 
+   - Step A: AI scene generation via `ai-visual-scene-creator`
+   - Step B: Orchestrator call with `forceCompleteTier1: true`, `skipTier1AI: false`
+3. **Critical Configuration**: `skipTier1AI: false` preserves `primaryScene` from Step A
+
+**Fake CharacterSeed Structure:**
+```typescript
+{
+  characterDescription: string,    // 200-300 word narrative
+  physicalTraits: {
+    age, gender, skinTone, hairColor, hairStyle, eyeColor, height, build, distinctiveFeatures
+  },
+  avatarIdentity: {                // CRITICAL for template fallback pattern
+    type, skinTone, hairColor, culturalProfile, nativeLanguage, name
+  },
+  ccsVersion: '4.0',
+  generatedAt: ISO timestamp,
+  source: 'test-suite'
+}
+```
+
+**Success Criteria:**
+- ✅ 200 status with `imageURL`
+- ✅ Complete prompts (`positivePrompt`, `negativePrompt`)
+- ✅ Template type: `COMPLETE_TIER_1`
+- ✅ No cascade to lower tiers
+- ✅ Routing steps show both Step A and Step B
+
+**Fallback Pattern Support:**
+All templates use `avatarIdentity?.type || userInfo?.avatar?.type || 'child'` pattern, so fake characterSeed must include complete `avatarIdentity` object.
+
+**Complete Documentation:** See `docs/FORCE_TIER_1_TEST_IMPLEMENTATION.md`
 
 ## PHASE GOALS STATUS ✅
 
