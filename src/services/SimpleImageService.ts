@@ -562,16 +562,14 @@ export class SimpleImageService {
               
               cdResult = await supabase.functions.invoke('runware-template-cd', {
                 body: {
-                  pageText: storyText,
-                  storyText: storyText,
-                  primaryScene: extractedScene,
+                  // NO pageText, storyText, or primaryScene for pure emergency mode
                   userInfo,
                   sessionId: normalizedSessionId,
                   pageNumber,
-                  templateComplexity: 'D',
-                  seed: existingSeed,
+                  templateComplexity: 'D',  // This alone triggers emergency template
                   isGuestUser: !isPremium,
                   difficultyLevel: 'medium'
+                  // seed intentionally omitted for 2.5D diversity
                 }
               });
               
