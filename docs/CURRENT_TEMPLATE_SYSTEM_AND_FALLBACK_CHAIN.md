@@ -166,6 +166,8 @@ Tier 2.5D: Template CD Emergency (Synthesized content)
 - ✅ Calls Runware **directly** via HTTP POST to `https://api.runware.ai/v1`
 - ✅ Wrapped with `ReliabilityManager.executeResilient()` (circuit breaker + deduplication + LKG cache)
 - ✅ Implementation: `supabase/functions/runware-generate-image/index.ts` (lines 1726-1780)
+- ✅ **Import-free boot** - CCS loads dynamically at runtime with multi-path fallbacks
+- ✅ **No static imports** - prevents `BOOT_SYNC_ANOMALY` errors
 
 **Direct Mode (orchestrator fallback)**:
 - ✅ **Never calls Runware** in orchestrator
@@ -176,7 +178,14 @@ Tier 2.5D: Template CD Emergency (Synthesized content)
 - ✅ Use `ReliabilityManager.executeResilient()` wrapping the HTTP Runware API
 - ✅ Already proven stable (90-95% success rate)
 
-**Reason for Change**: WebSocket flakiness at edge; HTTP + ReliabilityManager already proven stable in template-cd; removes the last Tier 1 fragility.
+**Orchestrator Health (Oct 2025)**:
+- ✅ Import-free at boot (only xhr, serve, UniversalLogger)
+- ✅ All modules (CCS, ReliabilityManager) load dynamically on-demand
+- ✅ Zero `BOOT_SYNC_ANOMALY` errors
+
+**Reason for Changes**: 
+1. WebSocket flakiness → HTTP + ReliabilityManager (proven stable in template-cd)
+2. Static imports → Dynamic loading (eliminates boot failures)
 
 ### Implementation Files
 - `src/components/CleanStoryDisplay.tsx` (lines 1974-1998, 2162-2199, 4035-4043)

@@ -216,17 +216,38 @@ graph TD
 
 **Impact:** Zero breaking changes - orchestrator still tries all 3 import methods with graceful fallbacks.
 
-## **CCS Bundle Include (2025-10-13)**
+## **CCS Bundle Include (2025-10-13)** - DEPRECATED ❌
 
-- Issue: Import maps do not affect relative specifiers; CCS referenced only via `import("./CharacterConsistencyServiceInline.js")` was pruned from the bundle, causing runtime module-not-found.
-- Solution: Added a side-effect static import in `runware-generate-image/index.ts` to force bundling:
-  ```ts
-  import "./CharacterConsistencyServiceInline.js";
-  ```
-  This guarantees the module exists at runtime while preserving the dynamic import flow.
-- Deployment Marker: `v2025-10-13-CCS-BUNDLE-INCLUDE`
-- Verification: Expect `✅ [CCS_INLINE] CCS loaded via URL import` and no `ERR_MODULE_NOT_FOUND` for `CharacterConsistencyServiceInline.js`.
-- Impact: Slightly larger bundle; robust Tier 1. No API/behavioral changes.
+**ISSUE DISCOVERED:** Static import caused `BOOT_SYNC_ANOMALY` errors, preventing orchestrator from booting.
+
+- Original Issue: Import maps do not affect relative specifiers; CCS referenced only via `import("./CharacterConsistencyServiceInline.js")` was pruned from the bundle, causing runtime module-not-found.
+- Original Solution: Added a side-effect static import in `runware-generate-image/index.ts` to force bundling.
+- **NEW ISSUE:** Static top-level import violates orchestrator's "import-free boot" design, causing worker boot failures.
+- **CORRECT SOLUTION (v2025-10-13-T1-BOOT-FIX-CCS-NO-STATIC-IMPORT):** 
+  - **REMOVED** static import line `import "./CharacterConsistencyServiceInline.js";`
+  - **RELIES ON** existing robust dynamic CCS imports with multi-path fallbacks (URL import → import map → vendor)
+  - **RESULT:** Orchestrator health restored; CCS loads dynamically at runtime; no boot failures
+
+## **Orchestrator Import-Free Health (2025-10-13)** ✅
+
+**Critical Principle:** The orchestrator MUST have zero static imports beyond essential infrastructure (xhr, serve, UniversalLogger).
+
+**Implementation:**
+- **NO** static CCS import (removed line 11 from original implementation)
+- **YES** dynamic CCS loading via `memoizedImport` with three-path fallback:
+  1. URL import via `import.meta.url`
+  2. Import map path: `./CharacterConsistencyServiceInline.js`
+  3. Resilient memoized import
+- **YES** lazy ReliabilityManager loading via `getReliabilityManager()`
+
+**Deployment Marker:** `v2025-10-13-T1-BOOT-FIX-CCS-NO-STATIC-IMPORT`
+
+**Verification:** 
+- Health endpoint returns 200 with JSON payload
+- Edge logs show: `🎨 Tier 1: Generating image via ReliabilityManager + HTTP`
+- No `BOOT_SYNC_ANOMALY` or `Module not found` errors
+
+**Impact:** Eliminates boot failures; Tier 1 uses proven HTTP + ReliabilityManager pattern from template-cd.
 
 ## **Runware Import Fix (2025-10-13)**
 

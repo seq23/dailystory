@@ -1,14 +1,12 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-13-TIER1-HTTP-RELIABILITY
-// Last deployed: 2025-10-13 13:30 UTC
-// Changes: Replaced Tier 1 WebSocket with HTTP Runware API + ReliabilityManager (proven template-cd pattern)
-// Previous: v2025-10-13-RUNWARE-IMPORT-FIX
+// 🚀 DEPLOYMENT MARKER: v2025-10-13-T1-BOOT-FIX-CCS-NO-STATIC-IMPORT
+// Last deployed: 2025-10-13 14:00 UTC
+// Changes: Removed static CCS import to fix BOOT_SYNC_ANOMALY; CCS loads dynamically at runtime
+// Previous: v2025-10-13-TIER1-HTTP-RELIABILITY
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
-// BUNDLE-INCLUDE: Ensure CCS is included in the bundle for dynamic import resolution
-import "./CharacterConsistencyServiceInline.js";
 
 // ========== LAZY RELIABILITY MANAGER (loaded on first POST) ==========
 let reliabilityManager: any = null;
@@ -37,9 +35,11 @@ async function getReliabilityManager() {
   }
 }
 
-// NOTE: All modules are loaded lazily at runtime to prevent boot failures
-// CCS is loaded dynamically in Tier 1 handler
+// ✅ ORCHESTRATOR HEALTH: Import-free at boot
+// All modules are loaded lazily at runtime to prevent boot failures
+// CCS loads dynamically in Tier 1 with multi-path fallbacks (URL import → import map → vendor)
 // ReliabilityManager loaded via getReliabilityManager()
+// NO TOP-LEVEL STATIC IMPORTS - prevents BOOT_SYNC_ANOMALY
 // All other modules loaded on-demand via dynamic imports
 
 // CCS boot status tracking (referenced throughout orchestrator metadata)
