@@ -197,6 +197,18 @@ graph TD
 
 **Impact:** Zero breaking changes - orchestrator still tries all 3 import methods with graceful fallbacks.
 
+## **CCS Bundle Include (2025-10-13)**
+
+- Issue: Import maps do not affect relative specifiers; CCS referenced only via `import("./CharacterConsistencyServiceInline.js")` was pruned from the bundle, causing runtime module-not-found.
+- Solution: Added a side-effect static import in `runware-generate-image/index.ts` to force bundling:
+  ```ts
+  import "./CharacterConsistencyServiceInline.js";
+  ```
+  This guarantees the module exists at runtime while preserving the dynamic import flow.
+- Deployment Marker: `v2025-10-13-CCS-BUNDLE-INCLUDE`
+- Verification: Expect `✅ [CCS_INLINE] CCS loaded via URL import` and no `ERR_MODULE_NOT_FOUND` for `CharacterConsistencyServiceInline.js`.
+- Impact: Slightly larger bundle; robust Tier 1. No API/behavioral changes.
+
 ## **Future Architecture Guidelines**
 
 ### **DO** ✅

@@ -1,12 +1,14 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-13-CCS-IMPORT-MAP-FIX
-// Last deployed: 2025-10-13 12:00 UTC
-// Changes: Added CCS import map to supabase/functions/deno.jsonc for bundler visibility
-// Previous: v2025-10-13-DIRECT-MODE-HTTP
+// 🚀 DEPLOYMENT MARKER: v2025-10-13-CCS-BUNDLE-INCLUDE
+// Last deployed: 2025-10-13 12:20 UTC
+// Changes: Side-effect static import to force-bundle CCS for dynamic import resolution
+// Previous: v2025-10-13-CCS-IMPORT-MAP-FIX
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
+// BUNDLE-INCLUDE: Ensure CCS is included in the bundle for dynamic import resolution
+import "./CharacterConsistencyServiceInline.js";
 
 // ========== LAZY RELIABILITY MANAGER (loaded on first POST) ==========
 let reliabilityManager: any = null;
