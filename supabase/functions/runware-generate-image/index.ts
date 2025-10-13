@@ -777,16 +777,47 @@ async function processInlinedTier1(
   // Retry CCS import once to handle transient CDN/network failures
   let ccsImportAttempts = 0;
   const MAX_CCS_IMPORT_ATTEMPTS = 2;
+  let ccsImportSource: string | undefined; // Track which import path succeeded
   
-  // Dynamic CCS import: load at runtime to prevent boot failures
+  // Dynamic CCS import: load at runtime to prevent boot failures (3-tier fallback)
   try {
     console.log(`📦 [CCS_INLINE] Loading CharacterConsistencyServiceInline.js via resilient loader`);
-    const ccsModule = await import(new URL("./CharacterConsistencyServiceInline.js", import.meta.url).href);
-    characterConsistencyService = ccsModule.characterConsistencyService;
-    console.log(`✅ [CCS_INLINE] CharacterConsistencyService loaded successfully`);
+    
+    // Attempt 1: URL-based import (current method)
+    try {
+      const ccsModule = await import(new URL("./CharacterConsistencyServiceInline.js", import.meta.url).href);
+      characterConsistencyService = ccsModule.characterConsistencyService;
+      ccsImportSource = "url";
+      console.log(`✅ [CCS_INLINE] CCS loaded via URL import`);
+    } catch (urlError) {
+      console.warn(`⚠️ [CCS_INLINE] Attempt 1 (URL) failed:`, urlError);
+      
+      // Attempt 2: Direct import (leverages deno.jsonc import map)
+      try {
+        const ccsModule = await import("./CharacterConsistencyServiceInline.js");
+        characterConsistencyService = ccsModule.characterConsistencyService;
+        ccsImportSource = "import_map";
+        console.log(`✅ [CCS_INLINE] CCS loaded via import map`);
+      } catch (importMapError) {
+        console.warn(`⚠️ [CCS_INLINE] Attempt 2 (import map) failed:`, importMapError);
+        
+        // Attempt 3: Resilient memoizer (multi-CDN/local fallback)
+        try {
+          const ccsModule = await memoizedImport("./CharacterConsistencyServiceInline.js");
+          characterConsistencyService = ccsModule.characterConsistencyService;
+          ccsImportSource = "resilient";
+          console.log(`✅ [CCS_INLINE] CCS loaded via resilient memoizer`);
+        } catch (resilientError) {
+          console.error(`❌ [CCS_INLINE] All 3 import attempts failed`);
+          throw new Error(`CCS_ALL_IMPORTS_FAILED: url=${urlError.message}, map=${importMapError.message}, resilient=${resilientError.message}`);
+        }
+      }
+    }
+    
+    console.log(`✅ [CCS_INLINE] CharacterConsistencyService loaded successfully (source: ${ccsImportSource})`);
     ccsBootStatus.loaded = true;
     ccsBootStatus.error = null;
-    logTier1Step("CharacterConsistencyService Import", "success", "Inline CCS (dynamic import) ready");
+    logTier1Step("CharacterConsistencyService Import", "success", `Inline CCS ready (${ccsImportSource})`);
   } catch (ccsError) {
     ccsBootStatus.loaded = false;
     ccsBootStatus.error = "CCS_DYNAMIC_IMPORT_FAILED";
@@ -1410,7 +1441,8 @@ async function processInlinedTier1(
     ccsMethodsRun: completedMethods, // ✅ Now defined with all 7 CCS methods
     primaryScene: primaryScene || null, // May be null in force+skip mode
     enhancedPrompt: null, // Explicitly null in force+skip mode
-    negativePrompt: null
+    negativePrompt: null,
+    ccsImportSource // ✅ Diagnostic: which import path succeeded
   };
   }
   
@@ -1493,6 +1525,7 @@ async function processInlinedTier1(
     structuredAvatarData, // ← CRITICAL: Pass 73-variation session-seeded hair to Direct Mode
     latestClothing, // ← NEW: Most recent clothing for consistency
     templateStructure: "COMPLETE_TIER_1",
+    ccsImportSource // ✅ Diagnostic: which import path succeeded
   };
 }
 
