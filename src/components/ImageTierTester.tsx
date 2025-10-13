@@ -1900,7 +1900,7 @@ export const ImageTierTester = () => {
             protectionNegatives: [],
             forceCompleteTier1: true, // Force Enhanced Character-First Flow - STOP on failure
             skipTier1AI: false, // Use real AI scene extraction
-            test: false
+            test: true
           }
         : tier === '2.5A'
         ? {

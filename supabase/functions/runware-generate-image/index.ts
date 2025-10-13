@@ -806,7 +806,7 @@ async function processInlinedTier1(
         ccsMethodsCount: 0,
         dryRun: true,
         message: "Tier 1 structure validated (CCS skipped in dryRun)",
-        tier1Debug: tier1Timeline
+        tier1Debug: { timeline: tier1ErrorLog }
       };
     }
     
