@@ -1945,23 +1945,24 @@ export const ImageTierTester = () => {
       
       // Step 2: Payload Construction - FIXED: Use orchestrator for 2.5A with skip logic
       steps[1].status = 'running';
-      const payload = tier === '1'
-        ? {
-            // Tier 1 Enhanced Character-First Flow: runware-generate-image orchestrator
-            storyText: enhancedPrompt,
-            pageText: enhancedPrompt,
-            userInfo: userInfo,
-            sessionId: crypto.randomUUID(),
-            storyId: crypto.randomUUID(),
-            pageNumber: 1,
-            characterName: userInfo?.name || 'Alex',
-            isGuestUser: true,
-            difficultyLevel: mapDifficultyLevel(userInfo),
-            protectionNegatives: [],
-            forceCompleteTier1: true, // Force Enhanced Character-First Flow - STOP on failure
-            skipTier1AI: false, // Use real AI scene extraction
-            test: true
-          }
+    const payload = tier === '1'
+      ? {
+          // Tier 1 with Mock CCS: Fast isolated test (like 2.5A)
+          storyText: enhancedPrompt,
+          pageText: enhancedPrompt,
+          userInfo: userInfo,
+          sessionId: crypto.randomUUID(),
+          storyId: crypto.randomUUID(),
+          pageNumber: 1,
+          characterName: userInfo?.name || 'Alex',
+          isGuestUser: true,
+          difficultyLevel: mapDifficultyLevel(userInfo),
+          protectionNegatives: [],
+          forceCompleteTier1: true, // Force Tier 1 path
+          skipTier1AI: true, // Skip AI scene extraction (use mock CCS)
+          precomputedCCS: extractCCSFromTestStory(enhancedPrompt, userInfo), // Mock CCS for speed
+          test: true
+        }
         : tier === '2.5A'
         ? {
             // Direct call to template-ab with CCS extracted from test story
