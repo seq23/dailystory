@@ -164,6 +164,19 @@ graph TD
 4. **Inline fallbacks work** - For missing critical functionality
 5. **Test boot independently** - Each edge function must boot without dependencies
 
+## **Direct Mode HTTP Invocation (2025-10-13)**
+
+**Change:** Direct Mode now invokes `ai-visual-scene-creator` via service-role HTTP call instead of dynamic imports.
+
+**Deployment Marker:** `v2025-10-13-DIRECT-MODE-HTTP`
+
+**Verification:**
+- Health endpoint returns: `deployment_version: "v2025-10-13-DIRECT-MODE-HTTP"`
+- Edge logs show: `🚀 DIRECT_MODE_HTTP: invoking ai-visual-scene-creator via service role`
+- No more `Module not found: .../resilientLoader.js` errors in Direct Mode path
+
+**Implementation:** Lines 1880-2060 in `runware-generate-image/index.ts` use raw `fetch` with `SUPABASE_SERVICE_ROLE_KEY` to call AISC, eliminating fragile dynamic imports from the fallback path.
+
 ## **Future Architecture Guidelines**
 
 ### **DO** ✅

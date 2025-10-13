@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-12-HEALTH-PATH-IMPORT-FREE
-// Last deployed: 2025-10-12 20:00 UTC
-// Changes: Remove dynamic imports from GET/HEAD health path for instant liveness - POST unchanged
-// Previous: v2025-10-12-FIX-HEALTH-HANDLER-NULL-SAFE
+// 🚀 DEPLOYMENT MARKER: v2025-10-13-DIRECT-MODE-HTTP
+// Last deployed: 2025-10-13 10:30 UTC
+// Changes: Direct Mode uses HTTP invocation to ai-visual-scene-creator (no dynamic imports)
+// Previous: v2025-10-12-HEALTH-PATH-IMPORT-FREE
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
@@ -3012,7 +3012,7 @@ serve(async (req) => {
       status: "healthy",
       service: "runware-generate-image",
       tier: "Main Orchestrator",
-      deployment_version: "2025-10-12T20:00:00Z-HEALTH-PATH-IMPORT-FREE",
+      deployment_version: "v2025-10-13-DIRECT-MODE-HTTP",
       timestamp: new Date().toISOString(),
       environment: {
         hasRunwareApiKey: !!runwareKey,
