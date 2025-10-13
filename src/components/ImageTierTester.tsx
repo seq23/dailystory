@@ -1955,7 +1955,7 @@ export const ImageTierTester = () => {
       steps[1].status = 'running';
     const payload = tier === '1'
       ? {
-          // Tier 1 with Mock CCS: Fast isolated test (like 2.5A)
+          // Tier 1 with Mock CCS: Fast isolated test (like Force 2.5B)
           storyText: enhancedPrompt,
           pageText: enhancedPrompt,
           userInfo: userInfo,
@@ -1966,9 +1966,10 @@ export const ImageTierTester = () => {
           isGuestUser: true,
           difficultyLevel: mapDifficultyLevel(userInfo),
           protectionNegatives: [],
-          forceCompleteTier1: true, // Force Tier 1 path
+          forceCompleteTier1: true, // Force Tier 1 CCS prep
           skipTier1AI: true, // Skip AI scene extraction (use mock CCS)
           precomputedCCS: extractCCSFromTestStory(enhancedPrompt, userInfo), // Mock CCS for speed
+          skipDirectlyToTier: '2.5A', // CRITICAL: After Tier 1 CCS prep, skip to 2.5A for prompts/images
           test: true
         }
         : tier === '2.5A'
