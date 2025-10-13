@@ -177,6 +177,26 @@ graph TD
 
 **Implementation:** Lines 1880-2060 in `runware-generate-image/index.ts` use raw `fetch` with `SUPABASE_SERVICE_ROLE_KEY` to call AISC, eliminating fragile dynamic imports from the fallback path.
 
+## **CCS Import Map Fix (2025-10-13)**
+
+**Issue:** Deno bundler couldn't resolve `./CharacterConsistencyServiceInline.js` during deployment, causing "Module not found" errors in Tier 1 orchestrator.
+
+**Root Cause:** Import map entry existed in root `supabase/deno.jsonc` but was missing from `supabase/functions/deno.jsonc`, which the Supabase edge function bundler uses during deployment.
+
+**Solution:** Added CCS import map entry to function-level config (`supabase/functions/deno.jsonc` line 26):
+```json
+"./CharacterConsistencyServiceInline.js": "./runware-generate-image/CharacterConsistencyServiceInline.js"
+```
+
+**Deployment Marker:** `v2025-10-13-CCS-IMPORT-MAP-FIX`
+
+**Verification:** Edge function logs should show one of:
+- `✅ [CCS_INLINE] CCS loaded via URL import` (Attempt 1)
+- `✅ [CCS_INLINE] CCS loaded via import map` (Attempt 2 - now fixed)
+- `✅ [CCS_INLINE] CCS loaded via resilient fallback` (Attempt 3)
+
+**Impact:** Zero breaking changes - orchestrator still tries all 3 import methods with graceful fallbacks.
+
 ## **Future Architecture Guidelines**
 
 ### **DO** ✅

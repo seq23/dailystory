@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-13-DIRECT-MODE-HTTP
-// Last deployed: 2025-10-13 10:30 UTC
-// Changes: Direct Mode uses HTTP invocation to ai-visual-scene-creator (no dynamic imports)
-// Previous: v2025-10-12-HEALTH-PATH-IMPORT-FREE
+// 🚀 DEPLOYMENT MARKER: v2025-10-13-CCS-IMPORT-MAP-FIX
+// Last deployed: 2025-10-13 12:00 UTC
+// Changes: Added CCS import map to supabase/functions/deno.jsonc for bundler visibility
+// Previous: v2025-10-13-DIRECT-MODE-HTTP
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";

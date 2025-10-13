@@ -22,6 +22,7 @@
   ],
   "imports": {
     "#types/": "./supabase/functions/_shared/types/",
-    "#shared/": "./supabase/functions/_shared/"
+    "#shared/": "./supabase/functions/_shared/",
+    "./CharacterConsistencyServiceInline.js": "./runware-generate-image/CharacterConsistencyServiceInline.js"
   }
 }
