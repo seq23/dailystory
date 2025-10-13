@@ -925,8 +925,20 @@ async function processInlinedTier1(
     };
     
     // Use primaryScene from precomputedCCS (frontend mock)
-    const primaryScene = payload.precomputedCCS.primaryScene?.headline || 
-      `${characterName} in ${payload.precomputedCCS.sessionSetting || 'adventure'}`;
+    // CRITICAL: Accept string OR object with .headline property
+    let primaryScene: string;
+    if (typeof payload.precomputedCCS.primaryScene === 'string' && payload.precomputedCCS.primaryScene.trim().length > 0) {
+      primaryScene = payload.precomputedCCS.primaryScene.trim();
+    } else if (payload.precomputedCCS.primaryScene?.headline) {
+      primaryScene = payload.precomputedCCS.primaryScene.headline;
+    } else {
+      // Synthesize from available data to ensure adequate length
+      const settingContext = payload.precomputedCCS.sessionSetting || 'adventure';
+      const objectsContext = coloredObjects ? ` with ${coloredObjects}` : '';
+      const clothingContext = payload.precomputedCCS.latestClothing?.outfit ? ` wearing ${payload.precomputedCCS.latestClothing.outfit}` : '';
+      primaryScene = `${characterName} in ${settingContext}${objectsContext}${clothingContext}`;
+      console.log(`🔧 [FORCE_TEST_MODE] Synthesized primaryScene (length: ${primaryScene.length})`);
+    }
     
     // Use latestClothing from precomputedCCS
     const latestClothing = payload.precomputedCCS.latestClothing?.outfit;
@@ -1456,7 +1468,7 @@ async function processInlinedTier1(
   if (payload.forceCompleteTier1 && payload.skipTier1AI) {
     console.log(`🎯 [FORCE_TEST_MODE] Bypassing scene validation (forceCompleteTier1 + skipTier1AI)`, {
       primarySceneLength: primaryScene?.length || 0,
-      willSkipEnhancedPrompt: true,
+      willContinueToPromptGeneration: true,
       tier1WillComplete: true
     });
     
@@ -1515,34 +1527,22 @@ async function processInlinedTier1(
       console.log(`✅ [${requestId}] [FORCE_TEST_MODE] Created comprehensive characterSeed with ${Object.keys(characterSeed).length} fields`);
     }
     
-    // ✅ Log "Template Building" success for tester compatibility BEFORE return
-    logTier1Step("Template Building", "success", "FORCE_TEST_MODE skeleton template built");
+    // ✅ Log "Template Building" attempt for tester compatibility
+    logTier1Step("Template Building", "attempt", "FORCE_TEST_MODE - continuing to prompt generation");
     
-    // Skip building enhancedPrompt - it's not needed for 2.5A which uses precomputed CCS
-    // Return early with tier1Complete and ccsMethodsRun
-    return {
-      tier1Complete: true,
-      aiSchema,
-    characterSeed,
-    culturalBundle,
-    structuredAvatarData,
-    latestClothing,
-    mainCharacterAppearance,
-    coloredObjects,
-    secondaryCharacters: secondaryCharacterSeeds,
-    sessionSetting,
-    ccsMethodsRun: completedMethods, // ✅ Now defined with all 7 CCS methods
-    primaryScene: primaryScene || null, // May be null in force+skip mode
-    enhancedPrompt: null, // Explicitly null in force+skip mode
-    negativePrompt: null,
-    ccsImportSource // ✅ Diagnostic: which import path succeeded
-  };
+    // DO NOT RETURN EARLY - Continue to template building below
+    console.log(`✅ [FORCE_TEST_MODE] Continuing to template building and prompt generation...`);
   }
   
-  if (!primaryScene || primaryScene.length < 30) {
-    const error = `primaryScene invalid (length: ${primaryScene?.length || 0})`;
-    logTier1Step("Template Building", "failed", error);
-    throw new Error("AI_SCHEMA_INCOMPLETE");
+  // Skip primaryScene length validation when in force test mode
+  if (!payload.forceCompleteTier1 || !payload.skipTier1AI) {
+    if (!primaryScene || primaryScene.length < 30) {
+      const error = `primaryScene invalid (length: ${primaryScene?.length || 0})`;
+      logTier1Step("Template Building", "failed", error);
+      throw new Error("AI_SCHEMA_INCOMPLETE");
+    }
+  } else {
+    console.log(`🎯 [FORCE_TEST_MODE] Skipping primaryScene length validation (current length: ${primaryScene?.length || 0})`);
   }
 
   // Build COMPLETE_TIER_1 template with deduplication logic
@@ -1888,8 +1888,10 @@ const executeTier1: TierFn = async (ctx) => {
     
     if (rm) {
       console.log('🔐 [RELIABILITY_MANAGER] Tier 1 using consolidated reliability stack');
+      // Defensive guard: ensure we have a valid string for substring
+      const opKey = (tier1Result.enhancedPrompt || tier1Result.primaryScene || ctx.payload.sessionId || 'tier1-op').substring(0, 100);
       imageResult = await rm.executeResilient(
-        tier1Result.enhancedPrompt.substring(0, 100), // operationKey for deduplication
+        opKey, // operationKey for deduplication
         () => callRunwareAPI(tier1Result.enhancedPrompt, tier1Result.negativePrompt || ""),
         {
           functionName: 'runware-generate-image',
