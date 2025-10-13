@@ -80,7 +80,9 @@ export function BatchTemplateTest() {
       },
       culturalBundle: {
         culturalContext: "Western",
-        appropriateImagery: ["playground", "school", "park"]
+        appropriateImagery: ["playground", "school", "park"],
+        hair: "platinum blonde hair with natural highlights",
+        features: "light peachy skin tone with warm glow and bright smile"
       },
       latestClothing: {
         outfit: "blue t-shirt and jeans"

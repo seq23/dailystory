@@ -1842,7 +1842,9 @@ export const ImageTierTester = () => {
               },
               culturalBundle: {
                 culturalContext: "Western",
-                appropriateImagery: ["playground", "school", "park"]
+                appropriateImagery: ["playground", "school", "park"],
+                hair: "platinum blonde hair with natural highlights",
+                features: "light peachy skin tone with warm glow and bright smile"
               },
               latestClothing: {
                 outfit: "blue t-shirt and jeans"
@@ -2059,7 +2061,13 @@ export const ImageTierTester = () => {
           cascadeHistory  // Add cascade history to results
         }
       }]);
-    } catch (error) {
+    } catch (error: any) {
+      console.error(`❌ Force Tier ${tier} test failed:`, {
+        tier,
+        errorMessage: error.message,
+        errorStack: error.stack,
+        timestamp: new Date().toISOString()
+      });
       DebugLogger.error('image', `❌ Force Tier ${tier} failed with exception`, { error });
       
       // Update failed step

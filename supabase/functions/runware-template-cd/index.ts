@@ -804,8 +804,16 @@ async function handleRequest(req: Request) {
     console.log(`🎯 Template CD processing complexity: ${templateComplexity || 'auto'}`);
 
     const userInfo = enhancedStoryData.userInfo || {};
-    const complexityLevel = getComplexityLevel(userInfo, templateComplexity);
-    console.log(`✅ Using complexity level: ${complexityLevel}`);
+    
+    // FORCE Tier 2.5D if emergency mode is active or explicitly requested
+    let complexityLevel: string;
+    if (isEmergencyMode || templateComplexity === 'D') {
+      complexityLevel = 'D';
+      console.log(`🚨 FORCED complexity level: D (emergency mode active)`);
+    } else {
+      complexityLevel = getComplexityLevel(userInfo, templateComplexity);
+      console.log(`✅ Using complexity level: ${complexityLevel}`);
+    }
     
     // Universal LKG Protection now handled by ReliabilityManager
     console.log(`🔐 [RELIABILITY_MANAGER] Template CD using consolidated reliability stack`);
