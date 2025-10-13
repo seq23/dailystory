@@ -2029,6 +2029,7 @@ export const ImageTierTester = () => {
         `${userInfo?.name || 'Alex'} in ${baseCCS.sessionSetting} with ${baseCCS.coloredObjects.slice(0, 2).join(', ')} wearing ${baseCCS.latestClothing.outfit}`;
       
       cascadeHistory.push(`🎯 TIER 1 STEP B: Building orchestrator payload with primaryScene (${finalPrimaryScene.length} chars)`);
+      cascadeHistory.push(`⚙️ Config: forceCompleteTier1=true, skipTier1AI=false`);
       
       payload = {
         // Tier 1: Test CCS → Template → Prompt → Image (NO 2.5A SKIP)
@@ -2043,7 +2044,7 @@ export const ImageTierTester = () => {
         difficultyLevel: mapDifficultyLevel(userInfo),
         protectionNegatives: [],
         forceCompleteTier1: true, // Force Tier 1 CCS prep
-        skipTier1AI: true, // Skip AI scene extraction (we have primaryScene)
+        skipTier1AI: false, // Allow normal scene handling (avoid null primaryScene)
         precomputedCCS: {
           ...baseCCS,
           primaryScene: finalPrimaryScene // AI-generated or synthesized
