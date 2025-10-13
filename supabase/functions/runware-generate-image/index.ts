@@ -1846,7 +1846,7 @@ const executeDirectMode: TierFn = async (ctx) => {
     const timeout = setTimeout(() => controller.abort(), 35000); // Increased from 20s to 35s to accommodate OpenAI + processing time (17-21s typical)
     
     try {
-      const { createVendorFirstSupabaseClient } = await ctx.memoizedImport("./resilientLoader.js");
+      const { createVendorFirstSupabaseClient } = await import("./resilientLoader.js");
       const supabase = await createVendorFirstSupabaseClient();
       
       // ✅ Call ai-visual-scene-creator for Direct Mode (AISC generates primaryScene + calls template-cd)
@@ -2019,7 +2019,7 @@ const executeDirectMode: TierFn = async (ctx) => {
       let ccs: any;
       try {
         console.log(`📦 [FULL_CCS_VALIDATION] Loading CharacterConsistencyServiceInline.js dynamically`);
-        const ccsModule = await import("./CharacterConsistencyServiceInline.js");
+        const ccsModule = await ctx.memoizedImport("./CharacterConsistencyServiceInline.js");
         ccs = ccsModule.characterConsistencyService;
         console.log(`✅ [FULL_CCS_VALIDATION] CharacterConsistencyService loaded successfully`);
       } catch (importError) {
