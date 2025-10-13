@@ -781,7 +781,7 @@ async function processInlinedTier1(
   // Dynamic CCS import: load at runtime to prevent boot failures
   try {
     console.log(`📦 [CCS_INLINE] Loading CharacterConsistencyServiceInline.js via resilient loader`);
-    const ccsModule = await memoizedImport("../runware-generate-image/CharacterConsistencyServiceInline.js");
+    const ccsModule = await memoizedImport("./CharacterConsistencyServiceInline.js");
     characterConsistencyService = ccsModule.characterConsistencyService;
     console.log(`✅ [CCS_INLINE] CharacterConsistencyService loaded successfully`);
     ccsBootStatus.loaded = true;
@@ -2019,7 +2019,7 @@ const executeDirectMode: TierFn = async (ctx) => {
       let ccs: any;
       try {
         console.log(`📦 [FULL_CCS_VALIDATION] Loading CharacterConsistencyServiceInline.js dynamically`);
-        const ccsModule = await ctx.memoizedImport("../runware-generate-image/CharacterConsistencyServiceInline.js");
+        const ccsModule = await ctx.memoizedImport("./CharacterConsistencyServiceInline.js");
         ccs = ccsModule.characterConsistencyService;
         console.log(`✅ [FULL_CCS_VALIDATION] CharacterConsistencyService loaded successfully`);
       } catch (importError) {
