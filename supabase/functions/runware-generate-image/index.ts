@@ -876,6 +876,18 @@ async function processInlinedTier1(
     });
   }
 
+  // ============= DIAGNOSTIC: CHECK PRECOMPUTED CCS PAYLOAD =============
+  console.log(`🔍 [DEBUG] Checking precomputedCCS condition:`, {
+    hasPrecomputedCCS: !!payload.precomputedCCS,
+    precomputedCCSType: typeof payload.precomputedCCS,
+    precomputedCCSKeys: payload.precomputedCCS ? Object.keys(payload.precomputedCCS) : 'N/A',
+    skipTier1AI: payload.skipTier1AI,
+    skipTier1AIType: typeof payload.skipTier1AI,
+    forceCompleteTier1: payload.forceCompleteTier1,
+    conditionWillPass: !!(payload.precomputedCCS && payload.skipTier1AI),
+    fullPayloadKeys: Object.keys(payload)
+  });
+
   // ============= CHECK FOR PRECOMPUTED CCS (FRONTEND MOCK DATA) =============
   // If precomputedCCS is provided AND skipTier1AI is true, use frontend mock data
   // This allows Force Tier 1 tests to skip expensive CCS method calls
