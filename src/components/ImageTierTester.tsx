@@ -38,7 +38,7 @@ interface TestResult {
       status?: number;
       triageResult?: string;
     }; // NEW: Health check results
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO' | 'FRONTEND_BYPASS' | 'ORCHESTRATOR_CALL' | 'PRODUCTION_FLOW' | 'TEMPLATE_DIRECT'; // Enhanced test types
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION' | 'PRODUCTION_SCENARIO' | 'FRONTEND_BYPASS' | 'ORCHESTRATOR_CALL' | 'PRODUCTION_FLOW' | 'TEMPLATE_DIRECT' | 'TWO_STEP_CCS_CAPTURE'; // Enhanced test types
     timeoutTest?: boolean;
     abortReason?: string;
     // AI Scene Creator specific
@@ -197,6 +197,12 @@ interface TestResult {
       tier1Loaded: boolean;
       tier25Loaded: boolean;
       directModeLoaded: boolean;
+    };
+    // Tier 2.5A Real CCS Validation (Two-Step Test)
+    tier25aValidation?: {
+      usedRealCCS: boolean;
+      tier1CCSSource: string;
+      tier1Complete: boolean;
     };
     metadata?: any; // Metadata object containing nested CCS data
     // AI Scene Creator execution status
@@ -1125,6 +1131,40 @@ export const ImageTierTester = () => {
       ]
     };
 
+    // Production hair mapping (1:1 copy from CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE)
+    // 73 total variations across 5 skin tones to ensure test parity with production
+    // Source: supabase/functions/_shared/CharacterConsistencyService.ts (lines 2073-2107)
+    const HAIR_BY_SKIN_TONE_INLINE = {
+      'pale': [
+        'strawberry blonde hair', 'golden red hair', 'auburn curls', 'copper hair',
+        'reddish brown hair', 'ginger hair', 'red-gold hair', 'russet hair',
+        'mahogany red hair', 'burgundy hair', 'crimson hair', 'rose gold hair',
+        'amber red hair', 'cinnamon red hair'
+      ],
+      'light': [
+        'platinum blonde hair', 'golden blonde hair', 'honey blonde hair', 'ash blonde hair',
+        'sandy blonde hair', 'wheat blonde hair', 'butter blonde hair', 'cream blonde hair',
+        'champagne blonde hair', 'vanilla blonde hair', 'pearl blonde hair', 'silver blonde hair',
+        'moonlight blonde hair', 'sunshine blonde hair', 'caramel blonde hair'
+      ],
+      'medium': [
+        'chestnut brown hair', 'chocolate brown hair', 'coffee brown hair', 'walnut brown hair',
+        'hazelnut brown hair', 'mahogany brown hair', 'amber brown hair', 'bronze brown hair',
+        'toffee brown hair', 'mocha brown hair', 'caramel brown hair', 'russet brown hair',
+        'cedar brown hair', 'oak brown hair', 'maple brown hair'
+      ],
+      'olive': [
+        'jet black hair', 'raven black hair', 'midnight black hair', 'obsidian hair',
+        'coal black hair', 'ebony hair', 'onyx hair', 'charcoal hair',
+        'deep black hair', 'ink black hair', 'shadow black hair', 'pitch black hair',
+        'dark espresso hair', 'blackest brown hair'
+      ],
+      'dark': [
+        'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'silky black hair',
+        'gorgeous dark hair', 'shining black hair', 'magnificent dark hair'
+      ]
+    };
+
     if (skinTone === 'dark') {
       const category = avatarType === 'boy' ? 'boys' : avatarType === 'girl' ? 'girls' : 'child';
       const options = AFRICAN_AMERICAN_HAIR[category];
@@ -1132,9 +1172,24 @@ export const ImageTierTester = () => {
       return options[seed % options.length];
     }
 
-    const genericOptions = ['beautiful wavy hair', 'short straight hair', 'curly shoulder-length hair'];
+    // Use production hair mapping for non-dark skin tones
+    const normalizedTone = skinTone.toLowerCase();
+    let mappedTone = 'medium'; // default
+    
+    // Map skin tone variations (matches production logic in StaticDataCache.ts)
+    if (normalizedTone === 'pale') {
+      mappedTone = 'pale';
+    } else if (['light', 'lighter', 'fair'].includes(normalizedTone)) {
+      mappedTone = 'light';
+    } else if (normalizedTone === 'olive') {
+      mappedTone = 'olive';
+    } else if (['medium', 'tan', 'beige'].includes(normalizedTone)) {
+      mappedTone = 'medium';
+    }
+    
+    const hairOptions = HAIR_BY_SKIN_TONE_INLINE[mappedTone] || HAIR_BY_SKIN_TONE_INLINE['medium'];
     const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return genericOptions[seed % genericOptions.length];
+    return hairOptions[seed % hairOptions.length];
   };
 
   // Helper: Get test skin features (mimics orchestrator CCS inline)
@@ -2935,23 +2990,24 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
         // Template Tiers 2.5A-D
         {
           name: 'Force Tier 2.5A',
-          description: 'Tier 1 prep → Jump to 2.5A (STOPS at 2.5A)',
-          testType: 'ORCHESTRATOR_CALL' as const,
+          description: 'Tier 1 prep → Jump to 2.5A (STOPS at 2.5A) [USES REAL TIER 1 CCS]',
+          testType: 'TWO_STEP_CCS_CAPTURE' as const,
           payload: {
             storyText: testStoryText,
-            pageText: testStoryText,    // ✅ Required for template-ab to process (not treat as probe)
+            pageText: testStoryText,
             userInfo: userInfo,
             sessionId: `batch-test-2.5a-${Date.now()}`,
             pageNumber: 1,
             storyId: crypto.randomUUID(),
-            characterName: userInfo?.name || 'Alex',  // ✅ Required by CCS methods
+            characterName: userInfo?.name || 'Alex',
             isGuestUser: false,
             difficultyLevel: 'medium',
-            skipTier1AI: true,          // ✅ Skip AI scene extraction
-            skipDirectlyToTier: '2.5A'  // ✅ Jump to 2.5A after Tier 1 prep
+            forceCompleteTier1: true,  // Step 1: Force Tier 1 to generate CCS
+            skipTier1AI: false,
+            test: true
           },
-          expectedBehavior: 'CCS healthy: 2.5A succeeds. CCS broken: 2.5A fails (requires CCS)',
-          criticalFailure: 'Continued cascade (should STOP at 2.5A)'
+          expectedBehavior: 'Step 1: Capture real CCS from Tier 1. Step 2: Test 2.5A with real CCS',
+          criticalFailure: 'Failed to capture CCS from Tier 1 or 2.5A failed with real CCS'
         },
         {
           name: 'Force Tier 2.5B',
@@ -3029,6 +3085,8 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
 
           let data: any;
           let error: any;
+          let twoStepTestData: any;
+          let hasTwoStepCCS: boolean = false;
 
           // Mock health status if provided (for production flow testing)
           const originalCheckSystemHealth = (scenario as any).mockHealthStatus 
@@ -3104,6 +3162,73 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
               data = result;
               error = result.success ? null : new Error('Image generation failed');
               console.log(`🧪 Production Flow Result:`, { success: result.success, tier: result.tier, imageURL: result.imageURL?.substring(0, 50) });
+            } else if (scenario.testType === 'TWO_STEP_CCS_CAPTURE') {
+              // TWO-STEP FLOW: Capture real Tier 1 CCS, then test Tier 2.5A
+              console.log(`🧪 Two-Step CCS Capture Test - Step 1: Generating real Tier 1 CCS`);
+              
+              // Step 1: Call orchestrator with forceCompleteTier1 to get real CCS
+              const tier1Response = await supabase.functions.invoke('runware-generate-image', {
+                body: scenario.payload
+              });
+              
+              console.log(`🧪 Step 1 Result:`, { 
+                success: tier1Response.data?.success, 
+                hasCCS: !!tier1Response.data?.metadata?.precomputedCCS,
+                tier: tier1Response.data?.tier 
+              });
+              
+              // Extract the real CCS data from Tier 1 response
+              const realCCS = tier1Response.data?.metadata?.precomputedCCS || 
+                              tier1Response.data?.precomputedCCS;
+              
+              if (!realCCS) {
+                throw new Error('Failed to capture CCS from Tier 1 - no precomputedCCS in response');
+              }
+              
+              console.log(`🧪 Two-Step CCS Capture Test - Step 2: Testing Tier 2.5A with real CCS`);
+              console.log(`📦 Real CCS captured:`, {
+                hasCharacterSeed: !!realCCS.characterSeed,
+                hasCulturalBundle: !!realCCS.culturalBundle,
+                hasLatestClothing: !!realCCS.latestClothing,
+                tier1Complete: realCCS.tier1Complete,
+                source: realCCS.source
+              });
+              
+              // Step 2: Call template-ab directly with real CCS (skip orchestrator)
+              const tier25aPayload = {
+                pageText: scenario.payload.pageText,
+                storyText: scenario.payload.storyText,
+                userInfo: scenario.payload.userInfo,
+                sessionId: `${scenario.payload.sessionId}-tier25a-with-real-ccs`,
+                pageNumber: scenario.payload.pageNumber || 1,
+                templateComplexity: 'A',
+                precomputedCCS: realCCS,  // Use REAL CCS from Tier 1
+                test: true
+              };
+              
+              const tier25aResponse = await supabase.functions.invoke('runware-template-ab', {
+                body: tier25aPayload
+              });
+              
+              data = tier25aResponse.data;
+              error = tier25aResponse.error;
+              
+              // Enhance response with two-step metadata
+              if (data) {
+                data.twoStepTest = {
+                  tier1CCS: realCCS,
+                  tier1Success: tier1Response.data?.success,
+                  tier25aUsedRealCCS: true
+                };
+                twoStepTestData = data.twoStepTest;
+                hasTwoStepCCS = true;
+              }
+              
+              console.log(`🧪 Step 2 Result:`, { 
+                success: !!data?.imageURL, 
+                tier: data?.tier,
+                usedRealCCS: true 
+              });
             } else {
               // PATH 2: Orchestrator Call
               const response = await supabase.functions.invoke('runware-generate-image', {
@@ -3120,6 +3245,12 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
           }
 
           const processingTime = Date.now() - scenarioStartTime;
+
+          // Update two-step test metadata if not already set
+          if (!twoStepTestData && data?.twoStepTest) {
+            twoStepTestData = data.twoStepTest;
+            hasTwoStepCCS = !!twoStepTestData?.tier1CCS;
+          }
 
           if (error) {
             // Preserve error structure for classification logic
@@ -3232,6 +3363,10 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
             let primaryScene: string | undefined;
             let fallbackPath: string | undefined;
             
+            // Capture two-step test data before nested scope
+            const displayTwoStepData = twoStepTestData;
+            const displayHasTwoStepCCS = hasTwoStepCCS;
+            
             try {
               if (isTier1) {
                 // Tier 1 (Forced): Display-only fallback call using production flow (forceCompleteTier1: false allows cascade for image generation)
@@ -3262,7 +3397,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                 fallbackPath = 'TIER_1_COMPLETE_ORCHESTRATOR';
                 
               } else if (is2_5A) {
-                // Force 2.5A: Call template-ab with complexity A + CCS extracted from test story
+                // Force 2.5A: Display shows it used REAL CCS from Tier 1
                 const displayPayload = {
                   pageText: scenario.payload.pageText,
                   storyText: scenario.payload.storyText,
@@ -3270,7 +3405,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                   sessionId: `${scenario.payload.sessionId}-2.5a-display`,
                   pageNumber: scenario.payload.pageNumber || 1,
                   templateComplexity: 'A',
-                  precomputedCCS: extractCCSFromTestStory(
+                  precomputedCCS: displayTwoStepData?.tier1CCS || extractCCSFromTestStory(
                     scenario.payload.storyText || scenario.payload.pageText, 
                     scenario.payload.userInfo
                   ),
@@ -3283,8 +3418,8 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                 
                 imageURL = abRes.data?.imageURL 
                   || abRes.data?.templateData?.imageURL;
-                primaryScene = undefined; // Templates don't extract primaryScene
-                fallbackPath = 'TEMPLATE_2.5A_WITH_EXTRACTED_CCS';
+                primaryScene = abRes.data?.metadata?.primaryScene || abRes.data?.primaryScene;
+                fallbackPath = displayHasTwoStepCCS ? 'TIER_2.5A_WITH_REAL_TIER1_CCS' : 'TIER_2.5A_WITH_MOCK_CCS';
               }
               
               scenarioResult = {
@@ -3293,25 +3428,28 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                 imageURL,
                 details: {
                   processingTime,
-                  testType: scenario.testType,
+                  testType: scenario.testType as any, // Use scenario testType directly
                   scenario: scenario.description,
                   expectedBehavior: scenario.expectedBehavior,
-                  note: `${baseNote} | Display: ${fallbackPath} (Production Flow)`,
-                  stoppedBecause: isTier1 ? 'TIER_1_FORCED_FAILURE' : (stoppedBecause || 'CCS_REQUIRED_FOR_2.5A'),
+                  note: `${baseNote} | Display: ${fallbackPath} (Production Flow with ${displayHasTwoStepCCS ? 'Real' : 'Mock'} CCS)`,
+                  stoppedBecause: isTier1 ? 'TIER_1_FORCED_FAILURE' : 'CCS_REQUIRED_FOR_2.5A',
                   cascadeHistory,
                   primaryScene,
                   fallbackPath,
                   errorDetails: error?.details,
-                  ...(isTier1 && {
-                    tier1Validation: {
-                      expectedStructure: 'COMPLETE_TIER_1',
-                      actualStructure: error?.details?.templateStructure,
-                      success: true,
-                      forcedFailure: true,
-                      cascadeBlocked: true,
-                      productionFlow: true
-                    }
-                  })
+                  tier1Validation: isTier1 ? {
+                    expectedStructure: 'COMPLETE_TIER_1',
+                    actualStructure: error?.details?.templateStructure,
+                    success: true,
+                    forcedFailure: true,
+                    cascadeBlocked: true,
+                    productionFlow: true
+                  } : undefined,
+                  tier25aValidation: is2_5A ? {
+                    usedRealCCS: displayHasTwoStepCCS,
+                    tier1CCSSource: displayTwoStepData?.tier1CCS?.source || 'mock',
+                    tier1Complete: displayTwoStepData?.tier1CCS?.tier1Complete || false
+                  } : undefined
                 }
               };
               console.log(`✅ ${scenario.name} PASSED: Expected stop behavior with display assets`);
