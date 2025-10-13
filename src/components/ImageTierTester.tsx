@@ -370,6 +370,17 @@ export const ImageTierTester = () => {
         hairColor: userInfo?.hairColor || "brown",
         eyeColor: userInfo?.eyeColor || "brown"
       },
+      // Mock primaryScene for backend validation and prompt generation
+      primaryScene: {
+        headline: `${userInfo?.name || 'TestChild'} in ${sessionSetting}`,
+        visualElements: [
+          `${userInfo?.name || 'TestChild'} wearing ${outfit}`,
+          ...coloredObjects.slice(0, 3).map(obj => `scene includes ${obj}`)
+        ],
+        atmosphere: sessionSetting.includes('forest') || sessionSetting.includes('outdoor') ? 'outdoor' : 'indoor',
+        composition: `medium shot of ${userInfo?.name || 'TestChild'}`,
+        characterPositioning: `${userInfo?.name || 'TestChild'} in the foreground`
+      },
       secondaryCharacterSeeds: [],
       detectedAnimals: [],
       tier1Complete: true,
