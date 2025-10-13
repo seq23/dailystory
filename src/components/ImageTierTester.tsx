@@ -1251,9 +1251,9 @@ export const ImageTierTester = () => {
 
       const startTime = Date.now();
       
-      // Create timeout promise (12 seconds for AI generation)
+      // Create timeout promise (30 seconds for AI generation)
       const timeoutPromise = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('AI Scene Creator timeout after 12 seconds')), 12000)
+        setTimeout(() => reject(new Error('AI Scene Creator timeout after 30 seconds')), 30000)
       );
       
       // FIXED: Let backend compute all avatar data (no client-side overrides)

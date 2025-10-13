@@ -1382,10 +1382,26 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       let returnedSeed: number | null = null;
       
       if (isRealMode) {
-        // REAL mode: Generate image with Runware API
+        // REAL mode: Generate image with Runware API + ReliabilityManager
         try {
-          console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5B`);
-          const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+          console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5B with unified reliability stack`);
+          
+          // Load ReliabilityManager (vendor-first, falls back to shared, handles null)
+          const rm = await getReliabilityManager();
+          
+          // Execute with unified reliability stack (includes circuit breaker, deduplication, LKG)
+          const runwareResult = rm ? await rm.executeResilient(
+            positivePrompt.substring(0, 100), // operationKey for deduplication
+            () => callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' }),
+            {
+              functionName: 'runware-template-ab',
+              sessionId,
+              tier: 'TIER_2.5B',
+              quality: 'high',
+              timeout: 20000
+            }
+          ) : await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+          
           imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL; // ✅ Handle object response
           returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
           console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });

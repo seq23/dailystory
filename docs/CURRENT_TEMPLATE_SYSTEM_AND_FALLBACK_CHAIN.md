@@ -2,8 +2,22 @@
 
 ## Document Status
 **Created**: October 7, 2025  
-**Last Updated**: October 9, 2025  
+**Last Updated**: October 13, 2025  
 **Purpose**: Document the complete fallback architecture for story generation
+
+## ReliabilityManager Protection Across All Tiers (Updated 2025-10-13)
+
+All template tiers now use ReliabilityManager for Runware API calls:
+
+- **Template-CD (Tier 2.5C/D)**: Lines 831-852 - Wraps all Runware calls
+- **Template-AB Mode A (Tier 2.5A)**: Lines 1264-1274 - Full CCS with reliability
+- **Template-AB Mode B (Tier 2.5B)**: Lines 1384-1398 - Simple scene with reliability (added 2025-10-13)
+
+Each tier gets:
+- Circuit breaker (opens after 5 failures, 45s cooldown)
+- Request deduplication (by prompt hash)
+- LKG cache (returns cached images when API fails)
+- 20-second timeout with retries
 
 ---
 
