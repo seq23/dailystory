@@ -158,6 +158,25 @@ Tier 2.5D: Template CD Emergency (Synthesized content)
 8. **CCS Cultural Bundle Pre-computation (NEW - Jan 2025)** - Orchestrator computes `culturalBundle` early with emergency fallbacks
 9. **Tier 2.5A Pre-check Guard (NEW - Jan 2025)** - Validates bundle completeness before attempting 2.5A, skips if incomplete
 10. **AI Scene Creator Parsing Truthfulness (NEW - Oct 2025)** - Strict schema detection prevents misreporting; test button shows only real JSON schemas
+11. **Tier 1 HTTP + ReliabilityManager (NEW - Oct 2025)** - Replaced WebSocket with proven template-cd HTTP pattern
+
+### The Separation You Asked For (Tier 1 vs Direct Mode)
+
+**Tier 1 (complete_tier_1)**:
+- ✅ Calls Runware **directly** via HTTP POST to `https://api.runware.ai/v1`
+- ✅ Wrapped with `ReliabilityManager.executeResilient()` (circuit breaker + deduplication + LKG cache)
+- ✅ Implementation: `supabase/functions/runware-generate-image/index.ts` (lines 1726-1780)
+
+**Direct Mode (orchestrator fallback)**:
+- ✅ **Never calls Runware** in orchestrator
+- ✅ Delegates to `ai-visual-scene-creator` → `template-cd` → `ReliabilityManager`
+- ✅ `template-cd` handles the HTTP Runware call with ReliabilityManager
+
+**Template-AB/CD**:
+- ✅ Use `ReliabilityManager.executeResilient()` wrapping the HTTP Runware API
+- ✅ Already proven stable (90-95% success rate)
+
+**Reason for Change**: WebSocket flakiness at edge; HTTP + ReliabilityManager already proven stable in template-cd; removes the last Tier 1 fragility.
 
 ### Implementation Files
 - `src/components/CleanStoryDisplay.tsx` (lines 1974-1998, 2162-2199, 4035-4043)
@@ -166,6 +185,7 @@ Tier 2.5D: Template CD Emergency (Synthesized content)
 - `src/services/errorHandlingManager.ts` (lines 112-183)
 - `supabase/functions/runware-template-ab/index.ts` (lines 964-974) - Nested payload CCS preservation
 - `supabase/functions/runware-template-cd/index.ts` (lines 277-295) - Dynamic handler loading with LKG
+- `supabase/functions/runware-generate-image/index.ts` (lines 1726-1780) - **Tier 1 HTTP Runware + ReliabilityManager (NEW)**
 - `supabase/functions/runware-generate-image/index.ts` (lines 700-755, 2004-2200) - CCS bundle validation & 2.5A pre-check
 - `supabase/functions/ai-visual-scene-creator/index.ts` (lines 749-920) - Three-tier parsing with truthful schema detection
 

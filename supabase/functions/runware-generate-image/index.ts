@@ -1,7 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-13-RUNWARE-IMPORT-FIX
-// Last deployed: 2025-10-13 13:00 UTC
-// Changes: Fixed Tier 1 Runware imports to use correct .js paths with vendor-first fallback
-// Previous: v2025-10-13-CCS-BUNDLE-INCLUDE
+// 🚀 DEPLOYMENT MARKER: v2025-10-13-TIER1-HTTP-RELIABILITY
+// Last deployed: 2025-10-13 13:30 UTC
+// Changes: Replaced Tier 1 WebSocket with HTTP Runware API + ReliabilityManager (proven template-cd pattern)
+// Previous: v2025-10-13-RUNWARE-IMPORT-FIX
 
 // Standard imports for Supabase edge functions
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
@@ -1723,40 +1723,93 @@ const executeTier1: TierFn = async (ctx) => {
       };
     }
     
-    // 6. Generate image with RunwareWebSocketService (vendor-first via memoizedImport)
-    let RunwareWebSocketService;
-    try {
-      // memoizedImport tries: network CDN → vendor bundle → shared fallback
-      const module = await ctx.memoizedImport("../_shared/RunwareWebSocketService.js");
-      RunwareWebSocketService = module.RunwareWebSocketService;
-    } catch (error) {
-      console.error('❌ Failed to load RunwareWebSocketService from _shared, trying _vendor fallback');
-      // Explicit vendor fallback if memoizedImport fails entirely
-      const module = await import("../_vendor/RunwareWebSocketService.js");
-      RunwareWebSocketService = module.RunwareWebSocketService;
-    }
-    
-    if (!RunwareWebSocketService || typeof RunwareWebSocketService.generateImage !== 'function') {
-      return { ok: false, code: "T1_SERVICE_UNAVAILABLE", reason: "RunwareWebSocketService not functional" };
-    }
+    // 6. Generate image with HTTP Runware API + ReliabilityManager (proven template-cd pattern)
+    console.log('🎨 Tier 1: Generating image via ReliabilityManager + HTTP');
     
     const runwareApiKey = Deno.env.get("RUNWARE_API_KEY");
     if (!runwareApiKey) {
       return { ok: false, code: "T1_NO_API_KEY", reason: "Runware API key not configured" };
     }
     
-    // 7. Call Runware directly (complete_tier_1 path only - Direct Mode uses template escalation)
-    const imageResult: any = await RunwareWebSocketService.generateImage({
-      apiKey: runwareApiKey,
-      positivePrompt: tier1Result.enhancedPrompt,
-      negativePrompt: tier1Result.negativePrompt || "",
-      width: 1024,
-      height: 1024,
-      model: "runware:100@1",
-      numberResults: 1,
-      outputFormat: "WEBP",
-      timeout: 25000,
-    });
+    // Inline HTTP Runware call (copied from template-cd for reliability)
+    const callRunwareAPI = async (positivePrompt: string, negativePrompt: string, retries = 2) => {
+      console.log('🌐 Calling Runware API via HTTP...');
+      
+      for (let attempt = 1; attempt <= retries + 1; attempt++) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        
+        try {
+          const response = await fetch('https://api.runware.ai/v1', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify([
+              {
+                taskType: "authentication",
+                apiKey: runwareApiKey.trim()
+              },
+              {
+                taskType: "imageInference",
+                taskUUID: crypto.randomUUID(),
+                positivePrompt: positivePrompt,
+                negativePrompt: negativePrompt,
+                width: 1024,
+                height: 1024,
+                model: "runware:100@1",
+                numberResults: 1,
+                outputFormat: "WEBP",
+                steps: 25,
+                CFGScale: 8
+              }
+            ])
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const result = await response.json();
+          const imageData = result.data?.find((item: any) => item.taskType === 'imageInference');
+
+          if (!imageData?.imageURL) {
+            throw new Error('No image URL in API response');
+          }
+
+          console.log('✅ Runware API call successful');
+          clearTimeout(timeoutId);
+          return { success: true, imageURL: imageData.imageURL };
+          
+        } catch (error: any) {
+          clearTimeout(timeoutId);
+          if (attempt === retries + 1) throw error;
+          console.warn(`⚠️ Runware attempt ${attempt} failed:`, error.message);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
+    };
+    
+    // 7. Wrap with ReliabilityManager for circuit breaker + deduplication + LKG
+    let imageResult: any;
+    const rm = await getReliabilityManager();
+    
+    if (rm) {
+      console.log('🔐 [RELIABILITY_MANAGER] Tier 1 using consolidated reliability stack');
+      imageResult = await rm.executeResilient(
+        tier1Result.enhancedPrompt.substring(0, 100), // operationKey for deduplication
+        () => callRunwareAPI(tier1Result.enhancedPrompt, tier1Result.negativePrompt || ""),
+        {
+          functionName: 'runware-generate-image',
+          sessionId: ctx.payload.sessionId || 'tier1-session',
+          tier: 'COMPLETE_TIER_1',
+          quality: 'high',
+          timeout: 25000
+        }
+      );
+    } else {
+      console.warn('⚠️ ReliabilityManager unavailable, calling Runware HTTP directly');
+      imageResult = await callRunwareAPI(tier1Result.enhancedPrompt, tier1Result.negativePrompt || "");
+    }
     
     if (!imageResult?.success || !imageResult?.imageURL) {
       return { ok: false, code: "T1_IMAGE_FAILED", reason: "Image generation failed" };
