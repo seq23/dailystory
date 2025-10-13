@@ -1175,10 +1175,8 @@ async function processInlinedTier1(
   } else {
     try {
       logTier1Step("AI Scene Creator Call", "attempt", "Invoking ai-visual-scene-creator");
-      const { createVendorFirstSupabaseClient } = await memoizedImport("./resilientLoader.js");
-      const supabase = await createVendorFirstSupabaseClient();
-
-      // Use raw fetch with proper AbortController signal (supabase.functions.invoke ignores signal)
+      
+      // Use raw fetch with proper AbortController signal (no Supabase client needed)
       const aiController = new AbortController();
       const aiTimeout = setTimeout(() => aiController.abort(), 25000); // CHANGED: 15s → 25s for AI processing
       
