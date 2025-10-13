@@ -484,7 +484,7 @@ function generateTier25C(storyText: string, userInfo: any, avatarIdentity: any, 
   };
 }
 
-function generateTier25D(storyText: any, userInfo: any, avatarIdentity: any, failedTierData: any) {
+function generateTier25D(userInfo: any, avatarIdentity: any, failedTierData: any) {
   console.log('🎯 Tier 2.5D: Generating Ultimate Emergency Fallback');
   
   const styleFramework = getNuclearStyleFramework('medium');
@@ -825,7 +825,7 @@ async function handleRequest(req: Request) {
         templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {}, payload.primaryScene || null);
       } else {
         console.log('🚀 Processing Tier 2.5D: Ultimate emergency fallback');
-        templateResult = generateTier25D(storyText, userInfo, avatarIdentity, failedTierData || {});
+        templateResult = generateTier25D(userInfo, avatarIdentity, failedTierData || {});
       }
 
       console.log('🎨 Template CD: Generating image with Runware API via ReliabilityManager');

@@ -1815,7 +1815,7 @@ export const ImageTierTester = () => {
             protectionNegatives: [],
             forceCompleteTier1: true, // Force Enhanced Character-First Flow - STOP on failure
             skipTier1AI: false, // Use real AI scene extraction
-            test: true
+            test: false
           }
         : tier === '2.5A'
         ? {
@@ -1864,7 +1864,7 @@ export const ImageTierTester = () => {
               ccsMethodsRun: ["characterSeed", "culturalBundle", "latestClothing"],
               source: 'force_test_mock'
             },
-            test: true
+            test: false
           }
         : tier === '2.5B'
         ? {

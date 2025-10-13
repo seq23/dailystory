@@ -153,8 +153,7 @@ export function BatchTemplateTest() {
             edgeFunction: 'runware-template-cd',
             payload: (basePayload: any) => ({
               ...basePayload,
-              templateComplexity: 'C',
-              test: true
+              templateComplexity: 'C'
             })
           },
           {
@@ -163,18 +162,18 @@ export function BatchTemplateTest() {
             edgeFunction: 'runware-generate-image',
             payload: (basePayload: any) => ({
               ...basePayload,
-              directMode: true,
-              test: true
+              directMode: true
             })
           },
           {
-            name: 'Tier 1 (AI Generation)',
+            name: 'Tier 1 (Enhanced Character-First)',
             testMode: 'tier1',
             edgeFunction: 'runware-generate-image',
             payload: (basePayload: any) => ({
               ...basePayload,
-              skipDirectlyToTier: '1',
-              test: true
+              forceCompleteTier1: true,
+              skipTier1AI: false,
+              test: false
             })
           },
           {
@@ -191,8 +190,7 @@ export function BatchTemplateTest() {
               sessionId: `batch-test-2.5a-${Date.now()}`,
               pageNumber: 1,
               templateComplexity: 'A',
-              precomputedCCS: mockFullCCS,
-              test: true
+              precomputedCCS: mockFullCCS
             })
           },
           {
@@ -209,8 +207,7 @@ export function BatchTemplateTest() {
               sessionId: `batch-test-2.5b-${Date.now()}`,
               pageNumber: 1,
               templateComplexity: 'B',
-              precomputedCCS: mockPartialCCS,
-              test: true
+              precomputedCCS: mockPartialCCS
             })
           },
           {
@@ -219,8 +216,7 @@ export function BatchTemplateTest() {
             edgeFunction: 'runware-template-cd',
             payload: (basePayload: any) => ({
               ...basePayload,
-              templateComplexity: 'C',
-              test: true
+              templateComplexity: 'C'
             })
           },
           {
@@ -238,8 +234,7 @@ export function BatchTemplateTest() {
               sessionId: `batch-test-2.5d-${Date.now()}`,
               pageNumber: 1,
               templateComplexity: 'D',
-              emergencyMode: true,
-              test: true
+              emergencyMode: true
             })
           }
         ];
