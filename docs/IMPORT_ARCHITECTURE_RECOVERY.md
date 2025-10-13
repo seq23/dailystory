@@ -209,6 +209,28 @@ graph TD
 - Verification: Expect `✅ [CCS_INLINE] CCS loaded via URL import` and no `ERR_MODULE_NOT_FOUND` for `CharacterConsistencyServiceInline.js`.
 - Impact: Slightly larger bundle; robust Tier 1. No API/behavioral changes.
 
+## **Runware Import Fix (2025-10-13)**
+
+**Issue:** Orchestrator Tier 1 trying to import consolidated/removed modules with wrong file extensions.
+
+**Root Cause:** 
+- Trying to import `_shared/ResilientRunwareWebSocket.ts` (removed during consolidation)
+- Trying to import `_shared/RunwareWebSocketService.ts` (wrong extension, should be `.js`)
+
+**Solution:** Updated orchestrator to import `_shared/RunwareWebSocketService.js` directly via `memoizedImport` (vendor-first logic) with explicit `_vendor/` fallback.
+
+**Key Changes:**
+- Removed attempt to import non-existent `ResilientRunwareWebSocket.ts`
+- Fixed file extension from `.ts` to `.js` for `RunwareWebSocketService`
+- Direct call to `RunwareWebSocketService.generateImage()` (no wrapper needed)
+- Only runs for `complete_tier_1` path (Direct Mode uses template escalation via `ai-visual-scene-creator`)
+
+**Verification:** Expect `✅ RunwareWebSocketService loaded` and no `ERR_MODULE_NOT_FOUND` for Runware imports.
+
+**Impact:** Tier 1 functional; vendor-first latency (~5ms) vs network fallback (~7-28s).
+
+**Deployment Marker:** `v2025-10-13-RUNWARE-IMPORT-FIX`
+
 ## **Future Architecture Guidelines**
 
 ### **DO** ✅
