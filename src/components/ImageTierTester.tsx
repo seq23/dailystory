@@ -288,6 +288,91 @@ export const ImageTierTester = () => {
     }
   };
 
+  /**
+   * Extract CCS data from test story text (mimics production CCS method extraction logic)
+   * Matches behavior of analyzeVisualDetails and detectAllCharacters
+   */
+  const extractCCSFromTestStory = (storyText: string, userInfo: any) => {
+    // Extract clothing items (look for "wore", "wearing", "dressed in")
+    const clothingMatches = storyText.match(/(?:wore|wearing|dressed in)\s+(?:her|his|their)?\s*(?:favorite\s+)?([^.]+)/i);
+    const outfit = clothingMatches ? clothingMatches[1].trim() : "casual outfit";
+    
+    // Extract colored objects (look for color + noun patterns)
+    const coloredObjectsMatches = storyText.matchAll(/\b(red|blue|green|yellow|brown|black|white|golden|silver|emerald|magical)\s+([a-z]+)/gi);
+    const coloredObjects: string[] = [];
+    for (const match of coloredObjectsMatches) {
+      // Skip clothing items
+      if (!match[0].toLowerCase().includes('dress') && 
+          !match[0].toLowerCase().includes('shirt') && 
+          !match[0].toLowerCase().includes('pants') &&
+          !match[0].toLowerCase().includes('jeans')) {
+        coloredObjects.push(match[0]);
+      }
+    }
+    
+    // Extract setting (first clause or sentence)
+    const settingMatch = storyText.match(/^([^.]+?)(?:\s+where|\.|$)/i);
+    const sessionSetting = settingMatch ? settingMatch[1].trim() : "adventure scene";
+    
+    // Detect secondary characters (look for capitalized names)
+    const names = storyText.match(/\b[A-Z][a-z]+\b/g) || [];
+    const primaryName = userInfo?.name || 'TestChild';
+    const secondaryCharacters = names.filter(n => 
+      n !== primaryName && 
+      n !== 'Emma' && // Filter out test story character
+      n.length > 2 // Avoid single letters or short words
+    );
+    
+    console.log('📖 Extracted CCS from test story:', {
+      outfit,
+      coloredObjects,
+      sessionSetting,
+      secondaryCharacters
+    });
+    
+    return {
+      characterSeed: {
+        primaryCharacter: {
+          name: userInfo?.name || 'TestChild',
+          age: userInfo?.age || 8,
+          skinTone: userInfo?.skinTone || "light",
+          hairColor: userInfo?.hairColor || "brown",
+          hairStyle: userInfo?.hairStyle || "short",
+          eyeColor: userInfo?.eyeColor || "brown"
+        }
+      },
+      culturalBundle: {
+        culturalContext: userInfo?.culturalContext || "Western",
+        appropriateImagery: ["playground", "school", "park", "forest"],
+        hair: `${userInfo?.hairColor || "brown"} ${userInfo?.hairStyle || "short"} hair`,
+        features: `${userInfo?.skinTone || "light"} skin tone with warm expression`
+      },
+      latestClothing: {
+        outfit: outfit
+      },
+      coloredObjects: coloredObjects.length > 0 ? coloredObjects : ["small object"],
+      mainCharacterAppearance: `young child with ${userInfo?.hairColor || "brown"} hair`,
+      secondaryCharacters: secondaryCharacters,
+      sessionSetting: sessionSetting,
+      structuredAvatarData: {
+        skinTone: userInfo?.skinTone || "light",
+        hairColor: userInfo?.hairColor || "brown",
+        eyeColor: userInfo?.eyeColor || "brown"
+      },
+      secondaryCharacterSeeds: [],
+      detectedAnimals: [],
+      tier1Complete: true,
+      ccsMethodsRun: [
+        "characterSeed", 
+        "culturalBundle", 
+        "latestClothing", 
+        "analyzeVisualDetails", 
+        "detectAllCharacters"
+      ],
+      source: 'extracted_from_test_story'
+    };
+  };
+
   // SVG Fallback Generation - Final tier when all else fails
   const generateSVGFallback = async (userInfo: any, prompt: string) => {
     try {
@@ -1819,7 +1904,7 @@ export const ImageTierTester = () => {
           }
         : tier === '2.5A'
         ? {
-            // Direct call to template-ab with mock CCS (bypass orchestrator)
+            // Direct call to template-ab with CCS extracted from test story
             pageText: enhancedPrompt,
             storyText: enhancedPrompt,
             userInfo: {
@@ -1829,41 +1914,7 @@ export const ImageTierTester = () => {
             sessionId: `force-2.5a-${Date.now()}`,
             pageNumber: 1,
             templateComplexity: 'A',
-            precomputedCCS: {
-              characterSeed: {
-                primaryCharacter: {
-                  name: userInfo?.name || 'TestChild',
-                  age: userInfo?.age || 8,
-                  skinTone: userInfo?.skinTone || "light",
-                  hairColor: "brown",
-                  hairStyle: "short curly",
-                  eyeColor: "brown"
-                }
-              },
-              culturalBundle: {
-                culturalContext: "Western",
-                appropriateImagery: ["playground", "school", "park"],
-                hair: "platinum blonde hair with natural highlights",
-                features: "light peachy skin tone with warm glow and bright smile"
-              },
-              latestClothing: {
-                outfit: "blue t-shirt and jeans"
-              },
-              coloredObjects: ["red backpack", "yellow ball"],
-              mainCharacterAppearance: "young child with brown hair",
-              secondaryCharacters: [],
-              sessionSetting: "outdoor adventure",
-              structuredAvatarData: {
-                skinTone: userInfo?.skinTone || "light",
-                hairColor: "brown",
-                eyeColor: "brown"
-              },
-              secondaryCharacterSeeds: [],
-              detectedAnimals: [],
-              tier1Complete: true,
-              ccsMethodsRun: ["characterSeed", "culturalBundle", "latestClothing"],
-              source: 'force_test_mock'
-            },
+            precomputedCCS: extractCCSFromTestStory(enhancedPrompt, userInfo),
             test: false
           }
         : tier === '2.5B'
@@ -3199,14 +3250,19 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                 fallbackPath = 'TIER_1_COMPLETE_ORCHESTRATOR';
                 
               } else if (is2_5A) {
-                // Force 2.5A: Call template-ab with complexity A
+                // Force 2.5A: Call template-ab with complexity A + CCS extracted from test story
                 const displayPayload = {
                   pageText: scenario.payload.pageText,
                   storyText: scenario.payload.storyText,
                   userInfo: scenario.payload.userInfo,
                   sessionId: `${scenario.payload.sessionId}-2.5a-display`,
                   pageNumber: scenario.payload.pageNumber || 1,
-                  templateComplexity: 'A'
+                  templateComplexity: 'A',
+                  precomputedCCS: extractCCSFromTestStory(
+                    scenario.payload.storyText || scenario.payload.pageText, 
+                    scenario.payload.userInfo
+                  ),
+                  test: false
                 };
                 
                 const abRes = await supabase.functions.invoke('runware-template-ab', { 
@@ -3216,7 +3272,7 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                 imageURL = abRes.data?.imageURL 
                   || abRes.data?.templateData?.imageURL;
                 primaryScene = undefined; // Templates don't extract primaryScene
-                fallbackPath = 'TEMPLATE_2.5A';
+                fallbackPath = 'TEMPLATE_2.5A_WITH_EXTRACTED_CCS';
               }
               
               scenarioResult = {
