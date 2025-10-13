@@ -876,9 +876,89 @@ async function processInlinedTier1(
     });
   }
 
-  // Generate structured avatar data using centralized method (single source of truth)
-  // ============= BATCH FETCH ALL CCS DATA (1 DB CALL) =============
-  logTier1Step("Batch CCS Fetch", "attempt", "Fetching all CCS data in single call");
+  // ============= CHECK FOR PRECOMPUTED CCS (FRONTEND MOCK DATA) =============
+  // If precomputedCCS is provided AND skipTier1AI is true, use frontend mock data
+  // This allows Force Tier 1 tests to skip expensive CCS method calls
+  if (payload.precomputedCCS && payload.skipTier1AI) {
+    console.log(`🎯 [FORCE_TEST_MODE] Using precomputedCCS from frontend (skipping all CCS methods)`, {
+      hasCharacterSeed: !!payload.precomputedCCS.characterSeed,
+      hasCulturalBundle: !!payload.precomputedCCS.culturalBundle,
+      hasLatestClothing: !!payload.precomputedCCS.latestClothing,
+      hasPrimaryScene: !!payload.precomputedCCS.primaryScene,
+      coloredObjectsCount: payload.precomputedCCS.coloredObjects?.length || 0,
+      source: payload.precomputedCCS.source
+    });
+    
+    // Unpack precomputed CCS data directly (no DB calls)
+    characterSeed = payload.precomputedCCS.characterSeed;
+    culturalBundle = payload.precomputedCCS.culturalBundle;
+    coloredObjects = Array.isArray(payload.precomputedCCS.coloredObjects) 
+      ? payload.precomputedCCS.coloredObjects.join(', ')
+      : payload.precomputedCCS.coloredObjects || '';
+    secondaryCharacters = payload.precomputedCCS.secondaryCharacters || [];
+    mainCharacterAppearance = payload.precomputedCCS.mainCharacterAppearance || `young child with ${userInfo?.hairColor || "brown"} hair`;
+    
+    // Use structuredAvatarData from precomputedCCS or create minimal fallback
+    const structuredAvatarData = payload.precomputedCCS.structuredAvatarData || {
+      skinTone: userInfo?.skinTone || "light",
+      hairColor: userInfo?.hairColor || "brown",
+      eyeColor: userInfo?.eyeColor || "brown"
+    };
+    
+    // Create avatarIdentity for template building
+    const avatarIdentity = {
+      name: characterName,
+      type: userInfo?.avatar?.type || "child",
+      skinTone: structuredAvatarData.skinTone
+    };
+    
+    // Use primaryScene from precomputedCCS (frontend mock)
+    const primaryScene = payload.precomputedCCS.primaryScene?.headline || 
+      `${characterName} in ${payload.precomputedCCS.sessionSetting || 'adventure'}`;
+    
+    // Use latestClothing from precomputedCCS
+    const latestClothing = payload.precomputedCCS.latestClothing?.outfit;
+    
+    // Empty arrays for secondary data (not needed for Force Tier 1 test)
+    const secondaryCharacterSeeds: any[] = [];
+    const detectedAnimals: string[] = [];
+    const sessionSetting = payload.precomputedCCS.sessionSetting || 'adventure scene';
+    
+    // Build minimal aiSchema (not used in Force Tier 1 but needed for template structure)
+    const aiSchema = {
+      backgroundColor: '',
+      lighting: '',
+      composition: '',
+      mood: '',
+      visualElements: '',
+      sceneSettings: '',
+      atmosphericDetails: ''
+    };
+    
+    console.log(`✅ [FORCE_TEST_MODE] Precomputed CCS unpacked successfully - skipped 7 CCS method calls`, {
+      tier1Complete: true,
+      ccsMethodsSkipped: [
+        'batchFetchCCSData',
+        'getStructuredAvatarData',
+        'getEnhancedCharacterSeed',
+        'analyzeVisualDetails',
+        'detectAllCharacters',
+        'getSecondaryCharactersForSession',
+        'detectSimpleAtmosphere'
+      ],
+      timeSaved: '~2-4 seconds'
+    });
+    
+    logTier1Step("Precomputed CCS", "success", "Using frontend mock CCS (7 methods skipped)");
+    
+    // SKIP TO TEMPLATE BUILDING - jump directly to template construction
+    // Variables are now populated with mock data, continue to template building below
+    
+  } else {
+    // Original CCS pipeline - run all CCS methods
+    // Generate structured avatar data using centralized method (single source of truth)
+    // ============= BATCH FETCH ALL CCS DATA (1 DB CALL) =============
+    logTier1Step("Batch CCS Fetch", "attempt", "Fetching all CCS data in single call");
 
   let batchCCSData;
   try {
@@ -1287,6 +1367,7 @@ async function processInlinedTier1(
       throw new Error("NO_PRIMARY_SCENE_ESCALATE_TO_25A");
     }
   }
+  } // End of else block for original CCS pipeline
 
   // ============================================================================
   // PHASE 3: POST-AI CONSISTENCY VALIDATION
