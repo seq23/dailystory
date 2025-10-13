@@ -2019,7 +2019,7 @@ const executeDirectMode: TierFn = async (ctx) => {
       let ccs: any;
       try {
         console.log(`📦 [FULL_CCS_VALIDATION] Loading CharacterConsistencyServiceInline.js dynamically`);
-        const ccsModule = await ctx.memoizedImport("./CharacterConsistencyServiceInline.js");
+        const ccsModule = await ctx.memoizedImport("../runware-generate-image/CharacterConsistencyServiceInline.js");
         ccs = ccsModule.characterConsistencyService;
         console.log(`✅ [FULL_CCS_VALIDATION] CharacterConsistencyService loaded successfully`);
       } catch (importError) {
