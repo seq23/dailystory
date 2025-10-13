@@ -37,6 +37,7 @@ These documents contain hardcoded business requirements and cultural authenticit
 2. **AUTHENTICATION_MODEL.md** - Core auth business logic
 3. **VOCABULARY_COMPLIANCE_PROMPTS.md** - Reading level compliance
 4. **COMPREHENSIVE_SYSTEM_REFERENCE.md** - Complete system reference
+5. **MAINTENANCE_CADENCE.md** - System maintenance procedures and schedules
 
 ---
 

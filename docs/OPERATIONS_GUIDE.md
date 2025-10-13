@@ -25,6 +25,7 @@
   - [4.2 Error Trends](#42-error-trends)
   - [4.3 Prevention Measures](#43-prevention-measures)
 - [5. Monitoring & Metrics](#5-monitoring--metrics)
+- [5.1 System Maintenance Procedures](#51-system-maintenance-procedures)
 - [6. Future Implementation Roadmap](#6-future-implementation-roadmap)
   - [6.1 Critical Functions - createLocalSupabaseClient() Migration](#61-critical-functions---createlocalsupabaseclient-migration)
   - [6.2 UI/UX Improvements Roadmap](#62-uiux-improvements-roadmap)
@@ -857,6 +858,54 @@ deno eval 'import("./vendor/character-consistency.bundled.js").then(m=>console.l
 
 **Estimated Effort:** 3-4 days  
 **Priority:** Implement after UI Phase 4 completion
+
+---
+
+[↑ Back to Top](#operations-guide) | [📋 TOC](#table-of-contents)
+
+---
+
+## 5.1 System Maintenance Procedures
+
+### Complete Maintenance Guide
+
+For comprehensive maintenance procedures, see:
+**📋 [MAINTENANCE_CADENCE.md](./MAINTENANCE_CADENCE.md) - Complete System Maintenance Guide**
+
+This guide includes:
+- Daily, weekly, monthly, and quarterly maintenance tasks
+- Database cleanup procedures
+- API key management
+- Security & compliance checks
+- Performance optimization
+- Hiatus recovery checklist
+
+### Quick Maintenance Summary
+
+| Frequency | Duration | Key Activities |
+|-----------|----------|----------------|
+| Daily | < 5 min | Health checks, API quota monitoring |
+| Weekly | < 30 min | Database cleanup, tier testing |
+| Monthly | 1-2 hrs | Comprehensive audits, security reviews |
+| Quarterly | Half day | Strategic reviews, full system audits |
+
+### Database Cleanup Functions
+
+Run these functions regularly:
+
+```sql
+-- Weekly
+SELECT cleanup_expired_sessions();
+SELECT cleanup_old_debug_logs();
+
+-- Monthly
+SELECT comprehensive_security_cleanup();
+
+-- Quarterly
+SELECT purge_old_incidents();
+```
+
+For complete procedures and schedules, see [MAINTENANCE_CADENCE.md](./MAINTENANCE_CADENCE.md).
 
 ---
 

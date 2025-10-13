@@ -26,6 +26,7 @@
 - [5. Implementation History](#5-implementation-history)
 - [6. Success Metrics & KPIs](#6-success-metrics--kpis)
 - [7. Security & Compliance](#7-security--compliance)
+- [8. System Maintenance](#8-system-maintenance)
 - [📚 Related Documentation](#related-documentation)
 
 ---
@@ -802,6 +803,49 @@ Tier 4 → ErrorHandlingManager (NEVER FAILS)
 - **Performance Monitoring:** Real-time system health tracking
 - **Security Alerts:** Automatic incident detection
 - **Usage Analytics:** User behavior tracking (privacy-compliant)
+
+[↑ Back to Top](#master-system-guide) | [📋 TOC](#table-of-contents)
+
+---
+
+## 8. System Maintenance
+
+### Overview
+
+For complete maintenance procedures, schedules, and recovery checklists, see:
+**📋 [MAINTENANCE_CADENCE.md](./MAINTENANCE_CADENCE.md) - System Maintenance Guide**
+
+### Quick Reference
+
+**Daily Tasks (< 5 minutes):**
+- Monitor system health dashboard
+- Check API quota usage
+- Verify tier cascade functionality
+
+**Weekly Tasks (< 30 minutes):**
+- Run database cleanup functions
+- Test tier systems
+- Review monitoring logs
+
+**Monthly Tasks (1-2 hours):**
+- Comprehensive database cleanup
+- System audits across all tiers
+- Security reviews
+
+**Quarterly Tasks (Half day):**
+- Strategic system reviews
+- Full security audits
+- Performance optimization
+
+### After Extended Hiatus
+
+If returning after a long break, **start here:**
+1. Read [MAINTENANCE_CADENCE.md](./MAINTENANCE_CADENCE.md) Section 0 (Hiatus Recovery Checklist)
+2. Review system health dashboard
+3. Run database cleanup functions
+4. Test all critical systems
+
+See the [complete maintenance guide](./MAINTENANCE_CADENCE.md) for detailed procedures.
 
 [↑ Back to Top](#master-system-guide) | [📋 TOC](#table-of-contents)
 
