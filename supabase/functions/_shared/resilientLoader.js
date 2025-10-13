@@ -140,26 +140,39 @@ export async function memoizedImport(path) {
  * Attempt import with timeout protection and CDN fallbacks
  */
 async function attemptImportWithTimeoutAndFallbacks(path) {
-  // Special case for local _shared modules - try direct import first
-  if (path.startsWith('../_shared/') || path.startsWith('./_shared/') || path.startsWith('_shared/')) {
-    console.log(`📦 [LOCAL_MODULE] Attempting direct import: ${path}`);
+  // Special case for local modules - try direct import first (handles ./, ../, and _shared/ paths)
+  if (path.startsWith('../') || path.startsWith('./') || path.startsWith('_shared/')) {
+    const pathType = path.startsWith('./_shared/') || path.startsWith('_shared/') 
+      ? 'SHARED_MODULE' 
+      : 'LOCAL_MODULE';
+    
+    console.log(`📦 [${pathType}] Attempting direct import: ${path}`);
+    console.log(`📦 [${pathType}] Full path for debugging:`, path);
+    
     try {
       const result = await timeoutImport(path);
-      console.log(`✅ [LOCAL_MODULE] Successfully imported: ${path}`);
+      console.log(`✅ [${pathType}] Successfully imported: ${path}`);
       return result;
     } catch (error) {
-      console.error(`❌ [LOCAL_MODULE] Failed to import ${path}:`, error);
+      console.error(`❌ [${pathType}] Failed to import ${path}`);
+      console.error(`❌ [${pathType}] Error details:`, {
+        message: error.message,
+        name: error.name,
+        code: error.code
+      });
+      
       // Try with .js extension if not already present
       if (!path.endsWith('.js') && !path.endsWith('.ts')) {
         try {
           const jsPath = path + '.js';
-          console.log(`📦 [LOCAL_MODULE] Retrying with .js extension: ${jsPath}`);
+          console.log(`📦 [${pathType}] Retrying with .js extension: ${jsPath}`);
           return await timeoutImport(jsPath);
         } catch (jsError) {
-          console.error(`❌ [LOCAL_MODULE] .js retry also failed:`, jsError);
+          console.error(`❌ [${pathType}] .js retry also failed:`, jsError.message);
         }
       }
-      throw new Error(`Local module not found: ${path} - ${error.message}`);
+      
+      throw new Error(`${pathType} not found: ${path} - ${error.message}`);
     }
   }
   
