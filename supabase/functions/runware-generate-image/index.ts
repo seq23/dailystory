@@ -580,65 +580,60 @@ async function bindTierLogger(
       return createConsoleOnlyLogger(isProd);
     }
 
-    // Removed: tierLogging validation - using console-only logger (tierLogging.js doesn't exist)
+    // Import new logging architecture
+    const { UniversalLogger, logTier } = await import('../_shared/UniversalLogger.ts');
+    const { DatabaseLogAdapter } = await import('../_shared/DatabaseLogAdapter.ts');
 
     supabaseClient = await createVendorFirstSupabaseClient();
+    
+    // Initialize database adapter
+    const dbAdapter = new DatabaseLogAdapter(supabaseClient, logSampleRate);
+    UniversalLogger.setDatabaseAdapter(dbAdapter);
+    
+    console.log(`📊 [TIER_LOGGER] Initialized with ${logSampleRate * 100}% sampling (new architecture: ✅)`);
 
-    // Sampling helper: only log to DB if sampled or failure
-    const shouldLogToDB = (status: string = "info") => {
-      if (status === "failed" || status === "failure") return true; // Always log failures
-      if (debugTierSample === "1") return true; // Force 100% when DEBUG_TIER_LOG_SAMPLE=1 explicitly set
-      if (logSampleRate >= 1.0) return true; // Full logging for other 100% rates
-      return Math.random() < logSampleRate; // Sample for success/info logs
-    };
-
-    // Wrap logging functions with PII redaction, sampling, and NO-THROW guarantee
-    const wrapWithRedactionAndSampling =
-      (fn: Function) =>
-      (msg: string, ctx: any = {}) => {
-        const safeCtx = isProd ? redactPII(ctx) : ctx;
-
-        // Always console log
-        console.log(`[TIER_LOG] ${msg}`, safeCtx);
-
-        // Conditionally log to DB (sample or failure) - wrapped to NEVER throw
-        const status = String(safeCtx.status || "info");
-        if (shouldLogToDB(status)) {
-          try {
-            return fn(msg, safeCtx, supabaseClient, sessionId, requestId);
-          } catch (dbError) {
-            console.warn(`⚠️ [TIER_LOG] DB insert failed (non-fatal):`, dbError);
-          }
-        }
-      };
-
-    // ✅ NUCLEAR FIX: Helper for console-only fallback in return statement
-    const wrapConsoleWithRedaction = (prefix: string) => {
-      return (msg: string, ctx: any = {}) => {
-        const safeCtx = isProd ? redactPII(ctx) : ctx;
-        console.log(`[${prefix}] ${msg}`, safeCtx);
-      };
-    };
-
-    // Use console-only logger (tierLogging.js doesn't exist, fallback is complete)
+    // Return logger interface using UniversalLogger
     return {
-      t1: wrapConsoleWithRedaction("T1"),
-      t2: wrapConsoleWithRedaction("T2"),
-      attempt: (tier, ctx = {}) => {
+      t1: (msg: string, ctx: any = {}) => {
+        const safeCtx = isProd ? redactPII(ctx) : ctx;
+        logTier(sessionId, 'tier-1', 'success', msg, {
+          ...safeCtx,
+          requestId,
+          edgeFunction: 'runware-generate-image'
+        });
+      },
+      t2: (msg: string, ctx: any = {}) => {
+        const safeCtx = isProd ? redactPII(ctx) : ctx;
+        logTier(sessionId, 'tier-2.5', 'success', msg, {
+          ...safeCtx,
+          requestId,
+          edgeFunction: 'runware-generate-image'
+        });
+      },
+      attempt: (tier: string, ctx: any = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
         console.log(`[${tier}] Attempting`, safeCtx);
+        // Note: 'attempting' status not sent to DB (only success/failure)
       },
-      success: (tier, ctx = {}) => {
+      success: (tier: string, ctx: any = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
-        console.log(`[${tier}] Success`, safeCtx);
+        logTier(sessionId, tier, 'success', 'Tier succeeded', {
+          ...safeCtx,
+          requestId,
+          edgeFunction: 'runware-generate-image'
+        });
       },
-      failure: (tier, ctx = {}) => {
+      failure: (tier: string, ctx: any = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
-        console.error(`[${tier}] Failure`, safeCtx);
-      },
+        logTier(sessionId, tier, 'failure', 'Tier failed', {
+          ...safeCtx,
+          requestId,
+          edgeFunction: 'runware-generate-image'
+        });
+      }
     };
   } catch (error) {
-    console.warn(`⚠️ [ORCHESTRATOR] resilientLoader unavailable (NON-FATAL), using console-only logger:`, error);
+    console.warn(`⚠️ [ORCHESTRATOR] Logger setup failed (NON-FATAL), using console-only:`, error);
     return createConsoleOnlyLogger(isProd);
   }
 }

@@ -3,7 +3,10 @@
  * Replaces tierLogging.js with TypeScript and enhanced features
  * Maintains backward compatibility for existing calls
  * Created: 2025-10-12
+ * Updated: October 2025 - Added DatabaseLogAdapter support
  */
+
+import type { DatabaseLogAdapter } from './DatabaseLogAdapter.ts';
 
 export interface LogEntry {
   timestamp: string;
@@ -18,6 +21,7 @@ const logStore = new Map<string, LogEntry[]>();
 
 /**
  * Core logging function (backward compatible with tierLogging.js)
+ * Now supports database persistence via DatabaseLogAdapter
  */
 export function logTier(
   sessionId: string,
@@ -42,6 +46,18 @@ export function logTier(
   // Console output for debugging
   const emoji = status === 'success' ? '✅' : status === 'failure' ? '❌' : status === 'fallback' ? '🔄' : '⏭️';
   console.log(`${emoji} [${tier}] ${message}`);
+  
+  // Database persistence (non-blocking, only for success/failure)
+  if (UniversalLogger.dbAdapter && (status === 'success' || status === 'failure')) {
+    UniversalLogger.dbAdapter.logToDatabase({
+      sessionId,
+      tier,
+      status: status === 'success' ? 'success' : 'failure',
+      metadata: metadata || {}
+    }).catch(() => {
+      // Silent catch - database errors should never crash the function
+    });
+  }
 }
 
 /**
@@ -93,8 +109,21 @@ export function getTierCascadeSummary(sessionId: string, tierLogs?: LogEntry[]) 
 
 /**
  * Enhanced logger with structured metadata
+ * Supports database persistence via DatabaseLogAdapter
  */
 export class UniversalLogger {
+  private static dbAdapter: DatabaseLogAdapter | null = null;
+  
+  /**
+   * Set database adapter for persistent logging
+   */
+  static setDatabaseAdapter(adapter: DatabaseLogAdapter | null): void {
+    this.dbAdapter = adapter;
+    if (adapter) {
+      console.log('✅ [UNIVERSAL_LOGGER] Database adapter connected');
+    }
+  }
+  
   static log(
     context: string,
     level: 'info' | 'warn' | 'error',

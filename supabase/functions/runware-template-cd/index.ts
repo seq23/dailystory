@@ -1,9 +1,11 @@
 // 🚀 DEPLOYMENT MARKER: v2025-10-12-VENDOR-RELIABILITY-BUNDLE
 // Last deployed: 2025-10-12
 // Changes: Vendor-first ReliabilityManager consolidated bundle (vendor → shared fallback)
+// Updated: October 2025 - Integrated DatabaseLogAdapter for persistent logging
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { UniversalLogger } from '../_shared/UniversalLogger.ts';
+import { UniversalLogger, logTier } from '../_shared/UniversalLogger.ts';
+import { DatabaseLogAdapter } from '../_shared/DatabaseLogAdapter.ts';
 
 // ========== LAZY RELIABILITY MANAGER (loaded on first POST) ==========
 let reliabilityManager: any = null;
@@ -870,7 +872,7 @@ async function handleRequest(req: Request) {
         hasImageURL: !!result.imageURL
       });
 
-    // Log to database
+    // Log to database using new UniversalLogger + DatabaseLogAdapter
     try {
       let supabase: any = null;
       
@@ -880,40 +882,33 @@ async function handleRequest(req: Request) {
         supabase = await createVendorFirstSupabaseClient();
       } catch (loaderError) {
         console.warn('⚠️ Loader failed, using fallback');
-        const { createClient } = await import('../_vendor/supabase-js@2.57.4.bundle.mjs'); // CRITICAL: Correct filename for logging vendor bundle
+        const { createClient } = await import('../_vendor/supabase-js@2.57.4.bundle.mjs');
         supabase = createClient(
           Deno.env.get('SUPABASE_URL') ?? '',
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
       }
       
-      // ✅ NUCLEAR FIX: Defensive tierLogging wrapper (never crashes template generation)
-      try {
-        const tierLoggingModule = await import("../_shared/tierLogging.js");
-        if (tierLoggingModule?.logTierAttempt && typeof tierLoggingModule.logTierAttempt === 'function') {
-          await tierLoggingModule.logTierAttempt(
-            supabase,
-            sessionId,
-            'template-cd-req',
-            templateResult.tier || 'template-cd',
-            'success',
-            {
-              positivePrompt: templateResult.positivePrompt,
-              negativePrompt: templateResult.negativePrompt,
-              edgeFunction: 'runware-template-cd',
-              pageNumber: pageNumber || 1,
-              imageUrl: result.imageURL
-            }
-          );
-        } else {
-          console.warn('⚠️ [TEMPLATE-CD] tierLogging unavailable - skipping DB log (non-fatal)');
-        }
-      } catch (loggingError: any) {
-        console.warn('⚠️ [TEMPLATE-CD] tierLogging failed (non-fatal):', loggingError.message);
-        // Continue execution - logging failure never crashes template generation
-      }
+      // Initialize database adapter for logging
+      const dbAdapter = new DatabaseLogAdapter(supabase, 0.1);
+      UniversalLogger.setDatabaseAdapter(dbAdapter);
+      
+      // Log image generation success to database
+      logTier(sessionId, 'NUCLEAR_2.5C', 'success', 'Image generated via Template CD', {
+        imageUrl: result.imageURL,
+        positivePrompt: templateResult.positivePrompt,
+        negativePrompt: templateResult.negativePrompt,
+        templateComplexity: complexityLevel,
+        pageNumber: pageNumber || 1,
+        processingTime: Date.now(),
+        edgeFunction: 'runware-template-cd',
+        templateType: templateResult.templateType,
+        directModeUsed: templateResult.directModeUsed || false
+      });
+      
     } catch (loggingError: any) {
-      console.warn('Failed to log success:', loggingError.message);
+      console.warn('⚠️ [TEMPLATE-CD] Logging failed (non-fatal):', loggingError.message);
+      // Continue execution - logging failure never crashes template generation
     }
 
     return result;

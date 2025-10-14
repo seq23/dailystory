@@ -228,7 +228,18 @@ export function DebugDataViewer() {
       }
 
       if (!data || data.length === 0) {
-        setLastError('No image generation debug data found for this session');
+        setLastError(`No data found for session: ${sessionId}`);
+        toast({
+          title: "No Data Found",
+          description: (
+            <div>
+              <p>No data found for session: <code className="bg-muted px-1 rounded">{sessionId}</code></p>
+              <p className="mt-2">Try clicking "Show Recent Sessions" to see available session IDs</p>
+              <p className="mt-1 text-xs">Valid formats: <code>premium-*</code>, <code>guest-*</code>, <code>test-*</code></p>
+            </div>
+          ),
+          variant: "default",
+        });
         return;
       }
 
@@ -275,6 +286,39 @@ export function DebugDataViewer() {
       setLastError('Failed to fetch image generation debug data. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const [recentSessions, setRecentSessions] = useState<any[]>([]);
+  const [showRecentSessions, setShowRecentSessions] = useState(false);
+  const [loadingSessions, setLoadingSessions] = useState(false);
+
+  const fetchRecentSessions = async () => {
+    setLoadingSessions(true);
+    try {
+      const { data, error } = await supabase
+        .from('image_generation_debug')
+        .select('session_id, created_at, tier, status, edge_function')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      
+      if (!error && data) {
+        // Get unique session IDs with most recent timestamp
+        const sessionMap = new Map();
+        data.forEach(item => {
+          if (!sessionMap.has(item.session_id)) {
+            sessionMap.set(item.session_id, item);
+          }
+        });
+        
+        const unique = Array.from(sessionMap.values()).slice(0, 10);
+        setRecentSessions(unique);
+        setShowRecentSessions(true);
+      }
+    } catch (err) {
+      console.error('Failed to fetch recent sessions:', err);
+    } finally {
+      setLoadingSessions(false);
     }
   };
 
@@ -432,6 +476,46 @@ export function DebugDataViewer() {
             </TabsList>
             
             <div className="mt-4">
+              <div className="flex gap-2 mb-4">
+                <Button 
+                  onClick={fetchRecentSessions} 
+                  disabled={loadingSessions}
+                  variant="outline"
+                  size="sm"
+                >
+                  {loadingSessions ? 'Loading...' : 'Show Recent Sessions'}
+                </Button>
+              </div>
+
+              {showRecentSessions && recentSessions.length > 0 && (
+                <Card className="mb-4 p-4">
+                  <h3 className="text-sm font-semibold mb-2">Recent Session IDs</h3>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Click a session ID to search for it
+                  </p>
+                  <div className="space-y-1">
+                    {recentSessions.map((session) => (
+                      <div 
+                        key={session.session_id}
+                        onClick={() => {
+                          setSessionId(session.session_id);
+                          setShowRecentSessions(false);
+                        }}
+                        className="cursor-pointer hover:bg-accent p-2 rounded text-xs"
+                      >
+                        <div className="font-mono text-primary">
+                          {session.session_id}
+                        </div>
+                        <div className="text-muted-foreground mt-1">
+                          {new Date(session.created_at).toLocaleString()} • 
+                          {session.tier} • {session.edge_function}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+              
               <div className="flex gap-2">
                 <Input
                   type="text"
