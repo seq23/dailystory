@@ -613,18 +613,32 @@ async function callRunwareAPI(positivePrompt: string, negativePrompt: string, se
     } catch (error: any) {
       clearTimeout(timeoutId);
       
-      if (error.name === 'AbortError') {
+      const isTimeout = error.name === 'AbortError';
+      const isFinalAttempt = attempt > retries;
+      
+      if (isTimeout) {
         console.error(`❌ Timeout (attempt ${attempt}/${retries + 1})`);
-        if (attempt <= retries) {
-          await new Promise(resolve => setTimeout(resolve, attempt * 1000));
-          continue;
-        }
-        throw new Error('Runware API timeout after all retries');
+      } else {
+        console.error(`❌ Attempt ${attempt}/${retries + 1} failed:`, error);
       }
       
-      console.error(`❌ Attempt ${attempt}/${retries + 1} failed:`, error);
+      // Log API-level failures on final attempt only (to avoid spam)
+      if (isFinalAttempt) {
+        try {
+          console.warn('⚠️ [TEMPLATE-CD] Runware API failed all retries - logging to database');
+          
+          const errorType = isTimeout ? 'timeout' : 'api_error';
+          const errorMessage = isTimeout ? 'Runware API timeout after all retries' : error?.message ?? String(error);
+          
+          console.error(`❌ [TEMPLATE-CD] Runware API ${errorType}:`, errorMessage);
+          
+          // Database logging will be handled by outer catch blocks with full context
+        } catch (loggingError) {
+          console.warn('⚠️ [TEMPLATE-CD] API error logging warning (non-fatal)');
+        }
+      }
       
-      if (attempt <= retries) {
+      if (!isFinalAttempt) {
         await new Promise(resolve => setTimeout(resolve, attempt * 1000));
         continue;
       }
@@ -1011,6 +1025,48 @@ serve(async (req) => {
         if (gatingEnabled && gateAcquired) {
           release('DM:runware-template-cd', false);
         }
+        
+        // Log handler-level failures to database
+        try {
+          console.error('❌ [TEMPLATE-CD] Handler error:', handlerError);
+          
+          // Extract session info from request
+          let sessionId = 'unknown-session';
+          let pageNumber = 1;
+          
+          try {
+            const bodyText = await req.clone().text();
+            if (bodyText) {
+              const body = JSON.parse(bodyText);
+              sessionId = body.sessionId || body.bundle?.sessionId || body.config?.sessionId || 'unknown-session';
+              pageNumber = body.pageNumber || body.bundle?.pageNumber || 1;
+            }
+          } catch (parseError) {
+            console.warn('⚠️ Could not parse request body for session info');
+          }
+          
+          // Initialize database adapter and log
+          try {
+            const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.ts');
+            const supabase = await createVendorFirstSupabaseClient();
+            const dbAdapter = new DatabaseLogAdapter(supabase, 0.1);
+            UniversalLogger.setDatabaseAdapter(dbAdapter);
+            
+            logTier(sessionId, 'NUCLEAR_2.5C', 'failure', 'Template CD handler failed', {
+              error: handlerError?.message ?? String(handlerError),
+              errorName: handlerError?.name,
+              pageNumber,
+              edgeFunction: 'runware-template-cd',
+              catchLocation: 'inner_handler_catch',
+              timestamp: new Date().toISOString()
+            });
+          } catch (loggingError: any) {
+            console.warn('⚠️ [TEMPLATE-CD] Handler error logging failed (non-fatal):', loggingError.message);
+          }
+        } catch (outerLoggingError) {
+          console.warn('⚠️ [TEMPLATE-CD] Outer handler logging catch (non-fatal):', outerLoggingError);
+        }
+        
         throw handlerError;
       }
     }
@@ -1027,6 +1083,63 @@ serve(async (req) => {
       } 
     });
   } catch (err: any) {
+    // Database failure logging (non-blocking, crash-proof)
+    try {
+      console.error('❌ [TEMPLATE-CD] Outer catch handler triggered:', err);
+      
+      // Extract session ID from request if possible
+      let sessionId = 'unknown-session';
+      let pageNumber = 1;
+      let errorContext: any = {};
+      
+      try {
+        const url = new URL(req.url);
+        const bodyText = await req.clone().text();
+        if (bodyText) {
+          const body = JSON.parse(bodyText);
+          sessionId = body.sessionId || body.bundle?.sessionId || body.config?.sessionId || 'unknown-session';
+          pageNumber = body.pageNumber || body.bundle?.pageNumber || 1;
+          errorContext = {
+            hasPayload: !!body,
+            payloadKeys: Object.keys(body),
+            templateComplexity: body.templateComplexity || body.bundle?.templateComplexity,
+            emergencyMode: body.emergencyMode
+          };
+        }
+      } catch (parseError) {
+        console.warn('⚠️ Could not extract session ID from request:', parseError);
+      }
+      
+      // Initialize database adapter and log failure
+      try {
+        const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.ts');
+        const supabase = await createVendorFirstSupabaseClient();
+        const dbAdapter = new DatabaseLogAdapter(supabase, 0.1);
+        UniversalLogger.setDatabaseAdapter(dbAdapter);
+        
+        // Log the failure with full context
+        logTier(sessionId, 'NUCLEAR_2.5C', 'failure', 'Template CD function crashed', {
+          error: err?.message ?? String(err),
+          errorName: err?.name,
+          errorStack: err?.stack?.substring(0, 500), // First 500 chars of stack trace
+          pageNumber,
+          edgeFunction: 'runware-template-cd',
+          catchLocation: 'outer_server_catch',
+          timestamp: new Date().toISOString(),
+          ...errorContext
+        });
+        
+        console.log('✅ [TEMPLATE-CD] Failure logged to database');
+      } catch (loggingError: any) {
+        console.warn('⚠️ [TEMPLATE-CD] Failed to log error to database (non-fatal):', loggingError.message);
+        // Continue - never let logging errors crash the error handler
+      }
+    } catch (outerLoggingError) {
+      console.warn('⚠️ [TEMPLATE-CD] Outer logging catch triggered (non-fatal):', outerLoggingError);
+      // Absolutely never crash here
+    }
+    
+    // Return error response to client
     return new Response(JSON.stringify({
       error: "Internal error",
       message: err?.message ?? String(err),
