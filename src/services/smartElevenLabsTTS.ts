@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
 import { AdaptiveTimeout } from '@/utils/adaptiveTimeout';
+import { TTSCircuitBreaker } from '@/services/TTSCircuitBreaker';
 
 /**
  * Smart ElevenLabs TTS service that applies phonetic lexicon only for learning contexts
@@ -19,6 +20,12 @@ export class SmartElevenLabsTTS {
     voiceId: string = 'XB0fDUnXU5powFXDhCwa'
   ): Promise<ArrayBuffer> {
     DebugLogger.log('audio', `Smart TTS: "${text}" [Context: ${context}]`);
+
+    // PHASE 2B: Check circuit breaker FIRST - fail-fast if ElevenLabs is down
+    if (TTSCircuitBreaker.isOpen()) {
+      DebugLogger.warn('audio', '⚠️ TTS circuit breaker OPEN - failing fast to browser speech');
+      throw new Error('TTS circuit breaker open - ElevenLabs service unavailable');
+    }
 
     // Request audio coordinator permission for Charlotte speech
     if (context === 'conversation') {
@@ -102,6 +109,9 @@ export class SmartElevenLabsTTS {
 
       DebugLogger.log('audio', `Smart TTS Success: ${bytes.byteLength} bytes [Applied Lexicon: ${data.appliedLexicon || false}]`);
       
+      // PHASE 2B: Record success in circuit breaker
+      TTSCircuitBreaker.recordSuccess();
+      
       // Release audio coordinator lock for Charlotte speech
       if (context === 'conversation') {
         window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'charlotte' } }));
@@ -111,6 +121,9 @@ export class SmartElevenLabsTTS {
       
     } catch (timeoutError) {
       DebugLogger.error('audio', 'TTS request timed out, falling back to browser speech');
+      
+      // PHASE 2B: Record failure in circuit breaker
+      TTSCircuitBreaker.recordFailure();
       
       // Fallback to browser speech synthesis
       if ('speechSynthesis' in window) {

@@ -34,6 +34,8 @@ export class CharlotteVoiceService {
   private static processingRequests = new Set<string>();
   private static requestCounter = 0;
   private static charlotteVoiceId = 'XB0fDUnXU5powFXDhCwa'; // Charlotte's voice
+  // PHASE 2C: Request deduplication cache to prevent spam-clicking duplicate TTS calls
+  private static audioRequestCache = new Map<string, Promise<ArrayBuffer>>();
   
   private audio: HTMLAudioElement | null = null;
   private currentUrl: string | null = null;
@@ -136,10 +138,27 @@ export class CharlotteVoiceService {
     const { text, context } = request;
     const requestId = `interactive-${context}-${++CharlotteVoiceService.requestCounter}`;
     
-    // Debounce rapid clicks
-    const existingRequest = Array.from(CharlotteVoiceService.processingRequests)
-      .find(id => id.includes(`interactive-${context}-${text.substring(0, 10)}`));
+    // PHASE 2C: Create deduplication key based on context + text
+    const dedupKey = `${context}:${text.substring(0, 50)}`;
+    
+    // Check if identical request already in-flight
+    const existingRequest = CharlotteVoiceService.audioRequestCache.get(dedupKey);
     if (existingRequest) {
+      DebugLogger.log('audio', `🔒 Charlotte dedup: joining existing request for "${text.substring(0, 30)}..."`);
+      try {
+        const audioBuffer = await existingRequest;
+        await this.playCharlotteAudio(audioBuffer, false);
+        return;
+      } catch (error) {
+        // If existing request failed, allow retry by continuing
+        CharlotteVoiceService.audioRequestCache.delete(dedupKey);
+      }
+    }
+    
+    // Debounce rapid clicks (existing logic)
+    const existingProcessing = Array.from(CharlotteVoiceService.processingRequests)
+      .find(id => id.includes(`interactive-${context}-${text.substring(0, 10)}`));
+    if (existingProcessing) {
       DebugLogger.log('audio', `🔒 Charlotte debounced: ${context} request for "${text}"`);
       return;
     }
@@ -175,8 +194,11 @@ export class CharlotteVoiceService {
           break;
       }
 
-      // CRITICAL: No timeout here - managed by SmartElevenLabsTTS (adaptive 15-30s)
-      const audioBuffer = await SmartElevenLabsTTS.generateSpeech(finalText, ttsContext, CharlotteVoiceService.charlotteVoiceId);
+      // PHASE 2C: Start new request and cache the promise
+      const audioPromise = SmartElevenLabsTTS.generateSpeech(finalText, ttsContext, CharlotteVoiceService.charlotteVoiceId);
+      CharlotteVoiceService.audioRequestCache.set(dedupKey, audioPromise);
+      
+      const audioBuffer = await audioPromise;
 
       await this.playCharlotteAudio(audioBuffer, false);
       
@@ -196,6 +218,11 @@ export class CharlotteVoiceService {
       
       throw error; // Let caller handle fallback to prevent duplicate browser TTS
     } finally {
+      // PHASE 2C: Clean up cache after 5 seconds (allows reuse within reasonable window)
+      setTimeout(() => {
+        CharlotteVoiceService.audioRequestCache.delete(dedupKey);
+      }, 5000);
+      
       window.dispatchEvent(new CustomEvent('audio:stopped', { 
         detail: { system: 'charlotte-interactive' } 
       }));
