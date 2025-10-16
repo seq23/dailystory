@@ -14,6 +14,7 @@ import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_share
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { classifyError, getRetryEnhancement, ErrorCategory } from './errorClassification.ts';
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
+import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
 
 // Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
 
@@ -933,14 +934,28 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         note: 'Service-aware token limits applied - Netflix (full story) vs Live (per page)'
       });
       
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(apiBody),
+      // PHASE 1B: Wrap OpenAI call with request deduplication
+      const dedupKey = RequestDeduplicator.createKey({
+        functionName: 'generate-adaptive-story',
+        sessionId: sessionId || 'unknown',
+        pageNumber: config?.pageNumber || 1,
+        content: enhancedUserPrompt.substring(0, 100)
       });
+      
+      const response = await RequestDeduplicator.deduplicate(
+        dedupKey,
+        async () => {
+          return await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(apiBody),
+          });
+        },
+        50000 // 50s timeout (aligned with backend orchestrator budget)
+      );
 
       console.log(`🔍 API Response attempt ${attempt}:`, {
         status: response.status,

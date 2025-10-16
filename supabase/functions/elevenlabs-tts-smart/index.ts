@@ -1,5 +1,6 @@
 // Enhanced CORS-compliant ElevenLabs TTS with preflight fix
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -84,6 +85,38 @@ async function handle(req: Request): Promise<Response> {
     const voiceId = voice_id || "21m00Tcm4TlvDq8ikWAM";
     const modelId = model_id || "eleven_monolingual_v1";
 
+    // PHASE 2A: Check LKG Cache before expensive ElevenLabs calls
+    const requestHash = UniversalLKGCache.createRequestHash({
+      pageText: text.substring(0, 100),
+      storyText: text.substring(0, 200),
+      userInfo: { voiceId, modelId },
+      sessionId: 'elevenlabs-session',
+      pageNumber: 1
+    });
+    
+    const cachedAudio = UniversalLKGCache.getLKG(requestHash, 'elevenlabs-tts-smart');
+    if (cachedAudio && cachedAudio.audio_base64) {
+      console.log('♻️ [TTS_LKG] Cache HIT - returning cached audio', {
+        age: cachedAudio.lkgAge ? Math.round(cachedAudio.lkgAge / 1000) : 0,
+        quality: cachedAudio.lkgQuality,
+        useCount: cachedAudio.lkgUseCount,
+        textLength: text.length
+      });
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          audio_base64: cachedAudio.audio_base64,
+          voice_id: cachedAudio.voice_id || voiceId,
+          model_id: cachedAudio.model_id || modelId,
+          fromLKG: true
+        }),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    
+    console.log('🔄 [TTS_LKG] Cache MISS - proceeding with ElevenLabs generation');
+
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: "POST",
       headers: {
@@ -114,6 +147,19 @@ async function handle(req: Request): Promise<Response> {
       binaryString += String.fromCharCode.apply(null, Array.from(chunk));
     }
     const base64Audio = btoa(binaryString);
+
+    // PHASE 2A: Warm LKG cache after successful generation
+    UniversalLKGCache.warmFromSuccess(
+      requestHash,
+      { 
+        audio_base64: base64Audio,
+        voice_id: voiceId,
+        model_id: modelId
+      },
+      'ELEVENLABS_TTS',
+      'elevenlabs-tts-smart'
+    );
+    console.log('💾 [TTS_LKG] Cache warmed with successful generation');
 
     // Track ElevenLabs cost for analytics
     try {
