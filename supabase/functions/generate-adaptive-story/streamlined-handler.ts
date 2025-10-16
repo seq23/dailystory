@@ -13,6 +13,7 @@ import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValid
 import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { classifyError, getRetryEnhancement, ErrorCategory } from './errorClassification.ts';
+import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 
 // Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
 
@@ -808,6 +809,27 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     console.warn('⚠️ Avatar processing failed:', safeErrorMessage(avatarError));
   }
 
+  // PHASE 1A: Check LKG Cache before expensive OpenAI calls
+  const requestHash = UniversalLKGCache.createRequestHash({
+    sessionId: sessionId || 'unknown',
+    storyContent: enhancedUserPrompt.substring(0, 200),
+    pageNumber: config?.pageNumber || 1,
+    templateComplexity: difficulty || 'medium'
+  });
+  
+  const cachedStory = UniversalLKGCache.getLKG(requestHash, 'generate-adaptive-story');
+  if (cachedStory && cachedStory.story) {
+    console.log('♻️ [STORY_LKG] Cache HIT - returning cached story', {
+      age: cachedStory.lkgAge ? Math.round(cachedStory.lkgAge / 1000) : 0,
+      quality: cachedStory.lkgQuality,
+      useCount: cachedStory.lkgUseCount
+    });
+    
+    return cachedStory.story;
+  }
+  
+  console.log('🔄 [STORY_LKG] Cache MISS - proceeding with OpenAI generation');
+
   // Enhanced AI Generation with Intelligent Circuit Breaker
   let storyText = '';
   let attempt = 1;
@@ -1223,7 +1245,17 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     throw new Error(`All AI generation attempts failed after ${maxAttempts} attempts with models: ${modelProgression.map(m => m.model).join(', ')}`);
   }
 
-  return cleanStoryText(storyText);
+  // PHASE 1A: Warm LKG cache after successful generation
+  const cleanedStory = cleanStoryText(storyText);
+  UniversalLKGCache.warmFromSuccess(
+    requestHash,
+    { story: cleanedStory },
+    'AI_GENERATION',
+    'generate-adaptive-story'
+  );
+  console.log('💾 [STORY_LKG] Cache warmed with successful generation');
+
+  return cleanedStory;
 }
 
 // Helper function for vocabulary tracking

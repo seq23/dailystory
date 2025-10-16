@@ -120,7 +120,7 @@ export class NetflixStyleStoryService {
         
         DebugLogger.log('story', `Netflix: Session ID determined`, { generationId });
         
-        // Add timeout wrapper for AI generation
+        // Add timeout wrapper for AI generation (aligned with backend: 75s frontend > 50s backend > 40s OpenAI)
         const result = await Promise.race([
           StoryGenerationService.generateStory(userInfo, {
             sessionType: 'free',
@@ -130,7 +130,7 @@ export class NetflixStyleStoryService {
             sessionId: actualSessionId
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('AI generation timeout after 45 seconds')), 45000)
+            setTimeout(() => reject(new Error('AI generation timeout after 75 seconds')), 75000)
           )
         ]) as any;
 
