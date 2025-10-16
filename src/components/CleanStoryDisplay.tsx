@@ -3838,6 +3838,22 @@ const handleRestartTimer = () => {
           DebugLogger.warn('auth', 'Could not persist difficulty preference', e);
         }
         
+        // ✅ FIX: Guest users trigger new story generation
+        if (!isPremium) {
+          DebugLogger.log('story', '🔄 Guest difficulty change: Triggering new story generation', {
+            oldDifficulty: difficultyLevels[currentIndex],
+            newDifficulty: newDifficulty
+          });
+          
+          ManagedTimers.setTimeout(() => {
+            setIsChangingDifficulty(false);
+            setChangeDirection(undefined);
+            handleGenerateNewStory();
+          }, 800, 'CleanStoryDisplay');
+          
+          return;
+        }
+        
         // Update live context for all users (universal live difficulty updates)
         if (liveContext) {
           setLiveContext(prev => prev ? {
@@ -3845,6 +3861,32 @@ const handleRestartTimer = () => {
             difficulty: newDifficulty,
             expertGradeLevel: newDifficulty === 'advanced' ? newGradeLevel : undefined
           } : null);
+          
+          // ✅ FIX: Premium users generate next page or show toast
+          if (isPremium) {
+            ManagedTimers.setTimeout(() => {
+              setIsChangingDifficulty(false);
+              setChangeDirection(undefined);
+              
+              if (currentPage === story.length - 1) {
+                DebugLogger.log('story', '🔄 Premium difficulty change: Generating next page', {
+                  oldDifficulty: difficultyLevels[currentIndex],
+                  newDifficulty: newDifficulty,
+                  currentPage,
+                  storyLength: story.length
+                });
+                handleGenerateNextPageAndAdvance();
+              } else {
+                toast({
+                  title: "Reading Level Updated",
+                  description: "New difficulty will apply when you navigate forward",
+                  duration: 3000
+                });
+              }
+            }, 800, 'CleanStoryDisplay');
+            
+            return;
+          }
         }
         
         // Animate badge change
@@ -3853,7 +3895,55 @@ const handleRestartTimer = () => {
         // Update live context for expert grade level changes (universal updates)
         if (liveContext) {
           setLiveContext(prev => prev ? {...prev, expertGradeLevel: newGradeLevel} : null);
+          
+          // ✅ FIX: Premium users generate next page with new grade level
+          if (isPremium) {
+            // Persist last expert grade first
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                const { data: existing } = await supabase
+                  .from('user_preferences')
+                  .select('id, reading_preferences')
+                  .eq('user_id', user.id)
+                  .maybeSingle();
+                const basePrefs = (existing && typeof existing.reading_preferences === 'object') ? (existing.reading_preferences as Record<string, any>) : {};
+                const reading_preferences = { ...basePrefs, lastExpertGrade: newGradeLevel };
+                if (existing?.id) {
+                  await supabase.from('user_preferences').update({ reading_preferences }).eq('id', existing.id);
+                } else {
+                  await supabase.from('user_preferences').insert([{ user_id: user.id, reading_preferences }]);
+                }
+              }
+            } catch (e) {
+              DebugLogger.warn('auth', 'Could not persist expert grade preference', e);
+            }
+            
+            ManagedTimers.setTimeout(() => {
+              setIsChangingDifficulty(false);
+              setChangeDirection(undefined);
+              
+              if (currentPage === story.length - 1) {
+                DebugLogger.log('story', '🔄 Premium expert grade change: Generating next page', {
+                  oldGrade: expertGradeLevel,
+                  newGrade: newGradeLevel,
+                  currentPage,
+                  storyLength: story.length
+                });
+                handleGenerateNextPageAndAdvance();
+              } else {
+                toast({
+                  title: `Now Reading at ${newGradeLevel} Grade Level`,
+                  description: "New grade level will apply when you navigate forward",
+                  duration: 3000
+                });
+              }
+            }, 800, 'CleanStoryDisplay');
+            
+            return;
+          }
         }
+        
         // Persist last expert grade
         try {
           const { data: { user } } = await supabase.auth.getUser();
