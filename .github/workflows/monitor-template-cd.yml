@@ -2,8 +2,8 @@ name: Monitor Template CD
 
 on:
   schedule:
-    # Check every 4 hours: 9am, 1pm, 5pm, 9pm UTC (4 times/day, staggered)
-    - cron: '0 9,13,17,21 * * *'
+    # Check daily at 6:45 AM UTC (cost optimized: 1x/day, staggered +45min)
+    - cron: '45 6 * * *'
   workflow_dispatch:
 
 # Unified deployment concurrency - prevents race conditions

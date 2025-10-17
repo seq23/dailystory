@@ -3,9 +3,6 @@ name: Deploy Edge Functions
 on:
   push:
     branches: [ main ]
-  schedule:
-    # Daily deployment at 2:00 AM UTC to prevent 404 errors
-    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       priority_functions:
