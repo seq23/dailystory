@@ -27,7 +27,7 @@ export const MobileOptimizedButton: React.FC<MobileOptimizedButtonProps> = ({
   
   // Apply long-press handlers for touch devices, standard click for desktop
   const longPressHandlers = useLongPressButton(handleClick, { duration: longPressDuration });
-  const buttonHandlers = isMobileOrTablet && onClick ? longPressHandlers : { onClick };
+  const buttonHandlers = hasTouchCapability && onClick ? longPressHandlers : { onClick };
 
   // Mobile-specific classes (phones) - Increased minimum sizes
   const mobileClasses = isMobile ? {
