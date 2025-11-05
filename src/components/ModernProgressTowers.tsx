@@ -6,6 +6,7 @@ import { useGamification } from '@/hooks/useGamification';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
+import { MobileOptimizedButton } from '@/components/MobileOptimizedButton';
 import { 
   BookOpen, 
   FileText, 
@@ -310,7 +311,9 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
         {/* Main container */}
         {!enabled && (
           <div className="relative">
-            <button
+            <MobileOptimizedButton
+              variant="ghost"
+              size="icon"
               onClick={() => {
                 try { localStorage.setItem('progressTowersEnabled', '1'); } catch {}
                 setEnabled(true);
@@ -323,7 +326,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                 "bg-gradient-to-br from-primary/20 to-primary/30 border-primary/30",
                 "hover:from-primary/30 hover:to-primary/40 hover:border-primary/40",
                 "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
-                "group relative overflow-hidden touch-manipulation",
+                "group relative overflow-hidden",
                 "bottom-4 left-1/2 -translate-x-1/2",
                 isMobile && "w-9 h-9",
                 sparkleMode && "animate-pulse shadow-primary/20",
@@ -331,10 +334,10 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                 celebrationMode && "ring-2 ring-primary/30 shadow-xl shadow-primary/10"
               )}
               aria-label="Show progress towers"
-              title="Show progress towers"
+              longPressDuration={500}
             >
               <Trophy className="w-5 h-5 text-primary group-hover:text-primary/80" />
-            </button>
+            </MobileOptimizedButton>
             
             {/* Sparkle effect around dismissed trophy */}
             {sparkleMode && (
@@ -488,10 +491,17 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
           {/* Dismiss button (expanded only, pinned to container top-right) */}
           {isExpanded && (
             <div className="absolute top-4 right-16 z-20">
-              <Button variant="ghost" size="sm" onClick={handleDismiss} aria-label="Dismiss progress towers" className="h-8">
+              <MobileOptimizedButton 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleDismiss} 
+                aria-label="Dismiss progress towers" 
+                className="h-8"
+                longPressDuration={500}
+              >
                 <X className="w-4 h-4 mr-1" />
                 Dismiss
-              </Button>
+              </MobileOptimizedButton>
             </div>
           )}
 

@@ -15,9 +15,12 @@ export const useLongPressButton = (
   const startTimeRef = useRef<number>(0);
   const hasTriggeredRef = useRef(false);
 
+  const MIN_TAP_DURATION = 200; // Prevent accidental taps
+
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (!onClick) return;
     
+    e.preventDefault(); // Prevent iOS long-press callout
     e.stopPropagation();
     startTimeRef.current = Date.now();
     hasTriggeredRef.current = false;
@@ -40,14 +43,21 @@ export const useLongPressButton = (
     
     const pressDuration = Date.now() - startTimeRef.current;
     
-    // If press was shorter than required duration, prevent default click behavior
-    if (pressDuration < duration && !hasTriggeredRef.current) {
-      e.preventDefault();
-      // Don't trigger onClick for short taps - force long press
+    // Hybrid interaction: Accept deliberate taps (200-500ms) and long-press (500ms+)
+    if (!hasTriggeredRef.current) {
+      if (pressDuration < MIN_TAP_DURATION) {
+        // Too fast - accidental tap, ignore it
+        e.preventDefault();
+      } else if (pressDuration >= MIN_TAP_DURATION && pressDuration < duration) {
+        // Medium tap (200-500ms) - valid deliberate tap, trigger onClick
+        e.preventDefault();
+        onClick?.();
+      }
+      // Long-press (>=500ms) already triggered via timer
     }
     
     hasTriggeredRef.current = false;
-  }, [duration]);
+  }, [duration, onClick, MIN_TAP_DURATION]);
 
   const handleTouchCancel = useCallback(() => {
     if (timerRef.current) {

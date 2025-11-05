@@ -4572,7 +4572,7 @@ const handleRestartTimer = () => {
                         className="absolute inset-0 pointer-events-none z-10" 
                       />
                       
-                      <Button
+                      <MobileOptimizedButton
                         data-id="magic-wand-free"
                         onClick={() => {
                           DebugLogger.log('story', 'Magic wand clicked - button press');
@@ -4582,6 +4582,8 @@ const handleRestartTimer = () => {
                         disabled={isGeneratingNewStory}
                         variant="hero"
                         size="xl"
+                        longPressDuration={500}
+                        mobileSize="lg"
                         className={cn(
                           "relative z-20 transform transition-all duration-500",
                           // DRAMATIC multi-layered animation effects
@@ -4630,7 +4632,7 @@ const handleRestartTimer = () => {
                             Get the next story!
                           </>
                         )}
-                      </Button>
+                      </MobileOptimizedButton>
                     </div>
                     
                     {/* Upgrade prompt under button */}

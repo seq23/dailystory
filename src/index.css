@@ -816,6 +816,10 @@ All colors MUST be HSL.
     align-items: center;
     justify-content: center;
     touch-action: manipulation;
+    /* iOS long-press callout prevention */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
     /* Enhanced focus visibility for accessibility */
     outline: 2px solid transparent;
     outline-offset: 2px;
