@@ -4894,8 +4894,8 @@ const handleRestartTimer = () => {
             <h3 id="endstory-confirm-title" className="text-xl font-bold mb-2">{t('endStory.confirm.title', 'Create an ending page?')}</h3>
             <p id="endstory-confirm-desc" className="text-sm text-muted-foreground mb-5">{t('endStory.confirm.desc', "We’ll add a last page to wrap up this story. You can save it, or press Next to start a sequel. Your session will not end.")}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
-              <Button onClick={() => { setShowConfirmEndStory(false); handleGenerateEndingPage(); }}>{t('endStory.confirm.continue', 'Create my ending')}</Button>
-              <Button variant="ghost" onClick={() => setShowConfirmEndStory(false)}>{t('endStory.confirm.cancel', 'Keep reading')}</Button>
+              <MobileOptimizedButton onClick={() => { setShowConfirmEndStory(false); handleGenerateEndingPage(); }} longPressDuration={500} mobileSize="default">{t('endStory.confirm.continue', 'Create my ending')}</MobileOptimizedButton>
+              <MobileOptimizedButton variant="ghost" onClick={() => setShowConfirmEndStory(false)} longPressDuration={500} mobileSize="default">{t('endStory.confirm.cancel', 'Keep reading')}</MobileOptimizedButton>
             </div>
           </div>
         </div>
@@ -4909,9 +4909,9 @@ const handleRestartTimer = () => {
             <h3 id="endsession-title" className="text-xl font-bold mb-2">{t('nav.endSessionConfirm.title', 'End session?')}</h3>
             <p id="endsession-desc" className="text-sm text-muted-foreground mb-5">{t('nav.endSessionConfirm.desc', 'This will end this session. You will have the option to save this story as is.')}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
-              <Button onClick={async () => { await handleSaveStoryNow(); setShowEndSessionConfirm(false); handleEndSession(); }}>{t('nav.endSessionConfirm.saveAndEnd', 'Save story and end')}</Button>
-              <Button variant="destructive" onClick={() => { setShowEndSessionConfirm(false); handleEndSession(); }}>{t('nav.endSessionConfirm.endWithoutSaving', 'End without saving')}</Button>
-              <Button variant="ghost" onClick={() => setShowEndSessionConfirm(false)}>{t('common.cancel', 'Cancel')}</Button>
+              <MobileOptimizedButton onClick={async () => { await handleSaveStoryNow(); setShowEndSessionConfirm(false); handleEndSession(); }} longPressDuration={500} mobileSize="default">{t('nav.endSessionConfirm.saveAndEnd', 'Save story and end')}</MobileOptimizedButton>
+              <MobileOptimizedButton variant="destructive" onClick={() => { setShowEndSessionConfirm(false); handleEndSession(); }} longPressDuration={500} mobileSize="default">{t('nav.endSessionConfirm.endWithoutSaving', 'End without saving')}</MobileOptimizedButton>
+              <MobileOptimizedButton variant="ghost" onClick={() => setShowEndSessionConfirm(false)} longPressDuration={500} mobileSize="default">{t('common.cancel', 'Cancel')}</MobileOptimizedButton>
             </div>
           </div>
         </div>
