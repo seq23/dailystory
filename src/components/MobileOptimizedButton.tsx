@@ -1,22 +1,33 @@
 import React from 'react';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useLongPressButton } from '@/hooks/useLongPressButton';
 import { cn } from '@/lib/utils';
 
 interface MobileOptimizedButtonProps extends ButtonProps {
   children: React.ReactNode;
   mobileSize?: 'sm' | 'default' | 'lg';
   tabletSize?: 'sm' | 'default' | 'lg';
+  longPressDuration?: number;
 }
 
 export const MobileOptimizedButton: React.FC<MobileOptimizedButtonProps> = ({ 
   children, 
   className, 
+  onClick,
   mobileSize = 'default',
   tabletSize = 'default',
+  longPressDuration = 500,
   ...props 
 }) => {
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
+  
+  // Wrap onClick to remove event parameter for long-press hook
+  const handleClick = onClick ? () => onClick({} as any) : undefined;
+  
+  // Apply long-press handlers for touch devices, standard click for desktop
+  const longPressHandlers = useLongPressButton(handleClick, { duration: longPressDuration });
+  const buttonHandlers = isMobileOrTablet && onClick ? longPressHandlers : { onClick };
 
   // Mobile-specific classes (phones) - Increased minimum sizes
   const mobileClasses = isMobile ? {
@@ -42,7 +53,7 @@ export const MobileOptimizedButton: React.FC<MobileOptimizedButtonProps> = ({
   );
 
   return (
-    <Button className={finalClassName} {...props}>
+    <Button className={finalClassName} {...buttonHandlers} {...props}>
       {children}
     </Button>
   );

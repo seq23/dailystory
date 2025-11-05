@@ -12,8 +12,11 @@ export const useSmartObjectFit = (containerHeight?: number) => {
 
   const determineObjectFit = useCallback((img: HTMLImageElement) => {
     if (!containerHeight) {
-      // Mobile/tablet: use object-cover for full-bleed effect
-      setObjectFitStyle({ objectFit: 'object-cover' });
+      // Mobile/tablet: use object-contain to show full image without cropping
+      setObjectFitStyle({ 
+        objectFit: 'object-contain',
+        containerStyle: 'bg-gradient-to-br from-muted/10 to-muted/30' // Elegant background for letterboxing
+      });
       return;
     }
 

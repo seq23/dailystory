@@ -4289,7 +4289,8 @@ const handleRestartTimer = () => {
                         <ImageWithFallback
                           src={currentImage}
           alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
-                          className="w-full h-full object-cover rounded-lg"
+                          className="w-full h-full object-contain rounded-lg"
+                          containerClassName="bg-gradient-to-br from-muted/10 to-muted/30"
                           fallbackText={`📖 Page ${currentPage + 1}`}
                           onLoadingChange={handleImageLoadingChange}
                           onFallbackUsed={handleImageFallbackUsed}

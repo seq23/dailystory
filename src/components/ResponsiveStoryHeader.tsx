@@ -4,6 +4,7 @@ import { globalResizeService } from '@/services/GlobalResizeService';
 import { performanceManager } from '@/services/PerformanceManager';
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Badge } from "@/components/ui/badge";
 import { StorySessionBreadcrumb } from "@/components/StorySessionBreadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -254,7 +255,7 @@ export const ResponsiveStoryHeader = ({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
+                      <MobileOptimizedButton
                         variant="ghost"
                         size="sm"
                         onClick={onHome}
@@ -262,7 +263,7 @@ export const ResponsiveStoryHeader = ({
                         aria-label={t("common.home", "Home")}
                       >
                         <Home className="w-4 h-4" />
-                      </Button>
+                      </MobileOptimizedButton>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
                   </Tooltip>
@@ -285,7 +286,7 @@ export const ResponsiveStoryHeader = ({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
+                          <MobileOptimizedButton
                             variant="outline"
                             size="sm"
                             onClick={onDecreaseDifficulty}
@@ -302,7 +303,7 @@ export const ResponsiveStoryHeader = ({
                             ) : (
                               <TrendingDown className="w-4 h-4" />
                             )}
-                          </Button>
+                          </MobileOptimizedButton>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
                           {t("storyDisplay.decreaseDifficulty", "Make easier")}
@@ -326,7 +327,7 @@ export const ResponsiveStoryHeader = ({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
+                          <MobileOptimizedButton
                             variant="outline"
                             size="sm"
                             onClick={onIncreaseDifficulty}
@@ -343,7 +344,7 @@ export const ResponsiveStoryHeader = ({
                             ) : (
                               <TrendingUp className="w-4 h-4" />
                             )}
-                          </Button>
+                          </MobileOptimizedButton>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
                           {t("storyDisplay.increaseDifficulty", "Make harder")}
@@ -422,7 +423,7 @@ export const ResponsiveStoryHeader = ({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
+                        <MobileOptimizedButton
                           variant="outline"
                           size="sm"
                           onClick={onDecreaseDifficulty}
@@ -438,7 +439,7 @@ export const ResponsiveStoryHeader = ({
                           ) : (
                             <TrendingDown className="w-4 h-4" />
                           )}
-                        </Button>
+                        </MobileOptimizedButton>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
                         {t("storyDisplay.decreaseDifficulty", "Make easier")}
@@ -462,7 +463,7 @@ export const ResponsiveStoryHeader = ({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
+                        <MobileOptimizedButton
                           variant="outline"
                           size="sm"
                           onClick={onIncreaseDifficulty}
@@ -478,7 +479,7 @@ export const ResponsiveStoryHeader = ({
                           ) : (
                             <TrendingUp className="w-4 h-4" />
                           )}
-                        </Button>
+                        </MobileOptimizedButton>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
                         {t("storyDisplay.increaseDifficulty", "Make harder")}
@@ -491,7 +492,7 @@ export const ResponsiveStoryHeader = ({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
+                        <MobileOptimizedButton
                           variant="destructive"
                           size="sm"
                           onClick={onEndSession}
@@ -499,7 +500,7 @@ export const ResponsiveStoryHeader = ({
                         >
                           <LogOut className="w-4 h-4" />
                           {!isMobileOrTablet && <span className="ml-2">{t("nav.endSession", "End Session")}</span>}
-                        </Button>
+                        </MobileOptimizedButton>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">{t("nav.endSession", "End Session")}</TooltipContent>
                     </Tooltip>
@@ -545,7 +546,7 @@ export const ResponsiveStoryHeader = ({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
+                      <MobileOptimizedButton
                         variant="ghost"
                         size={isMobile ? "sm" : "default"}
                         onClick={onHome}
@@ -561,7 +562,7 @@ export const ResponsiveStoryHeader = ({
                           !isMobileOrTablet && "mr-2"
                         )} />
                         {!isMobileOrTablet && t("common.home", "Home")}
-                      </Button>
+                      </MobileOptimizedButton>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
                   </Tooltip>
@@ -646,7 +647,7 @@ export const ResponsiveStoryHeader = ({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
+                        <MobileOptimizedButton
                           variant="outline"
                           size={isMobileOrTablet ? "sm" : "default"}
                           onClick={onDecreaseDifficulty}
@@ -670,7 +671,7 @@ export const ResponsiveStoryHeader = ({
                               !isMobileOrTablet && "text-red-600"
                             )} />
                           )}
-                        </Button>
+                        </MobileOptimizedButton>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
                         {t("storyDisplay.decreaseDifficulty", "Make easier")}
@@ -700,7 +701,7 @@ export const ResponsiveStoryHeader = ({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
+                        <MobileOptimizedButton
                           variant="outline"
                           size={isMobileOrTablet ? "sm" : "default"}
                           onClick={onIncreaseDifficulty}
@@ -724,7 +725,7 @@ export const ResponsiveStoryHeader = ({
                               !isMobileOrTablet && "text-green-600"
                             )} />
                           )}
-                        </Button>
+                        </MobileOptimizedButton>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
                         {t("storyDisplay.increaseDifficulty", "Make harder")}
@@ -751,7 +752,7 @@ export const ResponsiveStoryHeader = ({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
+                          <MobileOptimizedButton
                             variant="ghost"
                             size={isMobileOrTablet ? "sm" : "default"}
                             onClick={onHome}
@@ -759,7 +760,7 @@ export const ResponsiveStoryHeader = ({
                             aria-label={t("common.home", "Home")}
                           >
                             <Home className="w-4 h-4" />
-                          </Button>
+                          </MobileOptimizedButton>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
                       </Tooltip>
@@ -774,7 +775,7 @@ export const ResponsiveStoryHeader = ({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
+                          <MobileOptimizedButton
                             variant="ghost"
                             size="default"
                             onClick={onHome}
@@ -783,7 +784,7 @@ export const ResponsiveStoryHeader = ({
                           >
                             <Home className="w-5 h-5 mr-2" />
                             {t("common.home", "Home")}
-                          </Button>
+                          </MobileOptimizedButton>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">{t("tooltips.home", "Home")}</TooltipContent>
                       </Tooltip>
@@ -832,7 +833,7 @@ export const ResponsiveStoryHeader = ({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
+                          <MobileOptimizedButton
                             variant="outline"
                             size={isMobileOrTablet ? "sm" : "default"}
                             onClick={onDecreaseDifficulty}
@@ -856,7 +857,7 @@ export const ResponsiveStoryHeader = ({
                                 !isMobileOrTablet && "text-red-600"
                               )} />
                             )}
-                          </Button>
+                          </MobileOptimizedButton>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
                           {t("storyDisplay.decreaseDifficulty", "Make easier")}
@@ -885,7 +886,7 @@ export const ResponsiveStoryHeader = ({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
+                          <MobileOptimizedButton
                             variant="outline"
                             size={isMobileOrTablet ? "sm" : "default"}
                             onClick={onIncreaseDifficulty}
@@ -909,7 +910,7 @@ export const ResponsiveStoryHeader = ({
                                 !isMobileOrTablet && "text-green-600"
                               )} />
                             )}
-                          </Button>
+                          </MobileOptimizedButton>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
                           {t("storyDisplay.increaseDifficulty", "Make harder")}
@@ -924,7 +925,7 @@ export const ResponsiveStoryHeader = ({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
+                        <MobileOptimizedButton
                           variant="destructive"
                           size="default"
                           onClick={onEndSession}
@@ -932,7 +933,7 @@ export const ResponsiveStoryHeader = ({
                           aria-label={t("nav.endSession", "End Session")}
                         >
                           {t("nav.endSession", "End Session")}
-                        </Button>
+                        </MobileOptimizedButton>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">{t("tooltips.endSession", "This will end this session. You will have the option to save this story as is.")}</TooltipContent>
                     </Tooltip>
