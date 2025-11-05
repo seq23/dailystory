@@ -479,7 +479,7 @@ export type Database = {
           email_notification_sent: boolean
           email_notification_status: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           parent_notified_at: string | null
           updated_at: string
           user_agent: string | null
@@ -494,7 +494,7 @@ export type Database = {
           email_notification_sent?: boolean
           email_notification_status?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           parent_notified_at?: string | null
           updated_at?: string
           user_agent?: string | null
@@ -509,7 +509,7 @@ export type Database = {
           email_notification_sent?: boolean
           email_notification_status?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           parent_notified_at?: string | null
           updated_at?: string
           user_agent?: string | null
@@ -764,7 +764,7 @@ export type Database = {
           details: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
           user_id: string | null
         }
@@ -773,7 +773,7 @@ export type Database = {
           details?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -782,7 +782,7 @@ export type Database = {
           details?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -794,7 +794,7 @@ export type Database = {
           details: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           operation: string | null
           risk_level: string | null
           sensitive_data_accessed: boolean | null
@@ -807,7 +807,7 @@ export type Database = {
           details?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           operation?: string | null
           risk_level?: string | null
           sensitive_data_accessed?: boolean | null
@@ -820,7 +820,7 @@ export type Database = {
           details?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           operation?: string | null
           risk_level?: string | null
           sensitive_data_accessed?: boolean | null
@@ -1080,7 +1080,7 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_active: boolean
           last_activity: string
           session_token_hash: string
@@ -1091,7 +1091,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean
           last_activity?: string
           session_token_hash: string
@@ -1102,7 +1102,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean
           last_activity?: string
           session_token_hash?: string
@@ -1256,46 +1256,16 @@ export type Database = {
       }
     }
     Functions: {
-      anonymize_old_user_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      archive_legacy_character_tables: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_expired_sessions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_image_generation_debug_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_debug_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_security_audit_log: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      comprehensive_security_cleanup: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      detect_subscription_access_anomalies: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      detect_suspicious_patterns: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      get_security_dashboard: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      anonymize_old_user_data: { Args: never; Returns: undefined }
+      archive_legacy_character_tables: { Args: never; Returns: undefined }
+      cleanup_expired_sessions: { Args: never; Returns: undefined }
+      cleanup_image_generation_debug_logs: { Args: never; Returns: undefined }
+      cleanup_old_debug_logs: { Args: never; Returns: undefined }
+      cleanup_security_audit_log: { Args: never; Returns: undefined }
+      comprehensive_security_cleanup: { Args: never; Returns: undefined }
+      detect_subscription_access_anomalies: { Args: never; Returns: undefined }
+      detect_suspicious_patterns: { Args: never; Returns: undefined }
+      get_security_dashboard: { Args: never; Returns: Json }
       get_user_subscription_status: {
         Args: { target_user_id?: string }
         Returns: {
@@ -1321,10 +1291,7 @@ export type Database = {
         }
         Returns: undefined
       }
-      log_security_enhancement_completion: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      log_security_enhancement_completion: { Args: never; Returns: undefined }
       log_security_event: {
         Args: { details?: Json; event_type: string; user_id_param?: string }
         Returns: undefined
@@ -1333,18 +1300,9 @@ export type Database = {
         Args: { access_granted: boolean; story_id: string; user_id: string }
         Returns: undefined
       }
-      migrate_character_traits_to_cache: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      migrate_visual_details_to_cache: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      purge_old_incidents: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      migrate_character_traits_to_cache: { Args: never; Returns: undefined }
+      migrate_visual_details_to_cache: { Args: never; Returns: undefined }
+      purge_old_incidents: { Args: never; Returns: undefined }
       validate_password_strength: {
         Args: { password: string }
         Returns: boolean
@@ -1353,18 +1311,9 @@ export type Database = {
         Args: { target_user_id?: string }
         Returns: boolean
       }
-      validate_subscription_view_security: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      verify_phase3_security_completion: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      verify_subscription_view_security: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      validate_subscription_view_security: { Args: never; Returns: Json }
+      verify_phase3_security_completion: { Args: never; Returns: Json }
+      verify_subscription_view_security: { Args: never; Returns: Json }
     }
     Enums: {
       [_ in never]: never
