@@ -46,9 +46,10 @@ export class LiveGenerationService {
         providedSessionId: sessionId 
       });
       
-      // userInfo.difficultyLevel is already in backend format after form submission
-      const difficulty: DifficultyLevel = (userInfo.difficultyLevel || 'beginner') as DifficultyLevel;
-      DebugLogger.log('story', `Live: Using backend difficulty: "${difficulty}"`, { user: userInfo.name });
+      // CRITICAL: userInfo.difficultyLevel contains FRONTEND values - must convert to backend
+      const frontendDifficulty = userInfo.difficultyLevel || 'pre-reader';
+      const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficulty);
+      DebugLogger.log('story', `Live: Converted frontend "${frontendDifficulty}" → backend "${difficulty}"`, { user: userInfo.name });
       
       // Premium Expert: adaptive grade selection
       let expertGradeLevel: ExpertGradeLevel | undefined;
@@ -183,7 +184,7 @@ export class LiveGenerationService {
     } catch (error) {
       DebugLogger.error('story', 'Live Generation: Error generating first page', error);
       const wrappedError = ErrorHandler.handleError(error as Error, 'LiveGenerationService.generateFirstPage');
-      const fallbackDifficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner');
+      const fallbackDifficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'pre-reader');
       DebugLogger.log('story', `Live Generation Error Fallback: Using difficulty ${fallbackDifficulty} for ${userInfo.name}`, { fallbackDifficulty, userName: userInfo.name });
       return this.generateFallbackFirstPage(userInfo, fallbackDifficulty, 'generation_error');
     }
