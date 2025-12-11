@@ -105,14 +105,14 @@ export class VoiceCatalogTester {
     DebugLogger.log('audio', 'Testing franchise mapping accuracy...');
     
     const testCases = [
-      { input: ['Harry Potter'], expected: ['magic_school'] },
-      { input: ['Pokemon'], expected: ['animal'] },
-      { input: ['Godzilla'], expected: ['dragon'] },
-      { input: ['Superman'], expected: ['superhero'] },
-      { input: ['Little Mermaid'], expected: ['underwater', 'princess'] },
-      { input: ['Star Wars'], expected: ['space_adventure'] },
-      { input: ['Pirates'], expected: ['pirate'] },
-      { input: ['Sherlock Holmes'], expected: ['mystery', 'detective'] }
+      { input: ['wizard school'], expected: ['magic_school'] },
+      { input: ['pets'], expected: ['animal'] },
+      { input: ['monster'], expected: ['dragon'] },
+      { input: ['hero'], expected: ['superhero'] },
+      { input: ['ocean'], expected: ['underwater'] },
+      { input: ['space'], expected: ['space_adventure'] },
+      { input: ['pirates'], expected: ['pirate'] },
+      { input: ['detective'], expected: ['mystery', 'detective'] }
     ];
     
     const results: any[] = [];
@@ -238,7 +238,7 @@ export class VoiceCatalogTester {
     const explicitThemeResult = await VoiceCatalogIntegration.selectAndPrepareVoice(
       userInfo,
       'easy',
-      { themes: ['Harry Potter'] } // Should map to magic_school
+      { themes: ['wizard school'] } // Should map to magic_school
     );
     
     // Test general profile matching (should use balanced discovery)
@@ -254,7 +254,7 @@ export class VoiceCatalogTester {
       passed,
       details: {
         explicitTheme: {
-          themes: ['Harry Potter'],
+          themes: ['wizard school'],
           voiceId: explicitThemeResult.selectedVoice.id,
           score: explicitThemeResult.compatibilityScore,
           reasoning: explicitThemeResult.selectionReasoning
@@ -306,7 +306,7 @@ export class VoiceCatalogTester {
       results.push(await this.testThemeWeighting());
       
       // Test 4: Variety Testing
-      const varietyTest = await this.testVariety(testUser, 5, ['Harry Potter']);
+      const varietyTest = await this.testVariety(testUser, 5, ['wizard school']);
       results.push({
         testName: varietyTest.testName,
         passed: varietyTest.passed,

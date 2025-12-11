@@ -80,34 +80,34 @@ export class ThemeLibraryService {
    */
   private static findSynonymMatch(theme: string): string | null {
     const synonymMap: { [key: string]: string[] } = {
-      // Core themes (existing)
+      // Core themes
       "magic": ["fantasy", "magical", "wizard", "witch", "spell"],
       "adventure": ["explore", "journey", "quest", "travel", "expedition"],
       "friendship": ["friends", "buddy", "pal", "companion", "team"],
-      "animal": ["pets", "creatures", "wildlife", "zoo", "nature", "pokemon", "creatures"],
-      "mystery": ["detective", "puzzle", "clue", "solve", "investigation", "sherlock", "batman"],
+      "animal": ["pets", "creatures", "wildlife", "zoo", "nature", "critters"],
+      "mystery": ["detective", "puzzle", "clue", "solve", "investigation", "sleuth"],
       "portal_fantasy": ["magic", "portal", "door", "gateway", "teleport"],
-      "dragon": ["monster", "creature", "beast", "mythical", "godzilla", "kaiju", "dinosaur"],
-      "magic_school": ["wizard", "magic", "school", "learning", "academy", "harry_potter", "hogwarts", "wizard_school"],
+      "dragon": ["monster", "creature", "beast", "mythical", "dinosaur", "giant_lizard"],
+      "magic_school": ["wizard", "magic", "school", "learning", "academy", "wizard_school"],
       "horror_safe": ["spooky", "scary", "ghost", "halloween", "monster"],
       "coming_of_age": ["growing", "change", "identity", "self", "becoming"],
       "survival": ["wilderness", "nature", "camping", "outdoors", "forest"],
       "sports": ["game", "competition", "team", "athletic", "play"],
       "courage": ["brave", "hero", "fearless", "bold", "strength"],
       
-      // NEW FRANCHISE MAPPINGS
-      "superhero": ["superman", "spiderman", "batman", "marvel", "dc", "hero", "heroes", "avengers", "justice_league"],
-      "princess": ["disney_princess", "little_mermaid", "belle", "ariel", "elsa", "frozen", "cinderella", "snow_white"],
-      "underwater": ["little_mermaid", "ariel", "ocean", "sea", "atlantis", "nemo", "finding_nemo"],
-      "space_adventure": ["star_wars", "space", "galaxy", "alien", "rocket", "astronaut", "planets"],
-      "pirate": ["pirates", "treasure", "ship", "adventure", "captain", "caribbean", "jack_sparrow"],
+      // Theme category mappings
+      "superhero": ["hero", "heroes", "cape", "powers", "rescue", "save_the_day", "flying_hero"],
+      "princess": ["royalty", "queen", "king", "castle", "crown", "throne", "palace", "noble"],
+      "underwater": ["ocean", "sea", "atlantis", "mermaid", "fish", "coral", "deep_sea"],
+      "space_adventure": ["space", "galaxy", "alien", "rocket", "astronaut", "planets", "stars"],
+      "pirate": ["pirates", "treasure", "ship", "adventure", "captain", "sailing", "treasure_hunt"],
       
-      // Additional popular franchises
-      "detective": ["sherlock", "holmes", "batman", "mystery", "clue", "investigation"],
-      "quest": ["lord_of_rings", "hobbit", "tolkien", "fantasy", "adventure"],
-      "toy": ["toy_story", "buzz", "woody", "toys", "playtime"],
-      "school": ["harry_potter", "magic_school", "academy", "learning", "friends"],
-      "ghosts": ["ghostbusters", "casper", "friendly_ghost", "spooky_safe", "halloween"]
+      // Additional theme mappings
+      "detective": ["sleuth", "mystery", "clue", "investigation", "case", "solve"],
+      "quest": ["epic", "journey", "fantasy", "adventure", "hero_journey"],
+      "toy": ["toys", "playtime", "playroom", "imagination", "pretend"],
+      "school": ["magic_school", "academy", "learning", "friends", "classroom"],
+      "ghosts": ["friendly_ghost", "spooky_safe", "halloween", "spirit", "haunted"]
     };
 
     for (const [canonical, synonyms] of Object.entries(synonymMap)) {
