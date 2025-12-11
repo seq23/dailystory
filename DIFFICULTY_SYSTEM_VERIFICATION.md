@@ -1,6 +1,7 @@
 # ✅ DIFFICULTY LEVEL SYSTEM VERIFICATION COMPLETE
 
 ## 🎯 **IMPLEMENTATION STATUS: FULLY COMPLETE**
+**Last Updated**: December 2024 (Regression Fix Applied)
 
 The difficulty level standardization has been **successfully implemented and verified** across all system components.
 
@@ -22,6 +23,28 @@ The difficulty level standardization has been **successfully implemented and ver
 ### ✅ **3. Template Service Backend Updated**
 - **Lines 112-120**: Added DifficultyLevelMapper import and conversion
 - **Status**: Backend service now properly handles frontend→backend conversion
+
+### ✅ **4. December 2024 Regression Fix - Service Layer Conversion**
+- **Issue**: Services incorrectly assumed `userInfo.difficultyLevel` was in backend format
+- **Symptom**: User selects "Beginner" → received Pre-Reader content (one level off)
+- **Root Cause**: Misleading comment `// userInfo.difficultyLevel is already in backend format` was FALSE
+
+**Files Fixed:**
+- **NetflixStyleStoryService.ts (Lines 75-78)**: 
+  - BEFORE: `const difficulty = (userInfo.difficultyLevel || 'beginner') as DifficultyLevel;`
+  - AFTER: `const frontendDifficulty = userInfo.difficultyLevel || 'pre-reader';`
+  - AFTER: `const difficulty = DifficultyLevelMapper.toBackend(frontendDifficulty);`
+  
+- **LiveGenerationService.ts (Lines 49-52)**:
+  - BEFORE: `const difficulty = (userInfo.difficultyLevel || 'beginner') as DifficultyLevel;`
+  - AFTER: `const frontendDifficulty = userInfo.difficultyLevel || 'pre-reader';`
+  - AFTER: `const difficulty = DifficultyLevelMapper.toBackend(frontendDifficulty);`
+
+- **LiveGenerationService.ts (Line 187)**:
+  - BEFORE: `DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner')`
+  - AFTER: `DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'pre-reader')`
+
+- **Status**: ✅ Services now properly convert frontend→backend using DifficultyLevelMapper.toBackend()
 
 ---
 
@@ -123,3 +146,20 @@ The difficulty level standardization system is now **fully operational** with:
 - ✅ Zero remaining implementation gaps
 
 **Status**: **IMPLEMENTATION COMPLETE** ✅
+
+---
+
+## 🚨 **REGRESSION PREVENTION NOTES**
+
+### **December 2024 Regression Root Cause**
+The services contained a misleading comment claiming `userInfo.difficultyLevel` was "already in backend format" - this was FALSE. Forms store **frontend values** (`pre-reader`, `beginner`, `developing`, `independent`, `advanced`).
+
+### **Critical Rule**
+**NEVER** cast `userInfo.difficultyLevel` directly to `DifficultyLevel`. **ALWAYS** use:
+```typescript
+const frontendDifficulty = userInfo.difficultyLevel || 'pre-reader';
+const backendDifficulty = DifficultyLevelMapper.toBackend(frontendDifficulty);
+```
+
+### **Default Value**
+Use `'pre-reader'` as default (not `'beginner'`) - this is the safest frontend default that maps to backend `'beginner'`.
