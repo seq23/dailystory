@@ -21,6 +21,8 @@ import TemplateTestingPage from "./pages/TemplateTestingPage";
 import CCPA from "./pages/CCPA";
 import Accessibility from "./pages/Accessibility";
 import Vendors from "./pages/Vendors";
+import GDPR from "./pages/GDPR";
+import FERPA from "./pages/FERPA";
 import { PromptStudio } from "./components/PromptStudio";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
@@ -97,6 +99,8 @@ const App = () => {
               <Route path="/ccpa" element={<CCPA />} />
               <Route path="/accessibility" element={<Accessibility />} />
               <Route path="/vendors" element={<Vendors />} />
+              <Route path="/gdpr" element={<GDPR />} />
+              <Route path="/ferpa" element={<FERPA />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <VoiceHUD />
