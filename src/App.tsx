@@ -18,12 +18,16 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import PromptTesting from "./pages/PromptTesting";
 import TemplateTestingPage from "./pages/TemplateTestingPage";
+import CCPA from "./pages/CCPA";
+import Accessibility from "./pages/Accessibility";
+import Vendors from "./pages/Vendors";
 import { PromptStudio } from "./components/PromptStudio";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
 import { VoiceCommands } from "./components/VoiceCommands";
 import { VoiceHoverController } from "./components/VoiceHoverController";
 import { UnifiedDebugMonitor } from "./components/UnifiedDebugMonitor";
+import { CookieConsent } from "./components/CookieConsent";
 // Import debug services conditionally for performance
 import { DebugLogger } from "./services/DebugLogger";
 import { initializeViteLogGrouper, cleanupViteLogGrouper } from "./utils/viteLogGrouper";
@@ -90,12 +94,16 @@ const App = () => {
               <Route path="/template-testing" element={<TemplateTestingPage />} />
               <Route path="/prompt-studio" element={<PromptStudio />} />
               <Route path="/session-ended" element={<SessionEnded />} />
+              <Route path="/ccpa" element={<CCPA />} />
+              <Route path="/accessibility" element={<Accessibility />} />
+              <Route path="/vendors" element={<Vendors />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <VoiceHUD />
             <FloatingFeedback />
             <AudioFallbackNotification />
             <UnifiedDebugMonitor />
+            <CookieConsent />
           </BrowserRouter>
         </MobileWrapper>
       </TooltipProvider>
