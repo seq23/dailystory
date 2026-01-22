@@ -2,17 +2,20 @@ import { Check, CreditCard, Crown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { SubscriptionManager } from "@/components/SubscriptionManager";
 import { PasswordChangeForm } from "@/components/PasswordChangeForm";
+import { AccountDeletion } from "@/components/AccountDeletion";
 import { freeFeatures, premiumFeatures as topPremiumFeatures, additionalOfferings } from "@/constants/featureLists";
 import { Badge } from "@/components/ui/badge";
+
 interface MyAccountProps {
   isPremium: boolean;
   subscriptionTier?: string;
   subscriptionEnd?: string;
   devTestMode: boolean;
+  userEmail?: string;
 }
 
 
-export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTestMode }: MyAccountProps) {
+export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTestMode, userEmail }: MyAccountProps) {
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -124,6 +127,15 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
             </CardContent>
           </Card>
         </div>
+      </section>
+
+      {/* Account Deletion Section */}
+      <section aria-labelledby="danger-zone-heading" className="space-y-4 mt-8 pt-8 border-t border-destructive/20">
+        <header>
+          <h2 id="danger-zone-heading" className="text-xl font-semibold text-destructive">Danger Zone</h2>
+          <p className="text-muted-foreground">Irreversible actions for your account</p>
+        </header>
+        <AccountDeletion userEmail={userEmail} />
       </section>
     </div>
   );
