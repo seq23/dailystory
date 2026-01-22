@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import type { UserInfo } from "@/types";
 import { DebugLogger } from "@/services/DebugLogger";
 import { PasswordReset } from "@/components/PasswordReset";
+import { AgeGate } from "@/components/AgeGate";
 
 interface LoginScreenProps {
   userInfo?: UserInfo | null;
@@ -27,6 +28,10 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
     selectedPlan: "monthly" as "monthly" | "annual",
     discountCode: ""
   });
+  
+  // COPPA compliance: Age gate state
+  const [isUnder13, setIsUnder13] = useState(false);
+  const [parentEmail, setParentEmail] = useState("");
   
   // Pre-fill with userInfo if available
   useEffect(() => {
@@ -99,6 +104,12 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       return;
     }
 
+    // COPPA validation: require parent email if under 13
+    if (isUnder13 && (!parentEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(parentEmail))) {
+      toast.error("Please provide a valid parent/guardian email address for accounts under 13.");
+      return;
+    }
+
     setLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -110,6 +121,8 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
           data: {
             display_name: signUpData.displayName,
             selected_plan: signUpData.selectedPlan,
+            is_under_13: isUnder13,
+            parent_email: isUnder13 ? parentEmail : null,
             // Include all the user info from free trial
             ...(userInfo && {
               grade_level: userInfo.gradeLevel || userInfo.grade,
@@ -456,6 +469,15 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                     required
                   />
                 </div>
+
+                {/* COPPA Age Gate - Children's Privacy Protection */}
+                <AgeGate
+                  isUnder13={isUnder13}
+                  parentEmail={parentEmail}
+                  onUnder13Change={setIsUnder13}
+                  onParentEmailChange={setParentEmail}
+                  showValidationError={false}
+                />
 
                 {/* Discount Code Section */}
                 <div className="space-y-2">
