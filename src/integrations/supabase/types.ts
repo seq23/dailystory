@@ -204,6 +204,7 @@ export type Database = {
           grade_level: string | null
           hobbies: string | null
           id: string
+          parent_email: string | null
           parent_user_id: string
           updated_at: string
         }
@@ -219,6 +220,7 @@ export type Database = {
           grade_level?: string | null
           hobbies?: string | null
           id?: string
+          parent_email?: string | null
           parent_user_id: string
           updated_at?: string
         }
@@ -234,6 +236,7 @@ export type Database = {
           grade_level?: string | null
           hobbies?: string | null
           id?: string
+          parent_email?: string | null
           parent_user_id?: string
           updated_at?: string
         }

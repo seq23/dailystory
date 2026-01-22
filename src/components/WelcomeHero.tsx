@@ -384,9 +384,12 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             
             <div className="flex flex-col md:flex-row items-center gap-4 text-xs">
               <div>© {new Date().getFullYear()} {t("welcomeHero.footer.companyName")}. {t("welcomeHero.footer.copyright")}</div>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap justify-center gap-4">
                 <a href="/privacy" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.privacyPolicy")}</a>
                 <a href="/terms" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.termsOfService")}</a>
+                <a href="/ccpa" className="hover:text-white/90 transition-colors">CCPA</a>
+                <a href="/accessibility" className="hover:text-white/90 transition-colors">Accessibility</a>
+                <a href="/vendors" className="hover:text-white/90 transition-colors">Vendors</a>
                 <a href="mailto:hello@time2read.app" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.contactUs")}</a>
               </div>
             </div>
