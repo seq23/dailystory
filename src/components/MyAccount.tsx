@@ -1,8 +1,9 @@
-import { Check, CreditCard, Crown } from "lucide-react";
+import { Check, CreditCard, Crown, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { SubscriptionManager } from "@/components/SubscriptionManager";
 import { PasswordChangeForm } from "@/components/PasswordChangeForm";
 import { AccountDeletion } from "@/components/AccountDeletion";
+import { DataExportButton } from "@/components/DataExportButton";
 import { freeFeatures, premiumFeatures as topPremiumFeatures, additionalOfferings } from "@/constants/featureLists";
 import { Badge } from "@/components/ui/badge";
 
@@ -39,6 +40,25 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
 
       {/* Subscription Manager */}
       <SubscriptionManager showComparison={false} />
+
+      {/* Data Privacy Section */}
+      <Card className="border-muted/40">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Download className="w-5 h-5 text-primary" />
+            <CardTitle className="text-base">Your Data</CardTitle>
+          </div>
+          <CardDescription>Download or manage your personal data (GDPR/CCPA)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <DataExportButton />
+            <p className="text-xs text-muted-foreground">
+              Export all your data including profiles, reading history, saved stories, and preferences as a JSON file.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Subscription Details */}
       <Card className="border-muted/40">

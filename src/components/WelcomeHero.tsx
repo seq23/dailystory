@@ -388,6 +388,8 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 <a href="/privacy" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.privacyPolicy")}</a>
                 <a href="/terms" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.termsOfService")}</a>
                 <a href="/ccpa" className="hover:text-white/90 transition-colors">CCPA</a>
+                <a href="/gdpr" className="hover:text-white/90 transition-colors">GDPR</a>
+                <a href="/ferpa" className="hover:text-white/90 transition-colors">FERPA</a>
                 <a href="/accessibility" className="hover:text-white/90 transition-colors">Accessibility</a>
                 <a href="/vendors" className="hover:text-white/90 transition-colors">Vendors</a>
                 <a href="mailto:hello@time2read.app" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.contactUs")}</a>

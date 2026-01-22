@@ -135,3 +135,9 @@ verify_jwt = false
 
 [functions.word-dictionary]
 verify_jwt = false
+
+[functions.export-user-data]
+verify_jwt = false
+
+[functions.delete-user-account]
+verify_jwt = false
