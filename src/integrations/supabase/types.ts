@@ -473,6 +473,59 @@ export type Database = {
         }
         Relationships: []
       }
+      parental_consents: {
+        Row: {
+          child_profile_id: string | null
+          consent_status: string
+          consent_token: string | null
+          created_at: string
+          id: string
+          ip_address: unknown
+          parent_email: string
+          revoked_at: string | null
+          token_expires_at: string | null
+          updated_at: string
+          user_agent: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          child_profile_id?: string | null
+          consent_status?: string
+          consent_token?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          parent_email: string
+          revoked_at?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          child_profile_id?: string | null
+          consent_status?: string
+          consent_token?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          parent_email?: string
+          revoked_at?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parental_consents_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personal_info_incidents: {
         Row: {
           child_profile_id: string | null

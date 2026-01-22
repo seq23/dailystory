@@ -141,3 +141,9 @@ verify_jwt = false
 
 [functions.delete-user-account]
 verify_jwt = false
+
+[functions.verify-parental-consent]
+verify_jwt = false
+
+[functions.confirm-parental-consent]
+verify_jwt = false
