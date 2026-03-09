@@ -135,7 +135,7 @@ export const InteractiveStoryTester = ({
     if (currentStory) {
       (window as any).__pageContentHash = currentStory.hash;
       (window as any).__pageContentString = currentStory.text;
-      (window as any).__IS_PREMIUM = isPremium;
+      // Removed window.__IS_PREMIUM - premium checked server-side
       (window as any).__storyTitle = "Ruby's Magical Adventure";
       (window as any).__userName = userInfo.name;
       (window as any).currentStoryPage = currentPage + 1;
