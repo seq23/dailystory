@@ -107,10 +107,35 @@ serve(async (req) => {
   }
 
   try {
+    // Auth check: require valid JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('💰 Cost Analytics Request');
     
     // Get real cost data from database instead of memory
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+
+    // Verify user identity
+    const anonClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -251,7 +276,7 @@ serve(async (req) => {
     console.error('❌ Cost analytics error:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: error instanceof Error ? error.message : String(error)
+      error: 'An internal error occurred'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

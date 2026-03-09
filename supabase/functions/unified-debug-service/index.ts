@@ -40,6 +40,24 @@ serve(async (req) => {
   const healthCorsResponse = handleHealthAndCors(req);
   if (healthCorsResponse) return healthCorsResponse;
 
+  // Auth check: require valid JWT
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return createCorsResponse({ error: 'Unauthorized' }, 401);
+  }
+  try {
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+    const anonClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    const token = authHeader.replace('Bearer ', '');
+    const { error: claimsError } = await anonClient.auth.getClaims(token);
+    if (claimsError) return createCorsResponse({ error: 'Unauthorized' }, 401);
+  } catch {
+    return createCorsResponse({ error: 'Unauthorized' }, 401);
+  }
+
+
   try {
 const { memoizedImport } = await import("../_shared/resilientLoader.ts");
 const { createClient } = await memoizedImport('@supabase/supabase-js');
