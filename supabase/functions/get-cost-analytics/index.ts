@@ -107,6 +107,15 @@ serve(async (req) => {
   }
 
   try {
+    // Auth check: require valid JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('💰 Cost Analytics Request');
     
     // Get real cost data from database instead of memory
