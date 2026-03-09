@@ -269,6 +269,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   };
 
   const toggleDevTestMode = () => {
+    if (!import.meta.env.DEV) return; // No-op in production
     const newMode = !devTestMode;
     if (newMode) {
       localStorage.setItem('dev_premium_override', 'true');
