@@ -14,10 +14,8 @@ export const AuthWrapper = () => {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
-  // Expose premium status globally: ALL authenticated users are premium
-  useEffect(() => {
-    window.__IS_PREMIUM = !!user;
-  }, [user]);
+  // Premium status is determined server-side via EnhancedSubscriptionManager
+  // Removed window.__IS_PREMIUM to prevent client-side bypass
 
   // Clean up orphaned story URL parameters on app initialization
   useEffect(() => {

@@ -19,8 +19,9 @@ export class ExpertDifficultyManager {
    * Get the appropriate expert grade level for a user
    */
   static async getExpertGradeLevel(userInfo: UserInfo): Promise<ExpertGradeLevel> {
-    // Check if user is premium (simplified - you may want to integrate proper premium check)
-    const isPremium = true; // This should use your actual premium check logic
+    // Check premium status server-side
+    const { EnhancedSubscriptionManager } = await import('@/services/enhancedSubscriptionManager');
+    const isPremium = await EnhancedSubscriptionManager.isPremiumUser().catch(() => false);
     
     if (isPremium) {
       return this.getAdaptiveGradeLevel(userInfo);

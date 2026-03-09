@@ -78,12 +78,10 @@ useEffect(() => {
   let mounted = true;
   (async () => {
     try {
-      const winPremium = (window as any)?.__IS_PREMIUM;
       const enhanced = await EnhancedSubscriptionManager.isPremiumUser().catch(() => false);
-      const val = Boolean(typeof winPremium !== 'undefined' ? winPremium : enhanced);
-      if (mounted) setIsPremiumUser(val);
+      if (mounted) setIsPremiumUser(enhanced);
     } catch {
-      if (mounted) setIsPremiumUser(Boolean((window as any)?.__IS_PREMIUM) || false);
+      if (mounted) setIsPremiumUser(false);
     }
   })();
   return () => { mounted = false; };

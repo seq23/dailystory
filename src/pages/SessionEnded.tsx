@@ -101,11 +101,7 @@ const location = useLocation();
     }
   }
 
-  // Harden premium detection with global flag from AuthWrapper
-  try {
-    const globalPremium = (window as any).__IS_PREMIUM === true;
-    if (globalPremium) userIsPremium = true;
-  } catch {}
+  // Premium detection uses server-side EnhancedSubscriptionManager (no client-side flags)
 
   // Post-session activity data (with fallbacks)
   let userInfoFromState = (location.state?.userInfo as UserInfo | undefined);
