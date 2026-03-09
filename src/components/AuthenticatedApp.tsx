@@ -149,14 +149,16 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
   const checkSubscription = async () => {
     try {
-      // Check for dev test mode in localStorage
-      const devOverride = localStorage.getItem('dev_premium_override');
-      if (devOverride === 'true') {
-        setDevTestMode(true);
-        setIsPremium(true);
-        setSubscriptionTier('Development');
-        setSubscriptionEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
-        return;
+      // Check for dev test mode — only available in development builds
+      if (import.meta.env.DEV) {
+        const devOverride = localStorage.getItem('dev_premium_override');
+        if (devOverride === 'true') {
+          setDevTestMode(true);
+          setIsPremium(true);
+          setSubscriptionTier('Development');
+          setSubscriptionEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
+          return;
+        }
       }
 
       // LOCAL-FIRST: Check database directly with timeout (no network dependency)
