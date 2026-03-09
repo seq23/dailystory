@@ -69,7 +69,7 @@ serve(async (req: Request) => {
     console.error("Error in elevenlabs-tts:", error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Internal server error' 
+        error: 'An internal error occurred'
       }),
       { 
         status: 500, 

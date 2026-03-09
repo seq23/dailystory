@@ -33,7 +33,22 @@ serve(async (req) => {
 
   try {
     console.log('OpenAI TTS function called');
-    const { text, voice = "nova", speed = 1.0 } = await req.json()
+    const rawBody = await req.json();
+
+    // Input validation
+    try {
+      const { safeValidateRequest, TTSRequestSchema } = await import('../_shared/inputValidation.ts');
+      const result = safeValidateRequest(TTSRequestSchema, rawBody);
+      if (!result.success) {
+        return new Response(JSON.stringify({ error: 'Invalid request data' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    } catch (valErr) {
+      console.warn('Input validation skipped:', valErr);
+    }
+
+    const { text, voice = "nova", speed = 1.0 } = rawBody;
     
     console.log(`TTS Function called: voice=${voice}, speed=${speed}, textLength=${text?.length}`)
     console.log(`Request text preview: "${text?.substring(0, 100)}..."`)

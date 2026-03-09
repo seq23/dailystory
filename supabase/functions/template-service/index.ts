@@ -123,6 +123,24 @@ serve(async (req) => {
   }
 
   try {
+    const rawBody = await req.json();
+
+    // Input validation
+    let validatedBody = rawBody;
+    try {
+      const { safeValidateRequest, TemplateRequestSchema } = await import('../_shared/inputValidation.ts');
+      const result = safeValidateRequest(TemplateRequestSchema, rawBody);
+      if (!result.success) {
+        console.warn('⚠️ Template service input validation failed:', result.error);
+        return new Response(JSON.stringify({ error: 'Invalid request data' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      validatedBody = result.data;
+    } catch (valErr) {
+      console.warn('Input validation skipped:', valErr);
+    }
+
     const { 
       difficulty, 
       userInfo, 
@@ -134,7 +152,7 @@ serve(async (req) => {
       pageIndex,
       sessionId,
       isNeverEnding = false
-    } = await req.json();
+    } = validatedBody;
     
     // Import difficulty mapper for frontend->backend conversion
     const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');

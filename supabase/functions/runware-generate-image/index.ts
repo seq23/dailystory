@@ -3160,6 +3160,23 @@ serve(async (req) => {
     return corsResponse({ error: "Method not allowed" }, req, 405);
   }
 
+  // Rate limiting: 60 requests per minute per IP
+  try {
+    const { checkRateLimit, getClientIdentifier } = await import('../_shared/rateLimit.ts');
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+    const rlClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+    const clientId = getClientIdentifier(req);
+    const { allowed } = await checkRateLimit(rlClient, clientId, 'runware-generate-image', 60, 60000);
+    if (!allowed) {
+      return corsResponse({ error: 'Too many requests, please try again later' }, req, 429);
+    }
+  } catch (rlErr) {
+    console.warn('Rate limit check skipped:', rlErr);
+  }
+
   // Fast retry wrapper for boot sync issues
   let cachedPayload: any | null = null;
   const requestId = `mg1${Math.random().toString(36).substring(2)}`;
