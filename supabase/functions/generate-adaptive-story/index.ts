@@ -157,6 +157,23 @@ serve(async (req) => {
     });
   }
 
+  // Rate limiting: 30 requests per minute per IP
+  try {
+    const { checkRateLimit, getClientIdentifier } = await import('../_shared/rateLimit.ts');
+    const rateLimitClient = await createTieredSupabaseClient().catch(() => null);
+    if (rateLimitClient) {
+      const clientId = getClientIdentifier(req);
+      const { allowed } = await checkRateLimit(rateLimitClient, clientId, 'generate-adaptive-story', 30, 60000);
+      if (!allowed) {
+        return new Response(JSON.stringify({ success: false, error: 'Too many requests, please try again later' }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+  } catch (rlErr) {
+    console.warn('Rate limit check skipped:', rlErr);
+  }
+
   // Read request body once at the top to avoid double consumption
   let rawBody: string;
   try {
@@ -170,6 +187,23 @@ serve(async (req) => {
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
+  }
+
+  // Input validation
+  try {
+    const parsed = JSON.parse(rawBody);
+    const { safeValidateRequest } = await import('../_shared/inputValidation.ts');
+    const { StoryRequestSchema } = await import('../_shared/inputValidation.ts');
+    const result = safeValidateRequest(StoryRequestSchema, parsed);
+    if (!result.success) {
+      console.warn('⚠️ Input validation failed:', result.error);
+      return new Response(JSON.stringify({ success: false, error: 'Invalid request data' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+  } catch (valErr) {
+    // If validation module fails to load, allow request (fail open) but log
+    console.warn('Input validation skipped:', valErr);
   }
 
   // Create Supabase client inside handler for better error handling
