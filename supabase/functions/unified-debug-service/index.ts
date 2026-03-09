@@ -57,9 +57,6 @@ serve(async (req) => {
     return createCorsResponse({ error: 'Unauthorized' }, 401);
   }
 
-  // Original health/cors check already handled above, skip duplicate
-  const healthCorsResponse2 = null; // was: handleHealthAndCors(req);
-  if (healthCorsResponse) return healthCorsResponse;
 
   try {
 const { memoizedImport } = await import("../_shared/resilientLoader.ts");
