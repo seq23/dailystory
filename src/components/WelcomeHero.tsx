@@ -381,7 +381,17 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 <a href="/pricing" className="story-link text-sm">Plans & Pricing →</a>
               </div>
             </div>
-            
+
+            <div className="flex flex-col items-center text-center">
+              <div className="text-xs font-semibold text-white/80 mb-1">{t("welcomeHero.footer.familyOfTools", "Our Family of Tools")}</div>
+              <div className="flex items-center gap-2 text-xs">
+                <a href="/" className="hover:text-white/90 transition-colors font-medium">Time2Read</a>
+                <span>·</span>
+                <a href="https://heygetonmylevel.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/90 transition-colors font-medium">HeyGetOnMyLevel</a>
+              </div>
+              <div className="text-xs mt-1 text-white/50">{t("welcomeHero.footer.companionTool", "Test reading levels with our companion tool.")}</div>
+            </div>
+
             <div className="flex flex-col md:flex-row items-center gap-4 text-xs">
               <div>© {new Date().getFullYear()} {t("welcomeHero.footer.companyName")}. {t("welcomeHero.footer.copyright")}</div>
               <div className="flex flex-wrap justify-center gap-4">
