@@ -32,7 +32,13 @@
       "termsOfService": "服务条款",
       "contactUs": "联系我们",
       "familyOfTools": "我们的工具家族",
-      "companionTool": "使用我们的配套工具测试阅读水平。"
+      "companionTool": "使用我们的配套工具测试阅读水平。",
+      "plansAndPricing": "方案与价格",
+      "ccpa": "CCPA",
+      "gdpr": "GDPR",
+      "ferpa": "FERPA",
+      "accessibility": "无障碍",
+      "vendors": "供应商"
     },
     "languageSelector": {
       "label": "选择你的语言",
@@ -842,7 +848,10 @@
       "arabic": "阿拉伯语", "chinese": "中文", "hindi": "印地语", "portuguese": "葡萄牙语"
     },
     "next": "下一步",
-    "startReading": "立即开始阅读"
+    "startReading": "立即开始阅读",
+    "addReadingPrefs": "添加阅读偏好",
+    "skipAndCreate": "跳过并立即创建故事",
+    "encouragement": "我们的系统会适应支持您孩子独特的学习旅程"
   },
   "formStep2": {
     "title": "阅读偏好",
@@ -887,5 +896,48 @@
     "back": "返回",
     "createStory": "创建我的故事！",
     "creating": "创建中..."
+  },
+  "multiStepForm": {
+    "title": "让我们创建您的完美故事！",
+    "description": "告诉我们关于您的信息，创建神奇的个性化阅读冒险！",
+    "step1Complete": "好的开始！",
+    "step1CompleteDesc": "准备创建您的第一个故事或添加阅读偏好？",
+    "completeRequired": "就快好了！",
+    "completeRequiredDesc": "请先完成必填字段。",
+    "validationError": "请检查您的信息",
+    "validationErrorDesc": "一些必填字段需要您的注意。"
+  },
+  "formProgress": {
+    "step1": "基本",
+    "step1Desc": "基本信息",
+    "step2": "阅读",
+    "step2Desc": "阅读偏好",
+    "step3": "个人",
+    "step3Desc": "个性化设置",
+    "step1Context": "我们使用您孩子的年龄和年级来推荐最有效的阅读水平",
+    "step2Context": "研究表明，将内容与阅读水平匹配可以加速学习",
+    "step3Context": "个性化故事可以提高参与度和阅读理解能力"
+  },
+  "minimalBanner": {
+    "text": "基于研究的级别，使用Dolch视觉词汇",
+    "learnMore": "了解我们的方法"
+  },
+  "educationalBanner": {
+    "research": {
+      "title": "基于研究的阅读水平",
+      "content": "我们的水平基于经过验证的教育研究和Dolch视觉词汇表，确保适合年龄的内容。",
+      "link": "了解我们的方法"
+    },
+    "trust": {
+      "title": "专家验证",
+      "content": "符合共同核心州标准，由认证阅读专家审核。",
+      "link": "我们的教育标准"
+    },
+    "progress": {
+      "title": "个性化学习",
+      "content": "研究表明，个性化内容可以将参与度和阅读理解提高多达60%。",
+      "link": "工作原理"
+    }
   }
 }
+
