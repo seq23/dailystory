@@ -616,7 +616,8 @@ export class PremiumVocabularyService {
       'ar': [],
       'zh': [],
       'hi': [],
-      'en-african-american': []
+      'en-african-american': [],
+      'ur': []
     };
     
     return falseFriends[nativeLanguage]?.includes(word.toLowerCase()) || false;
