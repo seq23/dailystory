@@ -92,6 +92,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   
   // Authoritative billing status from database for gating premium features
   const { isPremium: isSubscriptionActive, loading: subLoading } = useCachedSubscriptionStatus(user.id);
+  // While subscription status is loading, assume active to prevent flash of "Subscription Required"
+  const effectiveSubscriptionActive = subLoading ? true : isSubscriptionActive;
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [devTestMode, setDevTestMode] = useState(false);
