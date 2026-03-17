@@ -21,6 +21,7 @@ const languages = [
   { code: 'zh', name: 'Chinese', nativeName: '中文' },
   { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
   { code: 'pt', name: 'Portuguese', nativeName: 'Português' },
+  { code: 'ur', name: 'Urdu', nativeName: 'اردو' },
 ];
 
 export default function LanguageSwitcher() {
