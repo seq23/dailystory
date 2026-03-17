@@ -432,6 +432,13 @@ export class PremiumVocabularyService {
         'book': 'livre',
         'house': 'maison',
         'family': 'famille'
+      },
+      'ur': {
+        'cat': 'بلی',
+        'dog': 'کتا',
+        'book': 'کتاب',
+        'house': 'گھر',
+        'family': 'خاندان'
       }
     };
 
