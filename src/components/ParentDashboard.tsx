@@ -480,29 +480,29 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     <div className="space-y-3">
                       {/* Streak insight */}
                       {progress.currentStreak >= 3 ? (
-                        <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
-                          <h4 className="font-semibold text-green-800">Great Consistency!</h4>
-                          <p className="text-green-700">{childLabel} has a {progress.currentStreak}-day reading streak (longest: {progress.longestStreak} days). Keep it going!</p>
+                        <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary">
+                          <h4 className="font-semibold text-foreground">Great Consistency!</h4>
+                          <p className="text-muted-foreground">{childLabel} has a {progress.currentStreak}-day reading streak (longest: {progress.longestStreak} days). Keep it going!</p>
                         </div>
                       ) : progress.currentStreak > 0 ? (
-                        <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                          <h4 className="font-semibold text-blue-800">Building a Habit</h4>
-                          <p className="text-blue-700">{childLabel} has read {progress.currentStreak} day{progress.currentStreak > 1 ? 's' : ''} in a row. Encourage daily reading to build a strong streak!</p>
+                        <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary/60">
+                          <h4 className="font-semibold text-foreground">Building a Habit</h4>
+                          <p className="text-muted-foreground">{childLabel} has read {progress.currentStreak} day{progress.currentStreak > 1 ? 's' : ''} in a row. Encourage daily reading to build a strong streak!</p>
                         </div>
                       ) : (
-                        <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
-                          <h4 className="font-semibold text-yellow-800">Time to Read!</h4>
-                          <p className="text-yellow-700">{childLabel} hasn't read today. A short reading session can help build consistency.</p>
+                        <div className="p-4 bg-muted rounded-lg border-l-4 border-muted-foreground/40">
+                          <h4 className="font-semibold text-foreground">Time to Read!</h4>
+                          <p className="text-muted-foreground">{childLabel} hasn't read today. A short reading session can help build consistency.</p>
                         </div>
                       )}
 
                       {/* Comprehension insight */}
                       {progress.quizzesTaken > 0 && (
-                        <div className={`p-4 rounded-lg border-l-4 ${progress.averageComprehensionScore >= 70 ? 'bg-green-50 border-green-500' : 'bg-yellow-50 border-yellow-500'}`}>
-                          <h4 className={`font-semibold ${progress.averageComprehensionScore >= 70 ? 'text-green-800' : 'text-yellow-800'}`}>
+                        <div className={`p-4 rounded-lg border-l-4 ${progress.averageComprehensionScore >= 70 ? 'bg-accent/30 border-primary' : 'bg-muted border-muted-foreground/40'}`}>
+                          <h4 className="font-semibold text-foreground">
                             Comprehension: {progress.averageComprehensionScore}%
                           </h4>
-                          <p className={progress.averageComprehensionScore >= 70 ? 'text-green-700' : 'text-yellow-700'}>
+                          <p className="text-muted-foreground">
                             {progress.averageComprehensionScore >= 80
                               ? `${childLabel} is demonstrating strong comprehension across ${progress.quizzesTaken} quizzes. Consider increasing the reading difficulty.`
                               : progress.averageComprehensionScore >= 60
@@ -514,9 +514,9 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
 
                       {/* Vocabulary insight */}
                       {progress.wordsLearned > 0 && (
-                        <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                          <h4 className="font-semibold text-blue-800">Vocabulary Growth</h4>
-                          <p className="text-blue-700">
+                        <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary/60">
+                          <h4 className="font-semibold text-foreground">Vocabulary Growth</h4>
+                          <p className="text-muted-foreground">
                             {progress.wordsLearned} words encountered so far.
                             {progress.wordsLearned >= 50
                               ? " Excellent vocabulary building!"
@@ -527,9 +527,9 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
 
                       {/* Reading volume insight */}
                       {progress.totalReadingTimeMinutes > 0 && (
-                        <div className="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
-                          <h4 className="font-semibold text-purple-800">Reading Volume</h4>
-                          <p className="text-purple-700">
+                        <div className="p-4 bg-secondary/30 rounded-lg border-l-4 border-secondary">
+                          <h4 className="font-semibold text-foreground">Reading Volume</h4>
+                          <p className="text-muted-foreground">
                             {childLabel} has read for {formatTime(progress.totalReadingTimeMinutes)} across {progress.storiesRead} completed {progress.storiesRead === 1 ? 'story' : 'stories'}.
                             {progress.gamesPlayed > 0 ? ` They've also played ${progress.gamesPlayed} learning games.` : ''}
                           </p>
