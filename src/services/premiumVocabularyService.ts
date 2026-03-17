@@ -335,6 +335,11 @@ export class PremiumVocabularyService {
         'cat': '/kæt/ → Standard English pronunciation',
         'dog': '/dɔg/ → Standard English pronunciation',
         'book': '/bʊk/ → Standard English pronunciation'
+      },
+      'ur': {
+        'cat': '/kæt/ → بلی (billī) - Practice the English "a" sound',
+        'dog': '/dɔg/ → کتا (kuttā) - Focus on the "o" vowel',
+        'book': '/bʊk/ → کتاب (kitāb) - Practice the "oo" sound'
       }
     };
 
