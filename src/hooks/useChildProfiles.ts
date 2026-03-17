@@ -278,6 +278,9 @@ export function useChildProfiles() {
       // Clear cache to ensure fresh data on next load
       lastRequestRef.current = null;
       
+      // Notify all instances (e.g. header) to refresh their child list
+      window.dispatchEvent(new CustomEvent('child-profiles-changed'));
+      
       return data as ChildProfile;
     } catch (e: any) {
       DebugLogger.error('auth', 'addChild error', e);
