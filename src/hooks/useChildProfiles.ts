@@ -66,12 +66,21 @@ export function useChildProfiles() {
         now - lastRequestRef.current.timestamp < CACHE_DURATION) {
       if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Using cached request');
       try {
-        await lastRequestRef.current.promise;
+        const cachedResult = await lastRequestRef.current.promise;
+        // Re-apply cached data to state in case component re-mounted
+        if (cachedResult && !cancelled) {
+          setChildren(cachedResult.children || []);
+          setActiveChildId(cachedResult.activeChildId ?? null);
+          setLoading(false);
+        }
         return;
       } catch (e) {
         // Cache failed, continue with fresh request
       }
     }
+    
+    // Track cancellation for this load call
+    let cancelled = false;
     
     if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Setting loading to true');
     setLoading(true);

@@ -477,7 +477,28 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      // Clear all local state first
+      setUserInfo(null);
+      setUserProfile(null);
+      setCurrentStory(null);
+      setCurrentView("stories");
+      
+      // Clear caches
+      localStorage.removeItem('story-session-data');
+      sessionStorage.clear();
+      
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        DebugLogger.error('auth', 'Sign out error', error);
+        // Force reload as fallback
+        window.location.href = '/';
+      }
+    } catch (e) {
+      DebugLogger.error('auth', 'Sign out exception', e);
+      // Force reload as last resort
+      window.location.href = '/';
+    }
   };
 
   const handleSessionEnded = async (stats: SessionStats) => {
