@@ -330,6 +330,9 @@ export function useChildProfiles() {
       // Clear cache to ensure fresh data on next load
       lastRequestRef.current = null;
       
+      // Notify all instances to refresh
+      window.dispatchEvent(new CustomEvent('child-profiles-changed'));
+      
       return data as ChildProfile;
     } catch (e: any) {
       DebugLogger.error('auth', 'updateChild error', e);
