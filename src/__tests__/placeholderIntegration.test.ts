@@ -135,7 +135,8 @@ describe("DifficultyLevelMapper", () => {
   });
 
   it("gets style framework key with fallback", () => {
-    expect(DifficultyLevelMapper.getStyleFrameworkKey("beginner")).toBe("beginner");
+    // "beginner" is a FRONTEND value → maps to backend "easy"
+    expect(DifficultyLevelMapper.getStyleFrameworkKey("beginner")).toBe("easy");
     expect(DifficultyLevelMapper.getStyleFrameworkKey("unknown")).toBe("easy");
   });
 
