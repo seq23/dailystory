@@ -335,6 +335,11 @@ export class PremiumVocabularyService {
         'cat': '/kæt/ → Standard English pronunciation',
         'dog': '/dɔg/ → Standard English pronunciation',
         'book': '/bʊk/ → Standard English pronunciation'
+      },
+      'ur': {
+        'cat': '/kæt/ → بلی (billī) - Practice the English "a" sound',
+        'dog': '/dɔg/ → کتا (kuttā) - Focus on the "o" vowel',
+        'book': '/bʊk/ → کتاب (kitāb) - Practice the "oo" sound'
       }
     };
 
@@ -427,6 +432,13 @@ export class PremiumVocabularyService {
         'book': 'livre',
         'house': 'maison',
         'family': 'famille'
+      },
+      'ur': {
+        'cat': 'بلی',
+        'dog': 'کتا',
+        'book': 'کتاب',
+        'house': 'گھر',
+        'family': 'خاندان'
       }
     };
 
@@ -500,6 +512,7 @@ export class PremiumVocabularyService {
       'fr-francophone-african': ['Practice English "h" sounds', 'Work on nasal vowels', 'Focus on final consonants'],
       'zh': ['Practice consonant clusters', 'Work on vowel length', 'Focus on stress patterns'],
       'ar': ['Practice "p" vs "b" sounds', 'Work on vowel systems', 'Focus on consonant endings'],
+      'ur': ['Practice "p" vs "b" sounds', 'Work on vowel systems', 'Focus on retroflex consonants'],
       'hi': ['Practice "v" vs "w" sounds', 'Work on "th" sounds', 'Focus on consonant clusters'],
       'pt': ['Practice nasal vowels', 'Work on final consonants', 'Focus on stress patterns'],
       'en': ['Standard English learning path'],
@@ -585,7 +598,8 @@ export class PremiumVocabularyService {
       'ar': [],
       'zh': [],
       'hi': [],
-      'en-african-american': []
+      'en-african-american': [],
+      'ur': []
     };
     
     return cognates[nativeLanguage]?.includes(word.toLowerCase()) || false;
@@ -602,7 +616,8 @@ export class PremiumVocabularyService {
       'ar': [],
       'zh': [],
       'hi': [],
-      'en-african-american': []
+      'en-african-american': [],
+      'ur': []
     };
     
     return falseFriends[nativeLanguage]?.includes(word.toLowerCase()) || false;

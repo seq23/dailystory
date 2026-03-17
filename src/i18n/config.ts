@@ -10,6 +10,7 @@ import zhTranslations from './locales/zh.json';
 import hiTranslations from './locales/hi.json';
 import ptTranslations from './locales/pt.json';
 import frTranslations from './locales/fr.json';
+import urTranslations from './locales/ur.json';
 
 const resources = {
   en: { translation: enTranslations },
@@ -19,6 +20,7 @@ const resources = {
   hi: { translation: hiTranslations },
   pt: { translation: ptTranslations },
   fr: { translation: frTranslations },
+  ur: { translation: urTranslations },
 };
 
 i18n
@@ -48,7 +50,7 @@ i18n
 
 // Update document direction and language attributes when language changes
 i18n.on('languageChanged', (lng) => {
-  const isRTL = lng === 'ar';
+  const isRTL = lng === 'ar' || lng === 'ur';
   document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
   document.documentElement.lang = lng;
   
