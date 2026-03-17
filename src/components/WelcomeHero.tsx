@@ -142,6 +142,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                   <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                     <SelectItem value="en">English</SelectItem>
                     <SelectItem value="ar">العربية</SelectItem>
+                    <SelectItem value="ur">اردو</SelectItem>
                     <SelectItem value="es">Español</SelectItem>
                     <SelectItem value="zh">中文</SelectItem>
                     <SelectItem value="hi">हिंदी</SelectItem>
