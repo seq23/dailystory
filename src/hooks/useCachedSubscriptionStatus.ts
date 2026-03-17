@@ -29,7 +29,9 @@ export function useCachedSubscriptionStatus(userId?: string) {
       return;
     }
 
-    const fetchStatus = async () => {
+    let retryTimeout: ReturnType<typeof setTimeout>;
+
+    const fetchStatus = async (isRetry = false) => {
       try {
         const cacheKey = `subscription_${userId}`;
         
@@ -61,6 +63,15 @@ export function useCachedSubscriptionStatus(userId?: string) {
           ...result,
           loading: false
         });
+
+        // If not premium on first check, retry once after 3s (handles signup race condition)
+        if (!isRetry && !result.isPremium) {
+          retryTimeout = setTimeout(() => {
+            // Clear stale cache and re-fetch
+            LeanCache.clear();
+            fetchStatus(true);
+          }, 3000);
+        }
       } catch (error: any) {
         LeanErrorService.logError(error, 'useCachedSubscriptionStatus');
         setStatus({
@@ -73,6 +84,10 @@ export function useCachedSubscriptionStatus(userId?: string) {
     };
 
     fetchStatus();
+
+    return () => {
+      if (retryTimeout) clearTimeout(retryTimeout);
+    };
   }, [userId]);
 
   return status;
