@@ -50,9 +50,9 @@ const sidebarItems = [
   // Core Navigation
   {
     title: "Home",
-    url: "",
+    url: "home",
     icon: Home,
-    description: "Return to main dashboard",
+    description: "Guide & FAQ",
     premium: false,
     group: "core"
   },
@@ -155,7 +155,6 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
 
   // Enhanced active state detection
   const isActive = (itemUrl: string) => {
-    if (itemUrl === "") return location.pathname === "/" && currentView === "";
     return currentView === itemUrl;
   };
 

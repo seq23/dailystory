@@ -16,6 +16,7 @@ import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 
 import { MyAccount } from "@/components/MyAccount";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
+import { PremiumHomeTutorial } from "@/components/PremiumHomeTutorial";
 
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { NonBlockingSubscriptionBanner } from "@/components/NonBlockingSubscriptionBanner";
@@ -34,7 +35,7 @@ interface AuthenticatedAppProps {
   user: User;
 }
 
-type AppView = "stories" | "library" | "profile" | "parent" | "account" | "reading" | "progress" | "premium" | "email-confirmation-required";
+type AppView = "home" | "stories" | "library" | "profile" | "parent" | "account" | "reading" | "progress" | "premium" | "email-confirmation-required";
 
 interface UserProfile {
   id?: string;
@@ -746,6 +747,13 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                 />
               ) : (
                 <>
+                  {currentView === "home" && userInfo && (
+                    <PremiumHomeTutorial
+                      userName={userInfo.name}
+                      onNavigate={(view) => setCurrentView(view as AppView)}
+                    />
+                  )}
+
                   {currentView === "stories" && (
           <PremiumMyStoriesView
             userInfo={userInfo}
