@@ -32,7 +32,13 @@
       "termsOfService": "Termos de Serviço",
       "contactUs": "Entre em Contato",
       "familyOfTools": "Nossa Família de Ferramentas",
-      "companionTool": "Teste níveis de leitura com nossa ferramenta complementar."
+      "companionTool": "Teste níveis de leitura com nossa ferramenta complementar.",
+      "plansAndPricing": "Planos e Preços",
+      "ccpa": "CCPA",
+      "gdpr": "GDPR",
+      "ferpa": "FERPA",
+      "accessibility": "Acessibilidade",
+      "vendors": "Fornecedores"
     },
     "languageSelector": {
       "label": "Escolha seu idioma",

@@ -32,7 +32,13 @@
       "termsOfService": "服务条款",
       "contactUs": "联系我们",
       "familyOfTools": "我们的工具家族",
-      "companionTool": "使用我们的配套工具测试阅读水平。"
+      "companionTool": "使用我们的配套工具测试阅读水平。",
+      "plansAndPricing": "方案与价格",
+      "ccpa": "CCPA",
+      "gdpr": "GDPR",
+      "ferpa": "FERPA",
+      "accessibility": "无障碍",
+      "vendors": "供应商"
     },
     "languageSelector": {
       "label": "选择你的语言",

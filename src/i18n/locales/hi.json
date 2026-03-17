@@ -32,7 +32,13 @@
       "termsOfService": "सेवा की शर्तें",
       "contactUs": "हमसे संपर्क करें",
       "familyOfTools": "हमारे टूल्स का परिवार",
-      "companionTool": "हमारे साथी टूल से पढ़ने के स्तर का परीक्षण करें।"
+      "companionTool": "हमारे साथी टूल से पढ़ने के स्तर का परीक्षण करें।",
+      "plansAndPricing": "योजनाएं और मूल्य",
+      "ccpa": "CCPA",
+      "gdpr": "GDPR",
+      "ferpa": "FERPA",
+      "accessibility": "पहुंच",
+      "vendors": "विक्रेता"
     },
     "languageSelector": {
       "label": "अपनी भाषा चुनें",
