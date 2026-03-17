@@ -1035,7 +1035,10 @@
       "arabic": "Árabe", "chinese": "Chinês", "hindi": "Hindi", "portuguese": "Português"
     },
     "next": "Próximo Passo",
-    "startReading": "Começar a Ler Agora"
+    "startReading": "Começar a Ler Agora",
+    "addReadingPrefs": "Adicionar Preferências de Leitura",
+    "skipAndCreate": "Pular e criar história agora",
+    "encouragement": "Nosso sistema se adapta para apoiar a jornada de aprendizado única do seu filho"
   },
   "formStep2": {
     "title": "Preferências de Leitura",
