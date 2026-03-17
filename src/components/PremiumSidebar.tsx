@@ -99,7 +99,7 @@ const sidebarItems = [
     group: "settings"
   },
   {
-    title: "Parent Dashboard",
+    title: "Parent / Teacher Dashboard",
     url: "parent",
     icon: User,
     description: "Parent controls & reports",

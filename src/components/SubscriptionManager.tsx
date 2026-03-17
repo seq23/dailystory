@@ -256,7 +256,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
               <li>• Live page-by-page generation</li>
               <li>• Save stories to your library</li>
               <li>• Vocabulary tracking and progress</li>
-              <li>• Parent dashboard insights</li>
+              <li>• Parent / Teacher dashboard insights</li>
             </ul>
           </CardContent>
         </Card>

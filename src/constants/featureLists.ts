@@ -27,7 +27,7 @@ export const additionalOfferings: string[] = [
   "Personalized live story generation (Your story doesn't end until you decide!)",
   "Saved stories, favorites, and collections",
   "Multiple child profiles",
-  "Parent dashboard with insights and analytics",
+  "Parent / Teacher dashboard with insights and analytics",
   "Learning goals with weekly targets",
   "Vocabulary tracking and practice quizzes",
   "Comprehension questions after reading",
