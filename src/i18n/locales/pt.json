@@ -1083,5 +1083,48 @@
     "back": "Voltar",
     "createStory": "Criar Minha História!",
     "creating": "Criando..."
+  },
+  "multiStepForm": {
+    "title": "Vamos Criar Sua História Perfeita!",
+    "description": "Conte-nos sobre você para criar aventuras de leitura mágicas e personalizadas!",
+    "step1Complete": "Ótimo começo!",
+    "step1CompleteDesc": "Pronto para criar sua primeira história ou adicionar preferências de leitura?",
+    "completeRequired": "Quase lá!",
+    "completeRequiredDesc": "Por favor, complete os campos obrigatórios primeiro.",
+    "validationError": "Por favor, verifique suas informações",
+    "validationErrorDesc": "Alguns campos obrigatórios precisam da sua atenção."
+  },
+  "formProgress": {
+    "step1": "Essencial",
+    "step1Desc": "Informações básicas",
+    "step2": "Leitura",
+    "step2Desc": "Preferências de leitura",
+    "step3": "Pessoal",
+    "step3Desc": "Personalize",
+    "step1Context": "Usamos a idade e a série do seu filho para recomendar o nível de leitura mais eficaz",
+    "step2Context": "Pesquisas mostram que adaptar o conteúdo ao nível de leitura acelera o aprendizado",
+    "step3Context": "Histórias personalizadas aumentam o engajamento e a compreensão de leitura"
+  },
+  "minimalBanner": {
+    "text": "Níveis baseados em pesquisa usando palavras Dolch",
+    "learnMore": "Conheça Nossa Abordagem"
+  },
+  "educationalBanner": {
+    "research": {
+      "title": "Níveis de Leitura Baseados em Pesquisa",
+      "content": "Nossos níveis são baseados em pesquisa educacional comprovada e listas de palavras Dolch, garantindo conteúdo apropriado para a idade.",
+      "link": "Conheça Nossa Abordagem"
+    },
+    "trust": {
+      "title": "Validado por Especialistas",
+      "content": "Alinhado com os Padrões Comuns e revisado por especialistas certificados em leitura.",
+      "link": "Nossos Padrões Educacionais"
+    },
+    "progress": {
+      "title": "Aprendizado Personalizado",
+      "content": "Pesquisas mostram que conteúdo personalizado aumenta o engajamento e a compreensão de leitura em até 60%.",
+      "link": "Como Funciona"
+    }
   }
 }
+
