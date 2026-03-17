@@ -68,7 +68,7 @@ export function useChildProfiles() {
       try {
         const cachedResult = await lastRequestRef.current.promise;
         // Re-apply cached data to state in case component re-mounted
-        if (cachedResult && !cancelled) {
+        if (cachedResult) {
           setChildren(cachedResult.children || []);
           setActiveChildId(cachedResult.activeChildId ?? null);
           setLoading(false);
@@ -78,9 +78,6 @@ export function useChildProfiles() {
         // Cache failed, continue with fresh request
       }
     }
-    
-    // Track cancellation for this load call
-    let cancelled = false;
     
     if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Setting loading to true');
     setLoading(true);
