@@ -32,7 +32,13 @@
       "termsOfService": "شروط الخدمة",
       "contactUs": "اتصل بنا",
       "familyOfTools": "مجموعة أدواتنا",
-      "companionTool": "اختبر مستويات القراءة مع أداتنا المصاحبة."
+      "companionTool": "اختبر مستويات القراءة مع أداتنا المصاحبة.",
+      "plansAndPricing": "الخطط والأسعار",
+      "ccpa": "CCPA",
+      "gdpr": "GDPR",
+      "ferpa": "FERPA",
+      "accessibility": "إمكانية الوصول",
+      "vendors": "الموردون"
     },
     "languageSelector": {
       "label": "اختر لغتك",
