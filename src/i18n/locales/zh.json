@@ -848,7 +848,10 @@
       "arabic": "阿拉伯语", "chinese": "中文", "hindi": "印地语", "portuguese": "葡萄牙语"
     },
     "next": "下一步",
-    "startReading": "立即开始阅读"
+    "startReading": "立即开始阅读",
+    "addReadingPrefs": "添加阅读偏好",
+    "skipAndCreate": "跳过并立即创建故事",
+    "encouragement": "我们的系统会适应支持您孩子独特的学习旅程"
   },
   "formStep2": {
     "title": "阅读偏好",
