@@ -79,15 +79,6 @@ const sidebarItems = [
     icon: Library,
     description: "Saved stories & collections",
     premium: true,
-    group: "learning"
-  },
-  {
-    title: "Premium Features",
-    url: "premium",
-    icon: Zap,
-    description: "Unlock advanced capabilities",
-    premium: true,
-    group: "learning"
   },
   // Settings & Profile
   {
