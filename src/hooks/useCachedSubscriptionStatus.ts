@@ -29,11 +29,20 @@ export function useCachedSubscriptionStatus(userId?: string) {
       return;
     }
 
-    let retryTimeout: ReturnType<typeof setTimeout>;
+    let retryTimeouts: ReturnType<typeof setTimeout>[] = [];
+    let cancelled = false;
+    const RETRY_DELAYS = [3000, 6000, 10000]; // 3s, 6s, 10s - covers slow connections
 
-    const fetchStatus = async (isRetry = false) => {
+    const fetchStatus = async (attempt = 0) => {
+      if (cancelled) return;
+      
       try {
         const cacheKey = `subscription_${userId}`;
+        
+        // On retries, clear stale cache first
+        if (attempt > 0) {
+          LeanCache.clear();
+        }
         
         // Use deduplicated cache to prevent multiple simultaneous requests
         const result = await LeanCache.dedupe(cacheKey, async () => {
@@ -59,20 +68,22 @@ export function useCachedSubscriptionStatus(userId?: string) {
           };
         });
 
+        if (cancelled) return;
+
         setStatus({
           ...result,
           loading: false
         });
 
-        // If not premium on first check, retry once after 3s (handles signup race condition)
-        if (!isRetry && !result.isPremium) {
-          retryTimeout = setTimeout(() => {
-            // Clear stale cache and re-fetch
-            LeanCache.clear();
-            fetchStatus(true);
-          }, 3000);
+        // If not premium and we have retries left, schedule next retry
+        if (!result.isPremium && attempt < RETRY_DELAYS.length) {
+          const timeout = setTimeout(() => {
+            fetchStatus(attempt + 1);
+          }, RETRY_DELAYS[attempt]);
+          retryTimeouts.push(timeout);
         }
       } catch (error: any) {
+        if (cancelled) return;
         LeanErrorService.logError(error, 'useCachedSubscriptionStatus');
         setStatus({
           isSubscribed: false,
@@ -86,7 +97,8 @@ export function useCachedSubscriptionStatus(userId?: string) {
     fetchStatus();
 
     return () => {
-      if (retryTimeout) clearTimeout(retryTimeout);
+      cancelled = true;
+      retryTimeouts.forEach(clearTimeout);
     };
   }, [userId]);
 
