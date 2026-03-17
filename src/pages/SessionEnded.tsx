@@ -355,7 +355,7 @@ const getDifficultyLabel = (difficulty: string) => {
                   </div>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4" />
-                    <span>{t("sessionEnded.premiumBenefits.parentDashboard", "Parent dashboard with insights and analytics")}</span>
+                    <span>{t("sessionEnded.premiumBenefits.parentDashboard", "Parent / Teacher dashboard with insights and analytics")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
