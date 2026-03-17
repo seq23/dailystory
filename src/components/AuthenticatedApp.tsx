@@ -35,7 +35,7 @@ interface AuthenticatedAppProps {
   user: User;
 }
 
-type AppView = "stories" | "library" | "profile" | "parent" | "account" | "reading" | "progress" | "premium" | "email-confirmation-required";
+type AppView = "home" | "stories" | "library" | "profile" | "parent" | "account" | "reading" | "progress" | "premium" | "email-confirmation-required";
 
 interface UserProfile {
   id?: string;
