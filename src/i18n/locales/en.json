@@ -1077,6 +1077,48 @@
     "back": "Back",
     "createStory": "Create My Story!",
     "creating": "Creating..."
+  },
+  "multiStepForm": {
+    "title": "Let's Create Your Perfect Story!",
+    "description": "Tell us about yourself to create magical, personalized reading adventures!",
+    "step1Complete": "Great start!",
+    "step1CompleteDesc": "Ready to create your first story or add reading preferences?",
+    "completeRequired": "Almost there!",
+    "completeRequiredDesc": "Please complete the required fields first.",
+    "validationError": "Please check your information",
+    "validationErrorDesc": "Some required fields need your attention."
+  },
+  "formProgress": {
+    "step1": "Essential",
+    "step1Desc": "Basic information",
+    "step2": "Reading",
+    "step2Desc": "Reading preferences",
+    "step3": "Personal",
+    "step3Desc": "Make it yours",
+    "step1Context": "We use your child's age and grade to recommend the most effective reading level",
+    "step2Context": "Research shows that matching content to reading level accelerates learning",
+    "step3Context": "Personalized stories increase engagement and reading comprehension"
+  },
+  "minimalBanner": {
+    "text": "Research-based levels using Dolch sight words",
+    "learnMore": "Learn About Our Approach"
+  },
+  "educationalBanner": {
+    "research": {
+      "title": "Research-Based Reading Levels",
+      "content": "Our levels are based on proven educational research and Dolch sight word lists, ensuring age-appropriate content that supports reading development.",
+      "link": "Learn About Our Approach"
+    },
+    "trust": {
+      "title": "Expert Validated",
+      "content": "Aligned with Common Core State Standards and reviewed by certified reading specialists.",
+      "link": "Our Educational Standards"
+    },
+    "progress": {
+      "title": "Personalized Learning",
+      "content": "Research shows that personalized content increases engagement and reading comprehension by up to 60%.",
+      "link": "How It Works"
+    }
   }
 }
 
