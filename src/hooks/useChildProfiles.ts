@@ -183,11 +183,18 @@ export function useChildProfiles() {
         setActiveChildId(detail?.id ?? null);
       } catch {}
     };
+    // Reload when child profiles are added/updated/deleted from another instance
+    const reloadHandler = () => {
+      lastRequestRef.current = null;
+      load();
+    };
     window.addEventListener('active-child-changed', handler as EventListener);
+    window.addEventListener('child-profiles-changed', reloadHandler);
     return () => {
       window.removeEventListener('active-child-changed', handler as EventListener);
+      window.removeEventListener('child-profiles-changed', reloadHandler);
     };
-  }, []);
+  }, [load]);
 
   const setActiveChild = useCallback(async (childId: string | null) => {
     setError(null);
@@ -278,6 +285,9 @@ export function useChildProfiles() {
       // Clear cache to ensure fresh data on next load
       lastRequestRef.current = null;
       
+      // Notify all instances (e.g. header) to refresh their child list
+      window.dispatchEvent(new CustomEvent('child-profiles-changed'));
+      
       return data as ChildProfile;
     } catch (e: any) {
       DebugLogger.error('auth', 'addChild error', e);
@@ -327,6 +337,9 @@ export function useChildProfiles() {
       // Clear cache to ensure fresh data on next load
       lastRequestRef.current = null;
       
+      // Notify all instances to refresh
+      window.dispatchEvent(new CustomEvent('child-profiles-changed'));
+      
       return data as ChildProfile;
     } catch (e: any) {
       DebugLogger.error('auth', 'updateChild error', e);
@@ -348,6 +361,9 @@ export function useChildProfiles() {
       
       // Clear cache to ensure fresh data on next load
       lastRequestRef.current = null;
+      
+      // Notify all instances to refresh
+      window.dispatchEvent(new CustomEvent('child-profiles-changed'));
       
     } catch (e: any) {
       DebugLogger.error('auth', 'deleteChild error', e);
