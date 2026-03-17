@@ -355,6 +355,9 @@ export function useChildProfiles() {
       // Clear cache to ensure fresh data on next load
       lastRequestRef.current = null;
       
+      // Notify all instances to refresh
+      window.dispatchEvent(new CustomEvent('child-profiles-changed'));
+      
     } catch (e: any) {
       DebugLogger.error('auth', 'deleteChild error', e);
       setError(e?.message || 'Could not delete child');
