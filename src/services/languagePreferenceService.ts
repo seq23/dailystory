@@ -124,7 +124,7 @@ export class LanguagePreferenceService {
     }
 
     // Check UI language is supported
-    const supportedUILanguages = ['en', 'ar', 'es', 'zh', 'hi', 'pt', 'fr'];
+    const supportedUILanguages = ['en', 'ar', 'es', 'zh', 'hi', 'pt', 'fr', 'ur'];
     const uiLanguage = this.getUILanguage();
     if (!supportedUILanguages.includes(uiLanguage)) {
       issues.push(`UI language ${uiLanguage} is not supported`);
