@@ -510,7 +510,7 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                   {activeChild ? (
                     <> This list is specific to <strong>{activeChild.display_name}</strong> — switch children above to manage a different list.</>
                   ) : (
-                    <> Switch to a child profile above to create child-specific word lists.</>
+                    <> You're editing the <strong>default list</strong>, which applies to <strong>all child profiles</strong>. To set words for a specific child, select them above first.</>
                   )}
                 </CardDescription>
               </CardHeader>
@@ -538,7 +538,7 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  📝 Currently editing: <strong>{activeChild ? activeChild.display_name : 'Default'}</strong> • Up to 50 words saved, 20 used per story.
+                  📝 Currently editing: <strong>{activeChild ? activeChild.display_name : 'Default (all children)'}</strong> • Up to 50 words saved, 20 used per story.
                 </p>
               </CardContent>
             </Card>
