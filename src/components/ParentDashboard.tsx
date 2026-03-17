@@ -413,53 +413,168 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
         {activeTab === 'goals' && (
           <div className="space-y-6">
             {progress.loading ? <LoadingOverlay /> : (
-              <div className="grid md:grid-cols-2 gap-6">
+              <>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Target className="w-5 h-5" />
+                        Weekly Story Goal
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span>Stories to read this week:</span>
+                        <Badge variant="secondary">{weeklyGoal} stories</Badge>
+                      </div>
+                      <Progress value={Math.min(progress.storiesRead, weeklyGoal) / weeklyGoal * 100} />
+                      <div className="text-sm text-muted-foreground">
+                        {progress.storiesRead} of {weeklyGoal} completed
+                        {progress.storiesRead >= weeklyGoal && " ✅ Goal reached!"}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setWeeklyGoal(Math.max(1, weeklyGoal - 1))}>-</Button>
+                        <Button variant="outline" size="sm" onClick={() => setWeeklyGoal(weeklyGoal + 1)}>+</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5" />
+                        Daily Reading Goal
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span>Minutes to read daily:</span>
+                        <Badge variant="secondary">{dailyTimeGoal} minutes</Badge>
+                      </div>
+                      <Progress value={Math.min(todayMinutes, dailyTimeGoal) / dailyTimeGoal * 100} />
+                      <div className="text-sm text-muted-foreground">
+                        {todayMinutes} of {dailyTimeGoal} minutes today
+                        {todayMinutes >= dailyTimeGoal && " ✅ Goal reached!"}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setDailyTimeGoal(Math.max(5, dailyTimeGoal - 5))}>-5m</Button>
+                        <Button variant="outline" size="sm" onClick={() => setDailyTimeGoal(dailyTimeGoal + 5)}>+5m</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Weekly breakdown with goal line */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="w-5 h-5" />
-                      Weekly Story Goal
-                    </CardTitle>
+                    <CardTitle>This Week at a Glance</CardTitle>
+                    <CardDescription>Daily reading minutes vs. your {dailyTimeGoal}-minute goal</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span>Stories to read this week:</span>
-                      <Badge variant="secondary">{weeklyGoal} stories</Badge>
+                  <CardContent>
+                    <div className="grid grid-cols-7 gap-2 text-center">
+                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+                        const mins = progress.weeklyMinutes[index];
+                        const metGoal = mins >= dailyTimeGoal;
+                        return (
+                          <div key={day} className="space-y-1">
+                            <div className="text-xs font-medium">{day}</div>
+                            <div className={`rounded-lg p-2 h-16 flex items-end justify-center ${metGoal ? 'bg-primary/10' : 'bg-muted'}`}>
+                              <div
+                                className={`rounded w-5 transition-all ${metGoal ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                style={{ height: `${Math.min((mins / Math.max(dailyTimeGoal, 1)) * 100, 100)}%`, minHeight: mins > 0 ? '4px' : '0' }}
+                              />
+                            </div>
+                            <div className="text-xs text-muted-foreground">{mins}m</div>
+                            {metGoal && <div className="text-xs">✅</div>}
+                          </div>
+                        );
+                      })}
                     </div>
-                    <Progress value={Math.min(progress.storiesRead, weeklyGoal) / weeklyGoal * 100} />
-                    <div className="text-sm text-muted-foreground">
-                      {progress.storiesRead} of {weeklyGoal} completed
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setWeeklyGoal(Math.max(1, weeklyGoal - 1))}>-</Button>
-                      <Button variant="outline" size="sm" onClick={() => setWeeklyGoal(weeklyGoal + 1)}>+</Button>
+                    <div className="text-xs text-muted-foreground mt-3 text-center">
+                      {progress.weeklyMinutes.filter(m => m >= dailyTimeGoal).length} of 7 days met your daily goal this week
                     </div>
                   </CardContent>
                 </Card>
 
+                {/* Quiz & Games goals */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="w-5 h-5" />
+                        Quiz Mastery
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Target: 70% average</span>
+                        <Badge variant={progress.averageComprehensionScore >= 70 ? "default" : "secondary"}>
+                          {progress.averageComprehensionScore}%
+                        </Badge>
+                      </div>
+                      <Progress value={Math.min(progress.averageComprehensionScore, 100)} />
+                      <div className="text-sm text-muted-foreground">
+                        {progress.quizzesTaken} quizzes completed
+                        {progress.quizzesTaken === 0 && " — take a quiz after reading!"}
+                        {progress.averageComprehensionScore >= 70 && progress.quizzesTaken > 0 && " ✅ Above target"}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Gamepad2 className="w-5 h-5" />
+                        Learning Games
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Target: 70% average</span>
+                        <Badge variant={progress.averageGameScore >= 70 ? "default" : "secondary"}>
+                          {progress.averageGameScore}%
+                        </Badge>
+                      </div>
+                      <Progress value={Math.min(progress.averageGameScore, 100)} />
+                      <div className="text-sm text-muted-foreground">
+                        {progress.gamesPlayed} games played
+                        {progress.gamesPlayed === 0 && " — try a learning game!"}
+                        {progress.averageGameScore >= 70 && progress.gamesPlayed > 0 && " ✅ Above target"}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Streak & totals */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Calendar className="w-5 h-5" />
-                      Daily Reading Goal
+                      <TrendingUp className="w-5 h-5" />
+                      Streak Progress
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span>Minutes to read daily:</span>
-                      <Badge variant="secondary">{dailyTimeGoal} minutes</Badge>
-                    </div>
-                    <Progress value={Math.min(todayMinutes, dailyTimeGoal) / dailyTimeGoal * 100} />
-                    <div className="text-sm text-muted-foreground">
-                      {todayMinutes} of {dailyTimeGoal} minutes today
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setDailyTimeGoal(Math.max(5, dailyTimeGoal - 5))}>-5m</Button>
-                      <Button variant="outline" size="sm" onClick={() => setDailyTimeGoal(dailyTimeGoal + 5)}>+5m</Button>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                      <div>
+                        <div className="text-2xl font-bold">{progress.currentStreak}</div>
+                        <div className="text-xs text-muted-foreground">Current Streak</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold">{progress.longestStreak}</div>
+                        <div className="text-xs text-muted-foreground">Longest Streak</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold">{progress.totalReadingTimeMinutes}</div>
+                        <div className="text-xs text-muted-foreground">Total Minutes</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold">{progress.wordsLearned}</div>
+                        <div className="text-xs text-muted-foreground">Words Learned</div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+              </>
             )}
           </div>
         )}
@@ -468,77 +583,236 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
         {activeTab === 'insights' && (
           <div className="space-y-6">
             {progress.loading ? <LoadingOverlay /> : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Learning Insights</CardTitle>
-                  <CardDescription>Based on {childLabel}'s actual activity data</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {progress.storiesRead === 0 && progress.quizzesTaken === 0 ? (
-                    <EmptyState message={`No activity data for ${childLabel} yet. Start reading stories to see insights here!`} />
-                  ) : (
-                    <div className="space-y-3">
-                      {/* Streak insight */}
-                      {progress.currentStreak >= 3 ? (
-                        <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary">
-                          <h4 className="font-semibold text-foreground">Great Consistency!</h4>
-                          <p className="text-muted-foreground">{childLabel} has a {progress.currentStreak}-day reading streak (longest: {progress.longestStreak} days). Keep it going!</p>
-                        </div>
-                      ) : progress.currentStreak > 0 ? (
-                        <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary/60">
-                          <h4 className="font-semibold text-foreground">Building a Habit</h4>
-                          <p className="text-muted-foreground">{childLabel} has read {progress.currentStreak} day{progress.currentStreak > 1 ? 's' : ''} in a row. Encourage daily reading to build a strong streak!</p>
-                        </div>
-                      ) : (
-                        <div className="p-4 bg-muted rounded-lg border-l-4 border-muted-foreground/40">
-                          <h4 className="font-semibold text-foreground">Time to Read!</h4>
-                          <p className="text-muted-foreground">{childLabel} hasn't read today. A short reading session can help build consistency.</p>
-                        </div>
-                      )}
-
-                      {/* Comprehension insight */}
-                      {progress.quizzesTaken > 0 && (
-                        <div className={`p-4 rounded-lg border-l-4 ${progress.averageComprehensionScore >= 70 ? 'bg-accent/30 border-primary' : 'bg-muted border-muted-foreground/40'}`}>
-                          <h4 className="font-semibold text-foreground">
-                            Comprehension: {progress.averageComprehensionScore}%
-                          </h4>
-                          <p className="text-muted-foreground">
-                            {progress.averageComprehensionScore >= 80
-                              ? `${childLabel} is demonstrating strong comprehension across ${progress.quizzesTaken} quizzes. Consider increasing the reading difficulty.`
-                              : progress.averageComprehensionScore >= 60
-                              ? `${childLabel} is doing well on comprehension. More practice with quizzes will help build confidence.`
-                              : `${childLabel} may benefit from slightly easier stories to build comprehension skills before moving up in difficulty.`}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Vocabulary insight */}
-                      {progress.wordsLearned > 0 && (
-                        <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary/60">
-                          <h4 className="font-semibold text-foreground">Vocabulary Growth</h4>
-                          <p className="text-muted-foreground">
-                            {progress.wordsLearned} words encountered so far.
-                            {progress.wordsLearned >= 50
-                              ? " Excellent vocabulary building!"
-                              : " Keep reading to discover more new words."}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Reading volume insight */}
-                      {progress.totalReadingTimeMinutes > 0 && (
-                        <div className="p-4 bg-secondary/30 rounded-lg border-l-4 border-secondary">
-                          <h4 className="font-semibold text-foreground">Reading Volume</h4>
-                          <p className="text-muted-foreground">
-                            {childLabel} has read for {formatTime(progress.totalReadingTimeMinutes)} across {progress.storiesRead} completed {progress.storiesRead === 1 ? 'story' : 'stories'}.
-                            {progress.gamesPlayed > 0 ? ` They've also played ${progress.gamesPlayed} learning games.` : ''}
-                          </p>
-                        </div>
-                      )}
+              <>
+                {progress.storiesRead === 0 && progress.quizzesTaken === 0 && progress.gamesPlayed === 0 ? (
+                  <Card>
+                    <CardContent className="py-8">
+                      <EmptyState message={`No activity data for ${childLabel} yet. Start reading stories to see insights here!`} />
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    {/* Quick stats bar */}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                      <Card><CardContent className="p-3 text-center">
+                        <div className="text-xl font-bold">{progress.storiesRead}</div>
+                        <div className="text-xs text-muted-foreground">Stories</div>
+                      </CardContent></Card>
+                      <Card><CardContent className="p-3 text-center">
+                        <div className="text-xl font-bold">{formatTime(progress.totalReadingTimeMinutes)}</div>
+                        <div className="text-xs text-muted-foreground">Total Time</div>
+                      </CardContent></Card>
+                      <Card><CardContent className="p-3 text-center">
+                        <div className="text-xl font-bold">{progress.wordsLearned}</div>
+                        <div className="text-xs text-muted-foreground">Words</div>
+                      </CardContent></Card>
+                      <Card><CardContent className="p-3 text-center">
+                        <div className="text-xl font-bold">{progress.quizzesTaken}</div>
+                        <div className="text-xs text-muted-foreground">Quizzes</div>
+                      </CardContent></Card>
+                      <Card><CardContent className="p-3 text-center">
+                        <div className="text-xl font-bold">{progress.gamesPlayed}</div>
+                        <div className="text-xs text-muted-foreground">Games</div>
+                      </CardContent></Card>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+
+                    {/* Reading Habit */}
+                    <Card>
+                      <CardHeader><CardTitle>📖 Reading Habit</CardTitle></CardHeader>
+                      <CardContent className="space-y-3">
+                        {progress.currentStreak >= 7 ? (
+                          <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary">
+                            <h4 className="font-semibold text-foreground">🔥 Outstanding Streak!</h4>
+                            <p className="text-muted-foreground">{childLabel} has read for {progress.currentStreak} days straight (longest ever: {progress.longestStreak}). This consistency builds strong literacy foundations.</p>
+                          </div>
+                        ) : progress.currentStreak >= 3 ? (
+                          <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary">
+                            <h4 className="font-semibold text-foreground">📈 Good Momentum!</h4>
+                            <p className="text-muted-foreground">{childLabel} has a {progress.currentStreak}-day streak going (best: {progress.longestStreak} days). Try to beat the record!</p>
+                          </div>
+                        ) : progress.currentStreak > 0 ? (
+                          <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary/60">
+                            <h4 className="font-semibold text-foreground">🌱 Getting Started</h4>
+                            <p className="text-muted-foreground">{childLabel} read {progress.currentStreak === 1 ? 'yesterday or today' : `${progress.currentStreak} days in a row`}. Encourage reading at the same time each day to build a habit.</p>
+                          </div>
+                        ) : (
+                          <div className="p-4 bg-muted rounded-lg border-l-4 border-muted-foreground/40">
+                            <h4 className="font-semibold text-foreground">⏰ No Active Streak</h4>
+                            <p className="text-muted-foreground">{childLabel} hasn't read recently. Even 10 minutes today can restart their streak!</p>
+                          </div>
+                        )}
+                        {(() => {
+                          const totalWeekMin = progress.weeklyMinutes.reduce((a, b) => a + b, 0);
+                          const activeDays = progress.weeklyMinutes.filter(m => m > 0).length;
+                          const avgPerDay = activeDays > 0 ? Math.round(totalWeekMin / activeDays) : 0;
+                          return (
+                            <div className="p-4 bg-muted/50 rounded-lg">
+                              <h4 className="font-semibold text-foreground text-sm">This Week</h4>
+                              <p className="text-muted-foreground text-sm mt-1">
+                                {totalWeekMin} total minutes across {activeDays} active day{activeDays !== 1 ? 's' : ''}.
+                                {activeDays > 0 && ` Average: ${avgPerDay} min/day.`}
+                                {activeDays === 0 && ' No reading sessions recorded this week yet.'}
+                              </p>
+                            </div>
+                          );
+                        })()}
+                      </CardContent>
+                    </Card>
+
+                    {/* Comprehension */}
+                    <Card>
+                      <CardHeader><CardTitle>🧠 Comprehension Analysis</CardTitle></CardHeader>
+                      <CardContent className="space-y-3">
+                        {progress.quizzesTaken === 0 ? (
+                          <div className="p-4 bg-muted rounded-lg">
+                            <p className="text-muted-foreground text-sm">No quizzes taken yet. After reading a story, try the comprehension quiz to track understanding!</p>
+                          </div>
+                        ) : (
+                          <>
+                            <div className={`p-4 rounded-lg border-l-4 ${progress.averageComprehensionScore >= 80 ? 'bg-accent/30 border-primary' : progress.averageComprehensionScore >= 60 ? 'bg-accent/20 border-primary/60' : 'bg-muted border-muted-foreground/40'}`}>
+                              <h4 className="font-semibold text-foreground">
+                                Average: {progress.averageComprehensionScore}% across {progress.quizzesTaken} quiz{progress.quizzesTaken !== 1 ? 'zes' : ''}
+                              </h4>
+                              <p className="text-muted-foreground">
+                                {progress.averageComprehensionScore >= 90
+                                  ? `Exceptional! ${childLabel} consistently understands story content at a high level. Consider increasing difficulty.`
+                                  : progress.averageComprehensionScore >= 80
+                                  ? `Strong comprehension. The current difficulty level seems well-matched for ${childLabel}.`
+                                  : progress.averageComprehensionScore >= 60
+                                  ? `Developing well. ${childLabel} grasps main ideas but may miss details. Discussing stories together can help.`
+                                  : `${childLabel} is building comprehension skills. Consider lowering difficulty or reading stories together.`}
+                              </p>
+                            </div>
+                            {progress.recentQuizzes.length >= 3 && (() => {
+                              const recent3 = progress.recentQuizzes.slice(0, 3);
+                              const older3 = progress.recentQuizzes.slice(3, 6);
+                              const recentAvg = Math.round(recent3.reduce((s, q) => s + (q.total > 0 ? (q.score / q.total) * 100 : 0), 0) / recent3.length);
+                              const olderAvg = older3.length > 0 ? Math.round(older3.reduce((s, q) => s + (q.total > 0 ? (q.score / q.total) * 100 : 0), 0) / older3.length) : null;
+                              const trend = olderAvg !== null ? recentAvg - olderAvg : null;
+                              return (
+                                <div className="p-4 bg-muted/50 rounded-lg">
+                                  <h4 className="font-semibold text-foreground text-sm">Recent Trend</h4>
+                                  <p className="text-muted-foreground text-sm mt-1">
+                                    Last 3 quizzes: {recentAvg}%.
+                                    {trend !== null && (
+                                      trend > 5 ? ` 📈 Up ${trend} pts — great improvement!`
+                                      : trend < -5 ? ` 📉 Down ${Math.abs(trend)} pts — may need easier content.`
+                                      : ` ➡️ Stable compared to prior quizzes.`
+                                    )}
+                                  </p>
+                                </div>
+                              );
+                            })()}
+                          </>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* Vocabulary & Games */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <Card>
+                        <CardHeader><CardTitle>📚 Vocabulary</CardTitle></CardHeader>
+                        <CardContent>
+                          {progress.wordsLearned === 0 ? (
+                            <p className="text-muted-foreground text-sm">No vocabulary words tracked yet. Tap highlighted words while reading to start!</p>
+                          ) : (
+                            <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary/60">
+                              <h4 className="font-semibold text-foreground">{progress.wordsLearned} Words Encountered</h4>
+                              <p className="text-muted-foreground text-sm">
+                                {progress.wordsLearned >= 100
+                                  ? "Impressive vocabulary growth! This will help with more advanced stories."
+                                  : progress.wordsLearned >= 30
+                                  ? "Good progress! Each new word improves reading fluency."
+                                  : "Every new word counts. Encourage tapping unfamiliar words during reading."}
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader><CardTitle>🎮 Game Performance</CardTitle></CardHeader>
+                        <CardContent>
+                          {progress.gamesPlayed === 0 ? (
+                            <p className="text-muted-foreground text-sm">No games played yet. Learning games reinforce vocabulary and comprehension!</p>
+                          ) : (
+                            <div className={`p-4 rounded-lg border-l-4 ${progress.averageGameScore >= 70 ? 'bg-accent/30 border-primary' : 'bg-muted border-muted-foreground/40'}`}>
+                              <h4 className="font-semibold text-foreground">{progress.averageGameScore}% avg across {progress.gamesPlayed} game{progress.gamesPlayed !== 1 ? 's' : ''}</h4>
+                              <p className="text-muted-foreground text-sm">
+                                {progress.averageGameScore >= 80
+                                  ? "Excellent! Learning reinforcement is working well."
+                                  : progress.averageGameScore >= 60
+                                  ? "Solid scores. Games are helping reinforce content."
+                                  : "Keep playing! Repeated practice locks in new words and concepts."}
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Actionable Recommendations */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>💡 Recommendations</CardTitle>
+                        <CardDescription>Personalized suggestions for {childLabel}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {progress.currentStreak === 0 && (
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                              <span className="text-lg">📅</span>
+                              <p className="text-sm text-muted-foreground">Set a daily reading reminder. Even 10 minutes builds long-term literacy.</p>
+                            </div>
+                          )}
+                          {progress.quizzesTaken < 3 && progress.storiesRead > 0 && (
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                              <span className="text-lg">✅</span>
+                              <p className="text-sm text-muted-foreground">Try the comprehension quiz after each story — it helps with recall and understanding.</p>
+                            </div>
+                          )}
+                          {progress.gamesPlayed === 0 && progress.storiesRead > 0 && (
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                              <span className="text-lg">🎮</span>
+                              <p className="text-sm text-muted-foreground">Learning games are available after reading! They reinforce new vocabulary in a fun way.</p>
+                            </div>
+                          )}
+                          {progress.averageComprehensionScore > 0 && progress.averageComprehensionScore < 60 && (
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                              <span className="text-lg">📖</span>
+                              <p className="text-sm text-muted-foreground">Consider lowering reading difficulty. Building confidence at an easier level helps long-term growth.</p>
+                            </div>
+                          )}
+                          {progress.averageComprehensionScore >= 90 && progress.quizzesTaken >= 5 && (
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                              <span className="text-lg">🚀</span>
+                              <p className="text-sm text-muted-foreground">{childLabel} is excelling! Consider raising the difficulty level for more challenge.</p>
+                            </div>
+                          )}
+                          {progress.wordsLearned >= 20 && (
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                              <span className="text-lg">📝</span>
+                              <p className="text-sm text-muted-foreground">Use the Teacher Word List (in Controls) to add specific vocabulary for stories.</p>
+                            </div>
+                          )}
+                          {progress.storiesRead >= 5 && progress.savedStories === 0 && (
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                              <span className="text-lg">💾</span>
+                              <p className="text-sm text-muted-foreground">Save favorite stories to the library so {childLabel} can re-read them anytime!</p>
+                            </div>
+                          )}
+                          {progress.currentStreak >= 7 && progress.averageComprehensionScore >= 70 && progress.gamesPlayed >= 3 && (
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-accent/20">
+                              <span className="text-lg">⭐</span>
+                              <p className="text-sm text-foreground font-medium">{childLabel} is doing great across the board! Keep up the excellent work.</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
+              </>
             )}
           </div>
         )}
