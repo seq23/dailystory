@@ -79,6 +79,7 @@ const sidebarItems = [
     icon: Library,
     description: "Saved stories & collections",
     premium: true,
+    group: "learning"
   },
   // Settings & Profile
   {
