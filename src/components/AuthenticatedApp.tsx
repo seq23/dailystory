@@ -16,6 +16,7 @@ import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 
 import { MyAccount } from "@/components/MyAccount";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
+import { PremiumHomeTutorial } from "@/components/PremiumHomeTutorial";
 
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { NonBlockingSubscriptionBanner } from "@/components/NonBlockingSubscriptionBanner";
