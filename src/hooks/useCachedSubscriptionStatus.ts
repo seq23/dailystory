@@ -31,7 +31,7 @@ export function useCachedSubscriptionStatus(userId?: string) {
 
     let retryTimeouts: ReturnType<typeof setTimeout>[] = [];
     let cancelled = false;
-    const RETRY_DELAYS = [3000, 6000, 10000]; // 3s, 6s, 10s - covers slow connections
+    const RETRY_DELAYS = [3000, 7000, 12000, 20000, 30000]; // 3s, 7s, 12s, 20s, 30s - covers very slow connections
 
     const fetchStatus = async (attempt = 0) => {
       if (cancelled) return;
