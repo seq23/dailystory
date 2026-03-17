@@ -510,7 +510,7 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                   {activeChild ? (
                     <> This list is specific to <strong>{activeChild.display_name}</strong> — switch children above to manage a different list.</>
                   ) : (
-                    <> Switch to a child profile above to create child-specific word lists.</>
+                    <> You're editing the <strong>default list</strong>, which applies to <strong>all child profiles</strong>. To set words for a specific child, select them above first.</>
                   )}
                 </CardDescription>
               </CardHeader>
