@@ -67,7 +67,8 @@ export function useCachedSubscriptionStatus(userId?: string) {
         // If not premium on first check, retry once after 3s (handles signup race condition)
         if (!isRetry && !result.isPremium) {
           retryTimeout = setTimeout(() => {
-            LeanCache.invalidate?.(`subscription_${userId}`);
+            // Clear stale cache and re-fetch
+            LeanCache.clear();
             fetchStatus(true);
           }, 3000);
         }
