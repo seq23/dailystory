@@ -793,7 +793,7 @@
     "language": {
       "label": "اللغة الأم", "placeholder": "اختر اللغة",
       "english": "الإنجليزية", "spanish": "الإسبانية", "french": "الفرنسية",
-      "arabic": "العربية", "chinese": "الصينية", "hindi": "الهندية", "portuguese": "البرتغالية"
+      "arabic": "العربية", "chinese": "الصينية", "hindi": "الهندية", "portuguese": "البرتغالية", "urdu": "الأردية"
     },
     "next": "الخطوة التالية",
     "startReading": "ابدأ القراءة الآن",
