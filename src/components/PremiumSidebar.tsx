@@ -30,7 +30,7 @@ import {
   ChevronRight,
   Home,
   BarChart3,
-  Zap,
+  
   Image
 } from "lucide-react";
 import type { UserInfo } from "@/types";
