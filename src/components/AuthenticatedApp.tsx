@@ -905,7 +905,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                   )}
 
                   {currentView === "reading" && (
-                    isSubscriptionActive && currentStory ? (
+                    effectiveSubscriptionActive && currentStory ? (
                     <div className="space-y-6">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-gradient-primary/20 rounded-full">
