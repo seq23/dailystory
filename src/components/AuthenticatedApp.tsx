@@ -747,7 +747,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                 />
               ) : (
                 <>
-                  {currentView === "" && userInfo && (
+                  {currentView === "home" && userInfo && (
                     <PremiumHomeTutorial
                       userName={userInfo.name}
                       onNavigate={(view) => setCurrentView(view as AppView)}

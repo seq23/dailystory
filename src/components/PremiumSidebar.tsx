@@ -50,9 +50,9 @@ const sidebarItems = [
   // Core Navigation
   {
     title: "Home",
-    url: "",
+    url: "home",
     icon: Home,
-    description: "Return to main dashboard",
+    description: "Guide & FAQ",
     premium: false,
     group: "core"
   },
