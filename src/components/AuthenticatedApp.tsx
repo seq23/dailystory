@@ -16,7 +16,7 @@ import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 
 import { MyAccount } from "@/components/MyAccount";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
-import { VocabularyDashboard } from "@/components/VocabularyDashboard";
+
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { NonBlockingSubscriptionBanner } from "@/components/NonBlockingSubscriptionBanner";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
@@ -923,20 +923,6 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                     />
                   )}
 
-                  {currentView === "premium" && (
-                    <VocabularyDashboard
-                      userInfo={userInfo}
-                      isPremium={isPremium}
-                      onStartThemedSession={(theme) => {
-                        DebugLogger.log('story', 'Starting themed session:', theme);
-                        setCurrentView("stories");
-                      }}
-                      onStartProgressiveSession={() => {
-                        DebugLogger.log('story', 'Starting progressive session');
-                        setCurrentView("stories");
-                      }}
-                    />
-                  )}
                 </>
               )}
             </main>
