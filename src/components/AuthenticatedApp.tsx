@@ -16,7 +16,7 @@ import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 
 import { MyAccount } from "@/components/MyAccount";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
-import { VocabularyDashboard } from "@/components/VocabularyDashboard";
+
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { NonBlockingSubscriptionBanner } from "@/components/NonBlockingSubscriptionBanner";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
