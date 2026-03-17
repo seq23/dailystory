@@ -501,11 +501,18 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
               </CardContent>
             </Card>
 
-            {/* Teacher word list (per child) - Premium */}
+            {/* Teacher Word List - Premium */}
             <Card>
               <CardHeader>
-                <CardTitle>Teacher word list (per child)</CardTitle>
-                <CardDescription>Words here guide the AI to include them in premium live stories.</CardDescription>
+                <CardTitle>Teacher Word List</CardTitle>
+                <CardDescription>
+                  Add vocabulary words you'd like the AI to weave into your child's stories. 
+                  {activeChild ? (
+                    <> This list is specific to <strong>{activeChild.display_name}</strong> — switch children above to manage a different list.</>
+                  ) : (
+                    <> Switch to a child profile above to create child-specific word lists.</>
+                  )}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {!isPremiumUser && (
@@ -517,20 +524,22 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                   placeholder="Add a word, then press Enter"
                   disabled={!isPremiumUser || twLoading || twSaving}
                 />
-<div className="flex items-center justify-between gap-2 flex-wrap">
-  <div className="text-xs text-muted-foreground">
-    {teacherWordCount}/50 words • Changes apply after you Save.
-  </div>
-  <div className="flex gap-2">
-    <Button variant="outline" disabled={!isPremiumUser || twLoading || twSaving} onClick={() => setTeacherWords('')}>
-      Clear list
-    </Button>
-    <Button onClick={saveTeacherWords} disabled={!isPremiumUser || twLoading || twSaving}>
-      {twSaving ? 'Saving...' : 'Save list'}
-    </Button>
-  </div>
-</div>
-                <div className="text-xs text-muted-foreground">Applies to: {activeChild ? activeChild.display_name : 'Default'} • Max 50 stored; up to 20 used per story.</div>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="text-xs text-muted-foreground">
+                    {teacherWordCount}/50 words • Changes apply after you Save.
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" disabled={!isPremiumUser || twLoading || twSaving} onClick={() => setTeacherWords('')}>
+                      Clear list
+                    </Button>
+                    <Button onClick={saveTeacherWords} disabled={!isPremiumUser || twLoading || twSaving}>
+                      {twSaving ? 'Saving...' : 'Save list'}
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  📝 Currently editing: <strong>{activeChild ? activeChild.display_name : 'Default'}</strong> • Up to 50 words saved, 20 used per story.
+                </p>
               </CardContent>
             </Card>
 
@@ -538,16 +547,27 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
             <Card>
               <CardHeader>
                 <CardTitle>Parent Controls</CardTitle>
-                <CardDescription>Set reading guardrails that the reader will follow</CardDescription>
+                <CardDescription>Set reading guardrails for your child's story experience</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="lockDifficulty" className="text-sm font-medium">Lock reading difficulty</Label>
-                  <Switch id="lockDifficulty" checked={guardrails.lockDifficulty} onCheckedChange={(v) => setGuardrails({ ...guardrails, lockDifficulty: v })} />
+                {/* Lock Difficulty Toggle */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="lockDifficulty" className="text-sm font-medium">Lock reading difficulty</Label>
+                    <Switch id="lockDifficulty" checked={guardrails.lockDifficulty} onCheckedChange={(v) => setGuardrails({ ...guardrails, lockDifficulty: v })} />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    When turned on, your child cannot change the reading difficulty level themselves. 
+                    Only you can adjust it here. Useful for keeping stories at the right challenge level.
+                  </p>
                 </div>
 
+                {/* Minimum Level Selector */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Minimum level</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Stories will never go below this difficulty level, even if the adaptive system suggests easier content.
+                  </p>
                   {(() => {
                     const selected = guardrails.minDifficulty === 'advanced' ? `advanced:${guardrails.minExpertGrade}` : guardrails.minDifficulty;
                     return (
@@ -581,16 +601,22 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                   })()}
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="allowDecr" className="text-sm font-medium">Allow decreasing below minimum (soft)</Label>
-                  <Switch id="allowDecr" checked={guardrails.allowDecreaseBelowMin} onCheckedChange={(v) => setGuardrails({ ...guardrails, allowDecreaseBelowMin: v })} />
+                {/* Allow Decrease Toggle */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="allowDecr" className="text-sm font-medium">Allow decreasing below minimum</Label>
+                    <Switch id="allowDecr" checked={guardrails.allowDecreaseBelowMin} onCheckedChange={(v) => setGuardrails({ ...guardrails, allowDecreaseBelowMin: v })} />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    When turned on, the system <em>may</em> occasionally generate slightly easier content if your child is struggling — 
+                    acting as a soft floor rather than a hard limit. When off, the minimum level is strictly enforced.
+                  </p>
                 </div>
 
                 <div className="flex justify-end">
                   <Button disabled={saving} onClick={async () => {
                     try {
                       setSaving(true);
-                      // Convert any frontend values to backend before saving
                       const backendGuardrails = {
                         ...guardrails,
                         minDifficulty: guardrails.minDifficulty === 'expert' ? 'expert' : DifficultyLevelMapper.normalizeLevel(guardrails.minDifficulty)
