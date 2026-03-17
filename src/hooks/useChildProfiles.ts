@@ -245,9 +245,14 @@ export function useChildProfiles() {
     }
   }, [children]);
 
+  const MAX_CHILD_PROFILES = 40;
+
   const addChild = useCallback(async (input: NewChildInput) => {
     setError(null);
     try {
+      if (children.length >= MAX_CHILD_PROFILES) {
+        throw new Error(`Maximum of ${MAX_CHILD_PROFILES} child profiles allowed per account`);
+      }
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not signed in');
       const payload: TablesInsert<'child_profiles'> = {
