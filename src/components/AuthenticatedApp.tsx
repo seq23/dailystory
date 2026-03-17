@@ -787,7 +787,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                   )}
 
                   {currentView === "library" && (
-                    isSubscriptionActive ? (
+                    effectiveSubscriptionActive ? (
                     <div className="space-y-6">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-gradient-primary/20 rounded-full">
