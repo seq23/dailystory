@@ -1024,7 +1024,10 @@
       "portuguese": "Portuguese"
     },
     "next": "Next Step",
-    "startReading": "Start Reading Now"
+    "startReading": "Start Reading Now",
+    "addReadingPrefs": "Add Reading Preferences",
+    "skipAndCreate": "Skip and create story now",
+    "encouragement": "Our system adapts to support your child's unique learning journey"
   },
   "formStep2": {
     "title": "Reading Preferences",
