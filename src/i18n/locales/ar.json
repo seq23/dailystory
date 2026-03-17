@@ -796,7 +796,10 @@
       "arabic": "العربية", "chinese": "الصينية", "hindi": "الهندية", "portuguese": "البرتغالية"
     },
     "next": "الخطوة التالية",
-    "startReading": "ابدأ القراءة الآن"
+    "startReading": "ابدأ القراءة الآن",
+    "addReadingPrefs": "إضافة تفضيلات القراءة",
+    "skipAndCreate": "تخطي وإنشاء القصة الآن",
+    "encouragement": "نظامنا يتكيف لدعم رحلة تعلم طفلك الفريدة"
   },
   "formStep2": {
     "title": "تفضيلات القراءة",
