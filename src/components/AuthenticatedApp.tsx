@@ -720,7 +720,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             onViewChange={(view: string) => {
               // Block navigation to premium views if subscription is inactive
               const premiumViews = ['stories', 'library', 'reading', 'premium', 'progress', 'parent', 'profile'];
-              if (!isSubscriptionActive && premiumViews.includes(view)) {
+              if (!effectiveSubscriptionActive && premiumViews.includes(view)) {
                 // Stay on current view (stories), don't navigate
                 setCurrentView('stories');
                 return;
