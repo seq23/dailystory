@@ -53,7 +53,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
   };
 
   return (
-    <div className="min-h-screen mobile-wrapper bg-gradient-hero flex flex-col relative overflow-x-hidden">
+    <div className="min-h-screen mobile-wrapper bg-gradient-hero flex flex-col relative overflow-x-hidden" data-component="welcome-hero">
       {/* Header with Company Branding and Language Selector */}
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
         <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
