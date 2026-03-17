@@ -917,6 +917,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                   {currentView === "progress" && (
                     <ProgressDashboard
                       userInfo={userInfo}
+                      userId={user.id}
                       isVisible={true}
                       onClose={() => setCurrentView("stories")}
                       isPremium={isPremium}
