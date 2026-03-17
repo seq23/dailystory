@@ -155,7 +155,6 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
 
   // Enhanced active state detection
   const isActive = (itemUrl: string) => {
-    if (itemUrl === "") return location.pathname === "/" && currentView === "";
     return currentView === itemUrl;
   };
 
