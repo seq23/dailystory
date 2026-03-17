@@ -378,7 +378,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               <div className="font-semibold text-white/90 mb-1">{t("welcomeHero.footer.companyName")}</div>
               <div className="text-xs">{t("welcomeHero.footer.description")}</div>
               <div className="mt-2">
-                <a href="/pricing" className="story-link text-sm">Plans & Pricing →</a>
+                <a href="/pricing" className="story-link text-sm">{t("welcomeHero.footer.plansAndPricing", "Plans & Pricing")} →</a>
               </div>
             </div>
 
@@ -397,11 +397,11 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               <div className="flex flex-wrap justify-center gap-4">
                 <a href="/privacy" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.privacyPolicy")}</a>
                 <a href="/terms" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.termsOfService")}</a>
-                <a href="/ccpa" className="hover:text-white/90 transition-colors">CCPA</a>
-                <a href="/gdpr" className="hover:text-white/90 transition-colors">GDPR</a>
-                <a href="/ferpa" className="hover:text-white/90 transition-colors">FERPA</a>
-                <a href="/accessibility" className="hover:text-white/90 transition-colors">Accessibility</a>
-                <a href="/vendors" className="hover:text-white/90 transition-colors">Vendors</a>
+                <a href="/ccpa" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.ccpa", "CCPA")}</a>
+                <a href="/gdpr" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.gdpr", "GDPR")}</a>
+                <a href="/ferpa" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.ferpa", "FERPA")}</a>
+                <a href="/accessibility" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.accessibility", "Accessibility")}</a>
+                <a href="/vendors" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.vendors", "Vendors")}</a>
                 <a href="mailto:hello@time2read.app" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.contactUs")}</a>
               </div>
             </div>
