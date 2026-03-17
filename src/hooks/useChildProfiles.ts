@@ -183,11 +183,18 @@ export function useChildProfiles() {
         setActiveChildId(detail?.id ?? null);
       } catch {}
     };
+    // Reload when child profiles are added/updated/deleted from another instance
+    const reloadHandler = () => {
+      lastRequestRef.current = null;
+      load();
+    };
     window.addEventListener('active-child-changed', handler as EventListener);
+    window.addEventListener('child-profiles-changed', reloadHandler);
     return () => {
       window.removeEventListener('active-child-changed', handler as EventListener);
+      window.removeEventListener('child-profiles-changed', reloadHandler);
     };
-  }, []);
+  }, [load]);
 
   const setActiveChild = useCallback(async (childId: string | null) => {
     setError(null);
