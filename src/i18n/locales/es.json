@@ -931,6 +931,48 @@
     "back": "Atrás",
     "createStory": "¡Crear Mi Historia!",
     "creating": "Creando..."
+  },
+  "multiStepForm": {
+    "title": "¡Vamos a Crear Tu Historia Perfecta!",
+    "description": "¡Cuéntanos sobre ti para crear aventuras de lectura mágicas y personalizadas!",
+    "step1Complete": "¡Buen comienzo!",
+    "step1CompleteDesc": "¿Listo para crear tu primera historia o agregar preferencias de lectura?",
+    "completeRequired": "¡Casi listo!",
+    "completeRequiredDesc": "Por favor completa los campos requeridos primero.",
+    "validationError": "Por favor revisa tu información",
+    "validationErrorDesc": "Algunos campos requeridos necesitan tu atención."
+  },
+  "formProgress": {
+    "step1": "Esencial",
+    "step1Desc": "Información básica",
+    "step2": "Lectura",
+    "step2Desc": "Preferencias de lectura",
+    "step3": "Personal",
+    "step3Desc": "Hazlo tuyo",
+    "step1Context": "Usamos la edad y el grado de tu hijo para recomendar el nivel de lectura más efectivo",
+    "step2Context": "Las investigaciones muestran que adaptar el contenido al nivel de lectura acelera el aprendizaje",
+    "step3Context": "Las historias personalizadas aumentan la participación y la comprensión lectora"
+  },
+  "minimalBanner": {
+    "text": "Niveles basados en investigación usando palabras Dolch",
+    "learnMore": "Conoce Nuestro Enfoque"
+  },
+  "educationalBanner": {
+    "research": {
+      "title": "Niveles de Lectura Basados en Investigación",
+      "content": "Nuestros niveles se basan en investigación educativa probada y listas de palabras Dolch, asegurando contenido apropiado para la edad.",
+      "link": "Conoce Nuestro Enfoque"
+    },
+    "trust": {
+      "title": "Validado por Expertos",
+      "content": "Alineado con los Estándares Básicos Comunes y revisado por especialistas certificados en lectura.",
+      "link": "Nuestros Estándares Educativos"
+    },
+    "progress": {
+      "title": "Aprendizaje Personalizado",
+      "content": "Las investigaciones muestran que el contenido personalizado aumenta la participación y la comprensión lectora hasta un 60%.",
+      "link": "Cómo Funciona"
+    }
   }
 }
 

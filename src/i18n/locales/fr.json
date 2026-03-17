@@ -943,6 +943,48 @@
     "back": "Retour",
     "createStory": "Créer Mon Histoire !",
     "creating": "Création en cours..."
+  },
+  "multiStepForm": {
+    "title": "Créons Votre Histoire Parfaite !",
+    "description": "Parlez-nous de vous pour créer des aventures de lecture magiques et personnalisées !",
+    "step1Complete": "Bon début !",
+    "step1CompleteDesc": "Prêt à créer votre première histoire ou ajouter des préférences de lecture ?",
+    "completeRequired": "Presque terminé !",
+    "completeRequiredDesc": "Veuillez d'abord compléter les champs requis.",
+    "validationError": "Veuillez vérifier vos informations",
+    "validationErrorDesc": "Certains champs requis nécessitent votre attention."
+  },
+  "formProgress": {
+    "step1": "Essentiel",
+    "step1Desc": "Informations de base",
+    "step2": "Lecture",
+    "step2Desc": "Préférences de lecture",
+    "step3": "Personnel",
+    "step3Desc": "Personnalisez",
+    "step1Context": "Nous utilisons l'âge et le niveau de votre enfant pour recommander le niveau de lecture le plus efficace",
+    "step2Context": "La recherche montre que l'adaptation du contenu au niveau de lecture accélère l'apprentissage",
+    "step3Context": "Les histoires personnalisées augmentent l'engagement et la compréhension en lecture"
+  },
+  "minimalBanner": {
+    "text": "Niveaux basés sur la recherche utilisant les mots Dolch",
+    "learnMore": "Découvrez Notre Approche"
+  },
+  "educationalBanner": {
+    "research": {
+      "title": "Niveaux de Lecture Basés sur la Recherche",
+      "content": "Nos niveaux sont basés sur des recherches éducatives éprouvées et des listes de mots Dolch, garantissant un contenu adapté à l'âge.",
+      "link": "Découvrez Notre Approche"
+    },
+    "trust": {
+      "title": "Validé par des Experts",
+      "content": "Aligné sur les normes de base communes et révisé par des spécialistes certifiés en lecture.",
+      "link": "Nos Normes Éducatives"
+    },
+    "progress": {
+      "title": "Apprentissage Personnalisé",
+      "content": "La recherche montre que le contenu personnalisé augmente l'engagement et la compréhension en lecture jusqu'à 60%.",
+      "link": "Comment Ça Marche"
+    }
   }
 }
 
