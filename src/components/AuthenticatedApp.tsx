@@ -92,6 +92,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   
   // Authoritative billing status from database for gating premium features
   const { isPremium: isSubscriptionActive, loading: subLoading } = useCachedSubscriptionStatus(user.id);
+  // While subscription status is loading, assume active to prevent flash of "Subscription Required"
+  const effectiveSubscriptionActive = subLoading ? true : isSubscriptionActive;
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [devTestMode, setDevTestMode] = useState(false);
@@ -477,7 +479,28 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      // Clear all local state first
+      setUserInfo(null);
+      setUserProfile(null);
+      setCurrentStory(null);
+      setCurrentView("stories");
+      
+      // Clear caches
+      localStorage.removeItem('story-session-data');
+      sessionStorage.clear();
+      
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        DebugLogger.error('auth', 'Sign out error', error);
+        // Force reload as fallback
+        window.location.href = '/';
+      }
+    } catch (e) {
+      DebugLogger.error('auth', 'Sign out exception', e);
+      // Force reload as last resort
+      window.location.href = '/';
+    }
   };
 
   const handleSessionEnded = async (stats: SessionStats) => {
@@ -697,7 +720,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             onViewChange={(view: string) => {
               // Block navigation to premium views if subscription is inactive
               const premiumViews = ['stories', 'library', 'reading', 'premium', 'progress', 'parent', 'profile'];
-              if (!isSubscriptionActive && premiumViews.includes(view)) {
+              if (!effectiveSubscriptionActive && premiumViews.includes(view)) {
                 // Stay on current view (stories), don't navigate
                 setCurrentView('stories');
                 return;
@@ -758,13 +781,13 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           <PremiumMyStoriesView
             userInfo={userInfo}
             isPremium={isPremium}
-            isSubscriptionActive={isSubscriptionActive}
+            isSubscriptionActive={effectiveSubscriptionActive}
             onSessionEnded={handleSessionEnded}
           />
                   )}
 
                   {currentView === "library" && (
-                    isSubscriptionActive ? (
+                    effectiveSubscriptionActive ? (
                     <div className="space-y-6">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-gradient-primary/20 rounded-full">
@@ -882,7 +905,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                   )}
 
                   {currentView === "reading" && (
-                    isSubscriptionActive && currentStory ? (
+                    effectiveSubscriptionActive && currentStory ? (
                     <div className="space-y-6">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-gradient-primary/20 rounded-full">

@@ -66,7 +66,13 @@ export function useChildProfiles() {
         now - lastRequestRef.current.timestamp < CACHE_DURATION) {
       if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Using cached request');
       try {
-        await lastRequestRef.current.promise;
+        const cachedResult = await lastRequestRef.current.promise;
+        // Re-apply cached data to state in case component re-mounted
+        if (cachedResult) {
+          setChildren(cachedResult.children || []);
+          setActiveChildId(cachedResult.activeChildId ?? null);
+          setLoading(false);
+        }
         return;
       } catch (e) {
         // Cache failed, continue with fresh request
@@ -105,10 +111,12 @@ export function useChildProfiles() {
         setChildren(resultData.children);
         setActiveChildId(resultData.activeChildId);
         
+        return resultData; // Return for cache re-use
       } catch (e: any) {
         if (shouldLog()) DebugLogger.error('auth', 'useChildProfiles: Load failed', e);
         LeanErrorService.logError(e, 'useChildProfiles');
         setError(e?.message || 'Failed to load child profiles');
+        throw e; // Re-throw so cache knows it failed
       } finally {
         if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Setting loading to false');
         setLoading(false);
