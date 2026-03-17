@@ -24,7 +24,13 @@
       "termsOfService": "Conditions de Service",
       "contactUs": "Nous Contacter",
       "familyOfTools": "Notre Famille d'Outils",
-      "companionTool": "Testez les niveaux de lecture avec notre outil compagnon."
+      "companionTool": "Testez les niveaux de lecture avec notre outil compagnon.",
+      "plansAndPricing": "Plans et Tarifs",
+      "ccpa": "CCPA",
+      "gdpr": "RGPD",
+      "ferpa": "FERPA",
+      "accessibility": "Accessibilité",
+      "vendors": "Fournisseurs"
     },
     "features": {
       "reading": {
