@@ -111,6 +111,8 @@ describe("DifficultyLevelMapper", () => {
 
   it("normalizes various difficulty level formats", () => {
     expect(DifficultyLevelMapper.normalizeLevel("pre-reader")).toBe("beginner");
+    // "beginner" is a FRONTEND value that maps to backend "easy" - NOT backend "beginner" (pre-reader)
+    expect(DifficultyLevelMapper.normalizeLevel("beginner")).toBe("easy");
     expect(DifficultyLevelMapper.normalizeLevel("easy")).toBe("easy");
     expect(DifficultyLevelMapper.normalizeLevel("developing")).toBe("medium");
     expect(DifficultyLevelMapper.normalizeLevel("unknown")).toBe("easy"); // fallback
