@@ -97,21 +97,25 @@ export class DifficultyLevelMapper {
   }
 
   /**
-   * Smart level detection - handles both frontend and backend formats
+   * Smart level detection - handles both frontend and backend formats.
+   * CRITICAL: Must check frontend mappings FIRST because "beginner" exists as both
+   * a frontend value (maps to backend "easy") and a backend value (maps to frontend "pre-reader").
+   * Since form data always uses frontend values, frontend takes priority.
    */
   static normalizeLevel(level: string | DifficultyLevel): DifficultyLevel {
+    // Priority 1: Check if it's a known FRONTEND level first
+    // This prevents "beginner" (frontend) from being treated as "beginner" (backend/pre-reader)
+    if (this.isValidFrontendLevel(level)) {
+      return this.toBackend(level);
+    }
+    
+    // Priority 2: Check if it's a valid backend level
     if (this.isValidBackendLevel(level)) {
       return level;
     }
     
-    const backendLevel = this.toBackend(level);
-    // If toBackend couldn't find a mapping and returned the original value,
-    // and it's still not a valid backend level, fallback to 'easy'
-    if (!this.isValidBackendLevel(backendLevel)) {
-      return 'easy';
-    }
-    
-    return backendLevel;
+    // Fallback
+    return 'easy';
   }
 
   /**
