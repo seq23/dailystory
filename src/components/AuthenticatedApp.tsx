@@ -781,7 +781,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           <PremiumMyStoriesView
             userInfo={userInfo}
             isPremium={isPremium}
-            isSubscriptionActive={isSubscriptionActive}
+            isSubscriptionActive={effectiveSubscriptionActive}
             onSessionEnded={handleSessionEnded}
           />
                   )}
