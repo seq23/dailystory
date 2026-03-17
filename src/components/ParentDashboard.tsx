@@ -820,6 +820,21 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
         {/* Controls */}
         {activeTab === 'controls' && (
           <div className="space-y-6">
+            {/* Disclaimer */}
+            <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3 text-sm">
+              <span className="text-base leading-none mt-0.5">⚠️</span>
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Heads up:</span> If child profiles appear missing or a newly added profile doesn't show, try refreshing the page. If this keeps happening, please{' '}
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-feedback'))}
+                  className="underline font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                  send us feedback
+                </button>{' '}
+                so we can investigate.
+              </p>
+            </div>
             <Card>
               <CardHeader>
                 <CardTitle>{t('parent.children.title')}</CardTitle>
