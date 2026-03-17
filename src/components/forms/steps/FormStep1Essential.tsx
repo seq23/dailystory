@@ -257,6 +257,7 @@ export const FormStep1Essential = ({
               <SelectItem value="zh">{t("formStep1.language.chinese", "Chinese")}</SelectItem>
               <SelectItem value="hi">{t("formStep1.language.hindi", "Hindi")}</SelectItem>
               <SelectItem value="pt">{t("formStep1.language.portuguese", "Portuguese")}</SelectItem>
+              <SelectItem value="ur">{t("formStep1.language.urdu", "Urdu")}</SelectItem>
             </SelectContent>
           </Select>
         </div>

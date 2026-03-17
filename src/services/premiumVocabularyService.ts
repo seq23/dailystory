@@ -500,6 +500,7 @@ export class PremiumVocabularyService {
       'fr-francophone-african': ['Practice English "h" sounds', 'Work on nasal vowels', 'Focus on final consonants'],
       'zh': ['Practice consonant clusters', 'Work on vowel length', 'Focus on stress patterns'],
       'ar': ['Practice "p" vs "b" sounds', 'Work on vowel systems', 'Focus on consonant endings'],
+      'ur': ['Practice "p" vs "b" sounds', 'Work on vowel systems', 'Focus on retroflex consonants'],
       'hi': ['Practice "v" vs "w" sounds', 'Work on "th" sounds', 'Focus on consonant clusters'],
       'pt': ['Practice nasal vowels', 'Work on final consonants', 'Focus on stress patterns'],
       'en': ['Standard English learning path'],
