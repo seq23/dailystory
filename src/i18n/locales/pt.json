@@ -1010,5 +1010,69 @@
     "gentleGuidance": "Muitas crianças de {age} anos gostam de histórias {level}",
     "choiceEmphasis": "Escolha o que parecer mais divertido e confortável",
     "noWrongChoice": "Não há escolha errada - vamos torná-la perfeita para você"
+  },
+  "formStep1": {
+    "title": "Informações Essenciais",
+    "description": "Apenas alguns detalhes para começar sua aventura mágica de leitura!",
+    "name": { "label": "Nome da Criança", "placeholder": "Digite o nome do seu filho" },
+    "spellcheck": { "suggestion": "Você quis dizer:" },
+    "age": { "label": "Idade", "placeholder": "Selecionar idade", "years": "anos" },
+    "grade": {
+      "label": "Série Escolar", "placeholder": "Selecionar série",
+      "preK": "Pré-escola", "k": "Jardim de Infância",
+      "1st": "1ª Série", "2nd": "2ª Série", "3rd": "3ª Série",
+      "4th": "4ª Série", "5th": "5ª Série", "6thPlus": "6ª Série e acima"
+    },
+    "language": {
+      "label": "Língua Materna", "placeholder": "Selecionar idioma",
+      "english": "Inglês", "spanish": "Espanhol", "french": "Francês",
+      "arabic": "Árabe", "chinese": "Chinês", "hindi": "Hindi", "portuguese": "Português"
+    },
+    "next": "Próximo Passo",
+    "startReading": "Começar a Ler Agora"
+  },
+  "formStep2": {
+    "title": "Preferências de Leitura",
+    "description": "Ajude-nos a criar a experiência de leitura perfeita para seu filho",
+    "readingLevel": { "label": "Nível de Leitura", "tooltip": "Escolha o que parece mais confortável e divertido", "placeholder": "Escolher nível de leitura" },
+    "learningGoal": {
+      "label": "Objetivo de Aprendizado", "placeholder": "Selecionar objetivo",
+      "improveReading": "Melhorar Habilidades de Leitura em Inglês",
+      "learnEnglish": "Aprender Inglês como Novo Idioma",
+      "both": "Leitura e Desenvolvimento Linguístico",
+      "help": "Isso nos ajuda a adaptar o vocabulário e a complexidade das suas histórias"
+    },
+    "trustIndicators": {
+      "title": "Por Que Isso Importa",
+      "commonCore": "Alinhado com os Padrões Curriculares Comuns",
+      "specialists": "Revisado por especialistas certificados em leitura",
+      "research": "Pesquisas mostram que adaptar o conteúdo ao nível de leitura acelera o aprendizado"
+    },
+    "back": "Voltar",
+    "addPersonalDetails": "Adicionar Detalhes Pessoais",
+    "skipAndCreate": "Pular e criar história agora",
+    "encouragement": "Cada leitor progride no seu próprio ritmo - encontraremos as histórias perfeitas para você"
+  },
+  "formStep3": {
+    "title": "Faça Sua!",
+    "description": "Quanto mais você nos contar, mais mágicas suas histórias se tornam",
+    "researchBenefit": "Histórias personalizadas aumentam o engajamento e compreensão de leitura em até 60%",
+    "appearanceTitle": "Sua Aparência",
+    "avatar": "Escolha Seu Avatar",
+    "interestsTitle": "O Que Você Ama",
+    "favoriteColor": "Cor Favorita",
+    "favoriteAnimal": "Animal Favorito (Opcional)",
+    "favoriteAnimalPlaceholder": "exemplo: cachorro, elefante, golfinho...",
+    "favoriteFood": "Comida Favorita (Opcional)",
+    "favoriteFoodPlaceholder": "exemplo: pizza, sorvete, fruta...",
+    "hobbies": "Hobbies e Atividades (Opcional)",
+    "hobbiesPlaceholder": "exemplo: futebol, desenho, música...",
+    "specialRequest": "Pedido Especial",
+    "optional": "Opcional",
+    "targetVocabulary": "Vocabulário Alvo",
+    "targetVocabularyHelp": "As palavras aqui guiarão a IA para incluí-las em futuras histórias.",
+    "back": "Voltar",
+    "createStory": "Criar Minha História!",
+    "creating": "Criando..."
   }
 }

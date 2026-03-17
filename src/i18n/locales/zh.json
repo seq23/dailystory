@@ -823,5 +823,69 @@
     "gentleGuidance": "许多{age}岁的孩子喜欢{level}故事",
     "choiceEmphasis": "选择听起来最有趣和舒适的",
     "noWrongChoice": "没有错误的选择 - 我们会让它完美适合你"
+  },
+  "formStep1": {
+    "title": "基本信息",
+    "description": "只需几个细节，就能开始你的神奇阅读冒险！",
+    "name": { "label": "孩子的名字", "placeholder": "输入你孩子的名字" },
+    "spellcheck": { "suggestion": "你是不是想说：" },
+    "age": { "label": "年龄", "placeholder": "选择年龄", "years": "岁" },
+    "grade": {
+      "label": "年级", "placeholder": "选择年级",
+      "preK": "学前班", "k": "幼儿园",
+      "1st": "一年级", "2nd": "二年级", "3rd": "三年级",
+      "4th": "四年级", "5th": "五年级", "6thPlus": "六年级及以上"
+    },
+    "language": {
+      "label": "母语", "placeholder": "选择语言",
+      "english": "英语", "spanish": "西班牙语", "french": "法语",
+      "arabic": "阿拉伯语", "chinese": "中文", "hindi": "印地语", "portuguese": "葡萄牙语"
+    },
+    "next": "下一步",
+    "startReading": "立即开始阅读"
+  },
+  "formStep2": {
+    "title": "阅读偏好",
+    "description": "帮助我们为你的孩子创造完美的阅读体验",
+    "readingLevel": { "label": "阅读水平", "tooltip": "选择感觉最舒适和有趣的", "placeholder": "选择阅读水平" },
+    "learningGoal": {
+      "label": "学习目标", "placeholder": "选择学习目标",
+      "improveReading": "提高英语阅读技能",
+      "learnEnglish": "学习英语作为新语言",
+      "both": "阅读和语言发展",
+      "help": "这有助于我们调整故事的词汇和复杂度"
+    },
+    "trustIndicators": {
+      "title": "为什么这很重要",
+      "commonCore": "符合共同核心州标准",
+      "specialists": "由认证阅读专家审核",
+      "research": "研究表明，将内容与阅读水平匹配可以加速学习"
+    },
+    "back": "返回",
+    "addPersonalDetails": "添加个人详情",
+    "skipAndCreate": "跳过并立即创建故事",
+    "encouragement": "每个读者都按自己的节奏进步 - 我们会为你找到完美的故事"
+  },
+  "formStep3": {
+    "title": "让它属于你！",
+    "description": "你告诉我们的越多，你的故事就越神奇",
+    "researchBenefit": "个性化故事可将参与度和阅读理解力提高高达60%",
+    "appearanceTitle": "你的外貌",
+    "avatar": "选择你的头像",
+    "interestsTitle": "你喜欢什么",
+    "favoriteColor": "最喜欢的颜色",
+    "favoriteAnimal": "最喜欢的动物（可选）",
+    "favoriteAnimalPlaceholder": "例如：狗、大象、海豚...",
+    "favoriteFood": "最喜欢的食物（可选）",
+    "favoriteFoodPlaceholder": "例如：比萨、冰淇淋、水果...",
+    "hobbies": "爱好和活动（可选）",
+    "hobbiesPlaceholder": "例如：足球、绘画、音乐...",
+    "specialRequest": "特别请求",
+    "optional": "可选",
+    "targetVocabulary": "目标词汇",
+    "targetVocabularyHelp": "这里的词汇将引导AI在未来的故事中包含它们。",
+    "back": "返回",
+    "createStory": "创建我的故事！",
+    "creating": "创建中..."
   }
 }
