@@ -22,7 +22,9 @@
       "copyright": "All rights reserved.",
       "privacyPolicy": "Privacy Policy",
       "termsOfService": "Terms of Service",
-      "contactUs": "Contact Us"
+      "contactUs": "Contact Us",
+      "familyOfTools": "Our Family of Tools",
+      "companionTool": "Test reading levels with our companion tool."
     },
     "features": {
       "reading": {
@@ -974,8 +976,98 @@
     },
     "actions": {
       "moveToReview": "Move to Review",
-      "markReviewed": "Mark as Reviewed"
+    "markReviewed": "Mark as Reviewed"
     }
+  },
+  "formStep1": {
+    "title": "Essential Information",
+    "description": "Just a few details to get started with your magical reading adventure!",
+    "name": {
+      "label": "Child's Name",
+      "placeholder": "Enter your child's name"
+    },
+    "spellcheck": {
+      "suggestion": "Did you mean:"
+    },
+    "age": {
+      "label": "Age",
+      "placeholder": "Select age",
+      "years": "years old"
+    },
+    "grade": {
+      "label": "Grade Level",
+      "placeholder": "Select grade",
+      "preK": "Pre-K",
+      "k": "Kindergarten",
+      "1st": "1st Grade",
+      "2nd": "2nd Grade",
+      "3rd": "3rd Grade",
+      "4th": "4th Grade",
+      "5th": "5th Grade",
+      "6thPlus": "6th Grade & Up"
+    },
+    "language": {
+      "label": "Native Language",
+      "placeholder": "Select language",
+      "english": "English",
+      "spanish": "Spanish",
+      "french": "French",
+      "arabic": "Arabic",
+      "chinese": "Chinese",
+      "hindi": "Hindi",
+      "portuguese": "Portuguese"
+    },
+    "next": "Next Step",
+    "startReading": "Start Reading Now"
+  },
+  "formStep2": {
+    "title": "Reading Preferences",
+    "description": "Help us create the perfect reading experience for your child",
+    "readingLevel": {
+      "label": "Reading Level",
+      "tooltip": "Choose what feels most comfortable and fun",
+      "placeholder": "Choose reading level"
+    },
+    "learningGoal": {
+      "label": "Learning Goal",
+      "placeholder": "Select learning goal",
+      "improveReading": "Improve English Reading Skills",
+      "learnEnglish": "Learn English as New Language",
+      "both": "Both Reading & Language Development",
+      "help": "This helps us tailor the vocabulary and complexity of your stories"
+    },
+    "trustIndicators": {
+      "title": "Why This Matters",
+      "commonCore": "Aligned with Common Core State Standards",
+      "specialists": "Reviewed by certified reading specialists",
+      "research": "Research shows matching content to reading level accelerates learning"
+    },
+    "back": "Back",
+    "addPersonalDetails": "Add Personal Details",
+    "skipAndCreate": "Skip and create story now",
+    "encouragement": "Every reader progresses at their own pace - we'll find the perfect stories for you"
+  },
+  "formStep3": {
+    "title": "Make It Yours!",
+    "description": "The more you tell us, the more magical your stories become",
+    "researchBenefit": "Personalized stories increase engagement and reading comprehension by up to 60%",
+    "appearanceTitle": "How You Look",
+    "avatar": "Choose Your Avatar",
+    "interestsTitle": "What You Love",
+    "favoriteColor": "Favorite Color",
+    "favoriteAnimal": "Favorite Animal (Optional)",
+    "favoriteAnimalPlaceholder": "example: dog, elephant, dolphin...",
+    "favoriteFood": "Favorite Food (Optional)",
+    "favoriteFoodPlaceholder": "example: pizza, ice cream, fruit...",
+    "hobbies": "Hobbies & Activities (Optional)",
+    "hobbiesPlaceholder": "example: soccer, drawing, music...",
+    "specialRequest": "Special Request",
+    "optional": "Optional",
+    "targetVocabulary": "Target Vocabulary",
+    "targetVocabularyHelp": "Words here will guide the AI to include them in future stories.",
+    "back": "Back",
+    "createStory": "Create My Story!",
+    "creating": "Creating..."
   }
 }
 

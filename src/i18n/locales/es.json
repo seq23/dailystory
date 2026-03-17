@@ -22,7 +22,9 @@
       "copyright": "Todos los derechos reservados.",
       "privacyPolicy": "Política de Privacidad",
       "termsOfService": "Términos de Servicio",
-      "contactUs": "Contáctanos"
+      "contactUs": "Contáctanos",
+      "familyOfTools": "Nuestra Familia de Herramientas",
+      "companionTool": "Prueba niveles de lectura con nuestra herramienta complementaria."
     },
     "features": {
       "reading": {
@@ -797,7 +799,6 @@
     }
   },
   "postSession": {
-  "postSession": {
     "quizTitle": "Comprehension Quiz",
     "quizDesc": "Quick 3–5 questions based on your story.",
     "startQuiz": "Start Quiz",
@@ -857,7 +858,70 @@
     "gentleGuidance": "Muchos niños de {age} años disfrutan historias {level}",
     "choiceEmphasis": "Elige lo que suene más divertido y cómodo",
     "noWrongChoice": "No hay elección incorrecta - lo haremos perfecto para ti"
-  }
+  },
+  "formStep1": {
+    "title": "Información Esencial",
+    "description": "¡Solo unos detalles para comenzar tu aventura mágica de lectura!",
+    "name": { "label": "Nombre del Niño", "placeholder": "Ingresa el nombre de tu hijo" },
+    "spellcheck": { "suggestion": "¿Quisiste decir:" },
+    "age": { "label": "Edad", "placeholder": "Seleccionar edad", "years": "años" },
+    "grade": {
+      "label": "Nivel Escolar", "placeholder": "Seleccionar grado",
+      "preK": "Pre-K", "k": "Kínder",
+      "1st": "1er Grado", "2nd": "2do Grado", "3rd": "3er Grado",
+      "4th": "4to Grado", "5th": "5to Grado", "6thPlus": "6to Grado y más"
+    },
+    "language": {
+      "label": "Idioma Nativo", "placeholder": "Seleccionar idioma",
+      "english": "Inglés", "spanish": "Español", "french": "Francés",
+      "arabic": "Árabe", "chinese": "Chino", "hindi": "Hindi", "portuguese": "Portugués"
+    },
+    "next": "Siguiente Paso",
+    "startReading": "Empezar a Leer Ahora"
+  },
+  "formStep2": {
+    "title": "Preferencias de Lectura",
+    "description": "Ayúdanos a crear la experiencia de lectura perfecta para tu hijo",
+    "readingLevel": { "label": "Nivel de Lectura", "tooltip": "Elige lo que se sienta más cómodo y divertido", "placeholder": "Elegir nivel de lectura" },
+    "learningGoal": {
+      "label": "Objetivo de Aprendizaje", "placeholder": "Seleccionar objetivo",
+      "improveReading": "Mejorar Habilidades de Lectura en Inglés",
+      "learnEnglish": "Aprender Inglés como Nuevo Idioma",
+      "both": "Tanto Lectura como Desarrollo del Idioma",
+      "help": "Esto nos ayuda a adaptar el vocabulario y la complejidad de tus historias"
+    },
+    "trustIndicators": {
+      "title": "Por Qué Esto Importa",
+      "commonCore": "Alineado con los Estándares Básicos Comunes",
+      "specialists": "Revisado por especialistas certificados en lectura",
+      "research": "La investigación muestra que adaptar el contenido al nivel de lectura acelera el aprendizaje"
+    },
+    "back": "Atrás",
+    "addPersonalDetails": "Agregar Detalles Personales",
+    "skipAndCreate": "Omitir y crear historia ahora",
+    "encouragement": "Cada lector progresa a su propio ritmo - encontraremos las historias perfectas para ti"
+  },
+  "formStep3": {
+    "title": "¡Hazla Tuya!",
+    "description": "Cuanto más nos cuentes, más mágicas serán tus historias",
+    "researchBenefit": "Las historias personalizadas aumentan la participación y comprensión lectora hasta un 60%",
+    "appearanceTitle": "Cómo Te Ves",
+    "avatar": "Elige Tu Avatar",
+    "interestsTitle": "Lo Que Te Encanta",
+    "favoriteColor": "Color Favorito",
+    "favoriteAnimal": "Animal Favorito (Opcional)",
+    "favoriteAnimalPlaceholder": "ejemplo: perro, elefante, delfín...",
+    "favoriteFood": "Comida Favorita (Opcional)",
+    "favoriteFoodPlaceholder": "ejemplo: pizza, helado, fruta...",
+    "hobbies": "Pasatiempos y Actividades (Opcional)",
+    "hobbiesPlaceholder": "ejemplo: fútbol, dibujo, música...",
+    "specialRequest": "Solicitud Especial",
+    "optional": "Opcional",
+    "targetVocabulary": "Vocabulario Objetivo",
+    "targetVocabularyHelp": "Las palabras aquí guiarán a la IA para incluirlas en futuras historias.",
+    "back": "Atrás",
+    "createStory": "¡Crear Mi Historia!",
+    "creating": "Creando..."
   }
 }
 

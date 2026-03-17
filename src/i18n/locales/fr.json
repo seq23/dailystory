@@ -22,7 +22,9 @@
       "copyright": "Tous droits réservés.",
       "privacyPolicy": "Politique de Confidentialité",
       "termsOfService": "Conditions de Service",
-      "contactUs": "Nous Contacter"
+      "contactUs": "Nous Contacter",
+      "familyOfTools": "Notre Famille d'Outils",
+      "companionTool": "Testez les niveaux de lecture avec notre outil compagnon."
     },
     "features": {
       "reading": {
@@ -868,6 +870,70 @@
     "gentleGuidance": "Plusieurs enfants de {age} ans aiment les histoires {level}",
     "choiceEmphasis": "Choisissez ce qui semble le plus amusant et confortable",
     "noWrongChoice": "Il n'y a pas de mauvais choix - nous le rendrons parfait pour vous"
+  },
+  "formStep1": {
+    "title": "Informations Essentielles",
+    "description": "Juste quelques détails pour commencer votre aventure magique de lecture !",
+    "name": { "label": "Nom de l'Enfant", "placeholder": "Entrez le nom de votre enfant" },
+    "spellcheck": { "suggestion": "Vouliez-vous dire :" },
+    "age": { "label": "Âge", "placeholder": "Sélectionner l'âge", "years": "ans" },
+    "grade": {
+      "label": "Niveau Scolaire", "placeholder": "Sélectionner le niveau",
+      "preK": "Pré-maternelle", "k": "Maternelle",
+      "1st": "CP", "2nd": "CE1", "3rd": "CE2",
+      "4th": "CM1", "5th": "CM2", "6thPlus": "6ème et plus"
+    },
+    "language": {
+      "label": "Langue Maternelle", "placeholder": "Sélectionner la langue",
+      "english": "Anglais", "spanish": "Espagnol", "french": "Français",
+      "arabic": "Arabe", "chinese": "Chinois", "hindi": "Hindi", "portuguese": "Portugais"
+    },
+    "next": "Étape Suivante",
+    "startReading": "Commencer à Lire"
+  },
+  "formStep2": {
+    "title": "Préférences de Lecture",
+    "description": "Aidez-nous à créer l'expérience de lecture parfaite pour votre enfant",
+    "readingLevel": { "label": "Niveau de Lecture", "tooltip": "Choisissez ce qui semble le plus confortable et amusant", "placeholder": "Choisir le niveau de lecture" },
+    "learningGoal": {
+      "label": "Objectif d'Apprentissage", "placeholder": "Sélectionner l'objectif",
+      "improveReading": "Améliorer les Compétences en Lecture Anglaise",
+      "learnEnglish": "Apprendre l'Anglais comme Nouvelle Langue",
+      "both": "Lecture et Développement Linguistique",
+      "help": "Cela nous aide à adapter le vocabulaire et la complexité de vos histoires"
+    },
+    "trustIndicators": {
+      "title": "Pourquoi C'est Important",
+      "commonCore": "Aligné avec les normes éducatives communes",
+      "specialists": "Révisé par des spécialistes certifiés en lecture",
+      "research": "La recherche montre qu'adapter le contenu au niveau de lecture accélère l'apprentissage"
+    },
+    "back": "Retour",
+    "addPersonalDetails": "Ajouter des Détails Personnels",
+    "skipAndCreate": "Passer et créer l'histoire maintenant",
+    "encouragement": "Chaque lecteur progresse à son rythme - nous trouverons les histoires parfaites pour vous"
+  },
+  "formStep3": {
+    "title": "Personnalisez-la !",
+    "description": "Plus vous nous en dites, plus vos histoires deviennent magiques",
+    "researchBenefit": "Les histoires personnalisées augmentent l'engagement et la compréhension en lecture jusqu'à 60%",
+    "appearanceTitle": "Votre Apparence",
+    "avatar": "Choisissez Votre Avatar",
+    "interestsTitle": "Ce Que Vous Aimez",
+    "favoriteColor": "Couleur Préférée",
+    "favoriteAnimal": "Animal Préféré (Optionnel)",
+    "favoriteAnimalPlaceholder": "exemple : chien, éléphant, dauphin...",
+    "favoriteFood": "Nourriture Préférée (Optionnel)",
+    "favoriteFoodPlaceholder": "exemple : pizza, glace, fruit...",
+    "hobbies": "Loisirs et Activités (Optionnel)",
+    "hobbiesPlaceholder": "exemple : football, dessin, musique...",
+    "specialRequest": "Demande Spéciale",
+    "optional": "Optionnel",
+    "targetVocabulary": "Vocabulaire Cible",
+    "targetVocabularyHelp": "Les mots ici guideront l'IA pour les inclure dans les futures histoires.",
+    "back": "Retour",
+    "createStory": "Créer Mon Histoire !",
+    "creating": "Création en cours..."
   }
 }
 
