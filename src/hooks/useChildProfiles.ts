@@ -111,10 +111,12 @@ export function useChildProfiles() {
         setChildren(resultData.children);
         setActiveChildId(resultData.activeChildId);
         
+        return resultData; // Return for cache re-use
       } catch (e: any) {
         if (shouldLog()) DebugLogger.error('auth', 'useChildProfiles: Load failed', e);
         LeanErrorService.logError(e, 'useChildProfiles');
         setError(e?.message || 'Failed to load child profiles');
+        throw e; // Re-throw so cache knows it failed
       } finally {
         if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Setting loading to false');
         setLoading(false);
