@@ -907,8 +907,8 @@ All colors MUST be HSL.
     min-height: 100dvh; /* Dynamic viewport height for mobile */
     touch-action: pan-y pinch-zoom;
     overflow-x: hidden;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
   }
   
   /* Mobile safe areas */
