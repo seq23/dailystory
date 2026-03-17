@@ -538,7 +538,7 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  📝 Currently editing: <strong>{activeChild ? activeChild.display_name : 'Default'}</strong> • Up to 50 words saved, 20 used per story.
+                  📝 Currently editing: <strong>{activeChild ? activeChild.display_name : 'Default (all children)'}</strong> • Up to 50 words saved, 20 used per story.
                 </p>
               </CardContent>
             </Card>
