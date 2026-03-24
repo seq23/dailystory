@@ -190,8 +190,8 @@ export default function GDPR() {
           </p>
           <p className="text-sm text-muted-foreground">
             We encourage you to contact us first at{" "}
-            <a href="mailto:privacy@time2read.app" className="text-primary hover:underline">
-              privacy@time2read.app
+            <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">
+              privacy@time2read.com
             </a>{" "}
             so we can address your concerns directly.
           </p>
@@ -210,11 +210,11 @@ export default function GDPR() {
                     please contact our privacy team.
                   </p>
                   <a 
-                    href="mailto:privacy@time2read.app" 
+                    href="mailto:privacy@time2read.com" 
                     className="inline-flex items-center gap-2 text-primary hover:underline"
                   >
                     <Mail className="w-4 h-4" />
-                    privacy@time2read.app
+                    privacy@time2read.com
                   </a>
                 </div>
               </div>
