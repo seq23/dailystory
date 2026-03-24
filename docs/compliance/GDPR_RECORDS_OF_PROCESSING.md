@@ -101,7 +101,7 @@
 | **Source of Data** | Generated story content |
 | **Recipients** | ElevenLabs (processor) |
 | **Transfers to Third Countries** | USA/EU |
-| **Transfer Safeguards** | [Pending DPA] |
+| **Transfer Safeguards** | Standard API Terms (DPA accepted) |
 | **Retention Period** | Audio: transient only |
 | **Technical Measures** | No user identifiers transmitted |
 
