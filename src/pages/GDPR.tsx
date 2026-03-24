@@ -50,7 +50,7 @@ export default function GDPR() {
       icon: FileText,
       title: "Right to Object (Article 21)",
       description: "You have the right to object to processing based on legitimate interests or direct marketing.",
-      action: "Contact us at privacy@time2read.app to exercise this right."
+      action: "Use the cookie preferences or 'Withdraw Consent' button in your account settings."
     }
   ];
 
