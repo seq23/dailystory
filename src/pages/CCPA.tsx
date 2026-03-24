@@ -101,6 +101,19 @@ const CCPA = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  <Edit className="w-5 h-5 text-teal-500" />
+                  Right to Correct
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                You have the right to request that we correct inaccurate personal information
+                we maintain about you.
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Ban className="w-5 h-5 text-orange-500" />
                   Right to Opt-Out
                 </CardTitle>
