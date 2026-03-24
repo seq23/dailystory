@@ -164,18 +164,11 @@ const CCPA = () => {
                   <td>Personalization and improvement</td>
                 </tr>
                 <tr>
-                  <td><strong>Geolocation</strong></td>
-                  <td>Approximate location (country/region)</td>
+                  <td><strong>Inferences</strong></td>
+                  <td>Reading preferences, skill level</td>
                   <td>Yes</td>
-                  <td>Content localization</td>
+                  <td>Content personalization</td>
                 </tr>
-                <tr>
-                  <td><strong>Audio/Visual</strong></td>
-                  <td>Voice recordings (if using read-aloud features)</td>
-                  <td>Optional</td>
-                  <td>Reading assessment features</td>
-                </tr>
-                <tr>
                   <td><strong>Inferences</strong></td>
                   <td>Reading preferences, skill level</td>
                   <td>Yes</td>
