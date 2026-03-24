@@ -162,7 +162,7 @@ const Privacy = () => {
           <p>
             You have the right to lodge a complaint with your local data protection authority.
             We encourage you to contact us first at{" "}
-            <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">privacy@time2read.com</a>{" "}
+            <a href="mailto:privacy@time-2-read.com" className="text-primary hover:underline">privacy@time-2-read.com</a>{" "}
             so we can address your concerns directly.
           </p>
 
