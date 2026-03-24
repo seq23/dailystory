@@ -2,8 +2,8 @@ import { useEffect } from "react";
 
 const Terms = () => {
   useEffect(() => {
-    const title = "Terms of Service | Time2Read LLC";
-    const desc = "Terms of Service for Time2Read LLC. Understand the rules for using our Services.";
+    const title = "Terms of Service | Spry VSL LLC";
+    const desc = "Terms of Service for Spry VSL LLC. Understand the rules for using our Services.";
     document.title = title;
 
     let meta = document.querySelector('meta[name="description"]');
@@ -47,7 +47,7 @@ const Terms = () => {
       <section className="container mx-auto px-4 pb-12 space-y-6">
         <article className="prose max-w-none">
           <p>
-            These Terms of Service ("Terms") govern your access to and use of the Services provided by Time2Read LLC ("we",
+            These Terms of Service ("Terms") govern your access to and use of the Services provided by Spry VSL LLC ("we",
             "us", or "our"). By using our Services, you agree to these Terms.
           </p>
 
@@ -115,7 +115,7 @@ const Terms = () => {
 
           <h2>Contact</h2>
           <p>
-            Time2Read LLC<br />
+            Spry VSL LLC<br />
             Email: <a href="mailto:hello@time2read.app">hello@time2read.app</a><br />
             Legal inquiries: <a href="mailto:legal@time2read.app">legal@time2read.app</a>
           </p>

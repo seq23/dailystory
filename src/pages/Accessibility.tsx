@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Accessibility = () => {
   useEffect(() => {
-    const title = "Accessibility Statement | Time2Read LLC";
+    const title = "Accessibility Statement | Spry VSL LLC";
     const desc = "Our commitment to digital accessibility. Learn about the accessibility features of Time2Read.";
     document.title = title;
 
@@ -66,7 +66,7 @@ const Accessibility = () => {
       <section className="container mx-auto px-4 pb-12">
         <article className="prose max-w-none dark:prose-invert">
           <p className="lead">
-            Time2Read LLC is committed to ensuring digital accessibility for people with disabilities.
+            Spry VSL LLC is committed to ensuring digital accessibility for people with disabilities.
             We are continually improving the user experience for everyone and applying the relevant
             accessibility standards.
           </p>
@@ -251,7 +251,7 @@ const Accessibility = () => {
             For general inquiries or if you need assistance accessing any content on our platform:
           </p>
           <p>
-            Time2Read LLC
+            Spry VSL LLC
             <br />
             Email: <a href="mailto:hello@time2read.app">hello@time2read.app</a>
             <br />
