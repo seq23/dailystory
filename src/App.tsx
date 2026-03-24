@@ -24,6 +24,7 @@ import Vendors from "./pages/Vendors";
 import GDPR from "./pages/GDPR";
 import FERPA from "./pages/FERPA";
 import VerifyConsent from "./pages/VerifyConsent";
+import DataTransfers from "./pages/DataTransfers";
 import { PromptStudio } from "./components/PromptStudio";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
