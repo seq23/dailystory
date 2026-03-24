@@ -226,8 +226,8 @@ const CCPA = () => {
             Spry VSL LLC
             <br />
             Email: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
-            <br />
-            General inquiries: <a href="mailto:hello@time2read.app">hello@time2read.app</a>
+             <br />
+             General inquiries: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
           </p>
 
           <h2>Changes to This Notice</h2>

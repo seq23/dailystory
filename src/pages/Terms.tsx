@@ -123,8 +123,7 @@ const Terms = () => {
           <h2>Contact</h2>
           <p>
             Spry VSL LLC<br />
-            Email: <a href="mailto:hello@time2read.app">hello@time2read.app</a><br />
-            Legal inquiries: <a href="mailto:legal@time2read.app">legal@time2read.app</a>
+            Email: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
           </p>
 
           <h2>Changes to Terms</h2>
