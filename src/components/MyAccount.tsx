@@ -66,6 +66,12 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
         </CardContent>
       </Card>
 
+      {/* GDPR: Right to Restrict Processing (Art. 18) */}
+      <AccountRestriction accountStatus={accountStatus} onStatusChange={setAccountStatus} />
+
+      {/* GDPR: Consent Withdrawal (Art. 7(3)) */}
+      <ConsentWithdrawal />
+
       {/* Subscription Details */}
       <Card className="border-muted/40">
         <CardHeader>
