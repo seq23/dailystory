@@ -172,8 +172,8 @@ const Privacy = () => {
             <p className="font-semibold">Spry VSL LLC</p>
             <p className="flex items-center gap-2 mt-1">
               <Mail className="w-4 h-4" />
-              <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">
-                privacy@time2read.com
+              <a href="mailto:privacy@time-2-read.com" className="text-primary hover:underline">
+                privacy@time-2-read.com
               </a>
               <span className="text-muted-foreground">(Privacy &amp; DPO inquiries)</span>
             </p>
