@@ -259,7 +259,7 @@ const Vendors = () => {
             <br />
             Email: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
             <br />
-            General inquiries: <a href="mailto:hello@time2read.app">hello@time2read.app</a>
+            General inquiries: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
           </p>
         </article>
 
