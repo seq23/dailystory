@@ -169,11 +169,6 @@ const CCPA = () => {
                   <td>Yes</td>
                   <td>Content personalization</td>
                 </tr>
-                  <td><strong>Inferences</strong></td>
-                  <td>Reading preferences, skill level</td>
-                  <td>Yes</td>
-                  <td>Content personalization</td>
-                </tr>
               </tbody>
             </table>
           </div>
