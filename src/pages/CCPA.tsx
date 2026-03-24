@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Shield, FileText, Trash2, Eye, Ban } from "lucide-react";
+import { ArrowLeft, Shield, FileText, Trash2, Eye, Ban, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
