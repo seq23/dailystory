@@ -106,6 +106,7 @@ const App = () => {
               <Route path="/ferpa" element={<FERPA />} />
               <Route path="/verify-consent" element={<VerifyConsent />} />
               <Route path="/data-transfers" element={<DataTransfers />} />
+              <Route path="/subprocessors" element={<Subprocessors />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <VoiceHUD />
