@@ -100,7 +100,7 @@ const Privacy = () => {
           </ul>
           <p>
             If you believe we have collected data from a child without proper consent, contact us immediately at{" "}
-            <a href="mailto:privacy@time2read.com">privacy@time2read.com</a>.
+            <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>.
           </p>
 
           {/* GDPR Art. 13(2)(b) — Your Rights */}
