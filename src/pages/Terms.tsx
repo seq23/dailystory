@@ -77,7 +77,7 @@ const Terms = () => {
             <li>Monthly subscriptions: Refunds may be requested within 7 days of initial purchase.</li>
             <li>Annual subscriptions: Refunds may be requested within 14 days of initial purchase.</li>
             <li>Prorated refunds are not available for partial subscription periods.</li>
-            <li>Refund requests can be submitted to <a href="mailto:support@time2read.app">support@time2read.app</a>.</li>
+            <li>Refund requests can be submitted to <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>.</li>
           </ul>
 
           <h2>User Content</h2>
@@ -97,8 +97,15 @@ const Terms = () => {
 
           <h2>Disclaimer and Limitation of Liability</h2>
           <p>
-            The Services are provided "as is" without warranties of any kind. To the maximum extent permitted by law, Time2Read
+            The Services are provided "as is" without warranties of any kind. To the maximum extent permitted by law, Spry VSL
             LLC is not liable for indirect, incidental, or consequential damages.
+          </p>
+
+          <h2>Privacy</h2>
+          <p>
+            Your use of our Services is also governed by our{" "}
+            <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>, which describes how we collect, use,
+            and protect your personal information. By using our Services, you agree to our Privacy Policy.
           </p>
 
           <h2>Termination</h2>
@@ -116,8 +123,7 @@ const Terms = () => {
           <h2>Contact</h2>
           <p>
             Spry VSL LLC<br />
-            Email: <a href="mailto:hello@time2read.app">hello@time2read.app</a><br />
-            Legal inquiries: <a href="mailto:legal@time2read.app">legal@time2read.app</a>
+            Email: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
           </p>
 
           <h2>Changes to Terms</h2>

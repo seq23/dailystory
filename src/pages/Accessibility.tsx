@@ -214,10 +214,10 @@ const Accessibility = () => {
                   <p className="text-sm text-muted-foreground mt-1">
                     Email us at{" "}
                     <a
-                      href="mailto:accessibility@time2read.app"
+                      href="mailto:privacy@time-2-read.com"
                       className="text-primary hover:underline"
                     >
-                      accessibility@time2read.app
+                      privacy@time-2-read.com
                     </a>
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">
@@ -253,9 +253,8 @@ const Accessibility = () => {
           <p>
             Spry VSL LLC
             <br />
-            Email: <a href="mailto:hello@time2read.app">hello@time2read.app</a>
-            <br />
-            Accessibility: <a href="mailto:accessibility@time2read.app">accessibility@time2read.app</a>
+             Email: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
+
           </p>
         </article>
       </section>

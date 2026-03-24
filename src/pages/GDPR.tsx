@@ -124,7 +124,7 @@ export default function GDPR() {
             <CardContent className="pt-6">
               <div className="space-y-2 text-sm">
                 <p><strong>Organization:</strong> Spry VSL LLC</p>
-                <p><strong>DPO/Privacy Contact:</strong> <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">privacy@time2read.com</a></p>
+                <p><strong>DPO/Privacy Contact:</strong> <a href="mailto:privacy@time-2-read.com" className="text-primary hover:underline">privacy@time-2-read.com</a></p>
                 <p><strong>Website:</strong> <a href="https://time2read.lovable.app" className="text-primary hover:underline">time2read.lovable.app</a></p>
               </div>
             </CardContent>
@@ -190,8 +190,8 @@ export default function GDPR() {
           </p>
           <p className="text-sm text-muted-foreground">
             We encourage you to contact us first at{" "}
-            <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">
-              privacy@time2read.com
+             <a href="mailto:privacy@time-2-read.com" className="text-primary hover:underline">
+              privacy@time-2-read.com
             </a>{" "}
             so we can address your concerns directly.
           </p>
@@ -209,12 +209,12 @@ export default function GDPR() {
                     To exercise any of your GDPR rights or ask questions about our data practices, 
                     please contact our privacy team.
                   </p>
-                  <a 
-                    href="mailto:privacy@time2read.com" 
+                   <a 
+                    href="mailto:privacy@time-2-read.com" 
                     className="inline-flex items-center gap-2 text-primary hover:underline"
                   >
                     <Mail className="w-4 h-4" />
-                    privacy@time2read.com
+                    privacy@time-2-read.com
                   </a>
                 </div>
               </div>

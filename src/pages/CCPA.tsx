@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Shield, FileText, Trash2, Eye, Ban } from "lucide-react";
+import { ArrowLeft, Shield, FileText, Trash2, Eye, Ban, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -101,6 +101,19 @@ const CCPA = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  <Edit className="w-5 h-5 text-teal-500" />
+                  Right to Correct
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                You have the right to request that we correct inaccurate personal information
+                we maintain about you.
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Ban className="w-5 h-5 text-orange-500" />
                   Right to Opt-Out
                 </CardTitle>
@@ -151,18 +164,6 @@ const CCPA = () => {
                   <td>Personalization and improvement</td>
                 </tr>
                 <tr>
-                  <td><strong>Geolocation</strong></td>
-                  <td>Approximate location (country/region)</td>
-                  <td>Yes</td>
-                  <td>Content localization</td>
-                </tr>
-                <tr>
-                  <td><strong>Audio/Visual</strong></td>
-                  <td>Voice recordings (if using read-aloud features)</td>
-                  <td>Optional</td>
-                  <td>Reading assessment features</td>
-                </tr>
-                <tr>
                   <td><strong>Inferences</strong></td>
                   <td>Reading preferences, skill level</td>
                   <td>Yes</td>
@@ -188,7 +189,7 @@ const CCPA = () => {
           <ul>
             <li>
               <strong>Email us:</strong>{" "}
-              <a href="mailto:privacy@time2read.com">privacy@time2read.com</a>
+               <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
             </li>
             <li>
               <strong>Use your account settings:</strong> Log in and navigate to "My Account" to delete
@@ -224,9 +225,9 @@ const CCPA = () => {
           <p>
             Spry VSL LLC
             <br />
-            Email: <a href="mailto:privacy@time2read.com">privacy@time2read.com</a>
-            <br />
-            General inquiries: <a href="mailto:hello@time2read.app">hello@time2read.app</a>
+            Email: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
+             <br />
+             General inquiries: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
           </p>
 
           <h2>Changes to This Notice</h2>

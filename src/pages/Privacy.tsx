@@ -44,7 +44,7 @@ const Privacy = () => {
           <h2>1. Data Controller</h2>
           <p>
             <strong>Spry VSL LLC</strong> ("we", "us", "our") operates the Time2Read platform.<br />
-            Privacy Contact: <a href="mailto:privacy@time2read.com">privacy@time2read.com</a>
+            Privacy Contact: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
           </p>
 
           {/* GDPR Art. 13(1)(c) — Purpose and legal basis */}
@@ -73,6 +73,8 @@ const Privacy = () => {
             <li><strong>ElevenLabs</strong> — Text-to-speech narration (US, DPA)</li>
             <li><strong>Runware</strong> — AI image generation (EU/US, DPA)</li>
             <li><strong>Resend</strong> — Transactional email (US, SOC 2)</li>
+            <li><strong>Cloudflare</strong> — Hosting, CDN, and DDoS protection (Global, DPA)</li>
+            <li><strong>GitHub</strong> — Source code hosting and CI/CD (US, DPA, SOC 2)</li>
           </ul>
           <p>See our <Link to="/data-transfers" className="text-primary hover:underline">International Data Transfers</Link> page for full details and safeguards.</p>
 
@@ -100,7 +102,7 @@ const Privacy = () => {
           </ul>
           <p>
             If you believe we have collected data from a child without proper consent, contact us immediately at{" "}
-            <a href="mailto:privacy@time2read.com">privacy@time2read.com</a>.
+            <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>.
           </p>
 
           {/* GDPR Art. 13(2)(b) — Your Rights */}
@@ -162,7 +164,7 @@ const Privacy = () => {
           <p>
             You have the right to lodge a complaint with your local data protection authority.
             We encourage you to contact us first at{" "}
-            <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">privacy@time2read.com</a>{" "}
+            <a href="mailto:privacy@time-2-read.com" className="text-primary hover:underline">privacy@time-2-read.com</a>{" "}
             so we can address your concerns directly.
           </p>
 
@@ -172,8 +174,8 @@ const Privacy = () => {
             <p className="font-semibold">Spry VSL LLC</p>
             <p className="flex items-center gap-2 mt-1">
               <Mail className="w-4 h-4" />
-              <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">
-                privacy@time2read.com
+              <a href="mailto:privacy@time-2-read.com" className="text-primary hover:underline">
+                privacy@time-2-read.com
               </a>
               <span className="text-muted-foreground">(Privacy &amp; DPO inquiries)</span>
             </p>
