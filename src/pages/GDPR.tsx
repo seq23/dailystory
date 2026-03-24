@@ -124,7 +124,7 @@ export default function GDPR() {
             <CardContent className="pt-6">
               <div className="space-y-2 text-sm">
                 <p><strong>Organization:</strong> Spry VSL LLC</p>
-                <p><strong>DPO/Privacy Contact:</strong> <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">privacy@time2read.com</a></p>
+                <p><strong>DPO/Privacy Contact:</strong> <a href="mailto:privacy@time-2-read.com" className="text-primary hover:underline">privacy@time-2-read.com</a></p>
                 <p><strong>Website:</strong> <a href="https://time2read.lovable.app" className="text-primary hover:underline">time2read.lovable.app</a></p>
               </div>
             </CardContent>
