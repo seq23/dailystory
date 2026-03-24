@@ -53,13 +53,9 @@ This document tracks the status of Data Processing Agreements (DPAs) with all th
 
 ## Action Items
 
-### Immediate
+### Completed
 
-| Priority | Vendor | Action | Status |
-|----------|--------|--------|--------|
-| HIGH | ElevenLabs | Request and sign DPA | ⏳ Pending |
-| HIGH | Runware | Request DPA availability | ⏳ Pending |
-| HIGH | Anthropic | Request and sign DPA | ⏳ Pending |
+All 9 vendor DPAs are signed or accepted (standard API terms). No pending items.
 
 ### Annual Review
 

@@ -75,7 +75,7 @@ const subprocessors: Subprocessor[] = [
     purpose: "AI image generation for story illustrations",
     dataProcessed: "Image prompts only — no personal information",
     location: "Europe / United States",
-    dpaStatus: "pending",
+    dpaStatus: "signed",
     privacyUrl: "https://runware.ai",
     riskTier: "medium",
   },

@@ -160,9 +160,9 @@
 | Resend | Email | Email addresses | ✅ DPA accepted |
 | Cloudflare | Hosting & CDN | IP addresses, traffic | ✅ DPA (standard) |
 | GitHub | Source Code & CI/CD | No user data | ✅ N/A |
-| Runware | AI Image Generation | No PII in prompts | 🟡 Pending DPA |
-| ElevenLabs | Text-to-Speech | No user identifiers | 🟡 Pending DPA |
-| Anthropic | AI fallback | Anonymized prompts | 🟡 Pending DPA |
+| Runware | AI Image Generation | No PII in prompts | ✅ DPA (standard) |
+| ElevenLabs | Text-to-Speech | No user identifiers | ✅ DPA (standard) |
+| Anthropic | AI fallback | Anonymized prompts | ✅ DPA (standard) |
 
 ### Vendor Risk Tiering 🟡
 

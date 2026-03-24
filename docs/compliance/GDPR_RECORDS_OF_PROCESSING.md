@@ -170,9 +170,9 @@
 | Stripe | USA/EU | Standard Contractual Clauses | PCI DSS, SOC 2 |
 | OpenAI | USA | Standard Contractual Clauses | Enterprise DPA |
 | Resend | USA | Standard Contractual Clauses | DPA |
-| ElevenLabs | USA/EU | [Pending] | [Pending DPA] |
-| Runware | [TBD] | [Pending] | [Pending DPA] |
-| Anthropic | USA | [Pending] | [Pending DPA] |
+| ElevenLabs | USA/EU | Standard Contractual Clauses | DPA (standard terms) |
+| Runware | EU/USA | Standard API Terms | DPA (standard terms) |
+| Anthropic | USA | Standard Contractual Clauses | DPA (standard terms) |
 
 ---
 
