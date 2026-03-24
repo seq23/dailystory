@@ -164,8 +164,8 @@ const DataTransfers = () => {
             </ul>
             <p>
               Contact our privacy team at{" "}
-              <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">
-                privacy@time2read.com
+              <a href="mailto:privacy@time-2-read.com" className="text-primary hover:underline">
+                privacy@time-2-read.com
               </a>{" "}
               for any questions about international data transfers.
             </p>

@@ -97,8 +97,15 @@ const Terms = () => {
 
           <h2>Disclaimer and Limitation of Liability</h2>
           <p>
-            The Services are provided "as is" without warranties of any kind. To the maximum extent permitted by law, Time2Read
+            The Services are provided "as is" without warranties of any kind. To the maximum extent permitted by law, Spry VSL
             LLC is not liable for indirect, incidental, or consequential damages.
+          </p>
+
+          <h2>Privacy</h2>
+          <p>
+            Your use of our Services is also governed by our{" "}
+            <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>, which describes how we collect, use,
+            and protect your personal information. By using our Services, you agree to our Privacy Policy.
           </p>
 
           <h2>Termination</h2>

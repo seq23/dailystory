@@ -260,24 +260,17 @@ export default function FERPA() {
                 <Mail className="w-6 h-6 text-primary mt-1" />
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">School Partnership Inquiries</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
+                   <p className="text-sm text-muted-foreground mb-3">
                     For schools and districts interested in using Time2Read, or to request a Data 
-                    Protection Agreement, please contact our education team.
+                    Protection Agreement, please contact our privacy team.
                   </p>
                   <div className="space-y-2">
                     <a 
-                      href="mailto:schools@time2read.app" 
+                      href="mailto:privacy@time-2-read.com" 
                       className="flex items-center gap-2 text-primary hover:underline text-sm"
                     >
                       <Mail className="w-4 h-4" />
-                      schools@time2read.app
-                    </a>
-                    <a 
-                      href="mailto:privacy@time2read.com" 
-                      className="flex items-center gap-2 text-primary hover:underline text-sm"
-                    >
-                      <Mail className="w-4 h-4" />
-                      privacy@time2read.com (Privacy inquiries)
+                      privacy@time-2-read.com
                     </a>
                   </div>
                 </div>

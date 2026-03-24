@@ -253,9 +253,8 @@ const Accessibility = () => {
           <p>
             Spry VSL LLC
             <br />
-            Email: <a href="mailto:hello@time2read.app">hello@time2read.app</a>
-            <br />
-            Accessibility: <a href="mailto:accessibility@time2read.app">accessibility@time2read.app</a>
+             Email: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
+
           </p>
         </article>
       </section>

@@ -209,12 +209,12 @@ export default function GDPR() {
                     To exercise any of your GDPR rights or ask questions about our data practices, 
                     please contact our privacy team.
                   </p>
-                  <a 
-                    href="mailto:privacy@time2read.com" 
+                   <a 
+                    href="mailto:privacy@time-2-read.com" 
                     className="inline-flex items-center gap-2 text-primary hover:underline"
                   >
                     <Mail className="w-4 h-4" />
-                    privacy@time2read.com
+                    privacy@time-2-read.com
                   </a>
                 </div>
               </div>
