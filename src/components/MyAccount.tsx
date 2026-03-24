@@ -20,7 +20,9 @@ interface MyAccountProps {
 }
 
 
-export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTestMode, userEmail }: MyAccountProps) {
+export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTestMode, userEmail, accountStatus: initialStatus }: MyAccountProps) {
+  const [accountStatus, setAccountStatus] = useState(initialStatus || 'active');
+  
   return (
     <div className="space-y-8">
       {/* Header */}
