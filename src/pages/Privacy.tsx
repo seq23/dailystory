@@ -73,6 +73,8 @@ const Privacy = () => {
             <li><strong>ElevenLabs</strong> — Text-to-speech narration (US, DPA)</li>
             <li><strong>Runware</strong> — AI image generation (EU/US, DPA)</li>
             <li><strong>Resend</strong> — Transactional email (US, SOC 2)</li>
+            <li><strong>Cloudflare</strong> — Hosting, CDN, and DDoS protection (Global, DPA)</li>
+            <li><strong>GitHub</strong> — Source code hosting and CI/CD (US, DPA, SOC 2)</li>
           </ul>
           <p>See our <Link to="/data-transfers" className="text-primary hover:underline">International Data Transfers</Link> page for full details and safeguards.</p>
 
