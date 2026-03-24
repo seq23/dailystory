@@ -86,8 +86,8 @@
 | **Legal Basis** | Contract (Art. 6(1)(b)) |
 | **Source of Data** | Derived from avatar settings |
 | **Recipients** | Runware (processor) |
-| **Transfers to Third Countries** | [TBD based on Runware location] |
-| **Transfer Safeguards** | [Pending DPA] |
+| **Transfers to Third Countries** | Europe / United States |
+| **Transfer Safeguards** | Standard API Terms (DPA accepted) |
 | **Retention Period** | Images cached for session duration |
 | **Technical Measures** | No PII in prompts |
 
