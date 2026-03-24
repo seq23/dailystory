@@ -44,7 +44,7 @@ const Privacy = () => {
           <h2>1. Data Controller</h2>
           <p>
             <strong>Spry VSL LLC</strong> ("we", "us", "our") operates the Time2Read platform.<br />
-            Privacy Contact: <a href="mailto:privacy@time2read.com">privacy@time2read.com</a>
+            Privacy Contact: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
           </p>
 
           {/* GDPR Art. 13(1)(c) — Purpose and legal basis */}
