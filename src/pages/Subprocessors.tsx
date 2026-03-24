@@ -66,7 +66,7 @@ const subprocessors: Subprocessor[] = [
     purpose: "Text-to-speech narration",
     dataProcessed: "Story text only — no personal information",
     location: "United States",
-    dpaStatus: "pending",
+    dpaStatus: "signed",
     privacyUrl: "https://elevenlabs.io/privacy",
     riskTier: "medium",
   },
