@@ -246,7 +246,7 @@ const Vendors = () => {
           </ul>
           <p>
             Please contact us at{" "}
-            <a href="mailto:schools@time2read.app">schools@time2read.app</a> for more information.
+            <a href="mailto:privacy@time-2-read.com">schools@time-2-read.com</a> for more information.
           </p>
 
           <h2>Questions?</h2>
