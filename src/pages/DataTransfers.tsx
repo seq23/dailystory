@@ -54,6 +54,20 @@ const DataTransfers = () => {
       safeguards: "Data Processing Agreement, SOC 2 Type II",
       website: "https://resend.com/legal/privacy-policy",
     },
+    {
+      name: "Cloudflare (Hosting & CDN)",
+      location: "Global",
+      purpose: "Website hosting, content delivery, DDoS protection",
+      safeguards: "Standard Contractual Clauses (SCCs), SOC 2 Type II, ISO 27001",
+      website: "https://www.cloudflare.com/privacypolicy/",
+    },
+    {
+      name: "GitHub (Source Code)",
+      location: "United States",
+      purpose: "Source code hosting and CI/CD pipelines",
+      safeguards: "Data Processing Agreement, SOC 2 Type II",
+      website: "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
+    },
   ];
 
   return (
