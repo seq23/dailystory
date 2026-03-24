@@ -194,7 +194,7 @@ const CCPA = () => {
           <ul>
             <li>
               <strong>Email us:</strong>{" "}
-              <a href="mailto:privacy@time2read.com">privacy@time2read.com</a>
+               <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
             </li>
             <li>
               <strong>Use your account settings:</strong> Log in and navigate to "My Account" to delete
