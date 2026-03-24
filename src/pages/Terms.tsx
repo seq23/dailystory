@@ -77,7 +77,7 @@ const Terms = () => {
             <li>Monthly subscriptions: Refunds may be requested within 7 days of initial purchase.</li>
             <li>Annual subscriptions: Refunds may be requested within 14 days of initial purchase.</li>
             <li>Prorated refunds are not available for partial subscription periods.</li>
-            <li>Refund requests can be submitted to <a href="mailto:support@time2read.app">support@time2read.app</a>.</li>
+            <li>Refund requests can be submitted to <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>.</li>
           </ul>
 
           <h2>User Content</h2>
