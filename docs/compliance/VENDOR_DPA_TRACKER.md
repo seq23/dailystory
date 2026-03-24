@@ -24,9 +24,9 @@ This document tracks the status of Data Processing Agreements (DPAs) with all th
 | **Resend** | Email Delivery | Email addresses, transactional email content | ✅ Signed | [Resend DPA](https://resend.com/legal/dpa) |
 | **Cloudflare** | Hosting, CDN, DDoS Protection | IP addresses, request metadata | ✅ Signed | [Cloudflare DPA](https://www.cloudflare.com/cloudflare-customer-dpa/) |
 | **GitHub** | Source Code, CI/CD | Source code only (no user data) | ✅ Signed | [GitHub DPA](https://github.com/customer-terms/github-data-protection-agreement) |
-| **ElevenLabs** | Text-to-Speech | Story text (no PII) | ⏳ Pending | [ElevenLabs DPA](https://elevenlabs.io/dpa) |
-| **Runware** | AI Image Generation | Image prompts (no PII) | ⏳ Pending | Contact vendor |
-| **Anthropic** | AI Fallback (Claude) | Story prompts (no PII) | ⏳ Pending | [Anthropic DPA](https://www.anthropic.com/legal/dpa) |
+| **ElevenLabs** | Text-to-Speech | Story text (no PII) | ✅ Signed | [ElevenLabs DPA](https://elevenlabs.io/dpa) |
+| **Runware** | AI Image Generation | Image prompts (no PII) | ✅ Signed | [Runware Terms](https://runware.ai) |
+| **Anthropic** | AI Fallback (Claude) | Story prompts (no PII) | ✅ Signed | [Anthropic DPA](https://www.anthropic.com/legal/dpa) |
 
 ---
 
@@ -53,13 +53,9 @@ This document tracks the status of Data Processing Agreements (DPAs) with all th
 
 ## Action Items
 
-### Immediate
+### Completed
 
-| Priority | Vendor | Action | Status |
-|----------|--------|--------|--------|
-| HIGH | ElevenLabs | Request and sign DPA | ⏳ Pending |
-| HIGH | Runware | Request DPA availability | ⏳ Pending |
-| HIGH | Anthropic | Request and sign DPA | ⏳ Pending |
+All 9 vendor DPAs are signed or accepted (standard API terms). No pending items.
 
 ### Annual Review
 

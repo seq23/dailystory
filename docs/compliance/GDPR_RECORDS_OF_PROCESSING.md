@@ -86,8 +86,8 @@
 | **Legal Basis** | Contract (Art. 6(1)(b)) |
 | **Source of Data** | Derived from avatar settings |
 | **Recipients** | Runware (processor) |
-| **Transfers to Third Countries** | [TBD based on Runware location] |
-| **Transfer Safeguards** | [Pending DPA] |
+| **Transfers to Third Countries** | Europe / United States |
+| **Transfer Safeguards** | Standard API Terms (DPA accepted) |
 | **Retention Period** | Images cached for session duration |
 | **Technical Measures** | No PII in prompts |
 
@@ -101,7 +101,7 @@
 | **Source of Data** | Generated story content |
 | **Recipients** | ElevenLabs (processor) |
 | **Transfers to Third Countries** | USA/EU |
-| **Transfer Safeguards** | [Pending DPA] |
+| **Transfer Safeguards** | Standard API Terms (DPA accepted) |
 | **Retention Period** | Audio: transient only |
 | **Technical Measures** | No user identifiers transmitted |
 
@@ -170,9 +170,9 @@
 | Stripe | USA/EU | Standard Contractual Clauses | PCI DSS, SOC 2 |
 | OpenAI | USA | Standard Contractual Clauses | Enterprise DPA |
 | Resend | USA | Standard Contractual Clauses | DPA |
-| ElevenLabs | USA/EU | [Pending] | [Pending DPA] |
-| Runware | [TBD] | [Pending] | [Pending DPA] |
-| Anthropic | USA | [Pending] | [Pending DPA] |
+| ElevenLabs | USA/EU | Standard Contractual Clauses | DPA (standard terms) |
+| Runware | EU/USA | Standard API Terms | DPA (standard terms) |
+| Anthropic | USA | Standard Contractual Clauses | DPA (standard terms) |
 
 ---
 
