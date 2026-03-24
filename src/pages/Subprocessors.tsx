@@ -57,7 +57,7 @@ const subprocessors: Subprocessor[] = [
     purpose: "AI fallback story generation (Claude)",
     dataProcessed: "Story prompts only — no personal information",
     location: "United States",
-    dpaStatus: "pending",
+    dpaStatus: "signed",
     privacyUrl: "https://www.anthropic.com/privacy",
     riskTier: "medium",
   },
