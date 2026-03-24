@@ -16,7 +16,7 @@
 | Data mapping (full data inventory) | ✅ Done | `docs/GDPR_RECORDS_OF_PROCESSING.md` — RoPA with 6 processing activities |
 | Lawful basis defined per data type | ✅ Done | `Privacy.tsx` Article 6 table + RoPA |
 | Data subject rights workflow (access/delete/export) | ✅ Done | `export-user-data` + `delete-user-account` edge functions |
-| DPAs with vendors | 🟡 Partial | Stripe & Supabase DPAs accepted; ElevenLabs, Runware, Anthropic pending |
+| DPAs with vendors | ✅ Done | All 9 vendor DPAs signed or accepted (standard API terms) |
 | Cookie consent | ✅ Done | `CookieConsent.tsx` — granular Essential/Analytics/Marketing |
 | Records of Processing Activities (RoPA) | ✅ Done | `docs/GDPR_RECORDS_OF_PROCESSING.md` |
 | GDPR legal page | ✅ Done | `/gdpr` route |

@@ -113,7 +113,7 @@ SOC 2 evaluates controls across five Trust Service Criteria. This checklist maps
 
 | Control | Status | Implementation |
 |---------|--------|----------------|
-| Vendor DPAs | 🟡 Partial | 6/9 signed, 3 pending (see `VENDOR_DPA_TRACKER.md`) |
+| Vendor DPAs | ✅ Done | 9/9 signed or accepted (see `VENDOR_DPA_TRACKER.md`) |
 | Insurance | 🔴 Not yet | Cyber liability insurance not yet obtained |
 | Business continuity plan | 🔴 Not yet | Not formalized |
 
