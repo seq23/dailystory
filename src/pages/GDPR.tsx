@@ -38,7 +38,7 @@ export default function GDPR() {
       icon: Shield,
       title: "Right to Restriction (Article 18)",
       description: "You have the right to restrict processing of your personal data in certain circumstances.",
-      action: "Contact us at privacy@time2read.app to request restriction."
+      action: "Use the 'Freeze My Account' feature in your account settings to restrict processing."
     },
     {
       icon: Download,
