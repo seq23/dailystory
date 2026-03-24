@@ -70,6 +70,24 @@ const vendors: VendorInfo[] = [
     privacyUrl: "https://resend.com/legal/privacy-policy",
     dpaStatus: "compliant",
   },
+  {
+    name: "Cloudflare",
+    description: "Hosting, CDN, and DDoS protection",
+    icon: <Shield className="w-5 h-5" />,
+    dataShared: ["IP address", "Browser metadata", "Request data"],
+    purpose: "Website hosting, content delivery, and security protection",
+    privacyUrl: "https://www.cloudflare.com/privacypolicy/",
+    dpaStatus: "compliant",
+  },
+  {
+    name: "GitHub",
+    description: "Source code hosting and CI/CD",
+    icon: <Database className="w-5 h-5" />,
+    dataShared: ["Source code (no user data)"],
+    purpose: "Source code management and deployment pipelines",
+    privacyUrl: "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
+    dpaStatus: "compliant",
+  },
 ];
 
 const Vendors = () => {
