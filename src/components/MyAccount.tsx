@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Check, CreditCard, Crown, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { SubscriptionManager } from "@/components/SubscriptionManager";
 import { PasswordChangeForm } from "@/components/PasswordChangeForm";
 import { AccountDeletion } from "@/components/AccountDeletion";
 import { DataExportButton } from "@/components/DataExportButton";
+import { AccountRestriction } from "@/components/AccountRestriction";
+import { ConsentWithdrawal } from "@/components/ConsentWithdrawal";
 import { freeFeatures, premiumFeatures as topPremiumFeatures, additionalOfferings } from "@/constants/featureLists";
 import { Badge } from "@/components/ui/badge";
 
@@ -13,6 +16,7 @@ interface MyAccountProps {
   subscriptionEnd?: string;
   devTestMode: boolean;
   userEmail?: string;
+  accountStatus?: string;
 }
 
 
