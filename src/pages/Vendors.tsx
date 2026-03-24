@@ -74,7 +74,7 @@ const vendors: VendorInfo[] = [
 
 const Vendors = () => {
   useEffect(() => {
-    const title = "Third-Party Vendors | Time2Read LLC";
+    const title = "Third-Party Vendors | Spry VSL LLC";
     const desc = "Information about the third-party services we use to provide Time2Read.";
     document.title = title;
 
@@ -237,9 +237,9 @@ const Vendors = () => {
             contact us:
           </p>
           <p>
-            Time2Read LLC
+            Spry VSL LLC
             <br />
-            Email: <a href="mailto:privacy@time2read.app">privacy@time2read.app</a>
+            Email: <a href="mailto:privacy@time2read.com">privacy@time2read.com</a>
             <br />
             General inquiries: <a href="mailto:hello@time2read.app">hello@time2read.app</a>
           </p>

@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Check, CreditCard, Crown, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { SubscriptionManager } from "@/components/SubscriptionManager";
 import { PasswordChangeForm } from "@/components/PasswordChangeForm";
 import { AccountDeletion } from "@/components/AccountDeletion";
 import { DataExportButton } from "@/components/DataExportButton";
+import { AccountRestriction } from "@/components/AccountRestriction";
+import { ConsentWithdrawal } from "@/components/ConsentWithdrawal";
 import { freeFeatures, premiumFeatures as topPremiumFeatures, additionalOfferings } from "@/constants/featureLists";
 import { Badge } from "@/components/ui/badge";
 
@@ -13,10 +16,13 @@ interface MyAccountProps {
   subscriptionEnd?: string;
   devTestMode: boolean;
   userEmail?: string;
+  accountStatus?: string;
 }
 
 
-export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTestMode, userEmail }: MyAccountProps) {
+export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTestMode, userEmail, accountStatus: initialStatus }: MyAccountProps) {
+  const [accountStatus, setAccountStatus] = useState(initialStatus || 'active');
+  
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -59,6 +65,12 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
           </div>
         </CardContent>
       </Card>
+
+      {/* GDPR: Right to Restrict Processing (Art. 18) */}
+      <AccountRestriction accountStatus={accountStatus} onStatusChange={setAccountStatus} />
+
+      {/* GDPR: Consent Withdrawal (Art. 7(3)) */}
+      <ConsentWithdrawal />
 
       {/* Subscription Details */}
       <Card className="border-muted/40">

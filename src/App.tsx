@@ -24,6 +24,7 @@ import Vendors from "./pages/Vendors";
 import GDPR from "./pages/GDPR";
 import FERPA from "./pages/FERPA";
 import VerifyConsent from "./pages/VerifyConsent";
+import DataTransfers from "./pages/DataTransfers";
 import { PromptStudio } from "./components/PromptStudio";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
@@ -103,6 +104,7 @@ const App = () => {
               <Route path="/gdpr" element={<GDPR />} />
               <Route path="/ferpa" element={<FERPA />} />
               <Route path="/verify-consent" element={<VerifyConsent />} />
+              <Route path="/data-transfers" element={<DataTransfers />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <VoiceHUD />

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const CCPA = () => {
   useEffect(() => {
-    const title = "California Privacy Rights (CCPA) | Time2Read LLC";
+    const title = "California Privacy Rights (CCPA) | Spry VSL LLC";
     const desc = "Your California Consumer Privacy Act rights. Learn about your rights to know, delete, and opt-out.";
     document.title = title;
 
@@ -174,7 +174,7 @@ const CCPA = () => {
 
           <h2>Do Not Sell My Personal Information</h2>
           <p>
-            <strong>We do not sell your personal information.</strong> Time2Read LLC does not sell, rent,
+            <strong>We do not sell your personal information.</strong> Spry VSL LLC does not sell, rent,
             or trade personal information to third parties for monetary consideration.
           </p>
           <p>
@@ -188,14 +188,14 @@ const CCPA = () => {
           <ul>
             <li>
               <strong>Email us:</strong>{" "}
-              <a href="mailto:privacy@time2read.app">privacy@time2read.app</a>
+              <a href="mailto:privacy@time2read.com">privacy@time2read.com</a>
             </li>
             <li>
               <strong>Use your account settings:</strong> Log in and navigate to "My Account" to delete
               your account directly
             </li>
             <li>
-              <strong>Mail us:</strong> Time2Read LLC, Privacy Request, [Address]
+              <strong>Mail us:</strong> Spry VSL LLC, Privacy Request, [Address]
             </li>
           </ul>
 
@@ -222,9 +222,9 @@ const CCPA = () => {
             If you have questions about this notice or your California privacy rights, please contact us:
           </p>
           <p>
-            Time2Read LLC
+            Spry VSL LLC
             <br />
-            Email: <a href="mailto:privacy@time2read.app">privacy@time2read.app</a>
+            Email: <a href="mailto:privacy@time2read.com">privacy@time2read.com</a>
             <br />
             General inquiries: <a href="mailto:hello@time2read.app">hello@time2read.app</a>
           </p>

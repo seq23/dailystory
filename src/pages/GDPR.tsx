@@ -38,7 +38,7 @@ export default function GDPR() {
       icon: Shield,
       title: "Right to Restriction (Article 18)",
       description: "You have the right to restrict processing of your personal data in certain circumstances.",
-      action: "Contact us at privacy@time2read.app to request restriction."
+      action: "Use the 'Freeze My Account' feature in your account settings to restrict processing."
     },
     {
       icon: Download,
@@ -50,7 +50,7 @@ export default function GDPR() {
       icon: FileText,
       title: "Right to Object (Article 21)",
       description: "You have the right to object to processing based on legitimate interests or direct marketing.",
-      action: "Contact us at privacy@time2read.app to exercise this right."
+      action: "Use the cookie preferences or 'Withdraw Consent' button in your account settings."
     }
   ];
 
@@ -123,9 +123,9 @@ export default function GDPR() {
           <Card className="border-muted/40">
             <CardContent className="pt-6">
               <div className="space-y-2 text-sm">
-                <p><strong>Organization:</strong> Time2Read LLC</p>
-                <p><strong>Email:</strong> <a href="mailto:privacy@time2read.app" className="text-primary hover:underline">privacy@time2read.app</a></p>
-                <p><strong>Website:</strong> <a href="https://time2read.app" className="text-primary hover:underline">https://time2read.app</a></p>
+                <p><strong>Organization:</strong> Spry VSL LLC</p>
+                <p><strong>DPO/Privacy Contact:</strong> <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">privacy@time2read.com</a></p>
+                <p><strong>Website:</strong> <a href="https://time2read.lovable.app" className="text-primary hover:underline">time2read.lovable.app</a></p>
               </div>
             </CardContent>
           </Card>
@@ -190,8 +190,8 @@ export default function GDPR() {
           </p>
           <p className="text-sm text-muted-foreground">
             We encourage you to contact us first at{" "}
-            <a href="mailto:privacy@time2read.app" className="text-primary hover:underline">
-              privacy@time2read.app
+            <a href="mailto:privacy@time2read.com" className="text-primary hover:underline">
+              privacy@time2read.com
             </a>{" "}
             so we can address your concerns directly.
           </p>
@@ -210,11 +210,11 @@ export default function GDPR() {
                     please contact our privacy team.
                   </p>
                   <a 
-                    href="mailto:privacy@time2read.app" 
+                    href="mailto:privacy@time2read.com" 
                     className="inline-flex items-center gap-2 text-primary hover:underline"
                   >
                     <Mail className="w-4 h-4" />
-                    privacy@time2read.app
+                    privacy@time2read.com
                   </a>
                 </div>
               </div>

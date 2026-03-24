@@ -242,6 +242,45 @@ export type Database = {
         }
         Relationships: []
       }
+      consent_records: {
+        Row: {
+          consent_given: boolean
+          consent_text: string | null
+          consent_type: string
+          created_at: string
+          given_at: string
+          id: string
+          ip_address: unknown
+          user_agent: string | null
+          user_id: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          consent_given?: boolean
+          consent_text?: string | null
+          consent_type: string
+          created_at?: string
+          given_at?: string
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+          user_id: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          consent_given?: boolean
+          consent_text?: string | null
+          consent_type?: string
+          created_at?: string
+          given_at?: string
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+          user_id?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: []
+      }
       cost_tracking: {
         Row: {
           api_endpoint: string | null
@@ -293,6 +332,54 @@ export type Database = {
           timestamp?: string
           unit_cost?: number | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      data_breach_log: {
+        Row: {
+          breach_description: string
+          created_at: string
+          data_types_affected: string[]
+          detected_at: string
+          id: string
+          logged_by: string | null
+          remediation_steps: string | null
+          reported_to_authority_at: string | null
+          severity: string
+          status: string
+          updated_at: string
+          users_affected_count: number | null
+          users_notified_at: string | null
+        }
+        Insert: {
+          breach_description: string
+          created_at?: string
+          data_types_affected?: string[]
+          detected_at?: string
+          id?: string
+          logged_by?: string | null
+          remediation_steps?: string | null
+          reported_to_authority_at?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+          users_affected_count?: number | null
+          users_notified_at?: string | null
+        }
+        Update: {
+          breach_description?: string
+          created_at?: string
+          data_types_affected?: string[]
+          detected_at?: string
+          id?: string
+          logged_by?: string | null
+          remediation_steps?: string | null
+          reported_to_authority_at?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+          users_affected_count?: number | null
+          users_notified_at?: string | null
         }
         Relationships: []
       }
@@ -576,6 +663,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_restricted_at: string | null
+          account_restriction_reason: string | null
+          account_status: string
           avatar: Json | null
           created_at: string
           date_of_birth: string | null
@@ -596,6 +686,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_restricted_at?: string | null
+          account_restriction_reason?: string | null
+          account_status?: string
           avatar?: Json | null
           created_at?: string
           date_of_birth?: string | null
@@ -616,6 +709,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_restricted_at?: string | null
+          account_restriction_reason?: string | null
+          account_status?: string
           avatar?: Json | null
           created_at?: string
           date_of_birth?: string | null

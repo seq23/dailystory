@@ -189,13 +189,18 @@ export const CookieConsent = () => {
                 </div>
               </div>
 
-              <div className="flex gap-2 justify-end">
-                <Button variant="outline" size="sm" onClick={handleEssentialOnly}>
-                  Reject All
-                </Button>
-                <Button size="sm" onClick={handleSaveCustom}>
-                  Save Preferences
-                </Button>
+              <div className="flex gap-2 justify-between items-center">
+                <a href="/privacy" className="text-xs text-muted-foreground hover:underline">
+                  Privacy Policy · DPO: privacy@time2read.com
+                </a>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleEssentialOnly}>
+                    Reject All
+                  </Button>
+                  <Button size="sm" onClick={handleSaveCustom}>
+                    Save Preferences
+                  </Button>
+                </div>
               </div>
             </div>
           )}

@@ -273,11 +273,11 @@ export default function FERPA() {
                       schools@time2read.app
                     </a>
                     <a 
-                      href="mailto:privacy@time2read.app" 
+                      href="mailto:privacy@time2read.com" 
                       className="flex items-center gap-2 text-primary hover:underline text-sm"
                     >
                       <Mail className="w-4 h-4" />
-                      privacy@time2read.app (Privacy inquiries)
+                      privacy@time2read.com (Privacy inquiries)
                     </a>
                   </div>
                 </div>
