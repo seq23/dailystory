@@ -125,7 +125,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.validate-discount-code]
-verify_jwt = false
+verify_jwt = true
 
 [functions.vendor-first-selftest]
 verify_jwt = false

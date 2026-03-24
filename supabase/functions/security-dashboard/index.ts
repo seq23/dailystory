@@ -1,6 +1,5 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
+// Security Dashboard - Admin only access
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
@@ -16,12 +15,12 @@ serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   try {
-const { memoizedImport } = await import("../_shared/resilientLoader.ts");
-const { createClient } = await memoizedImport('@supabase/supabase-js');
-const supabaseClient = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
+    const { memoizedImport } = await import("../_shared/resilientLoader.ts");
+    const { createClient } = await memoizedImport('@supabase/supabase-js');
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -30,7 +29,26 @@ const supabaseClient = createClient(
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw userError;
+    if (userError || !userData?.user) throw new Error("Authentication failed");
+
+    // Admin access control - only allowed user IDs can access security data
+    const adminUserIds = (Deno.env.get('ADMIN_USER_IDS') || '').split(',').filter(Boolean);
+    if (adminUserIds.length === 0) {
+      // If no admins configured, deny all access for safety
+      console.error("[security-dashboard] ADMIN_USER_IDS not configured - denying access");
+      return new Response(
+        JSON.stringify({ success: false, error: "Security dashboard not configured" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!adminUserIds.includes(userData.user.id)) {
+      console.warn(`[security-dashboard] Unauthorized access attempt by user ${userData.user.id}`);
+      return new Response(
+        JSON.stringify({ success: false, error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Get security dashboard data
     const { data: dashboardData, error: dashboardError } = await supabaseClient

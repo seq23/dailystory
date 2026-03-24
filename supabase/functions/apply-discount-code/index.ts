@@ -7,13 +7,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Simple JWT decoder (no library imports needed)
-function decodeJWT(token: string): { email?: string; sub?: string } | null {
+// Cryptographic JWT verification via Supabase Auth API
+async function verifyUser(supabaseUrl: string, supabaseAnonKey: string, authHeader: string): Promise<{ id: string; email: string } | null> {
   try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1]));
-    return payload;
+    const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        'apikey': supabaseAnonKey,
+        'Authorization': authHeader,
+      }
+    });
+    if (!response.ok) return null;
+    const user = await response.json();
+    if (!user?.id || !user?.email) return null;
+    return { id: user.id, email: user.email };
   } catch {
     return null;
   }
@@ -40,6 +46,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || supabaseKey;
     
     if (!supabaseUrl || !supabaseKey) {
       return new Response(JSON.stringify({ 
@@ -62,11 +69,9 @@ serve(async (req) => {
       });
     }
 
-    const token = authHeader.replace("Bearer ", "");
-    const payload = decodeJWT(token);
-    const userId = payload?.sub;
-
-    if (!userId) {
+    // Cryptographically verify JWT
+    const user = await verifyUser(supabaseUrl, supabaseAnonKey!, authHeader);
+    if (!user) {
       return new Response(JSON.stringify({ 
         activated: false, 
         message: 'Invalid authentication' 
@@ -76,6 +81,7 @@ serve(async (req) => {
       });
     }
 
+    const userId = user.id;
     console.log(`[Apply Discount] Processing for user: ${userId}`);
 
     // Check if user has a pending discount code - PURE DATABASE READ
