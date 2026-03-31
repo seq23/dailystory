@@ -69,6 +69,10 @@
 - [x] Includes:
   - [x] Limitation of liability
   - [x] Disclaimer of warranties
+- [x] **Permitted Use**: Free for individual, personal, and educational use
+- [x] **Commercial License Requirement**: Commercial use, institutional deployment, third-party integration requires written license from Spry Labs
+- [x] **Unauthorized Deployment Clause**: Unauthorized commercial deployment = breach of ToS + copyright violation
+- [x] **Intellectual Property**: All IP owned by Spry VSL LLC
 - [x] Governing law: United States (Delaware)
 - [x] References Privacy Policy
 - [x] No claims that contradict privacy/data handling

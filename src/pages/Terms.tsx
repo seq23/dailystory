@@ -47,8 +47,47 @@ const Terms = () => {
       <section className="container mx-auto px-4 pb-12 space-y-6">
         <article className="prose max-w-none">
           <p>
-            These Terms of Service ("Terms") govern your access to and use of the Services provided by Spry VSL LLC ("we",
+            These Terms of Service ("Terms") govern your access to and use of the Services provided by Spry VSL LLC dba Spry Labs ("we",
             "us", or "our"). By using our Services, you agree to these Terms.
+          </p>
+
+          <h2>Permitted Use</h2>
+          <p>
+            The Services are provided free of charge for <strong>individual, personal, and educational use</strong>. You may use the platform
+            for your own learning, teaching, or non-commercial purposes without a license agreement.
+          </p>
+
+          <h2>Commercial Use Requires a License</h2>
+          <p>
+            <strong>Commercial use, institutional deployment, and integration into third-party platforms or products is strictly prohibited
+            without a prior written license agreement from Spry Labs (Spry VSL LLC).</strong>
+          </p>
+          <p>This includes, but is not limited to:</p>
+          <ul>
+            <li>Deploying the platform or its content within correctional, institutional, or enterprise environments</li>
+            <li>Integrating the Services into third-party applications, kiosks, tablets, or managed devices</li>
+            <li>Reselling, sublicensing, white-labeling, or repackaging the Services or any portion thereof</li>
+            <li>Using the Services as part of a paid product or service offering</li>
+            <li>Bulk or programmatic access to the Services for commercial data collection or analysis</li>
+          </ul>
+          <p>
+            To obtain a commercial license, contact us at{" "}
+            <a href="mailto:privacy@time-2-read.com" className="text-primary hover:underline">privacy@time-2-read.com</a>.
+          </p>
+
+          <h2>Unauthorized Commercial Deployment</h2>
+          <p>
+            <strong>Unauthorized commercial deployment of the Services constitutes a violation of these Terms of Service and
+            applicable copyright law.</strong> Spry VSL LLC reserves all rights to pursue legal remedies, including but not limited
+            to injunctive relief, damages, and recovery of legal fees, against any party that deploys the Services commercially
+            without a valid written license agreement.
+          </p>
+
+          <h2>Intellectual Property</h2>
+          <p>
+            All content, software, algorithms, designs, trademarks, and other intellectual property associated with the Services
+            are the exclusive property of Spry VSL LLC. Nothing in these Terms grants any right, title, or interest in our
+            intellectual property except the limited personal use license described above.
           </p>
 
           <h2>Age Verification</h2>
@@ -93,6 +132,7 @@ const Terms = () => {
             <li>Interfering with the security or integrity of the Services</li>
             <li>Using the Services to harm or exploit minors</li>
             <li>Sharing account credentials or subscription access</li>
+            <li>Any commercial use without a valid written license agreement</li>
           </ul>
 
           <h2>Disclaimer and Limitation of Liability</h2>
