@@ -24,7 +24,7 @@ interface TTSResult {
 
 export class EnhancedElevenLabsTTS {
   private static readonly DEFAULT_VOICE = 'XB0fDUnXU5powFXDhCwa'; // Charlotte
-  private static readonly DEFAULT_MODEL = 'eleven_turbo_v2_5';
+  private static readonly DEFAULT_MODEL = 'eleven_flash_v2_5';
   private static readonly DEFAULT_STABILIZATION = 4; // 4 seconds for better reliability
   private static readonly MAX_RETRIES = 2;
 

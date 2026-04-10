@@ -1,4 +1,4 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
+// Clean Deploy: 2026-04-10 - Flash v2.5 + persistent cache + latency optimization
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -9,7 +9,7 @@ const corsHeaders = {
   'Access-Control-Max-Age': '600',
   'Vary': 'Origin, Access-Control-Request-Headers',
 };
-// Lazy import to avoid bundling/circular deps
+
 async function getDifficultyMapper() {
   try {
     const mod = await import("../_shared/DifficultyLevelMapper.ts");
@@ -20,61 +20,80 @@ async function getDifficultyMapper() {
   }
 }
 
-
-// Enhanced word alignment interface for ElevenLabs TTS
 interface WordTimestamp {
   word: string;
   start_time: number;
   end_time: number;
 }
 
-interface ElevenLabsResponse {
-  audio: string;
-  alignment?: {
-    characters?: Array<{
-      character: string;
-      start_time: number;
-      end_time: number;
-    }>;
-    words?: WordTimestamp[];
-  };
+// --- Persistent TTS Cache helpers ---
+async function getSupabaseClient() {
+  const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+  return createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
+}
+
+async function hashText(text: string, voice: string, model: string): Promise<string> {
+  const data = new TextEncoder().encode(`${text}|${voice}|${model}`);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function getCachedAudio(hash: string): Promise<string | null> {
+  try {
+    const sb = await getSupabaseClient();
+    const path = `audio/${hash}.mp3`;
+    const { data, error } = await sb.storage.from('tts-cache').download(path);
+    if (error || !data) return null;
+    
+    const buffer = await data.arrayBuffer();
+    const uint8 = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < uint8.length; i += chunkSize) {
+      const chunk = uint8.slice(i, i + chunkSize);
+      binary += String.fromCharCode(...chunk);
+    }
+    return btoa(binary);
+  } catch {
+    return null;
+  }
+}
+
+async function setCachedAudio(hash: string, audioBuffer: ArrayBuffer): Promise<void> {
+  try {
+    const sb = await getSupabaseClient();
+    const path = `audio/${hash}.mp3`;
+    await sb.storage.from('tts-cache').upload(path, audioBuffer, {
+      contentType: 'audio/mpeg',
+      upsert: true,
+    });
+    console.log(`💾 Cached audio: ${path}`);
+  } catch (e) {
+    console.warn('Cache write failed (non-blocking):', e);
+  }
 }
 
 serve(async (req: Request) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      status: 204, 
-      headers: corsHeaders 
-    });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
   
   try {
     const response = await handle(req);
-    
-    // Add CORS headers to response
     const headers = new Headers(response.headers);
     Object.entries(corsHeaders).forEach(([key, value]) => {
-      if (!headers.has(key)) {
-        headers.set(key, value);
-      }
+      if (!headers.has(key)) headers.set(key, value);
     });
-    
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers
-    });
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
   } catch (error) {
     console.error("Error in elevenlabs-tts:", error);
     return new Response(
-      JSON.stringify({ 
-        error: 'An internal error occurred'
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
-      }
+      JSON.stringify({ error: 'An internal error occurred' }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
@@ -82,18 +101,15 @@ serve(async (req: Request) => {
 async function handle(req: Request): Promise<Response> {
   const url = new URL(req.url);
   
-  // Health endpoint
   if (url.pathname === "/" || url.pathname === "/health") {
     return new Response(JSON.stringify({ ok: true, service: "elevenlabs-tts" }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
+      status: 200, headers: { "Content-Type": "application/json" }
     });
   }
 
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" }
+      status: 405, headers: { "Content-Type": "application/json" }
     });
   }
 
@@ -101,46 +117,48 @@ async function handle(req: Request): Promise<Response> {
     console.log('ElevenLabs TTS function called');
     const { text, voice, model, userInfo } = await req.json();
     
-    // Log difficulty mapping for consistency with other functions
     if (userInfo) {
       const Mapper = await getDifficultyMapper();
       if (Mapper) {
         const difficulty = Mapper.mapToImageDifficulty(userInfo);
         console.log(`🎯 Mapped user info to difficulty: ${difficulty} for TTS generation`);
-      } else {
-        console.warn('DifficultyLevelMapper unavailable for TTS');
       }
     }
-    
-    console.log('TTS Request details:', {
-      textLength: text?.length,
-      voice: voice,
-      model: model,
-      textPreview: text?.substring(0, 50) + '...'
-    });
 
-    if (!text) {
-      throw new Error('Text is required');
-    }
+    if (!text) throw new Error('Text is required');
 
     const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');
-    console.log('ElevenLabs API Key configured:', elevenLabsApiKey ? 'YES' : 'NO');
-    if (!elevenLabsApiKey) {
-      console.error('ELEVENLABS_API_KEY environment variable is not set');
-      throw new Error('ElevenLabs API key not configured');
-    }
+    if (!elevenLabsApiKey) throw new Error('ElevenLabs API key not configured');
 
-    // Generate speech using ElevenLabs API with enhanced defaults (Charlotte, Turbo v2.5)
+    // Flash v2.5 — 50% cheaper than Turbo v2.5
     const DEFAULT_VOICE = 'XB0fDUnXU5powFXDhCwa'; // Charlotte
-    const DEFAULT_MODEL = 'eleven_turbo_v2_5';
+    const DEFAULT_MODEL = 'eleven_flash_v2_5';
     const effectiveVoice = (voice && String(voice).trim().length > 0) ? voice : DEFAULT_VOICE;
     const effectiveModel = (model && String(model).trim().length > 0) ? model : DEFAULT_MODEL;
+    const sanitizedText = String(text).slice(0, 2000);
+
+    // --- PERSISTENT CACHE CHECK ---
+    const cacheHash = await hashText(sanitizedText, effectiveVoice, effectiveModel);
+    const cachedBase64 = await getCachedAudio(cacheHash);
+    
+    if (cachedBase64) {
+      console.log(`♻️ Cache HIT for hash ${cacheHash.substring(0, 12)}... (${sanitizedText.length} chars)`);
+      const wordTimestamps = generateEnhancedWordTimings(sanitizedText, effectiveVoice);
+      return new Response(JSON.stringify({ 
+        audio: cachedBase64,
+        contentType: 'audio/mpeg',
+        size: cachedBase64.length,
+        fromCache: true,
+        alignment: { words: wordTimestamps }
+      }), { headers: { 'Content-Type': 'application/json' } });
+    }
+    
+    console.log(`🔄 Cache MISS — generating via ElevenLabs Flash v2.5`);
 
     const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${effectiveVoice}`;
-    console.log('Making request to ElevenLabs:', apiUrl);
     
     const requestBody = {
-      text: String(text).slice(0, 2000), // Increased text limit
+      text: sanitizedText,
       model_id: effectiveModel,
       voice_settings: {
         stability: 0.5,
@@ -148,13 +166,10 @@ async function handle(req: Request): Promise<Response> {
         style: 0.2,
         use_speaker_boost: true
       },
-      // Enhanced parameters for better alignment and quality
       apply_text_normalization: "auto",
-      optimize_streaming_latency: 0,
+      optimize_streaming_latency: 3,   // Latency optimization (reduce compute ~10-20%)
       output_format: "mp3_44100_128"
     };
-    
-    console.log('Request body:', JSON.stringify(requestBody, null, 2));
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -168,56 +183,36 @@ async function handle(req: Request): Promise<Response> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('ElevenLabs API error details:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorText: errorText,
-        requestBody: JSON.stringify(requestBody),
-        url: apiUrl
-      });
-      
-      // Throw error and let withCors wrapper handle CORS headers
+      console.error('ElevenLabs API error:', { status: response.status, errorText });
       throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
     }
 
-    // Convert audio data to base64 safely (avoiding stack overflow)
     const audioData = await response.arrayBuffer();
     const uint8Array = new Uint8Array(audioData);
     
-    // Convert to base64 in chunks to avoid stack overflow
     let binary = '';
-    const chunkSize = 8192; // Process in 8KB chunks
+    const chunkSize = 8192;
     for (let i = 0; i < uint8Array.length; i += chunkSize) {
       const chunk = uint8Array.slice(i, i + chunkSize);
       binary += String.fromCharCode(...chunk);
     }
     const base64Audio = btoa(binary);
     
-    // Generate enhanced word timing data for better synchronization
-    const wordTimestamps = generateEnhancedWordTimings(String(text), effectiveVoice);
+    // --- PERSIST TO CACHE (fire-and-forget) ---
+    setCachedAudio(cacheHash, audioData);
+
+    const wordTimestamps = generateEnhancedWordTimings(sanitizedText, effectiveVoice);
     
-    console.log('Successfully generated audio:', {
-      size: audioData.byteLength,
-      contentType: response.headers.get('content-type'),
-      base64Length: base64Audio.length,
-      wordCount: wordTimestamps.length,
-      estimatedDuration: wordTimestamps.length > 0 ? wordTimestamps[wordTimestamps.length - 1].end_time : 'unknown'
-    });
+    console.log('✅ Generated audio:', { size: audioData.byteLength, words: wordTimestamps.length });
 
-    // Track ElevenLabs cost for analytics
+    // Track cost — Flash v2.5 is ~$0.11/1K chars (half of Turbo)
     try {
-      const characterCount = String(text).slice(0, 2000).length;
-      // ElevenLabs pricing: approximately $0.22 per 1K characters for Turbo v2.5
-      const cost = (characterCount / 1000) * 0.22;
+      const characterCount = sanitizedText.length;
+      const cost = (characterCount / 1000) * 0.11;
       const sessionId = userInfo?.sessionId || 'unknown';
+      const sb = await getSupabaseClient();
 
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-
-      await supabaseClient.from('cost_tracking').insert({
+      await sb.from('cost_tracking').insert({
         session_id: sessionId,
         user_id: null,
         input_tokens: 0,
@@ -229,87 +224,51 @@ async function handle(req: Request): Promise<Response> {
         api_endpoint: `text-to-speech/${effectiveVoice}`,
         pricing_model: 'characters',
         quantity_used: characterCount,
-        unit_cost: 0.22 / 1000
+        unit_cost: 0.11 / 1000
       });
-
-      console.log(`💰 ElevenLabs cost tracked: $${cost.toFixed(6)} for ${characterCount} characters`);
+      console.log(`💰 Cost tracked: $${cost.toFixed(6)} for ${characterCount} chars (Flash v2.5)`);
     } catch (error) {
-      console.warn('Failed to track ElevenLabs cost:', error);
+      console.warn('Failed to track cost:', error);
     }
     
     return new Response(JSON.stringify({ 
       audio: base64Audio,
       contentType: 'audio/mpeg',
       size: audioData.byteLength,
-      alignment: {
-        words: wordTimestamps
-      }
-    }), {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+      alignment: { words: wordTimestamps }
+    }), { headers: { 'Content-Type': 'application/json' } });
 
   } catch (error) {
-    console.error('Error in elevenlabs-tts function:', error);
-    throw error; // Let withCors handle error response with proper CORS headers
+    console.error('Error in elevenlabs-tts:', error);
+    throw error;
   }
 }
 
-// Enhanced word timing generation optimized for Charlotte's voice characteristics
 function generateEnhancedWordTimings(text: string, voiceId: string): WordTimestamp[] {
   const words = text.split(/\s+/).filter(word => word.length > 0);
   
-  // Voice-specific characteristics - Charlotte (XB0fDUnXU5powFXDhCwa) speaks at ~2.3 words/second
-  const voiceCharacteristics = {
-    'XB0fDUnXU5powFXDhCwa': { // Charlotte
-      wordsPerSecond: 2.3,
-      baseDelay: 0.15,
-      punctuationPause: 0.25,
-      wordLengthFactor: 0.07,
-      sentenceEndPause: 0.4
-    },
-    default: {
-      wordsPerSecond: 2.0,
-      baseDelay: 0.2,
-      punctuationPause: 0.3,
-      wordLengthFactor: 0.08,
-      sentenceEndPause: 0.5
-    }
+  const voiceCharacteristics: Record<string, any> = {
+    'XB0fDUnXU5powFXDhCwa': { wordsPerSecond: 2.3, baseDelay: 0.15, punctuationPause: 0.25, wordLengthFactor: 0.07, sentenceEndPause: 0.4 },
+    default: { wordsPerSecond: 2.0, baseDelay: 0.2, punctuationPause: 0.3, wordLengthFactor: 0.08, sentenceEndPause: 0.5 }
   };
   
-  const characteristics = (voiceCharacteristics as any)[voiceId] || voiceCharacteristics.default;
+  const characteristics = voiceCharacteristics[voiceId] || voiceCharacteristics.default;
   let currentTime = characteristics.baseDelay;
   
-  return words.map((word, index) => {
+  return words.map((word) => {
     const cleanWord = word.replace(/[.,!?;:'"()]/g, '');
     const punctuation = word.match(/[.,!?;:'"()]/g);
-    
-    // Dynamic word duration based on length and complexity
     const wordDuration = Math.max(0.1, cleanWord.length * characteristics.wordLengthFactor + 0.12);
-    
     const startTime = currentTime;
     const endTime = startTime + wordDuration;
     
-    // Add pauses for punctuation and sentence endings
     let pauseAfter = 0;
     if (punctuation) {
-      if (punctuation.some(p => ['.', '!', '?'].includes(p))) {
-        pauseAfter = characteristics.sentenceEndPause;
-      } else if (punctuation.some(p => [',', ';', ':'].includes(p))) {
-        pauseAfter = characteristics.punctuationPause;
-      }
+      if (punctuation.some((p: string) => ['.', '!', '?'].includes(p))) pauseAfter = characteristics.sentenceEndPause;
+      else if (punctuation.some((p: string) => [',', ';', ':'].includes(p))) pauseAfter = characteristics.punctuationPause;
     }
     
-    // Update current time for next word
     currentTime = endTime + pauseAfter + (1 / characteristics.wordsPerSecond);
-    
-    console.log(`📍 Word timing: "${cleanWord}" -> ${startTime.toFixed(2)}s - ${endTime.toFixed(2)}s`);
-    
-    return {
-      word: cleanWord,
-      start_time: startTime,
-      end_time: endTime
-    };
+    return { word: cleanWord, start_time: startTime, end_time: endTime };
   });
 }
