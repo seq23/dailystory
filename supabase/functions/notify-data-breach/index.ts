@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logCost } from "../_shared/costLogger.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -105,6 +106,19 @@ serve(async (req: Request) => {
         });
 
         if (emailResponse.ok) {
+          // Fire-and-forget cost tracking
+          logCost(supabase, {
+            sessionId: 'notify-data-breach',
+            provider: 'resend',
+            operationType: 'email_send',
+            modelUsed: 'resend-email',
+            cost: 0.001 * Math.min(emails.length, 50),
+            apiEndpoint: '/emails',
+            pricingModel: 'per_email',
+            quantityUsed: Math.min(emails.length, 50),
+            unitCost: 0.001,
+          });
+
           await supabase
             .from('data_breach_log')
             .update({
