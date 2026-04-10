@@ -2,7 +2,7 @@
 
 This directory contains all Edge Functions for the project. GitHub is the source of truth - any functions not listed below should be removed from the Supabase dashboard.
 
-## Canonical Function List (42 Functions)
+## Canonical Function List (43 Functions)
 
 ### Authentication & Subscription Functions
 - `activate-discount-code` - JWT: true
@@ -12,6 +12,7 @@ This directory contains all Edge Functions for the project. GitHub is the source
 - `create-premium-subscription` - JWT: true
 - `customer-portal` - JWT: true
 - `send-custom-auth-email` - JWT: true
+- `stripe-webhook` - JWT: false (Stripe signature verification instead)
 - `validate-discount-code` - JWT: false
 
 ### AI & Content Generation Functions
