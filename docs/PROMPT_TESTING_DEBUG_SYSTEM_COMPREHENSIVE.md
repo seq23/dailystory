@@ -535,7 +535,7 @@ const trackPerformance = (tierName: string, startTime: number, success: boolean)
 5. **Audio E2E Testing** — end-to-end audio pipeline testing
 
 ### Analytics Dashboard Actions
-- **Email Report** button → sends quarterly cost report to `privacy@time-2-read.com` via Resend
+- **Email Report** button → sends quarterly cost report to `seq.taylor@gmail.com` via Resend
 - **JSON** button → returns raw cost report data (no email)
 - **Refresh** button → reloads cost data from `get-cost-analytics` edge function
 
@@ -543,7 +543,7 @@ const trackPerformance = (tierName: string, startTime: number, success: boolean)
 | Function | Purpose |
 |----------|---------|
 | `get-cost-analytics` | Returns daily + all-time cost summaries (no auth required) |
-| `cost-report` | Generates quarterly report, optionally emails to privacy@time-2-read.com |
+| `cost-report` | Generates quarterly report, optionally emails to seq.taylor@gmail.com |
 
 ---
 *Last Updated: April 10, 2026*  
