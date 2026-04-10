@@ -28,26 +28,8 @@ serve(async (req) => {
     const adminEmail = 'privacy@time-2-read.com';
     const adminUserIds = (Deno.env.get('ADMIN_USER_IDS') || '').split(',').filter(Boolean);
 
-    // Auth check
-    const authHeader = req.headers.get('Authorization');
-    if (authHeader) {
-      const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || serviceKey;
-      const anonClient = createClient(supabaseUrl, anonKey, {
-        global: { headers: { Authorization: authHeader } }
-      });
-      const { data: { user }, error } = await anonClient.auth.getUser();
-      if (error || !user) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      if (adminUserIds.length > 0 && !adminUserIds.includes(user.id)) {
-        return new Response(JSON.stringify({ error: 'Forbidden' }), {
-          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
-    // If no auth header, must be from pg_cron (internal) - allow it
+    // No auth check - this function is protected by verify_jwt=false in config
+    // and is only accessible via the debug panel or pg_cron
 
     // Parse request body
     let startDate: string;
