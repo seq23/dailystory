@@ -99,11 +99,18 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
 
     const totalStories = guestStoriesPerMonth + premStoriesPerMonth;
     const totalImages = guestImagesPerMonth + premImagesPerMonth;
-    const totalAudio = guestAudioPerMonth + premAudioPerMonth;
+    const totalAudioRaw = guestAudioPerMonth + premAudioPerMonth;
+
+    // Apply persistent cache hit rate — cached reads cost $0 in API fees
+    const cacheHitRate = estimateCacheHitRate(totalUsers);
+    const totalAudioBillable = Math.round(totalAudioRaw * (1 - cacheHitRate));
+    const totalAudioCached = totalAudioRaw - totalAudioBillable;
 
     const storyCost = totalStories * costPerUnit.story;
     const imageCost = totalImages * costPerUnit.image;
-    const audioCost = totalAudio * costPerUnit.audio;
+    const audioCost = totalAudioBillable * costPerUnit.audio;
+    const audioCostWithoutCache = totalAudioRaw * costPerUnit.audio;
+    const cacheSavings = audioCostWithoutCache - audioCost;
     const totalMonthlyCost = storyCost + imageCost + audioCost;
 
     // Capacity: estimate peak concurrent users
