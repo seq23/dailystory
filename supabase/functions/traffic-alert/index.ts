@@ -176,9 +176,9 @@ serve(async (req: Request) => {
         <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 16px 0;">
           <h2 style="margin: 0 0 8px; color: #991b1b; font-size: 16px;">📋 Alert Summary</h2>
           <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-            ${isTrafficSpike ? `<li>🔺 <strong>Traffic spike:</strong> ${sessionChangePercent}% above baseline</li>` : ''}
-            ${isTrafficDrop ? `<li>🔻 <strong>Traffic drop:</strong> ${sessionChangePercent}% below baseline</li>` : ''}
-            ${isCostSpike ? `<li>💸 <strong>Cumulative costs exceeded $${COST_ALERT_THRESHOLD}:</strong> $${totalCumulativeCost.toFixed(2)} total</li>` : ''}
+            ${isTrafficSpike ? `<li>🔺 <strong>Traffic spike:</strong> ${dailyAvg.toFixed(1)} daily avg (threshold: ${DAILY_AVG_THRESHOLD}), ${sessionChangePercent}% above baseline</li>` : ''}
+            ${isTrafficDrop ? `<li>🔻 <strong>Traffic drop:</strong> ${sessionChangePercent}% below baseline (>80% drop)</li>` : ''}
+            ${isCostSpike ? `<li>💸 <strong>Estimated costs exceeded $${COST_ALERT_THRESHOLD}:</strong> $${totalCumulativeCost.toFixed(2)} total</li>` : ''}
           </ul>
         </div>
 
@@ -189,18 +189,21 @@ serve(async (req: Request) => {
             <tr style="background: #dbeafe;">
               <th style="padding: 8px; text-align: left;">Period</th>
               <th style="padding: 8px; text-align: right;">Sessions</th>
+              <th style="padding: 8px; text-align: right;">Daily Avg</th>
             </tr>
             <tr style="border-bottom: 1px solid #e5e7eb;">
               <td style="padding: 8px;">Current (${currentStart.toISOString().split('T')[0]} → today)</td>
               <td style="padding: 8px; text-align: right; font-weight: bold;">${currentSessions}</td>
+              <td style="padding: 8px; text-align: right;">${dailyAvg.toFixed(1)}</td>
             </tr>
             <tr style="border-bottom: 1px solid #e5e7eb;">
               <td style="padding: 8px;">Baseline (${baselineStart.toISOString().split('T')[0]} → ${currentStart.toISOString().split('T')[0]})</td>
               <td style="padding: 8px; text-align: right;">${baselineSessions}</td>
+              <td style="padding: 8px; text-align: right;">${(baselineSessions / PERIOD_DAYS).toFixed(1)}</td>
             </tr>
             <tr>
               <td style="padding: 8px;">Change</td>
-              <td style="padding: 8px; text-align: right; color: ${isTrafficSpike ? '#dc2626' : isTrafficDrop ? '#ea580c' : '#16a34a'}; font-weight: bold;">
+              <td style="padding: 8px; text-align: right; color: ${isTrafficSpike ? '#dc2626' : isTrafficDrop ? '#ea580c' : '#16a34a'}; font-weight: bold;" colspan="2">
                 ${sessionChangePercent}%
               </td>
             </tr>
@@ -209,14 +212,14 @@ serve(async (req: Request) => {
 
         <!-- COST BREAKDOWN -->
         <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 16px 0;">
-          <h2 style="margin: 0 0 8px; color: #166534; font-size: 16px;">💰 Cumulative Cost Breakdown (All-Time Auto-Tracked)</h2>
+          <h2 style="margin: 0 0 8px; color: #166534; font-size: 16px;">💰 AI Cost Breakdown (Estimated)</h2>
           
           <h3 style="margin: 12px 0 4px; font-size: 13px; color: #374151;">By Provider</h3>
           <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
             <tr style="background: #dcfce7;">
               <th style="padding: 6px; text-align: left;">Provider</th>
               <th style="padding: 6px; text-align: right;">Calls</th>
-              <th style="padding: 6px; text-align: right;">Cost</th>
+              <th style="padding: 6px; text-align: right;">Est. Cost</th>
             </tr>
             ${Object.entries(costByProvider).sort((a, b) => b[1].cost - a[1].cost).map(([prov, d]) => `
               <tr style="border-bottom: 1px solid #e5e7eb;">
@@ -227,13 +230,13 @@ serve(async (req: Request) => {
             `).join('')}
           </table>
 
-          <h3 style="margin: 16px 0 4px; font-size: 13px; color: #374151;">By Operation Type</h3>
+          <h3 style="margin: 16px 0 4px; font-size: 13px; color: #374151;">By Call Type</h3>
           <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
             <tr style="background: #dcfce7;">
-              <th style="padding: 6px; text-align: left;">Operation</th>
+              <th style="padding: 6px; text-align: left;">Type</th>
               <th style="padding: 6px; text-align: right;">Calls</th>
               <th style="padding: 6px; text-align: right;">Tokens (in/out)</th>
-              <th style="padding: 6px; text-align: right;">Cost</th>
+              <th style="padding: 6px; text-align: right;">Est. Cost</th>
             </tr>
             ${Object.entries(costByOperation).sort((a, b) => b[1].cost - a[1].cost).map(([op, d]) => `
               <tr style="border-bottom: 1px solid #e5e7eb;">
@@ -244,47 +247,43 @@ serve(async (req: Request) => {
               </tr>
             `).join('')}
             <tr style="background: #dcfce7; font-weight: bold;">
-              <td style="padding: 6px;" colspan="3">TOTAL CUMULATIVE</td>
+              <td style="padding: 6px;" colspan="3">TOTAL ESTIMATED</td>
               <td style="padding: 6px; text-align: right;">$${totalCumulativeCost.toFixed(2)}</td>
             </tr>
           </table>
           <p style="font-size: 11px; color: #6b7280; margin: 8px 0 0;">
-            Auto-tracked from edge functions (OpenAI, Runware, ElevenLabs, Resend). 
-            Supabase, hosting &amp; GitHub Actions are billed separately by those providers.
+            Auto-tracked from edge functions. Supabase, hosting &amp; GitHub Actions billed separately.
           </p>
         </div>
 
-        <!-- TOP 15 LOCATIONS -->
+        <!-- TOP 15 LOCATIONS (Anonymous — Zero PII) -->
         <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 16px; margin: 16px 0;">
-          <h2 style="margin: 0 0 8px; color: #7e22ce; font-size: 16px;">🌍 Top 15 Locations by Activity</h2>
+          <h2 style="margin: 0 0 8px; color: #7e22ce; font-size: 16px;">🌍 Top 15 Locations (Anonymous — Zero PII)</h2>
+          <p style="font-size: 11px; color: #6b7280; margin: 0 0 8px;">From Cloudflare CDN headers. No IPs stored.</p>
           <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
             <tr style="background: #f3e8ff;">
               <th style="padding: 6px; text-align: left;">#</th>
-              <th style="padding: 6px; text-align: left;">IP</th>
               <th style="padding: 6px; text-align: left;">City</th>
               <th style="padding: 6px; text-align: left;">State/Region</th>
               <th style="padding: 6px; text-align: left;">Country</th>
-              <th style="padding: 6px; text-align: right;">Events</th>
-              <th style="padding: 6px; text-align: center;">Risk</th>
+              <th style="padding: 6px; text-align: right;">Requests</th>
             </tr>
             ${locations.map((loc, i) => `
-              <tr style="border-bottom: 1px solid #e5e7eb;${loc.suspicious ? ' background: #fff1f2;' : ''}">
+              <tr style="border-bottom: 1px solid #e5e7eb;">
                 <td style="padding: 6px;">${i + 1}</td>
-                <td style="padding: 6px; font-family: monospace; font-size: 11px;">${loc.ip}</td>
                 <td style="padding: 6px;">${loc.city}</td>
                 <td style="padding: 6px;">${loc.region}</td>
                 <td style="padding: 6px;">${loc.country}</td>
                 <td style="padding: 6px; text-align: right;">${loc.count}</td>
-                <td style="padding: 6px; text-align: center;">${loc.suspicious ? '⚠️' : '✅'}</td>
               </tr>
             `).join('')}
           </table>
-          ${locations.length === 0 ? '<p style="color: #6b7280; font-size: 13px;">No IP/location data available for this period.</p>' : ''}
+          ${locations.length === 0 ? '<p style="color: #6b7280; font-size: 13px;">No geo data available yet. Data populates as users access the app.</p>' : ''}
         </div>
 
         <p style="font-size: 11px; color: #9ca3af; margin-top: 24px; border-top: 1px solid #e5e7eb; padding-top: 12px;">
-          Automated monthly alert · Time2Read · Runs 1st of each month · Only sends when something is unusual<br>
-          Triggers: traffic spike (>${SPIKE_MULTIPLIER}x baseline), traffic drop (<${DROP_MULTIPLIER}x baseline), or cumulative costs > $${COST_ALERT_THRESHOLD}<br>
+          Automated monthly alert · Time2Read · Runs 1st of each month at 9 AM UTC<br>
+          Triggers: 50+ daily avg, 3x spike, 80%+ drop, or $${COST_ALERT_THRESHOLD}+ estimated AI costs<br>
           ${now.toISOString()}
         </p>
       </div>

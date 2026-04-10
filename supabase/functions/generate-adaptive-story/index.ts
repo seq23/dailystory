@@ -174,6 +174,34 @@ serve(async (req) => {
     console.warn('Rate limit check skipped:', rlErr);
   }
 
+  // ── Fire-and-forget: Log anonymous geo from Cloudflare CDN headers ──
+  try {
+    const country = req.headers.get('cf-ipcountry') || req.headers.get('x-country') || null;
+    if (country) {
+      const region = req.headers.get('cf-ipregion') || req.headers.get('x-region') || null;
+      const city = req.headers.get('cf-ipcity') || req.headers.get('x-city') || null;
+      const geoClient = await createTieredSupabaseClient().catch(() => null);
+      if (geoClient) {
+        // Upsert: increment request_count for today's country/region/city combo
+        geoClient.rpc('upsert_daily_country_stat', {
+          p_country: country,
+          p_region: region,
+          p_city: city,
+        }).then(() => {}).catch(() => {});
+        // If RPC doesn't exist yet, fall back to insert
+        geoClient.from('daily_country_stats').upsert({
+          stat_date: new Date().toISOString().split('T')[0],
+          country,
+          region,
+          city,
+          request_count: 1,
+        }, { onConflict: 'stat_date,country,region,city' }).then(() => {}).catch(() => {});
+      }
+    }
+  } catch (_geoErr) {
+    // Non-blocking — never fail the main request
+  }
+
   // Read request body once at the top to avoid double consumption
   let rawBody: string;
   try {
