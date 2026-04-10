@@ -74,13 +74,15 @@ Follow the same steps above but change `'browser'` back to `'elevenlabs'`.
 
 ## Quality Tradeoff
 
-| Feature | ElevenLabs | Browser TTS |
+| Feature | ElevenLabs (Flash v2.5) | Browser TTS |
 |---------|-----------|-------------|
-| Cost | ~$0.30/1K chars | **Free** |
+| Cost | ~$0.11/1K chars (with persistent cache: near $0 for repeats) | **Free** |
 | Voice Quality | Excellent (Charlotte) | Decent (varies by device) |
 | Word Highlighting | ✅ Yes | ❌ No (basic playback only) |
 | Consistency | Same voice everywhere | Different voice per browser/OS |
 | Offline | ❌ No | ✅ Yes |
+
+> **Note (April 2026):** ElevenLabs now uses Flash v2.5 model (50% cheaper) with persistent Supabase Storage caching. Repeat reads cost $0 in API fees.
 
 ---
 
