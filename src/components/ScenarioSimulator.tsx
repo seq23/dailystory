@@ -244,6 +244,7 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
               <Switch checked={premiumTTS} onCheckedChange={setPremiumTTS} />
             </div>
           </div>
+        </CardContent>
       </Card>
 
       {/* ═══════════ PROJECTIONS ═══════════ */}
