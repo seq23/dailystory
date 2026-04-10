@@ -300,6 +300,44 @@ export const AnalyticsDashboard: React.FC = () => {
                   })}
                 </div>
               )}
+
+              {/* Internal / system traffic (excluded from totals above) */}
+              {(costSummary?.internalRequests > 0 || totalCostSummary?.internalRequests > 0) && (
+                <div className="border-t pt-3 mt-3">
+                  <p className="text-sm font-medium text-muted-foreground mb-1">🔧 Internal / System Traffic (excluded from totals)</p>
+                  <div className="grid gap-2 md:grid-cols-2 text-xs text-muted-foreground">
+                    {costSummary?.internalRequests > 0 && (
+                      <div className="flex justify-between bg-muted/30 rounded p-2">
+                        <span>Today internal:</span>
+                        <span>{costSummary.internalRequests} calls · ${costSummary.internalCost?.toFixed(4)}</span>
+                      </div>
+                    )}
+                    {totalCostSummary?.internalRequests > 0 && (
+                      <div className="flex justify-between bg-muted/30 rounded p-2">
+                        <span>All-time internal:</span>
+                        <span>{totalCostSummary.internalRequests} calls · ${totalCostSummary.internalCost?.toFixed(4)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1 italic">
+                    Includes health checks, test sessions, system probes, and validator calls.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ═══════════════════ CHANGELOG ═══════════════════ */}
+          <Card className="border border-dashed border-muted-foreground/30">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Optimization Changelog
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs text-muted-foreground space-y-1">
+              <p><strong>Apr 10, 2026</strong> — ElevenLabs Flash v2.5 deployed (TTS cost ↓ ~57%). Persistent audio cache enabled (repeat reads = $0). Audio validator switched to dry-run (no billable calls on page load). Internal/system traffic now excluded from dashboard totals and shown separately. Dynamic session IDs for all edge functions.</p>
+              <p><strong>Pre-Apr 10</strong> — ElevenLabs Turbo v1 ($0.0042/req). No persistent cache. Audio validator made real API calls on every page load.</p>
             </CardContent>
           </Card>
         </TabsContent>
