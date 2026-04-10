@@ -585,7 +585,7 @@ async function callRunwareAPI(positivePrompt: string, negativePrompt: string, se
         }
 
         await supabaseClient.from('cost_tracking').insert({
-          session_id: 'runware-session',
+          session_id: payload?.sessionId || 'runware-unknown',
           user_id: null,
           input_tokens: 0,
           output_tokens: 0,
