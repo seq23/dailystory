@@ -220,22 +220,22 @@ export const AnalyticsDashboard: React.FC = () => {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Cost</CardTitle>
+            <CardTitle className="text-sm font-medium">This Month's Cost</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${costSummary?.totalCost.toFixed(4) || '0.0000'}
+              ${monthCost.toFixed(4)}
             </div>
-            <Progress value={Math.min(costPercentage, 100)} className="mt-2" />
+            <Progress value={Math.min(monthPercentage, 100)} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-2">
-              {costPercentage >= 90 ? (
-                <span className="flex items-center text-red-500">
+              {monthPercentage >= 90 ? (
+                <span className="flex items-center text-destructive">
                   <AlertTriangle className="w-3 h-3 mr-1" />
-                  Approaching daily limit
+                  Approaching $${monthBudget} monthly budget
                 </span>
               ) : (
-                `${(100 - costPercentage).toFixed(1)}% remaining of $${dailyLimit} daily limit`
+                `${(100 - monthPercentage).toFixed(1)}% remaining of $${monthBudget} monthly budget`
               )}
             </p>
           </CardContent>
@@ -342,23 +342,23 @@ export const AnalyticsDashboard: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>System Status</CardTitle>
-          <CardDescription>Cost limit status and daily budget</CardDescription>
+          <CardDescription>Monthly budget status</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="text-center">
               <div className="text-2xl font-bold">
-                {costSummary?.isLimitExceeded ? '❌' : '✅'}
+                {costSummary?.isMonthlyBudgetExceeded ? '❌' : '✅'}
               </div>
-              <p className="text-sm text-muted-foreground">Daily Cost Limit</p>
+              <p className="text-sm text-muted-foreground">Monthly Budget</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">${costSummary?.remainingBudget?.toFixed(2) || dailyLimit.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground">Remaining Budget Today</p>
+              <div className="text-2xl font-bold">${costSummary?.monthRemaining?.toFixed(2) || monthBudget.toFixed(2)}</div>
+              <p className="text-sm text-muted-foreground">Remaining This Month</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">${dailyLimit.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground">Daily Limit</p>
+              <div className="text-2xl font-bold">${monthBudget.toFixed(2)}</div>
+              <p className="text-sm text-muted-foreground">Monthly Budget</p>
             </div>
           </div>
         </CardContent>
