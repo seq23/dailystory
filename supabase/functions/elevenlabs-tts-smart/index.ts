@@ -136,7 +136,7 @@ async function handle(req: Request): Promise<Response> {
       pageText: text.substring(0, 100),
       storyText: text.substring(0, 200),
       userInfo: { voiceId, modelId },
-      sessionId: 'elevenlabs-session',
+      sessionId: clientSessionId || 'tts-unknown',
       pageNumber: 1
     });
     
