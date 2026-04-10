@@ -52,6 +52,9 @@ verify_jwt = false
 [functions.generate-fallback-images]
 verify_jwt = false
 
+[functions.cost-report]
+verify_jwt = false
+
 [functions.get-cost-analytics]
 verify_jwt = false
 
