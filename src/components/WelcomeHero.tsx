@@ -373,43 +373,40 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
       </div>
 
       {/* Footer with Company Information */}
-      <footer className="relative z-20 bg-black/20 backdrop-blur-sm border-t border-white/10 py-6 mt-auto">
+      <footer className="relative z-20 bg-black/20 backdrop-blur-sm border-t border-white/10 py-5 mt-auto">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-white/70 text-sm">
-            <div className="flex flex-col items-center md:items-start">
-              <div className="font-semibold text-white/90 mb-1">{t("welcomeHero.footer.companyName")}</div>
-              <div className="text-xs">{t("welcomeHero.footer.description")}</div>
-              <div className="mt-2">
-                <a href="/pricing" className="story-link text-sm">{t("welcomeHero.footer.plansAndPricing", "Plans & Pricing")} →</a>
-              </div>
+          {/* Top row: Brand + Family of Tools + Licensing */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-white/90 text-sm">{t("welcomeHero.footer.companyName")}</span>
+              <span className="text-white/40 hidden md:inline">·</span>
+              <span className="text-xs text-white/60">{t("welcomeHero.footer.description")}</span>
             </div>
-
-            <div className="flex flex-col items-center text-center">
-              <div className="text-xs font-semibold text-white/80 mb-1">{t("welcomeHero.footer.familyOfTools", "Our Family of Tools")}</div>
-              <div className="flex items-center gap-2 text-xs">
-                <a href="/" className="hover:text-white/90 transition-colors font-medium">Time2Read</a>
-                <span>·</span>
-                <a href="https://heygetonmylevel.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/90 transition-colors font-medium">HeyGetOnMyLevel</a>
-              </div>
-              <div className="text-xs mt-1 text-white/50">{t("welcomeHero.footer.companionTool", "Test reading levels with our companion tool.")}</div>
+            <div className="flex items-center gap-2 text-xs text-white/60">
+              <span className="text-white/40">{t("welcomeHero.footer.familyOfTools", "Our Family of Tools")}:</span>
+              <a href="/" className="hover:text-white/90 transition-colors font-medium text-white/70">Time2Read</a>
+              <span className="text-white/30">·</span>
+              <a href="https://heygetonmylevel.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/90 transition-colors font-medium text-white/70">HeyGetOnMyLevel</a>
             </div>
+          </div>
 
-            <div className="text-xs text-white/60 text-center">
-              Free for personal &amp; educational use. Commercial or institutional use requires a <a href="/terms" className="underline hover:text-white/90 transition-colors">license</a>.
+          {/* Bottom row: Copyright + Links — all horizontal */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2 pt-3 border-t border-white/5 text-xs text-white/50">
+            <div className="flex items-center gap-2">
+              <span>© {new Date().getFullYear()} {t("welcomeHero.footer.companyName")}. {t("welcomeHero.footer.copyright")}</span>
+              <span className="text-white/30">·</span>
+              <span>Free for personal &amp; educational use. <a href="/terms" className="underline hover:text-white/80 transition-colors">Commercial license</a> required for institutions.</span>
             </div>
-
-            <div className="flex flex-col md:flex-row items-center gap-4 text-xs">
-              <div>© {new Date().getFullYear()} {t("welcomeHero.footer.companyName")}. {t("welcomeHero.footer.copyright")}</div>
-              <div className="flex flex-wrap justify-center gap-4">
-                <a href="/privacy" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.privacyPolicy")}</a>
-                <a href="/terms" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.termsOfService")}</a>
-                <a href="/ccpa" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.ccpa", "CCPA")}</a>
-                <a href="/gdpr" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.gdpr", "GDPR")}</a>
-                <a href="/ferpa" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.ferpa", "FERPA")}</a>
-                <a href="/accessibility" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.accessibility", "Accessibility")}</a>
-                <a href="/vendors" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.vendors", "Vendors")}</a>
-                <a href="mailto:hello@time2read.app" className="hover:text-white/90 transition-colors">{t("welcomeHero.footer.contactUs")}</a>
-              </div>
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+              <a href="/pricing" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.plansAndPricing", "Pricing")}</a>
+              <a href="/privacy" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.privacyPolicy")}</a>
+              <a href="/terms" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.termsOfService")}</a>
+              <a href="/ccpa" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.ccpa", "CCPA")}</a>
+              <a href="/gdpr" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.gdpr", "GDPR")}</a>
+              <a href="/ferpa" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.ferpa", "FERPA")}</a>
+              <a href="/accessibility" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.accessibility", "Accessibility")}</a>
+              <a href="/vendors" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.vendors", "Vendors")}</a>
+              <a href="mailto:hello@time2read.app" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.contactUs")}</a>
             </div>
           </div>
         </div>

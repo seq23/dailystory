@@ -2,7 +2,7 @@
 
 This directory contains all Edge Functions for the project. GitHub is the source of truth - any functions not listed below should be removed from the Supabase dashboard.
 
-## Canonical Function List (40 Functions)
+## Canonical Function List (41 Functions)
 
 ### Authentication & Subscription Functions
 - `activate-discount-code` - JWT: true
@@ -41,8 +41,10 @@ This directory contains all Edge Functions for the project. GitHub is the source
 
 - `runware-template-ab` - JWT: false (Single-file TypeScript, thin JS wrapper)
 - `runware-template-cd` - JWT: false (Single-file TypeScript)
+### Monitoring & Alerts
+- `traffic-alert` - JWT: false — Monthly traffic/cost alert via pg_cron. Logs to `daily_country_stats`, reads `daily_usage_stats`, sends email via Resend.
 
-## Reliability Architecture (October 2025)
+
 
 ### Unified Reliability Stack
 
