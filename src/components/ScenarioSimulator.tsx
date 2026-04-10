@@ -45,6 +45,15 @@ const CAPACITY = {
   concurrentEstimate: 0.05, // 5% of monthly users are concurrent at peak
 };
 
+const UPGRADE_COSTS: Record<string, { label: string; cost: string; detail: string }> = {
+  pgbouncer: { label: 'PgBouncer (Supabase Pro)', cost: '$25/mo', detail: 'Connection pooling, 200+ connections' },
+  openaiTier3: { label: 'OpenAI Tier 3', cost: 'Free (usage-based)', detail: 'Requires $250+ spend history → 5,000 RPM' },
+  openaiTier4: { label: 'OpenAI Tier 4', cost: 'Free (usage-based)', detail: 'Requires $1,000+ spend history → 10,000 RPM' },
+  imageQueue: { label: 'Generation queue (BullMQ/Redis)', cost: '$15-30/mo', detail: 'Redis instance for rate-limiting image requests' },
+  ttsQueue: { label: 'TTS queue or caching layer', cost: '$10-20/mo', detail: 'Cache common narrations, queue burst requests' },
+  elevenLabsScale: { label: 'ElevenLabs Scale plan', cost: '$99/mo', detail: '2,000 RPM, higher character limit' },
+};
+
 function capacityStatus(value: number, thresholds: { safe: number; warn: number; max: number }) {
   if (value <= thresholds.safe) return { color: 'bg-green-500', label: 'OK', level: 'green' };
   if (value <= thresholds.warn) return { color: 'bg-yellow-500', label: 'Monitor', level: 'yellow' };
