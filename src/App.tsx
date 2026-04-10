@@ -27,6 +27,8 @@ import VerifyConsent from "./pages/VerifyConsent";
 import DataTransfers from "./pages/DataTransfers";
 import Subprocessors from "./pages/Subprocessors";
 import { PromptStudio } from "./components/PromptStudio";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCancel from "./pages/PaymentCancel";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
 import { VoiceCommands } from "./components/VoiceCommands";
@@ -107,6 +109,8 @@ const App = () => {
               <Route path="/verify-consent" element={<VerifyConsent />} />
               <Route path="/data-transfers" element={<DataTransfers />} />
               <Route path="/subprocessors" element={<Subprocessors />} />
+              <Route path="/success" element={<PaymentSuccess />} />
+              <Route path="/cancel" element={<PaymentCancel />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <VoiceHUD />
