@@ -438,11 +438,28 @@ export const useAudioControls = ({
 
     const playSnapshot = { text, page: currentPage, contentHash };
 
-    // Use Charlotte's unified voice service for story reading
-    await charlotteVoiceService.charlotteReadStory(text, (wordIndex: number) => {
-      DebugLogger.log('audio', `Charlotte Audio Sync: Highlighting word ${wordIndex}`);
-      highlightWord(wordIndex);
-    });
+    // Route TTS based on config — guest users can be switched to browser TTS
+    const ttsProvider = getTTSProvider(isPremium);
+    
+    if (ttsProvider === 'browser') {
+      // Free browser-based TTS for guest users
+      DebugLogger.log('audio', '🔊 Using browser TTS (guest mode)');
+      const browserTTS = BrowserTTSService.getInstance();
+      const lang = (userInfo?.nativeLanguage as any) || 'en';
+      await browserTTS.speak({
+        text,
+        language: lang,
+        rate: TTS_CONFIG.BROWSER_TTS_DEFAULTS.rate,
+        pitch: TTS_CONFIG.BROWSER_TTS_DEFAULTS.pitch,
+        volume: TTS_CONFIG.BROWSER_TTS_DEFAULTS.volume,
+      });
+    } else {
+      // Premium ElevenLabs Charlotte voice
+      await charlotteVoiceService.charlotteReadStory(text, (wordIndex: number) => {
+        DebugLogger.log('audio', `Charlotte Audio Sync: Highlighting word ${wordIndex}`);
+        highlightWord(wordIndex);
+      });
+    }
 
     // Guard: if page or text changed during load, stop and bail
     if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
