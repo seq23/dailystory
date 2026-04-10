@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
+import { logCost } from "../_shared/costLogger.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -94,6 +94,19 @@ const { operation, email, parentEmail, childName, parentName, incidentDetails, c
 
         const result = await response.json();
 
+        // Fire-and-forget cost tracking
+        logCost(supabase, {
+          sessionId: 'notification-service',
+          provider: 'resend',
+          operationType: 'email_send',
+          modelUsed: 'resend-email',
+          cost: 0.001,
+          apiEndpoint: '/emails',
+          pricingModel: 'per_email',
+          quantityUsed: 1,
+          unitCost: 0.001,
+        });
+
         // Log the notification
         await supabase
           .from('security_audit_log')
@@ -168,6 +181,19 @@ const { operation, email, parentEmail, childName, parentName, incidentDetails, c
         });
 
         const result = await response.json();
+
+        // Fire-and-forget cost tracking
+        logCost(supabase, {
+          sessionId: 'notification-service',
+          provider: 'resend',
+          operationType: 'email_send',
+          modelUsed: 'resend-email',
+          cost: 0.001,
+          apiEndpoint: '/emails',
+          pricingModel: 'per_email',
+          quantityUsed: 1,
+          unitCost: 0.001,
+        });
 
         // Log the COPPA notification
         await supabase
