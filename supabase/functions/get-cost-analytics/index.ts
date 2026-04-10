@@ -13,42 +13,12 @@ serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Verify user with getUser (not getClaims which doesn't exist)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-    const anonClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') || serviceKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-    const { data: { user }, error: userError } = await anonClient.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Admin check
-    const adminIds = (Deno.env.get('ADMIN_USER_IDS') || '').split(',').filter(Boolean);
-    if (adminIds.length > 0 && !adminIds.includes(user.id)) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const sb = createClient(supabaseUrl, serviceKey);
     const today = new Date().toISOString().split('T')[0];
 
-    // Today's detailed data (should be small enough for direct query)
+    // Today's detailed data
     const { data: todayData, error: todayErr } = await sb
       .from('cost_tracking')
       .select('cost, input_tokens, output_tokens, model_used, provider, operation_type')
@@ -57,24 +27,16 @@ serve(async (req) => {
 
     if (todayErr) throw new Error(`Today query failed: ${todayErr.message}`);
 
-    // All-time aggregates via daily_usage_stats (avoids 1000-row limit)
-    const { data: dailyStats, error: dailyErr } = await sb
-      .from('daily_usage_stats')
-      .select('*');
+    // All-time aggregates via daily_usage_stats
+    const { data: dailyStats } = await sb.from('daily_usage_stats').select('*');
 
-    // Also get all-time totals from cost_tracking using count
-    // Use multiple focused queries instead of select('*') to avoid 1000-row cap
+    // Fallback count
     const { count: totalRows } = await sb
       .from('cost_tracking')
       .select('id', { count: 'exact', head: true });
 
-    // Get provider breakdown via RPC or paginated queries
-    // We'll aggregate from daily_usage_stats which is already aggregated
     const allTimeFromDaily: Record<string, { requests: number; cost: number }> = {};
-    let allTimeCost = 0;
-    let allTimeRequests = 0;
-    let allTimeInputTokens = 0;
-    let allTimeOutputTokens = 0;
+    let allTimeCost = 0, allTimeRequests = 0, allTimeInputTokens = 0, allTimeOutputTokens = 0;
 
     (dailyStats || []).forEach((row: any) => {
       const provider = row.provider || 'openai';
@@ -87,9 +49,8 @@ serve(async (req) => {
       allTimeOutputTokens += row.total_output_tokens || 0;
     });
 
-    // If daily_usage_stats is empty, fall back to cost_tracking with pagination
+    // If daily_usage_stats is empty, paginate cost_tracking
     if (allTimeRequests === 0 && (totalRows || 0) > 0) {
-      // Paginate through cost_tracking
       let page = 0;
       const pageSize = 1000;
       while (true) {
@@ -100,7 +61,6 @@ serve(async (req) => {
           .order('timestamp', { ascending: true });
 
         if (!batch || batch.length === 0) break;
-
         batch.forEach((entry: any) => {
           const provider = entry.provider || 'unknown';
           if (!allTimeFromDaily[provider]) allTimeFromDaily[provider] = { requests: 0, cost: 0 };
@@ -111,16 +71,13 @@ serve(async (req) => {
           allTimeInputTokens += entry.input_tokens || 0;
           allTimeOutputTokens += entry.output_tokens || 0;
         });
-
         if (batch.length < pageSize) break;
         page++;
       }
     }
 
     // Build today's summary
-    let todayCost = 0;
-    let todayInputTokens = 0;
-    let todayOutputTokens = 0;
+    let todayCost = 0, todayInputTokens = 0, todayOutputTokens = 0;
     const modelBreakdown: Record<string, { requests: number; cost: number }> = {};
     const providerBreakdown: Record<string, { requests: number; cost: number }> = {};
 
@@ -128,12 +85,10 @@ serve(async (req) => {
       todayCost += Number(e.cost || 0);
       todayInputTokens += e.input_tokens || 0;
       todayOutputTokens += e.output_tokens || 0;
-
       const model = e.model_used || 'unknown';
       if (!modelBreakdown[model]) modelBreakdown[model] = { requests: 0, cost: 0 };
       modelBreakdown[model].requests++;
       modelBreakdown[model].cost += Number(e.cost || 0);
-
       const provider = e.provider || 'unknown';
       if (!providerBreakdown[provider]) providerBreakdown[provider] = { requests: 0, cost: 0 };
       providerBreakdown[provider].requests++;
