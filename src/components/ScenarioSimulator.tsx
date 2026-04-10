@@ -67,6 +67,7 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
   const [premiumSessions, setPremiumSessions] = useState(DEFAULTS.premium.sessionsPerMonth);
   const [subscriptionPrice, setSubscriptionPrice] = useState(9.99);
   const [guestTTS, setGuestTTS] = useState(true);
+  const [premiumTTS, setPremiumTTS] = useState(true);
 
   const sim = useMemo(() => {
     const guestCount = Math.round(totalUsers * (guestPct / 100));
@@ -81,7 +82,8 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
     // Premium: 20 pages/session → 20 images, 20 audio, ~1 story call per page
     const premStoriesPerMonth = premiumCount * premiumSessions * DEFAULTS.premium.pagesPerSession;
     const premImagesPerMonth = premiumCount * premiumSessions * DEFAULTS.premium.pagesPerSession;
-    const premAudioPerMonth = premiumCount * premiumSessions * DEFAULTS.premium.pagesPerSession;
+    const premAudioPerMonth = premiumTTS ? premiumCount * premiumSessions * DEFAULTS.premium.pagesPerSession : 0;
+    const premAudioSavings = premiumTTS ? 0 : premiumCount * premiumSessions * DEFAULTS.premium.pagesPerSession * costPerUnit.audio;
 
     const totalStories = guestStoriesPerMonth + premStoriesPerMonth;
     const totalImages = guestImagesPerMonth + premImagesPerMonth;
@@ -97,7 +99,7 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
     // Peak RPM: assume each concurrent user triggers ~2 API calls/min
     const peakRPM = peakConcurrent * 2;
     const peakImageRPM = peakConcurrent * 1;
-    const peakAudioRPM = peakConcurrent * 1;
+    const peakAudioRPM = (guestTTS || premiumTTS) ? peakConcurrent * 1 : 0;
 
     const dbStatus = capacityStatus(peakConcurrent, CAPACITY.dbConnections);
     const openaiStatus = capacityStatus(peakRPM, CAPACITY.openaiRPM);
@@ -118,9 +120,9 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
       dbStatus, openaiStatus, runwareStatus, elevenStatus,
       peakRPM, peakImageRPM, peakAudioRPM,
       monthlyRevenue, breakEvenPrice, profit,
-      guestAudioSavings,
+      guestAudioSavings, premAudioSavings,
     };
-  }, [totalUsers, guestPct, guestSessions, premiumSessions, costPerUnit, subscriptionPrice, guestTTS]);
+  }, [totalUsers, guestPct, guestSessions, premiumSessions, costPerUnit, subscriptionPrice, guestTTS, premiumTTS]);
 
   const needsUpgrade = sim.dbStatus.level !== 'green' || sim.openaiStatus.level !== 'green' || sim.runwareStatus.level !== 'green' || sim.elevenStatus.level !== 'green';
 
@@ -224,6 +226,22 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
                 </Badge>
               )}
               <Switch checked={guestTTS} onCheckedChange={setGuestTTS} />
+            </div>
+          </div>
+
+          {/* Premium TTS toggle */}
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
+            <div>
+              <label className="text-sm font-medium">ElevenLabs TTS for Premium</label>
+              <p className="text-xs text-muted-foreground">Toggle off to model enterprise contracts with browser TTS</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {!premiumTTS && sim.premAudioSavings > 0 && (
+                <Badge variant="outline" className="text-green-600 border-green-600/30">
+                  Saving ${sim.premAudioSavings.toFixed(2)}/mo
+                </Badge>
+              )}
+              <Switch checked={premiumTTS} onCheckedChange={setPremiumTTS} />
             </div>
           </div>
         </CardContent>
