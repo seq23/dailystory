@@ -122,7 +122,7 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
     };
   }, [totalUsers, guestPct, guestSessions, premiumSessions, costPerUnit, subscriptionPrice, guestTTS]);
 
-  const needsUpgrade = sim.dbStatus.level !== 'green' || sim.openaiStatus.level !== 'green';
+  const needsUpgrade = sim.dbStatus.level !== 'green' || sim.openaiStatus.level !== 'green' || sim.runwareStatus.level !== 'green' || sim.elevenStatus.level !== 'green';
 
   return (
     <div className="space-y-6">
