@@ -251,7 +251,7 @@ src/
 - **Pagination**: Handles 1000-row Supabase limit via paginated queries when `daily_usage_stats` is empty
 
 #### `cost-report` — Quarterly Email Reports
-- **Email recipient**: Hardcoded to `privacy@time-2-read.com` (no ADMIN_EMAIL secret needed)
+- **Email recipient**: Hardcoded to `seq.taylor@gmail.com`
 - **Schedule**: Quarterly reports covering the previous quarter
 - **Trigger**: Manual via "Email Report" button on Analytics Dashboard, OR automated via pg_cron
 - **pg_cron job**: `quarterly-cost-report` — runs at 9:00 AM UTC on Jan 1, Apr 1, Jul 1, Oct 1 (`0 9 1 1,4,7,10 *`)
@@ -268,7 +268,7 @@ src/
   - Daily cost monitoring with $5.00 daily limit tracking
   - Model usage breakdown (requests + cost per model)
   - Token usage (input/output)
-  - Manual report buttons: "Email Report" (sends to privacy@time-2-read.com) and "JSON" (returns raw data)
+  - Manual report buttons: "Email Report" (sends to seq.taylor@gmail.com) and "JSON" (returns raw data)
 
 ### File Changes
 | File | Change |
