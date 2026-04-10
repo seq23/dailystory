@@ -84,16 +84,18 @@ export const AnalyticsDashboard: React.FC = () => {
   const allTimeOps = totalCostSummary?.operationBreakdown || {};
 
   // Compute real cost-per-unit for the simulator
+  // Post-optimization defaults (Apr 10 2026): Flash v2.5 + persistent cache
+  // Old defaults were: story=0.0012, image=0.0013, audio=0.0042 (Turbo, no cache)
   const costPerUnit = {
     story: totalCostSummary?.totalStories > 0
       ? (totalCostSummary.providerBreakdown?.openai?.cost || 0) / Math.max(totalCostSummary.totalStories, 1)
-      : 0.0012,
+      : 0.0012,   // GPT-4o-mini ~$0.0012/page
     image: (allTimeOps.image_generation || 0) > 0
       ? (totalCostSummary.providerBreakdown?.runware?.cost || 0) / (allTimeOps.image_generation || 1)
-      : 0.0013,
+      : 0.0013,   // Runware ~$0.0013/image
     audio: (allTimeOps.audio_generation || 0) > 0
       ? (totalCostSummary.providerBreakdown?.elevenlabs?.cost || 0) / (allTimeOps.audio_generation || 1)
-      : 0.0042,
+      : 0.0018,   // Flash v2.5 ~$0.0018/request (was $0.0042 Turbo pre-Apr 10)
   };
 
   return (
