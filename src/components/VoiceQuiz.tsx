@@ -8,6 +8,7 @@ import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 import { useToast } from '@/components/ui/use-toast';
 import type { UserInfo } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Question {
   id: string;
@@ -27,6 +28,15 @@ interface VoiceQuizProps {
   storyTitle?: string;
 }
 
+// Simple hash for caching quiz per story
+const hashStory = (text: string): string => {
+  let hash = 0;
+  for (let i = 0; i < Math.min(text.length, 500); i++) {
+    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+  }
+  return `quiz_${hash}`;
+};
+
 export const VoiceQuiz: React.FC<VoiceQuizProps> = ({ 
   userInfo, 
   storyText, 
@@ -35,7 +45,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
   onClose,
   storyTitle = ''
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { status, isSpeaking, handleVoiceToggle, isConnected } = useVoiceIntegration();
   
@@ -48,15 +58,61 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
   const [currentAnswer, setCurrentAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [waitingForAnswer, setWaitingForAnswer] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   const voiceEventListenerRef = useRef<((event: CustomEvent) => void) | null>(null);
 
-  // Generate questions based on story and user info (same logic as ComprehensionQuiz)
+  // Fetch AI-generated questions
   useEffect(() => {
     if (isVisible && storyText) {
-      generateQuestions();
+      fetchQuizQuestions();
     }
   }, [isVisible, storyText, userInfo]);
+
+  const fetchQuizQuestions = async () => {
+    setIsGenerating(true);
+    setGenerationError(null);
+
+    // Check cache
+    const cacheKey = hashStory(storyText);
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached) as Question[];
+        if (parsed.length > 0) {
+          setQuestions(parsed);
+          setAnswers(new Array(parsed.length).fill(null));
+          setIsGenerating(false);
+          return;
+        }
+      }
+    } catch {}
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-quiz', {
+        body: {
+          storyText,
+          age: userInfo.age,
+          difficulty: userInfo.difficultyLevel || 'easy',
+          language: i18n.language || 'en',
+        },
+      });
+
+      if (error) throw new Error(error.message || 'Quiz generation failed');
+      if (!data?.questions?.length) throw new Error('No questions returned');
+
+      const generated: Question[] = data.questions;
+      setQuestions(generated);
+      setAnswers(new Array(generated.length).fill(null));
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(generated)); } catch {}
+    } catch (err: any) {
+      DebugLogger.error('ui', 'AI voice quiz generation failed', err);
+      setGenerationError(err?.message || 'Could not generate quiz');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // Set up voice event listeners for quiz interactions
   useEffect(() => {
@@ -99,7 +155,6 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
   // Set quiz context when connected
   useEffect(() => {
     if (isConnected && quizStarted) {
-      // Pass story context to Charlotte
       (window as any).__quizContext = {
         storyTitle,
         userInfo,
@@ -109,99 +164,6 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
       };
     }
   }, [isConnected, quizStarted, questions, currentQuestion, score]);
-
-  const generateQuestions = () => {
-    const generatedQuestions: Question[] = [];
-    const sentences = storyText.split('.').filter(s => s.trim().length > 10);
-    
-    const isYoung = userInfo.age < 8;
-    const readingLevel = (userInfo.difficultyLevel || 'easy') as any;
-    const isLowerLevel = readingLevel === 'beginner' || readingLevel === 'easy';
-    const questionCount = isLowerLevel ? 2 : (isYoung ? 3 : 4); // Slightly fewer for voice
-
-    // Question 1: Main character
-    if (sentences.length > 0) {
-      const firstSentence = sentences[0].trim();
-      const characters = extractCharacters(firstSentence);
-      if (characters.length > 0) {
-        generatedQuestions.push({
-          id: 'character',
-          question: t('comprehension.whoIsMainCharacter', 'Who is the main character in this story?'),
-          options: [
-            characters[0],
-            'A dragon',
-            'A teacher',
-            'A robot'
-          ],
-          correctAnswer: 0,
-          type: 'multiple-choice'
-        });
-      }
-    }
-
-    // Question 2: What happened
-    if (sentences.length > 1) {
-      const actions = extractActions(sentences);
-      if (actions.length > 0) {
-        generatedQuestions.push({
-          id: 'action',
-          question: t('comprehension.whatHappened', 'What happened in the story?'),
-          options: [
-            actions[0],
-            'They went to space',
-            'They ate ice cream',
-            'They found treasure'
-          ],
-          correctAnswer: 0,
-          type: 'multiple-choice'
-        });
-      }
-    }
-
-    // Question 3: True/false
-    generatedQuestions.push({
-      id: 'setting',
-      question: t('comprehension.trueFalse', 'The story takes place during the day.'),
-      options: ['True', 'False'],
-      correctAnswer: storyText.toLowerCase().includes('sun') || storyText.toLowerCase().includes('morning') ? 0 : 1,
-      type: 'true-false'
-    });
-
-    // Question 4: Emotion (for older kids)
-    if (!isYoung) {
-      generatedQuestions.push({
-        id: 'emotion',
-        question: t('comprehension.howDidCharacterFeel', 'How did the character feel?'),
-        options: ['Happy', 'Sad', 'Excited', 'Scared'],
-        correctAnswer: 0,
-        type: 'character-emotion'
-      });
-    }
-
-    setQuestions(generatedQuestions.slice(0, questionCount));
-    setAnswers(new Array(questionCount).fill(null));
-  };
-
-  const extractCharacters = (text: string): string[] => {
-    const words = text.split(' ');
-    const possibleNames = words.filter(word => 
-      /^[A-Z][a-z]+$/.test(word) && 
-      !['The', 'This', 'That', 'Once', 'Then', 'When', 'Where'].includes(word)
-    );
-    return possibleNames.length > 0 ? possibleNames : [userInfo.name];
-  };
-
-  const extractActions = (sentences: string[]): string[] => {
-    const actionWords = ['went', 'walked', 'found', 'saw', 'played', 'discovered', 'met', 'helped'];
-    for (const sentence of sentences) {
-      for (const action of actionWords) {
-        if (sentence.toLowerCase().includes(action)) {
-          return [`They ${action} somewhere special`];
-        }
-      }
-    }
-    return ['They had an adventure'];
-  };
 
   const handleStartQuiz = async () => {
     if (!isConnected) {
@@ -215,7 +177,6 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
     setQuizStarted(true);
     setWaitingForAnswer(true);
     
-    // Trigger Charlotte to ask the first question
     window.dispatchEvent(new CustomEvent('voice:quiz:askQuestion', {
       detail: {
         question: questions[0],
@@ -228,10 +189,8 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
   const handleVoiceAnswer = (answerData: any) => {
     const { answerIndex, answerText } = answerData;
     
-    // Try to parse the answer
     let selectedIndex = answerIndex;
     if (selectedIndex === undefined && answerText) {
-      // Try to match answer text to options
       const currentQ = questions[currentQuestion];
       const lowerAnswer = answerText.toLowerCase();
       
@@ -240,7 +199,6 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
         lowerAnswer.includes(option.toLowerCase())
       );
 
-      // Handle common patterns
       if (selectedIndex === -1) {
         if (lowerAnswer.includes('first') || lowerAnswer.includes('a') || lowerAnswer.includes('one')) {
           selectedIndex = 0;
@@ -258,7 +216,6 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
       setCurrentAnswer(selectedIndex);
       submitAnswer(selectedIndex);
     } else {
-      // Ask for clarification
       window.dispatchEvent(new CustomEvent('voice:quiz:clarify', {
         detail: { message: "I didn't catch that. Could you say your answer again?" }
       }));
@@ -278,7 +235,6 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
     setShowResult(true);
     setWaitingForAnswer(false);
 
-    // Tell Charlotte the result
     window.dispatchEvent(new CustomEvent('voice:quiz:result', {
       detail: {
         correct: isCorrect,
@@ -288,7 +244,6 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
       }
     }));
 
-    // Auto advance after 3 seconds
     setTimeout(() => {
       handleNextQuestion();
     }, 3000);
@@ -301,7 +256,6 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
       setShowResult(false);
       setWaitingForAnswer(true);
       
-      // Ask next question
       window.dispatchEvent(new CustomEvent('voice:quiz:askQuestion', {
         detail: {
           question: questions[currentQuestion + 1],
@@ -313,7 +267,6 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
       setQuizComplete(true);
       setWaitingForAnswer(false);
       
-      // Tell Charlotte the final score
       window.dispatchEvent(new CustomEvent('voice:quiz:complete', {
         detail: {
           score,
@@ -340,7 +293,39 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
     setWaitingForAnswer(false);
   };
 
-  if (!isVisible || questions.length === 0) return null;
+  if (!isVisible) return null;
+
+  // Loading
+  if (isGenerating) {
+    return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg">
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Creating quiz questions from your story...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Error
+  if (generationError || questions.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg">
+          <CardContent className="p-8 text-center">
+            <div className="text-4xl mb-4">😕</div>
+            <p className="text-gray-600 mb-4">{generationError || 'Could not generate quiz'}</p>
+            <div className="flex gap-2 justify-center">
+              <Button variant="outline" onClick={onClose}>Close</Button>
+              <Button onClick={fetchQuizQuestions}>Try Again</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const currentQ = questions[currentQuestion];
   const progress = quizComplete ? 100 : ((currentQuestion + (showResult ? 1 : 0)) / questions.length) * 100;
@@ -451,6 +436,9 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
                         <span className="text-red-600 font-medium">✗ Not quite right</span>
                       )}
                     </div>
+                    {currentQ.explanation && (
+                      <p className="text-xs text-blue-600 mb-1">💡 {currentQ.explanation}</p>
+                    )}
                     <p className="text-xs text-gray-500">Moving to next question...</p>
                   </div>
                 )}

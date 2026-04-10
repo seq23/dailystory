@@ -8,6 +8,7 @@ import type { UserInfo } from '@/types';
 import { saveQuizAttempt } from '@/hooks/useActivityPersistence';
 import { useToast } from '@/components/ui/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Question {
   id: string;
@@ -26,6 +27,15 @@ interface ComprehensionQuizProps {
   onClose: () => void;
 }
 
+// Simple hash for caching quiz per story
+const hashStory = (text: string): string => {
+  let hash = 0;
+  for (let i = 0; i < Math.min(text.length, 500); i++) {
+    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+  }
+  return `quiz_${hash}`;
+};
+
 export const ComprehensionQuiz = ({ 
   userInfo, 
   storyText, 
@@ -43,166 +53,68 @@ export const ComprehensionQuiz = ({
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [quizComplete, setQuizComplete] = useState(false);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
-  // Generate questions based on story and user info
   useEffect(() => {
     if (isVisible && storyText) {
-      DebugLogger.log('ui', 'Generating quiz questions for story', {
+      DebugLogger.log('ui', 'Generating AI quiz questions for story', {
         storyLength: storyText.length,
         userAge: userInfo.age,
-        userName: userInfo.name
       });
-      setIsGeneratingQuestions(true);
-      generateQuestions();
+      fetchQuizQuestions();
     }
   }, [isVisible, storyText, userInfo]);
 
-  const generateQuestions = () => {
-    const generatedQuestions: Question[] = [];
-    const sentences = storyText.split('.').filter(s => s.trim().length > 10);
-    
-    // Generate different types of questions based on user age and difficulty
-    const isYoung = userInfo.age < 8;
-    const readingLevel = (userInfo.difficultyLevel || 'easy') as any;
-    const isLowerLevel = readingLevel === 'beginner' || readingLevel === 'easy';
-    const questionCount = isLowerLevel ? 2 : (isYoung ? 3 : 5);
+  const fetchQuizQuestions = async () => {
+    setIsGeneratingQuestions(true);
+    setGenerationError(null);
 
-    // Question 1: Main character/subject (easy)
-    if (sentences.length > 0) {
-      const firstSentence = sentences[0].trim();
-      const characters = extractCharacters(firstSentence);
-      if (characters.length > 0) {
-        generatedQuestions.push({
-          id: 'character',
-          question: t('comprehension.whoIsMainCharacter', 'Who is the main character in this story?'),
-          options: [
-            characters[0],
-            'A dragon',
-            'A teacher',
-            'A robot'
-          ],
-          correctAnswer: 0,
-          type: 'multiple-choice'
-        });
-      }
-    }
-
-    // Question 2: What happened (comprehension)
-    if (sentences.length > 1) {
-      const actions = extractActions(sentences);
-      if (actions.length > 0) {
-        generatedQuestions.push({
-          id: 'action',
-          question: t('comprehension.whatHappened', 'What happened in the story?'),
-          options: [
-            actions[0],
-            'They went to space',
-            'They ate ice cream',
-            'They found treasure'
-          ],
-          correctAnswer: 0,
-          type: 'multiple-choice'
-        });
-      }
-    }
-
-    // Question 3: Simple true/false
-    generatedQuestions.push({
-      id: 'setting',
-      question: t('comprehension.trueFalse', 'The story takes place during the day.'),
-      options: ['True', 'False'],
-      correctAnswer: storyText.toLowerCase().includes('sun') || storyText.toLowerCase().includes('morning') ? 0 : 1,
-      type: 'true-false'
-    });
-
-    // Question 4: Emotion recognition (for older kids)
-    if (!isYoung) {
-      generatedQuestions.push({
-        id: 'emotion',
-        question: t('comprehension.howDidCharacterFeel', 'How did the character feel?'),
-        options: ['Happy', 'Sad', 'Excited', 'Scared'],
-        correctAnswer: 0, // Default to happy for positive stories
-        type: 'character-emotion'
-      });
-    }
-
-    // Question 5: Prediction/inference (for older kids)
-    if (!isYoung) {
-      generatedQuestions.push({
-        id: 'prediction',
-        question: t('comprehension.whatMightHappenNext', 'What might happen next?'),
-        options: [
-          'The adventure continues',
-          'Everyone goes to sleep',
-          'They have a party',
-          'They go home'
-        ],
-        correctAnswer: 0,
-        type: 'multiple-choice'
-      });
-    }
-
-    setQuestions(generatedQuestions.slice(0, questionCount));
-    setAnswers(new Array(questionCount).fill(null));
-    setIsGeneratingQuestions(false);
-  };
-
-  const extractCharacters = (text: string): string[] => {
-    // Enhanced character extraction - avoid sentence starters and common words
-    const words = text.split(/[\s,\.!?]+/);
-    const excludeWords = [
-      'The', 'This', 'That', 'Once', 'Then', 'When', 'Where', 'What', 'Who', 'Why', 'How',
-      'In', 'On', 'At', 'By', 'For', 'With', 'From', 'To', 'Of', 'And', 'But', 'Or', 'So', 'Yet',
-      'A', 'An', 'As', 'After', 'Before', 'During', 'While', 'Until', 'Since', 'Because',
-      'There', 'Here', 'Now', 'Soon', 'Today', 'Yesterday', 'Tomorrow', 'Always', 'Never',
-      'Very', 'Really', 'Quite', 'Much', 'Many', 'Some', 'All', 'Every', 'Each', 'Both'
-    ];
-    
-    const possibleNames = words.filter(word => 
-      /^[A-Z][a-z]{2,}$/.test(word) && 
-      !excludeWords.includes(word) &&
-      word.length >= 3 // Names should be at least 3 characters
-    );
-    
-    // Remove duplicates and return first few unique names
-    const uniqueNames = [...new Set(possibleNames)].slice(0, 3);
-    return uniqueNames.length > 0 ? uniqueNames : [userInfo.name || 'The character'];
-  };
-
-  const extractActions = (sentences: string[]): string[] => {
-    // Enhanced action extraction - look for meaningful verbs and actions
-    const commonActions = [
-      'went', 'walked', 'ran', 'found', 'saw', 'played', 'discovered', 'met', 'helped',
-      'explored', 'learned', 'built', 'created', 'solved', 'adventure', 'journey',
-      'rescued', 'saved', 'protected', 'shared', 'laughed', 'smiled', 'celebrated'
-    ];
-    
-    const foundActions = [];
-    for (const sentence of sentences) {
-      const lowerSentence = sentence.toLowerCase();
-      for (const action of commonActions) {
-        if (lowerSentence.includes(action) && !foundActions.includes(action)) {
-          foundActions.push(action);
-          if (foundActions.length >= 3) break;
+    // Check sessionStorage cache first
+    const cacheKey = hashStory(storyText);
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached) as Question[];
+        if (parsed.length > 0) {
+          DebugLogger.log('ui', 'Using cached quiz questions');
+          setQuestions(parsed);
+          setAnswers(new Array(parsed.length).fill(null));
+          setIsGeneratingQuestions(false);
+          return;
         }
       }
-      if (foundActions.length >= 3) break;
-    }
-    
-    // Create meaningful action descriptions
-    if (foundActions.length > 0) {
-      return foundActions.map(action => {
-        switch(action) {
-          case 'went': case 'walked': case 'ran': return 'Traveled to new places';
-          case 'found': case 'discovered': return 'Made important discoveries';
-          case 'met': case 'helped': return 'Made new friends';
-          case 'learned': case 'solved': return 'Learned something new';
-          case 'adventure': case 'explored': return 'Went on an adventure';
-          default: return `Had a ${action} experience`;
-        }
+    } catch {}
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-quiz', {
+        body: {
+          storyText,
+          age: userInfo.age,
+          difficulty: userInfo.difficultyLevel || 'easy',
+          language: i18n.language || 'en',
+        },
       });
+
+      if (error) throw new Error(error.message || 'Quiz generation failed');
+      if (!data?.questions?.length) throw new Error('No questions returned');
+
+      const generated: Question[] = data.questions;
+      setQuestions(generated);
+      setAnswers(new Array(generated.length).fill(null));
+
+      // Cache for retries
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(generated)); } catch {}
+    } catch (err: any) {
+      DebugLogger.error('ui', 'AI quiz generation failed', err);
+      setGenerationError(err?.message || 'Could not generate quiz');
+      toast({
+        title: t('comprehension.errorTitle', 'Quiz unavailable'),
+        description: t('comprehension.errorDesc', 'Could not generate quiz questions. Please try again later.'),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGeneratingQuestions(false);
     }
-    return ['They had an adventure'];
   };
 
   const handleAnswerSelect = (answerIndex: number) => {
@@ -224,7 +136,6 @@ export const ComprehensionQuiz = ({
 
     setShowResult(true);
 
-    // Auto advance after showing result
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
@@ -246,7 +157,6 @@ export const ComprehensionQuiz = ({
   };
 
   const handleComplete = async () => {
-    // Persist the attempt before closing
     try {
       const details = {
         answers,
@@ -263,9 +173,9 @@ export const ComprehensionQuiz = ({
       });
 
       if (result.method === 'supabase') {
-        toast({ title: t('postSession.saved', 'Progress saved'), description: t('postSession.savedCloud', 'Saved to your account'), });
+        toast({ title: t('postSession.saved', 'Progress saved'), description: t('postSession.savedCloud', 'Saved to your account') });
       } else {
-        toast({ title: t('postSession.savedLocally', 'Saved locally'), description: t('postSession.savedQueue', 'Will sync when logged in'), });
+        toast({ title: t('postSession.savedLocally', 'Saved locally'), description: t('postSession.savedQueue', 'Will sync when logged in') });
       }
     } catch (e: any) {
       DebugLogger.warn('ui', 'Quiz save failed', e);
@@ -278,14 +188,32 @@ export const ComprehensionQuiz = ({
 
   if (!isVisible) return null;
 
-  // Show loading state while generating questions
-  if (isGeneratingQuestions || questions.length === 0) {
+  // Loading state
+  if (isGeneratingQuestions) {
     return (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-lg">
           <CardContent className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Generating quiz questions...</p>
+            <p className="text-gray-600">{t('comprehension.generating', 'Creating quiz questions from your story...')}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Error state
+  if (generationError || questions.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg">
+          <CardContent className="p-8 text-center">
+            <div className="text-4xl mb-4">😕</div>
+            <p className="text-gray-600 mb-4">{generationError || 'Could not generate quiz'}</p>
+            <div className="flex gap-2 justify-center">
+              <MobileOptimizedButton variant="outline" onClick={onClose}>Close</MobileOptimizedButton>
+              <MobileOptimizedButton onClick={fetchQuizQuestions}>Try Again</MobileOptimizedButton>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -364,7 +292,7 @@ export const ComprehensionQuiz = ({
               {showResult && currentQ.explanation && (
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    <strong>Explanation:</strong> {currentQ.explanation}
+                    <strong>💡 </strong> {currentQ.explanation}
                   </p>
                 </div>
               )}
