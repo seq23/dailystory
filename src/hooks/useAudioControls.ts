@@ -3,6 +3,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
+import { BrowserTTSService } from '@/services/BrowserTTSService';
+import { getTTSProvider, TTS_CONFIG } from '@/config/ttsConfig';
 import { DebugLogger } from '@/services/DebugLogger';
 import { generateSessionId } from '@/utils/sessionId';
 import type { UserInfo } from '@/types';
