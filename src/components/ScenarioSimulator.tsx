@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, DollarSign, Server, TrendingUp, AlertTriangle, CheckCircle2, BookOpen, Mic } from 'lucide-react';
 import { ImageIcon } from 'lucide-react';
@@ -44,6 +45,15 @@ const CAPACITY = {
   concurrentEstimate: 0.05, // 5% of monthly users are concurrent at peak
 };
 
+const UPGRADE_COSTS: Record<string, { label: string; cost: string; detail: string }> = {
+  pgbouncer: { label: 'PgBouncer (Supabase Pro)', cost: '$25/mo', detail: 'Connection pooling, 200+ connections' },
+  openaiTier3: { label: 'OpenAI Tier 3', cost: 'Free (usage-based)', detail: 'Requires $250+ spend history → 5,000 RPM' },
+  openaiTier4: { label: 'OpenAI Tier 4', cost: 'Free (usage-based)', detail: 'Requires $1,000+ spend history → 10,000 RPM' },
+  imageQueue: { label: 'Generation queue (BullMQ/Redis)', cost: '$15-30/mo', detail: 'Redis instance for rate-limiting image requests' },
+  ttsQueue: { label: 'TTS queue or caching layer', cost: '$10-20/mo', detail: 'Cache common narrations, queue burst requests' },
+  elevenLabsScale: { label: 'ElevenLabs Scale plan', cost: '$99/mo', detail: '2,000 RPM, higher character limit' },
+};
+
 function capacityStatus(value: number, thresholds: { safe: number; warn: number; max: number }) {
   if (value <= thresholds.safe) return { color: 'bg-green-500', label: 'OK', level: 'green' };
   if (value <= thresholds.warn) return { color: 'bg-yellow-500', label: 'Monitor', level: 'yellow' };
@@ -52,10 +62,11 @@ function capacityStatus(value: number, thresholds: { safe: number; warn: number;
 
 export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUnit }) => {
   const [totalUsers, setTotalUsers] = useState(100);
-  const [guestPct, setGuestPct] = useState(80); // 80% guest, 20% premium
+  const [guestPct, setGuestPct] = useState(80);
   const [guestSessions, setGuestSessions] = useState(DEFAULTS.guest.sessionsPerMonth);
   const [premiumSessions, setPremiumSessions] = useState(DEFAULTS.premium.sessionsPerMonth);
   const [subscriptionPrice, setSubscriptionPrice] = useState(9.99);
+  const [guestTTS, setGuestTTS] = useState(true);
 
   const sim = useMemo(() => {
     const guestCount = Math.round(totalUsers * (guestPct / 100));
@@ -65,8 +76,8 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
     const guestPagesPerSession = DEFAULTS.guest.storiesPerSession * DEFAULTS.guest.pagesPerStory;
     const guestStoriesPerMonth = guestCount * guestSessions * DEFAULTS.guest.storiesPerSession;
     const guestImagesPerMonth = guestCount * guestSessions * guestPagesPerSession;
-    const guestAudioPerMonth = guestCount * guestSessions * guestPagesPerSession;
-
+    const guestAudioPerMonth = guestTTS ? guestCount * guestSessions * guestPagesPerSession : 0;
+    const guestAudioSavings = guestTTS ? 0 : guestCount * guestSessions * guestPagesPerSession * costPerUnit.audio;
     // Premium: 20 pages/session → 20 images, 20 audio, ~1 story call per page
     const premStoriesPerMonth = premiumCount * premiumSessions * DEFAULTS.premium.pagesPerSession;
     const premImagesPerMonth = premiumCount * premiumSessions * DEFAULTS.premium.pagesPerSession;
@@ -107,10 +118,11 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
       dbStatus, openaiStatus, runwareStatus, elevenStatus,
       peakRPM, peakImageRPM, peakAudioRPM,
       monthlyRevenue, breakEvenPrice, profit,
+      guestAudioSavings,
     };
-  }, [totalUsers, guestPct, guestSessions, premiumSessions, costPerUnit, subscriptionPrice]);
+  }, [totalUsers, guestPct, guestSessions, premiumSessions, costPerUnit, subscriptionPrice, guestTTS]);
 
-  const needsUpgrade = sim.dbStatus.level !== 'green' || sim.openaiStatus.level !== 'green';
+  const needsUpgrade = sim.dbStatus.level !== 'green' || sim.openaiStatus.level !== 'green' || sim.runwareStatus.level !== 'green' || sim.elevenStatus.level !== 'green';
 
   return (
     <div className="space-y-6">
@@ -177,6 +189,22 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
               <label className="text-sm font-medium block mb-1">Subscription Price: <span className="text-primary">${subscriptionPrice.toFixed(2)}</span></label>
               <Slider value={[subscriptionPrice]} onValueChange={([v]) => setSubscriptionPrice(v)} min={1} max={30} step={0.5} />
               <p className="text-xs text-muted-foreground mt-1">Monthly price per premium user</p>
+            </div>
+          </div>
+
+          {/* Guest TTS toggle */}
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
+            <div>
+              <label className="text-sm font-medium">ElevenLabs TTS for Guests</label>
+              <p className="text-xs text-muted-foreground">Toggle off to see savings without guest audio</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {!guestTTS && sim.guestAudioSavings > 0 && (
+                <Badge variant="outline" className="text-green-600 border-green-600/30">
+                  Saving ${sim.guestAudioSavings.toFixed(2)}/mo
+                </Badge>
+              )}
+              <Switch checked={guestTTS} onCheckedChange={setGuestTTS} />
             </div>
           </div>
         </CardContent>
@@ -246,12 +274,44 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
               ))}
             </div>
             {needsUpgrade && (
-              <div className="mt-3 p-2 bg-muted rounded text-xs space-y-1">
+              <div className="mt-3 p-3 bg-muted rounded text-xs space-y-2">
                 <p className="font-medium">Recommended upgrades:</p>
-                {sim.dbStatus.level !== 'green' && <p>• Add PgBouncer for connection pooling</p>}
-                {sim.openaiStatus.level !== 'green' && <p>• Upgrade to OpenAI Tier 3+ for higher RPM</p>}
-                {sim.runwareStatus.level !== 'green' && <p>• Add generation queue for image requests</p>}
-                {sim.elevenStatus.level !== 'green' && <p>• Add TTS queue or caching layer</p>}
+                {sim.dbStatus.level !== 'green' && (
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">• {UPGRADE_COSTS.pgbouncer.label}</p>
+                      <p className="text-muted-foreground">{UPGRADE_COSTS.pgbouncer.detail}</p>
+                    </div>
+                    <span className="font-bold text-primary whitespace-nowrap ml-2">{UPGRADE_COSTS.pgbouncer.cost}</span>
+                  </div>
+                )}
+                {sim.openaiStatus.level !== 'green' && (
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">• {sim.peakRPM > 5000 ? UPGRADE_COSTS.openaiTier4.label : UPGRADE_COSTS.openaiTier3.label}</p>
+                      <p className="text-muted-foreground">{sim.peakRPM > 5000 ? UPGRADE_COSTS.openaiTier4.detail : UPGRADE_COSTS.openaiTier3.detail}</p>
+                    </div>
+                    <span className="font-bold text-primary whitespace-nowrap ml-2">{sim.peakRPM > 5000 ? UPGRADE_COSTS.openaiTier4.cost : UPGRADE_COSTS.openaiTier3.cost}</span>
+                  </div>
+                )}
+                {sim.runwareStatus.level !== 'green' && (
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">• {UPGRADE_COSTS.imageQueue.label}</p>
+                      <p className="text-muted-foreground">{UPGRADE_COSTS.imageQueue.detail}</p>
+                    </div>
+                    <span className="font-bold text-primary whitespace-nowrap ml-2">{UPGRADE_COSTS.imageQueue.cost}</span>
+                  </div>
+                )}
+                {sim.elevenStatus.level !== 'green' && (
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">• {UPGRADE_COSTS.elevenLabsScale.label}</p>
+                      <p className="text-muted-foreground">{UPGRADE_COSTS.elevenLabsScale.detail}</p>
+                    </div>
+                    <span className="font-bold text-primary whitespace-nowrap ml-2">{UPGRADE_COSTS.elevenLabsScale.cost}</span>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
