@@ -1,113 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Vary': 'Origin, Access-Control-Request-Headers',
 };
 
-// Real-Time Cost Tracking Utility - Same implementation as backend
-interface CostEntry {
-  timestamp: number;
-  inputTokens: number;
-  outputTokens: number;
-  cost: number;
-  modelUsed: string;
-  sessionId: string;
-}
-
-interface DailyCostCache {
-  date: string;
-  totalCost: number;
-  entries: CostEntry[];
-  isCircuitBreakerOpen: boolean;
-}
-
-class EdgeCostTracker {
-  private static instance: EdgeCostTracker;
-  private cache = new Map<string, DailyCostCache>();
-  private readonly DAILY_LIMIT = 5.0; // $5 daily limit
-
-  // OpenAI pricing (per 1K tokens)
-  private readonly PRICING = {
-    'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
-    'gpt-4o': { input: 0.003, output: 0.006 },
-    'gpt-4': { input: 0.03, output: 0.06 },
-    'gpt-5-mini-2025-08-07': { input: 0.0003, output: 0.0012 },
-    'gpt-5-2025-08-07': { input: 0.006, output: 0.012 }
-  };
-
-  private constructor() {}
-
-  static getInstance(): EdgeCostTracker {
-    if (!EdgeCostTracker.instance) {
-      EdgeCostTracker.instance = new EdgeCostTracker();
-    }
-    return EdgeCostTracker.instance;
-  }
-
-  getCurrentDateKey(): string {
-    return new Date().toISOString().split('T')[0];
-  }
-
-  getDailyCostCache(): DailyCostCache {
-    const dateKey = this.getCurrentDateKey();
-    
-    if (!this.cache.has(dateKey)) {
-      this.cache.set(dateKey, {
-        date: dateKey,
-        totalCost: 0,
-        entries: [],
-        isCircuitBreakerOpen: false
-      });
-    }
-
-    return this.cache.get(dateKey)!;
-  }
-
-  getDailySummary() {
-    const dailyCache = this.getDailyCostCache();
-    const modelBreakdown: Record<string, { requests: number; cost: number }> = {};
-
-    let totalInputTokens = 0;
-    let totalOutputTokens = 0;
-
-    for (const entry of dailyCache.entries) {
-      totalInputTokens += entry.inputTokens;
-      totalOutputTokens += entry.outputTokens;
-
-      if (!modelBreakdown[entry.modelUsed]) {
-        modelBreakdown[entry.modelUsed] = { requests: 0, cost: 0 };
-      }
-      
-      modelBreakdown[entry.modelUsed].requests++;
-      modelBreakdown[entry.modelUsed].cost += entry.cost;
-    }
-
-    return {
-      date: dailyCache.date,
-      totalCost: dailyCache.totalCost,
-      totalRequests: dailyCache.entries.length,
-      totalInputTokens,
-      totalOutputTokens,
-      averageCostPerRequest: dailyCache.entries.length > 0 ? dailyCache.totalCost / dailyCache.entries.length : 0,
-      modelBreakdown,
-      isLimitExceeded: dailyCache.isCircuitBreakerOpen,
-      dailyLimit: this.DAILY_LIMIT,
-      remainingBudget: Math.max(0, this.DAILY_LIMIT - dailyCache.totalCost)
-    };
-  }
-}
-
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Auth check: require valid JWT
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -116,168 +21,162 @@ serve(async (req) => {
       });
     }
 
-    console.log('💰 Cost Analytics Request');
-    
-    // Get real cost data from database instead of memory
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+    // Verify user with getUser (not getClaims which doesn't exist)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Verify user identity
-    const anonClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims?.sub) {
+    const anonClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') || serviceKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    const { data: { user }, error: userError } = await anonClient.auth.getUser();
+    if (userError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    // Admin check
+    const adminIds = (Deno.env.get('ADMIN_USER_IDS') || '').split(',').filter(Boolean);
+    if (adminIds.length > 0 && !adminIds.includes(user.id)) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    // Get today's cost data
+    const sb = createClient(supabaseUrl, serviceKey);
     const today = new Date().toISOString().split('T')[0];
-    const { data: costData, error: costError } = await supabaseClient
+
+    // Today's detailed data (should be small enough for direct query)
+    const { data: todayData, error: todayErr } = await sb
       .from('cost_tracking')
-      .select('*')
+      .select('cost, input_tokens, output_tokens, model_used, provider, operation_type')
       .gte('timestamp', `${today}T00:00:00Z`)
       .lt('timestamp', `${today}T23:59:59Z`);
 
-    // Get ALL-TIME cost data for total cumulative costs  
-    const { data: totalCostData, error: totalCostError } = await supabaseClient
-      .from('cost_tracking')
+    if (todayErr) throw new Error(`Today query failed: ${todayErr.message}`);
+
+    // All-time aggregates via daily_usage_stats (avoids 1000-row limit)
+    const { data: dailyStats, error: dailyErr } = await sb
+      .from('daily_usage_stats')
       .select('*');
 
-    if (costError) {
-      throw new Error(`Failed to fetch cost data: ${costError.message}`);
+    // Also get all-time totals from cost_tracking using count
+    // Use multiple focused queries instead of select('*') to avoid 1000-row cap
+    const { count: totalRows } = await sb
+      .from('cost_tracking')
+      .select('id', { count: 'exact', head: true });
+
+    // Get provider breakdown via RPC or paginated queries
+    // We'll aggregate from daily_usage_stats which is already aggregated
+    const allTimeFromDaily: Record<string, { requests: number; cost: number }> = {};
+    let allTimeCost = 0;
+    let allTimeRequests = 0;
+    let allTimeInputTokens = 0;
+    let allTimeOutputTokens = 0;
+
+    (dailyStats || []).forEach((row: any) => {
+      const provider = row.provider || 'openai';
+      if (!allTimeFromDaily[provider]) allTimeFromDaily[provider] = { requests: 0, cost: 0 };
+      allTimeFromDaily[provider].requests += row.call_count || 0;
+      allTimeFromDaily[provider].cost += Number(row.estimated_cost || 0);
+      allTimeCost += Number(row.estimated_cost || 0);
+      allTimeRequests += row.call_count || 0;
+      allTimeInputTokens += row.total_input_tokens || 0;
+      allTimeOutputTokens += row.total_output_tokens || 0;
+    });
+
+    // If daily_usage_stats is empty, fall back to cost_tracking with pagination
+    if (allTimeRequests === 0 && (totalRows || 0) > 0) {
+      // Paginate through cost_tracking
+      let page = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: batch } = await sb
+          .from('cost_tracking')
+          .select('cost, input_tokens, output_tokens, provider, model_used')
+          .range(page * pageSize, (page + 1) * pageSize - 1)
+          .order('timestamp', { ascending: true });
+
+        if (!batch || batch.length === 0) break;
+
+        batch.forEach((entry: any) => {
+          const provider = entry.provider || 'unknown';
+          if (!allTimeFromDaily[provider]) allTimeFromDaily[provider] = { requests: 0, cost: 0 };
+          allTimeFromDaily[provider].requests++;
+          allTimeFromDaily[provider].cost += Number(entry.cost || 0);
+          allTimeCost += Number(entry.cost || 0);
+          allTimeRequests++;
+          allTimeInputTokens += entry.input_tokens || 0;
+          allTimeOutputTokens += entry.output_tokens || 0;
+        });
+
+        if (batch.length < pageSize) break;
+        page++;
+      }
     }
 
-    if (totalCostError) {
-      throw new Error(`Failed to fetch total cost data: ${totalCostError.message}`);
-    }
-
-    // Calculate summary from database data
-    const totalCost = costData?.reduce((sum: number, entry: any) => sum + Number(entry.cost), 0) || 0;
-    const totalRequests = costData?.length || 0;
-    const totalInputTokens = costData?.reduce((sum: number, entry: any) => sum + (entry.input_tokens || 0), 0) || 0;
-    const totalOutputTokens = costData?.reduce((sum: number, entry: any) => sum + (entry.output_tokens || 0), 0) || 0;
-
-    // Provider and model breakdown
-    const providerBreakdown: Record<string, { requests: number; cost: number }> = {};
+    // Build today's summary
+    let todayCost = 0;
+    let todayInputTokens = 0;
+    let todayOutputTokens = 0;
     const modelBreakdown: Record<string, { requests: number; cost: number }> = {};
+    const providerBreakdown: Record<string, { requests: number; cost: number }> = {};
 
-    costData?.forEach((entry: any) => {
-      // Provider breakdown
-      const provider = entry.provider || 'unknown';
-      if (!providerBreakdown[provider]) {
-        providerBreakdown[provider] = { requests: 0, cost: 0 };
-      }
-      providerBreakdown[provider].requests++;
-      providerBreakdown[provider].cost += Number(entry.cost);
+    (todayData || []).forEach((e: any) => {
+      todayCost += Number(e.cost || 0);
+      todayInputTokens += e.input_tokens || 0;
+      todayOutputTokens += e.output_tokens || 0;
 
-      // Model breakdown
-      const model = entry.model_used || 'unknown';
-      if (!modelBreakdown[model]) {
-        modelBreakdown[model] = { requests: 0, cost: 0 };
-      }
+      const model = e.model_used || 'unknown';
+      if (!modelBreakdown[model]) modelBreakdown[model] = { requests: 0, cost: 0 };
       modelBreakdown[model].requests++;
-      modelBreakdown[model].cost += Number(entry.cost);
+      modelBreakdown[model].cost += Number(e.cost || 0);
+
+      const provider = e.provider || 'unknown';
+      if (!providerBreakdown[provider]) providerBreakdown[provider] = { requests: 0, cost: 0 };
+      providerBreakdown[provider].requests++;
+      providerBreakdown[provider].cost += Number(e.cost || 0);
     });
 
-    // Calculate TOTAL cumulative costs across all time
-    const totalAllTimeCost = totalCostData?.reduce((sum: number, entry: any) => sum + Number(entry.cost), 0) || 0;
-    const totalAllTimeRequests = totalCostData?.length || 0;
-    const totalAllTimeInputTokens = totalCostData?.reduce((sum: number, entry: any) => sum + (entry.input_tokens || 0), 0) || 0;
-    const totalAllTimeOutputTokens = totalCostData?.reduce((sum: number, entry: any) => sum + (entry.output_tokens || 0), 0) || 0;
-
-    // Total provider breakdown (all time)
-    const totalProviderBreakdown: Record<string, { requests: number; cost: number }> = {};
-    const totalModelBreakdown: Record<string, { requests: number; cost: number }> = {};
-
-    totalCostData?.forEach((entry: any) => {
-      // Total provider breakdown
-      const provider = entry.provider || 'unknown';
-      if (!totalProviderBreakdown[provider]) {
-        totalProviderBreakdown[provider] = { requests: 0, cost: 0 };
-      }
-      totalProviderBreakdown[provider].requests++;
-      totalProviderBreakdown[provider].cost += Number(entry.cost);
-
-      // Total model breakdown  
-      const model = entry.model_used || 'unknown';
-      if (!totalModelBreakdown[model]) {
-        totalModelBreakdown[model] = { requests: 0, cost: 0 };
-      }
-      totalModelBreakdown[model].requests++;
-      totalModelBreakdown[model].cost += Number(entry.cost);
-    });
-
-    const DAILY_LIMIT = 5.0; // $5 daily limit
-    const summary = {
-      date: today,
-      totalCost,
-      totalRequests,
-      totalInputTokens,
-      totalOutputTokens,
-      averageCostPerRequest: totalRequests > 0 ? totalCost / totalRequests : 0,
-      modelBreakdown,
-      providerBreakdown,
-      isLimitExceeded: totalCost > DAILY_LIMIT,
-      dailyLimit: DAILY_LIMIT,
-      remainingBudget: Math.max(0, DAILY_LIMIT - totalCost)
-    };
-
-    // Total cumulative cost summary
-    const totalCostSummary = {
-      totalCost: totalAllTimeCost,
-      totalRequests: totalAllTimeRequests,
-      totalInputTokens: totalAllTimeInputTokens,
-      totalOutputTokens: totalAllTimeOutputTokens,
-      averageCostPerRequest: totalAllTimeRequests > 0 ? totalAllTimeCost / totalAllTimeRequests : 0,
-      providerBreakdown: totalProviderBreakdown,
-      modelBreakdown: totalModelBreakdown,
-      averageDailyCost: totalAllTimeRequests > 0 ? totalAllTimeCost / Math.max(1, Math.ceil(totalAllTimeRequests / 10)) : 0, // Rough estimate
-      totalTokens: totalAllTimeInputTokens + totalAllTimeOutputTokens,
-      costPerStory: totalAllTimeRequests > 0 ? totalAllTimeCost / Math.max(1, Math.floor(totalAllTimeRequests * 0.8)) : 0 // Estimate stories as ~80% of requests
-    };
-    
-    // Add additional analytics data with real database data
-    const analyticsData = {
-      costSummary: summary,
-      totalCostSummary: totalCostSummary, // Add total cumulative costs
-      systemStatus: {
-        uptime: "99.9%", // Placeholder
-        averageResponseTime: "250ms", // Placeholder  
-        errorRate: "0.1%", // Placeholder
-        userRating: 4.8 // Placeholder
-      },
-      usageMetrics: {
-        totalUsers: summary.totalRequests, // Using requests as proxy
-        storiesGenerated: Math.floor(summary.totalRequests * 0.6), // Estimate based on operation types
-        averageSessionTime: "5m 30s" // Placeholder
-      },
-      timestamp: new Date().toISOString()
-    };
+    const DAILY_LIMIT = 5.0;
 
     return new Response(JSON.stringify({
       success: true,
-      data: analyticsData
+      data: {
+        costSummary: {
+          date: today,
+          totalCost: todayCost,
+          totalRequests: todayData?.length || 0,
+          totalInputTokens: todayInputTokens,
+          totalOutputTokens: todayOutputTokens,
+          averageCostPerRequest: (todayData?.length || 0) > 0 ? todayCost / todayData!.length : 0,
+          modelBreakdown,
+          providerBreakdown,
+          isLimitExceeded: todayCost > DAILY_LIMIT,
+          dailyLimit: DAILY_LIMIT,
+          remainingBudget: Math.max(0, DAILY_LIMIT - todayCost),
+        },
+        totalCostSummary: {
+          totalCost: allTimeCost,
+          totalRequests: allTimeRequests,
+          totalInputTokens: allTimeInputTokens,
+          totalOutputTokens: allTimeOutputTokens,
+          averageCostPerRequest: allTimeRequests > 0 ? allTimeCost / allTimeRequests : 0,
+          providerBreakdown: allTimeFromDaily,
+          totalTokens: allTimeInputTokens + allTimeOutputTokens,
+          costPerStory: allTimeRequests > 0 ? allTimeCost / Math.max(1, Math.floor(allTimeRequests * 0.8)) : 0,
+        },
+        timestamp: new Date().toISOString(),
+      },
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Cost analytics error:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'An internal error occurred'
-    }), {
+    return new Response(JSON.stringify({ success: false, error: 'An internal error occurred' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

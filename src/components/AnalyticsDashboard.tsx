@@ -5,7 +5,9 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useProductionAnalytics } from '@/hooks/useProductionAnalytics';
-import { AlertTriangle, DollarSign, TrendingUp, Users, Clock, Star, RefreshCw } from 'lucide-react';
+import { AlertTriangle, DollarSign, TrendingUp, Users, Clock, Star, RefreshCw, Mail, Calendar } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const AnalyticsDashboard: React.FC = () => {
   const { 
@@ -19,6 +21,8 @@ export const AnalyticsDashboard: React.FC = () => {
   const [costSummary, setCostSummary] = useState<any>(null);
   const [totalCostSummary, setTotalCostSummary] = useState<any>(null);
   const [isLoadingCost, setIsLoadingCost] = useState(true);
+  const [isSendingReport, setIsSendingReport] = useState(false);
+  const [reportRange, setReportRange] = useState<'quarter' | 'custom'>('quarter');
 
   useEffect(() => {
     loadCostData();
@@ -42,6 +46,26 @@ export const AnalyticsDashboard: React.FC = () => {
       refreshDashboard(),
       loadCostData()
     ]);
+  };
+
+  const handleSendReport = async (emailOnly = true) => {
+    setIsSendingReport(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('cost-report', {
+        body: { sendEmail: emailOnly },
+      });
+      if (error) throw error;
+      if (data?.success) {
+        toast.success(emailOnly ? '📧 Cost report sent to your email!' : '📊 Report generated');
+      } else {
+        toast.error(data?.error || 'Failed to generate report');
+      }
+    } catch (err: any) {
+      console.error('Report error:', err);
+      toast.error('Failed to send report: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsSendingReport(false);
+    }
   };
 
   if (!dashboard.isLoaded || isLoadingCost) {
@@ -78,7 +102,27 @@ export const AnalyticsDashboard: React.FC = () => {
           )}
           <Button onClick={handleRefresh} variant="outline" size="sm" className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
-            Refresh Data
+            Refresh
+          </Button>
+          <Button 
+            onClick={() => handleSendReport(true)} 
+            variant="default" 
+            size="sm" 
+            disabled={isSendingReport}
+            className="flex items-center gap-2"
+          >
+            <Mail className="h-4 w-4" />
+            {isSendingReport ? 'Sending...' : 'Email Report'}
+          </Button>
+          <Button 
+            onClick={() => handleSendReport(false)} 
+            variant="ghost" 
+            size="sm"
+            disabled={isSendingReport}
+            className="flex items-center gap-2"
+          >
+            <Calendar className="h-4 w-4" />
+            JSON
           </Button>
         </div>
       </div>
