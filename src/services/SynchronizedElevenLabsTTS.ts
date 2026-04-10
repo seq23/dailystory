@@ -51,7 +51,8 @@ export class SynchronizedElevenLabsTTS {
           text,
           voice_id: voiceId,
           context,
-          useTimestamps: true
+          useTimestamps: true,
+          session_id: `sync-tts-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`
         }
       });
 

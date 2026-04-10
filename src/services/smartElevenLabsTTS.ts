@@ -48,7 +48,8 @@ export class SmartElevenLabsTTS {
           body: {
             text,
             voice_id: voiceId,
-            context
+            context,
+            session_id: `tts-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`
           }
         }),
         timeoutPromise
