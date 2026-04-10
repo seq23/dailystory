@@ -394,6 +394,10 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               <div className="text-xs mt-1 text-white/50">{t("welcomeHero.footer.companionTool", "Test reading levels with our companion tool.")}</div>
             </div>
 
+            <div className="text-xs text-white/60 text-center">
+              Free for personal &amp; educational use. Commercial or institutional use requires a <a href="/terms" className="underline hover:text-white/90 transition-colors">license</a>.
+            </div>
+
             <div className="flex flex-col md:flex-row items-center gap-4 text-xs">
               <div>© {new Date().getFullYear()} {t("welcomeHero.footer.companyName")}. {t("welcomeHero.footer.copyright")}</div>
               <div className="flex flex-wrap justify-center gap-4">
