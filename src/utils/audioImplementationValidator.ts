@@ -132,9 +132,13 @@ export class AudioImplementationValidator {
     try {
       const audioEngine = CharlotteVoiceService.getInstance();
       
-      // Test basic audio functionality for free users
-      await audioEngine.playTextWithSynchronization({ text: 'Test story content' });
-      console.log('✅ Free user audio test completed');
+      // Validate that the engine exists and has required methods — do NOT call
+      // playTextWithSynchronization here because that makes a REAL billable
+      // ElevenLabs API call on every page load, silently inflating costs.
+      if (!audioEngine || typeof audioEngine.playTextWithSynchronization !== 'function') {
+        this.warnings.push('Audio engine not properly initialized for free users');
+      }
+      console.log('✅ Free user audio test completed (dry-run — no API call)');
     } catch (error) {
       this.warnings.push('Audio engine test failed: ' + (error as Error).message);
     }
@@ -158,9 +162,11 @@ export class AudioImplementationValidator {
 
     try {
       const audioEngine = CharlotteVoiceService.getInstance();
-      // Test premium user audio access
-      await audioEngine.playTextWithSynchronization({ text: 'Premium test content' });
-      console.log('✅ Premium user audio test completed');
+      // Validate engine exists — do NOT make a real TTS call (costs money)
+      if (!audioEngine || typeof audioEngine.charlotteReadStory !== 'function') {
+        this.warnings.push('Audio engine not properly initialized for premium users');
+      }
+      console.log('✅ Premium user audio test completed (dry-run — no API call)');
     } catch (error) {
       this.warnings.push('Could not validate premium user access');
     }
@@ -289,8 +295,11 @@ export class AudioImplementationValidator {
 
     try {
       const audioEngine = CharlotteVoiceService.getInstance();
-      await audioEngine.playTextWithSynchronization({ text: 'Test content in Spanish' });
-      console.log('✅ Free user test completed');
+      // Dry-run only — do NOT call real TTS (costs money on every page load)
+      if (!audioEngine) {
+        this.warnings.push('Audio engine not available for free user language test');
+      }
+      console.log('✅ Free user language restriction test completed (dry-run)');
     } catch (error) {
       this.warnings.push('Free user audio test error: ' + (error as Error).message);
     }
