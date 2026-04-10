@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useProductionAnalytics } from '@/hooks/useProductionAnalytics';
-import { AlertTriangle, DollarSign, TrendingUp, Users, Clock, Star, RefreshCw, Mail, Calendar } from 'lucide-react';
+import { AlertTriangle, DollarSign, TrendingUp, Clock, RefreshCw, Mail, Calendar, BookOpen, Image, Mic } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -22,7 +22,6 @@ export const AnalyticsDashboard: React.FC = () => {
   const [totalCostSummary, setTotalCostSummary] = useState<any>(null);
   const [isLoadingCost, setIsLoadingCost] = useState(true);
   const [isSendingReport, setIsSendingReport] = useState(false);
-  const [reportRange, setReportRange] = useState<'quarter' | 'custom'>('quarter');
 
   useEffect(() => {
     loadCostData();
@@ -86,12 +85,16 @@ export const AnalyticsDashboard: React.FC = () => {
   const dailyLimit = costSummary?.dailyLimit || 5.0;
   const costPercentage = costSummary ? (costSummary.totalCost / dailyLimit) * 100 : 0;
 
+  // Extract operation breakdowns
+  const todayOps = costSummary?.operationBreakdown || {};
+  const allTimeOps = totalCostSummary?.operationBreakdown || {};
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">Monitor costs, performance, and user engagement</p>
+          <p className="text-muted-foreground">Monitor costs, performance, and usage</p>
         </div>
         <div className="flex gap-2">
           {isTracking && (
@@ -127,15 +130,15 @@ export const AnalyticsDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Total Project Costs Section */}
+      {/* All-Time Project Costs */}
       {totalCostSummary && (
         <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
           <CardHeader>
             <CardTitle className="text-xl font-bold flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-primary" />
-              Total Project Costs
+              All-Time Project Costs
             </CardTitle>
-            <CardDescription>Cumulative spending across all operations</CardDescription>
+            <CardDescription>Cumulative spending across all operations since launch</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold text-primary mb-4">
@@ -163,7 +166,7 @@ export const AnalyticsDashboard: React.FC = () => {
             </div>
             <div className="grid gap-2 md:grid-cols-2 mt-4 text-sm">
               <div className="flex justify-between">
-                <span>Total Requests:</span>
+                <span>Total API Requests:</span>
                 <span className="font-medium">{totalCostSummary.totalRequests.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
@@ -171,23 +174,52 @@ export const AnalyticsDashboard: React.FC = () => {
                 <span className="font-medium">${totalCostSummary.averageCostPerRequest.toFixed(6)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Est. Cost/Story:</span>
-                <span className="font-medium">${totalCostSummary.costPerStory.toFixed(4)}</span>
+                <span>Cost/Story (avg):</span>
+                <span className="font-medium">
+                  {totalCostSummary.totalStories > 0 
+                    ? `$${totalCostSummary.costPerStory.toFixed(4)}`
+                    : 'N/A'}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Total Tokens:</span>
                 <span className="font-medium">{totalCostSummary.totalTokens.toLocaleString()}</span>
               </div>
             </div>
+
+            {/* All-time operation breakdown */}
+            <div className="grid gap-3 md:grid-cols-3 mt-4">
+              <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                <BookOpen className="h-4 w-4 text-blue-500" />
+                <div>
+                  <div className="text-sm font-semibold">{allTimeOps.story_generation || 0}</div>
+                  <p className="text-xs text-muted-foreground">Stories Generated</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                <Image className="h-4 w-4 text-green-500" />
+                <div>
+                  <div className="text-sm font-semibold">{allTimeOps.image_generation || 0}</div>
+                  <p className="text-xs text-muted-foreground">Images Generated</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                <Mic className="h-4 w-4 text-purple-500" />
+                <div>
+                  <div className="text-sm font-semibold">{allTimeOps.audio_generation || 0}</div>
+                  <p className="text-xs text-muted-foreground">Audio Generated</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Daily Cost Monitoring Section */}
+      {/* Today's Costs */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Daily Cost Usage</CardTitle>
+            <CardTitle className="text-sm font-medium">Today's Cost</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -196,20 +228,21 @@ export const AnalyticsDashboard: React.FC = () => {
             </div>
             <Progress value={Math.min(costPercentage, 100)} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-2">
-              {costPercentage >= 90 && (
+              {costPercentage >= 90 ? (
                 <span className="flex items-center text-red-500">
                   <AlertTriangle className="w-3 h-3 mr-1" />
-                  Approaching limit
+                  Approaching daily limit
                 </span>
+              ) : (
+                `${(100 - costPercentage).toFixed(1)}% remaining of $${dailyLimit} daily limit`
               )}
-              {costPercentage < 90 && `${(100 - costPercentage).toFixed(1)}% remaining of $${dailyLimit}`}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Requests Today</CardTitle>
+            <CardTitle className="text-sm font-medium">Today's Requests</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -219,6 +252,11 @@ export const AnalyticsDashboard: React.FC = () => {
             <p className="text-xs text-muted-foreground">
               Avg: ${costSummary?.averageCostPerRequest?.toFixed(4) || '0.0000'}/request
             </p>
+            <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
+              <span>{todayOps.story_generation || 0} stories</span>
+              <span>{todayOps.image_generation || 0} images</span>
+              <span>{todayOps.audio_generation || 0} audio</span>
+            </div>
           </CardContent>
         </Card>
 
@@ -232,18 +270,18 @@ export const AnalyticsDashboard: React.FC = () => {
               {currentSession ? 'Active' : 'Inactive'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {currentSession?.sessionId ? `ID: ${currentSession.sessionId.slice(-8)}` : 'No session'}
+              {currentSession?.sessionId ? `ID: ${currentSession.sessionId.slice(-8)}` : 'No active session'}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Model Performance Section */}
+      {/* Model & Token Breakdown (Today) */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Model Usage Breakdown</CardTitle>
-            <CardDescription>Cost and requests by AI model</CardDescription>
+            <CardTitle>Today's Model Breakdown</CardTitle>
+            <CardDescription>Cost and requests by AI model for today</CardDescription>
           </CardHeader>
           <CardContent>
             {costSummary?.modelBreakdown && Object.keys(costSummary.modelBreakdown).length > 0 ? (
@@ -264,15 +302,15 @@ export const AnalyticsDashboard: React.FC = () => {
                 })}
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm">No model data available yet</p>
+              <p className="text-muted-foreground text-sm">No requests today yet</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Token Usage</CardTitle>
-            <CardDescription>Input and output tokens consumed</CardDescription>
+            <CardTitle>Today's Token Usage</CardTitle>
+            <CardDescription>Input and output tokens consumed today</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -299,66 +337,31 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* System Health */}
+      {/* System Status */}
       <Card>
         <CardHeader>
           <CardTitle>System Status</CardTitle>
-          <CardDescription>Overall system health and performance</CardDescription>
+          <CardDescription>Cost limit status and daily budget</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-3">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold">
                 {costSummary?.isLimitExceeded ? '❌' : '✅'}
               </div>
-              <p className="text-sm text-muted-foreground">Cost Status</p>
+              <p className="text-sm text-muted-foreground">Daily Cost Limit</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">99.9%</div>
-              <p className="text-sm text-muted-foreground">Uptime</p>
+              <div className="text-2xl font-bold">${costSummary?.remainingBudget?.toFixed(2) || dailyLimit.toFixed(2)}</div>
+              <p className="text-sm text-muted-foreground">Remaining Budget Today</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">~250ms</div>
-              <p className="text-sm text-muted-foreground">Avg Response</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">4.8/5</div>
-              <p className="text-sm text-muted-foreground">User Rating</p>
+              <div className="text-2xl font-bold">${dailyLimit.toFixed(2)}</div>
+              <p className="text-sm text-muted-foreground">Daily Limit</p>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* Usage Analytics */}
-      {(dashboard.usageAnalytics || costSummary) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Usage Analytics</CardTitle>
-            <CardDescription>Story generation and user engagement metrics</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <Users className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                  <div className="text-xl font-bold">{costSummary?.totalRequests || dashboard.usageAnalytics?.totalUsers || 0}</div>
-                  <p className="text-sm text-muted-foreground">Total Requests</p>
-                </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <Star className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                  <div className="text-xl font-bold">{Math.floor((costSummary?.totalRequests || 0) * 0.8) || dashboard.usageAnalytics?.totalStories || 0}</div>
-                  <p className="text-sm text-muted-foreground">Stories Created</p>
-                </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <TrendingUp className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                  <div className="text-xl font-bold">{dashboard.usageAnalytics?.avgSessionTime || '5m 30s'}</div>
-                  <p className="text-sm text-muted-foreground">Avg Session</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

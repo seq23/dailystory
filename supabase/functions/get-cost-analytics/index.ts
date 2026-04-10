@@ -27,49 +27,38 @@ serve(async (req) => {
 
     if (todayErr) throw new Error(`Today query failed: ${todayErr.message}`);
 
-    // All-time aggregates via daily_usage_stats
-    const { data: dailyStats } = await sb.from('daily_usage_stats').select('*');
-
-    // Fallback count
+    // All-time: paginate cost_tracking for accurate totals
     const { count: totalRows } = await sb
       .from('cost_tracking')
       .select('id', { count: 'exact', head: true });
 
-    const allTimeFromDaily: Record<string, { requests: number; cost: number }> = {};
+    const providerTotals: Record<string, { requests: number; cost: number }> = {};
+    const operationTotals: Record<string, number> = {};
     let allTimeCost = 0, allTimeRequests = 0, allTimeInputTokens = 0, allTimeOutputTokens = 0;
 
-    (dailyStats || []).forEach((row: any) => {
-      const provider = row.provider || 'openai';
-      if (!allTimeFromDaily[provider]) allTimeFromDaily[provider] = { requests: 0, cost: 0 };
-      allTimeFromDaily[provider].requests += row.call_count || 0;
-      allTimeFromDaily[provider].cost += Number(row.estimated_cost || 0);
-      allTimeCost += Number(row.estimated_cost || 0);
-      allTimeRequests += row.call_count || 0;
-      allTimeInputTokens += row.total_input_tokens || 0;
-      allTimeOutputTokens += row.total_output_tokens || 0;
-    });
-
-    // If daily_usage_stats is empty, paginate cost_tracking
-    if (allTimeRequests === 0 && (totalRows || 0) > 0) {
+    if ((totalRows || 0) > 0) {
       let page = 0;
       const pageSize = 1000;
       while (true) {
         const { data: batch } = await sb
           .from('cost_tracking')
-          .select('cost, input_tokens, output_tokens, provider, model_used')
+          .select('cost, input_tokens, output_tokens, provider, operation_type')
           .range(page * pageSize, (page + 1) * pageSize - 1)
           .order('timestamp', { ascending: true });
 
         if (!batch || batch.length === 0) break;
         batch.forEach((entry: any) => {
           const provider = entry.provider || 'unknown';
-          if (!allTimeFromDaily[provider]) allTimeFromDaily[provider] = { requests: 0, cost: 0 };
-          allTimeFromDaily[provider].requests++;
-          allTimeFromDaily[provider].cost += Number(entry.cost || 0);
+          if (!providerTotals[provider]) providerTotals[provider] = { requests: 0, cost: 0 };
+          providerTotals[provider].requests++;
+          providerTotals[provider].cost += Number(entry.cost || 0);
           allTimeCost += Number(entry.cost || 0);
           allTimeRequests++;
           allTimeInputTokens += entry.input_tokens || 0;
           allTimeOutputTokens += entry.output_tokens || 0;
+
+          const opType = entry.operation_type || 'unknown';
+          operationTotals[opType] = (operationTotals[opType] || 0) + 1;
         });
         if (batch.length < pageSize) break;
         page++;
@@ -79,7 +68,8 @@ serve(async (req) => {
     // Build today's summary
     let todayCost = 0, todayInputTokens = 0, todayOutputTokens = 0;
     const modelBreakdown: Record<string, { requests: number; cost: number }> = {};
-    const providerBreakdown: Record<string, { requests: number; cost: number }> = {};
+    const todayProviderBreakdown: Record<string, { requests: number; cost: number }> = {};
+    const todayOperationTotals: Record<string, number> = {};
 
     (todayData || []).forEach((e: any) => {
       todayCost += Number(e.cost || 0);
@@ -90,12 +80,17 @@ serve(async (req) => {
       modelBreakdown[model].requests++;
       modelBreakdown[model].cost += Number(e.cost || 0);
       const provider = e.provider || 'unknown';
-      if (!providerBreakdown[provider]) providerBreakdown[provider] = { requests: 0, cost: 0 };
-      providerBreakdown[provider].requests++;
-      providerBreakdown[provider].cost += Number(e.cost || 0);
+      if (!todayProviderBreakdown[provider]) todayProviderBreakdown[provider] = { requests: 0, cost: 0 };
+      todayProviderBreakdown[provider].requests++;
+      todayProviderBreakdown[provider].cost += Number(e.cost || 0);
+
+      const opType = e.operation_type || 'unknown';
+      todayOperationTotals[opType] = (todayOperationTotals[opType] || 0) + 1;
     });
 
     const DAILY_LIMIT = 5.0;
+    const totalStories = operationTotals['story_generation'] || 0;
+    const todayStories = todayOperationTotals['story_generation'] || 0;
 
     return new Response(JSON.stringify({
       success: true,
@@ -108,7 +103,9 @@ serve(async (req) => {
           totalOutputTokens: todayOutputTokens,
           averageCostPerRequest: (todayData?.length || 0) > 0 ? todayCost / todayData!.length : 0,
           modelBreakdown,
-          providerBreakdown,
+          providerBreakdown: todayProviderBreakdown,
+          operationBreakdown: todayOperationTotals,
+          storiesGenerated: todayStories,
           isLimitExceeded: todayCost > DAILY_LIMIT,
           dailyLimit: DAILY_LIMIT,
           remainingBudget: Math.max(0, DAILY_LIMIT - todayCost),
@@ -119,9 +116,11 @@ serve(async (req) => {
           totalInputTokens: allTimeInputTokens,
           totalOutputTokens: allTimeOutputTokens,
           averageCostPerRequest: allTimeRequests > 0 ? allTimeCost / allTimeRequests : 0,
-          providerBreakdown: allTimeFromDaily,
+          providerBreakdown: providerTotals,
+          operationBreakdown: operationTotals,
+          totalStories,
           totalTokens: allTimeInputTokens + allTimeOutputTokens,
-          costPerStory: allTimeRequests > 0 ? allTimeCost / Math.max(1, Math.floor(allTimeRequests * 0.8)) : 0,
+          costPerStory: totalStories > 0 ? allTimeCost / totalStories : 0,
         },
         timestamp: new Date().toISOString(),
       },
