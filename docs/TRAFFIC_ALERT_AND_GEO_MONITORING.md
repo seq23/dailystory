@@ -95,7 +95,35 @@ If no thresholds are exceeded, returns `alert_sent: false` with current stats.
 
 ## File References
 
+- `supabase/functions/_shared/costLogger.ts` — Shared fire-and-forget cost logging utility
 - `supabase/functions/traffic-alert/index.ts` — Alert logic & email builder
 - `supabase/functions/generate-adaptive-story/index.ts` — Geo logging (fire-and-forget)
 - `supabase/migrations/*_enable_pg_cron.sql` — Extension enablement
 - `supabase/migrations/*_schedule_monthly_traffic_alert.sql` — Cron job
+
+## Cost Tracking Coverage
+
+All cost-incurring edge functions log to `cost_tracking` via the shared `costLogger.ts` utility:
+
+| Function | Provider | Operation Type |
+|----------|----------|---------------|
+| `generate-adaptive-story` | openai | story_generation |
+| `elevenlabs-tts` | elevenlabs | tts |
+| `elevenlabs-tts-smart` | elevenlabs | tts |
+| `runware-template-cd` | runware | image_generation |
+| `runware-template-ab` | runware | image_generation |
+| `runware-generate-image` | runware | image_generation (fallback) |
+| `ai-visual-scene-creator` | openai | scene_description |
+| `correct-spelling` | openai | spelling_correction |
+| `translate-universal` | openai | translation_to/from_english |
+| `word-dictionary` | openai | word_definition |
+| `openai-tts` | openai | tts |
+| `voice-to-text` | openai | speech_to_text |
+| `openai-realtime` | openai | realtime_session |
+| `generate-fallback-images` | openai | image_generation (deprecated) |
+| `traffic-alert` | resend | email_send |
+| `send-coppa-notification` | resend | email_send |
+| `send-parental-notification` | resend | email_send |
+| `send-custom-auth-email` | resend | email_send |
+| `notification-service` | resend | email_send |
+| `notify-data-breach` | resend | email_send |
