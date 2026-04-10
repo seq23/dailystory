@@ -4,11 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProductionAnalytics } from '@/hooks/useProductionAnalytics';
-import { AlertTriangle, DollarSign, TrendingUp, RefreshCw, Mail, Calendar, BookOpen, Mic } from 'lucide-react';
+import { AlertTriangle, DollarSign, TrendingUp, RefreshCw, Mail, Calendar, BookOpen, Mic, Calculator } from 'lucide-react';
 import { ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ScenarioSimulator } from '@/components/ScenarioSimulator';
 
 export const AnalyticsDashboard: React.FC = () => {
   const { dashboard, refreshDashboard, getDailyCostSummary } = useProductionAnalytics();
