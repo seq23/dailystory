@@ -1170,7 +1170,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         body: {
           text: cleanWord,
           voice: voiceId,
-          model: 'eleven_turbo_v2_5'
+          model: 'eleven_flash_v2_5'
         }
       });
 
@@ -1578,7 +1578,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           body: JSON.stringify({
             text: explanationText.slice(0, 800),
             voice: voiceId,
-            model: 'eleven_turbo_v2_5'
+            model: 'eleven_flash_v2_5'
           })
         });
 
