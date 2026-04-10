@@ -82,8 +82,9 @@ export const AnalyticsDashboard: React.FC = () => {
     );
   }
 
-  const dailyLimit = costSummary?.dailyLimit || 5.0;
-  const costPercentage = costSummary ? (costSummary.totalCost / dailyLimit) * 100 : 0;
+  const monthBudget = costSummary?.monthBudget || 100.0;
+  const monthCost = costSummary?.monthCost || 0;
+  const monthPercentage = (monthCost / monthBudget) * 100;
 
   // Extract operation breakdowns
   const todayOps = costSummary?.operationBreakdown || {};
