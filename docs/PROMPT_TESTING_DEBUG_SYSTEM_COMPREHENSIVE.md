@@ -518,5 +518,33 @@ const trackPerformance = (tierName: string, startTime: number, success: boolean)
 ```
 
 ---
-*Last Updated: September 21, 2025*  
-*Debug System Status: All testing tools operational*
+
+## Admin Panel Quick Reference
+
+### Access Points
+| Route | Purpose | Auth Required |
+|-------|---------|---------------|
+| `/prompt-testing` | Public testing suite (Story Prompt Tester, Voice Catalog, Infrastructure) | No |
+| `/prompt-testing?debug=1` | **Full Admin Debug Panel** — all testing + debug-only sections | No (hidden URL) |
+
+### Debug-Only Sections (visible only with `?debug=1`)
+1. **Database Logging Health** — checks `image_generation_debug` table freshness
+2. **Debug Data Viewer** — browse raw debug logs
+3. **Analytics Dashboard** — total project costs, daily monitoring, provider breakdown, report buttons
+4. **Image Tier Testing** — test image generation across tiers
+5. **Audio E2E Testing** — end-to-end audio pipeline testing
+
+### Analytics Dashboard Actions
+- **Email Report** button → sends quarterly cost report to `privacy@time-2-read.com` via Resend
+- **JSON** button → returns raw cost report data (no email)
+- **Refresh** button → reloads cost data from `get-cost-analytics` edge function
+
+### Edge Functions for Cost Monitoring
+| Function | Purpose |
+|----------|---------|
+| `get-cost-analytics` | Returns daily + all-time cost summaries (no auth required) |
+| `cost-report` | Generates quarterly report, optionally emails to privacy@time-2-read.com |
+
+---
+*Last Updated: April 10, 2026*  
+*Debug System Status: All testing tools operational — Analytics Dashboard now functional with real cost data*
