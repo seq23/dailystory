@@ -4,7 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, DollarSign, Server, TrendingUp, AlertTriangle, CheckCircle2, BookOpen, Mic } from 'lucide-react';
+import { Users, DollarSign, Server, TrendingUp, AlertTriangle, CheckCircle2, BookOpen, Mic, Info } from 'lucide-react';
 import { ImageIcon } from 'lucide-react';
 
 interface CostPerUnit {
@@ -50,9 +50,21 @@ const UPGRADE_COSTS: Record<string, { label: string; cost: string; detail: strin
   openaiTier3: { label: 'OpenAI Tier 3', cost: 'Free (usage-based)', detail: 'Requires $250+ spend history → 5,000 RPM' },
   openaiTier4: { label: 'OpenAI Tier 4', cost: 'Free (usage-based)', detail: 'Requires $1,000+ spend history → 10,000 RPM' },
   imageQueue: { label: 'Generation queue (BullMQ/Redis)', cost: '$15-30/mo', detail: 'Redis instance for rate-limiting image requests' },
-  ttsQueue: { label: 'TTS queue or caching layer', cost: '$10-20/mo', detail: 'Cache common narrations, queue burst requests' },
-  elevenLabsScale: { label: 'ElevenLabs Scale plan', cost: '$99/mo', detail: '2,000 RPM, higher character limit' },
+  ttsQueue: { label: 'TTS persistent cache (Supabase Storage)', cost: '$0/mo (included)', detail: 'Persistent audio cache — repeat reads cost $0 in API fees' },
+  elevenLabsPro: { label: 'ElevenLabs Pro plan', cost: '$99/mo', detail: '500K chars included, $0.12/1K overage (vs $0.30 pay-as-you-go)' },
+  elevenLabsScale: { label: 'ElevenLabs Scale plan', cost: '$330/mo', detail: '2M chars included, 2,000 RPM, $0.12/1K overage' },
 };
+
+// Cache hit rate increases with scale (more shared content among users)
+function estimateCacheHitRate(totalUsers: number): number {
+  if (totalUsers <= 50) return 0.30;
+  if (totalUsers <= 100) return 0.40;
+  if (totalUsers <= 500) return 0.55;
+  if (totalUsers <= 1000) return 0.65;
+  if (totalUsers <= 2500) return 0.72;
+  if (totalUsers <= 5000) return 0.78;
+  return 0.82;
+}
 
 function capacityStatus(value: number, thresholds: { safe: number; warn: number; max: number }) {
   if (value <= thresholds.safe) return { color: 'bg-green-500', label: 'OK', level: 'green' };
