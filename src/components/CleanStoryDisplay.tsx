@@ -3209,7 +3209,7 @@ const handleSaveStoryNow = async () => {
       };
       
       await PremiumStoryManager.saveStory(
-        storyObj as any, 
+        storyObj, 
         userInfo, 
         isStoryComplete ? ['ended'] : ['in-progress'], 
         false,
