@@ -163,7 +163,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Time2Read Reports <reports@time-2-read.com>',
+          from: 'Time2Read Reports <reports@resend.dev>',
           to: [adminEmail],
           subject: `📊 Cost Report: ${startDate} → ${endDate} | $${grandTotalCost.toFixed(2)}`,
           html: emailHtml,
