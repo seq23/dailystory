@@ -26,6 +26,9 @@ export const AnalyticsDashboard: React.FC = () => {
 
   const loadCostData = async () => {
     setIsLoadingCost(true);
+    // Clear stale state so the UI never shows old data after refresh
+    setCostSummary(null);
+    setTotalCostSummary(null);
     try {
       const data = await getDailyCostSummary();
       setCostSummary(data.costSummary);
