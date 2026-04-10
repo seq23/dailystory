@@ -21,6 +21,8 @@ export const AnalyticsDashboard: React.FC = () => {
   const [costSummary, setCostSummary] = useState<any>(null);
   const [totalCostSummary, setTotalCostSummary] = useState<any>(null);
   const [isLoadingCost, setIsLoadingCost] = useState(true);
+  const [isSendingReport, setIsSendingReport] = useState(false);
+  const [reportRange, setReportRange] = useState<'quarter' | 'custom'>('quarter');
 
   useEffect(() => {
     loadCostData();
@@ -44,6 +46,26 @@ export const AnalyticsDashboard: React.FC = () => {
       refreshDashboard(),
       loadCostData()
     ]);
+  };
+
+  const handleSendReport = async (emailOnly = true) => {
+    setIsSendingReport(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('cost-report', {
+        body: { sendEmail: emailOnly },
+      });
+      if (error) throw error;
+      if (data?.success) {
+        toast.success(emailOnly ? '📧 Cost report sent to your email!' : '📊 Report generated');
+      } else {
+        toast.error(data?.error || 'Failed to generate report');
+      }
+    } catch (err: any) {
+      console.error('Report error:', err);
+      toast.error('Failed to send report: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsSendingReport(false);
+    }
   };
 
   if (!dashboard.isLoaded || isLoadingCost) {
