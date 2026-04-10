@@ -102,7 +102,7 @@ async function handle(req: Request): Promise<Response> {
   }
 
   try {
-    const { text, voice_id, model_id, voice_settings } = await req.json();
+    const { text, voice_id, model_id, voice_settings, session_id: clientSessionId } = await req.json();
     
     if (!text) throw new Error("Text is required");
 
@@ -207,7 +207,7 @@ async function handle(req: Request): Promise<Response> {
       const sb = await getSupabaseClient();
 
       await sb.from('cost_tracking').insert({
-        session_id: 'elevenlabs-session',
+        session_id: clientSessionId || 'elevenlabs-unknown',
         user_id: null,
         input_tokens: 0,
         output_tokens: 0,
