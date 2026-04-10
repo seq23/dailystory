@@ -8,12 +8,13 @@
 
 ## 📋 Quick Navigation
 
-### 🆕 Recent Changes (October 7, 2025)
-- [Image Toggle Complete Audit](IMAGE_TOGGLE_COMPLETE_AUDIT_2025_10_07.md) - ⭐ NEW - System audit + animation feedback
+### 🆕 Recent Changes (April 10, 2026)
+- [Traffic Alert & Geo Monitoring](TRAFFIC_ALERT_AND_GEO_MONITORING.md) - ⭐ NEW — Monthly alerts, anonymous geo, cost breakdown
+- [Image Toggle Complete Audit](IMAGE_TOGGLE_COMPLETE_AUDIT_2025_10_07.md) - System audit + animation feedback
 - [Premium Live Story 3-Layer Fix](PREMIUM_LIVE_STORY_3LAYER_FIX.md) - Natural continuation for premium users
 - [Image Toggle & SVG Fallback](IMAGE_TOGGLE_SVG_FALLBACK_FIX_2025_10_07.md) - UX enhancement and performance
 - [Level 4 Mature Content](LEVEL_4_MATURE_CONTENT_IMPLEMENTATION.md) - Content filtering fix
-- [Fix History](../FIX_HISTORY.md) - October 7 changelog
+- [Fix History](../FIX_HISTORY.md) - Changelog
 
 ### 🎯 Master Reference Documents
 - [System State History](SYSTEM_STATE_HISTORY.md) - Complete chronological record (Sept 17 - Oct 7)
