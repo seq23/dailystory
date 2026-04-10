@@ -5,7 +5,9 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useProductionAnalytics } from '@/hooks/useProductionAnalytics';
-import { AlertTriangle, DollarSign, TrendingUp, Users, Clock, Star, RefreshCw } from 'lucide-react';
+import { AlertTriangle, DollarSign, TrendingUp, Users, Clock, Star, RefreshCw, Mail, Calendar } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const AnalyticsDashboard: React.FC = () => {
   const { 
