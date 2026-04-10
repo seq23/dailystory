@@ -7,6 +7,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
+import { logCost } from '../_shared/costLogger.ts';
 
 // ========== LAZY RELIABILITY MANAGER (loaded on first POST) ==========
 let reliabilityManager: any = null;
@@ -1866,6 +1867,24 @@ const executeTier1: TierFn = async (ctx) => {
 
           console.log('✅ Runware API call successful');
           clearTimeout(timeoutId);
+
+          // Fire-and-forget cost tracking for direct fallback
+          try {
+            const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+            const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+            logCost(sb, {
+              sessionId: 'runware-generate-image-fallback',
+              provider: 'runware',
+              operationType: 'image_generation',
+              modelUsed: 'runware:100@1',
+              cost: 0.02,
+              apiEndpoint: '/v1',
+              pricingModel: 'per_image',
+              quantityUsed: 1,
+              unitCost: 0.02,
+            });
+          } catch (_) {}
+
           return { success: true, imageURL: imageData.imageURL };
           
         } catch (error: any) {
