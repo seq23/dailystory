@@ -253,7 +253,8 @@ src/
 #### `cost-report` — Quarterly Email Reports
 - **Email recipient**: Hardcoded to `privacy@time-2-read.com` (no ADMIN_EMAIL secret needed)
 - **Schedule**: Quarterly reports covering the previous quarter
-- **Trigger**: Manual via "Email Report" button on Analytics Dashboard, or automated via pg_cron
+- **Trigger**: Manual via "Email Report" button on Analytics Dashboard, OR automated via pg_cron
+- **pg_cron job**: `quarterly-cost-report` — runs at 9:00 AM UTC on Jan 1, Apr 1, Jul 1, Oct 1 (`0 9 1 1,4,7,10 *`)
 - **Content**: Monthly cost breakdown by provider/operation, top 15 geographic locations, token usage
 - **Email provider**: Resend (RESEND_API_KEY secret)
 - **From address**: `reports@time-2-read.com`
