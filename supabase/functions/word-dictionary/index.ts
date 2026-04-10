@@ -363,6 +363,20 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     const data = await response.json();
     const content = data.choices[0].message.content;
 
+    // Fire-and-forget cost tracking
+    const usage = data.usage;
+    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    logCost(sb, {
+      sessionId: 'word-dictionary',
+      provider: 'openai',
+      operationType: 'word_definition',
+      modelUsed: 'gpt-4o-mini',
+      cost: estimateOpenAIChatCost('gpt-4o-mini', usage?.prompt_tokens || 80, usage?.completion_tokens || 100),
+      inputTokens: usage?.prompt_tokens || 0,
+      outputTokens: usage?.completion_tokens || 0,
+      apiEndpoint: '/v1/chat/completions',
+    });
+
     let wordData: WordData;
     try {
       wordData = JSON.parse(content);
