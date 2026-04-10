@@ -300,6 +300,7 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
                   <span className="text-xs">-${sim.cacheSavings.toFixed(2)}</span>
                 </div>
               )}
+            </div>
             {sim.totalMonthlyCost > 100 && (
               <p className="text-xs text-destructive mt-2 flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" /> Exceeds $100 alert threshold
