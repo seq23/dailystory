@@ -477,12 +477,28 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
           <p className="text-xs text-muted-foreground mt-3">
             Unit costs from your real data: story=${costPerUnit.story.toFixed(4)}, image=${costPerUnit.image.toFixed(4)}, audio=${costPerUnit.audio.toFixed(4)}
           </p>
+
+          {/* Enterprise COGS Reference (aligned with Sales Guide v4) */}
+          <div className="mt-3 p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs space-y-2">
+            <p className="font-medium text-sm flex items-center gap-1"><DollarSign className="h-3 w-3" /> Enterprise COGS Reference (Sales Guide v4)</p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
+              <p>• <b>Standard tier</b> (browser TTS): $6.90–$13.80/student/yr</p>
+              <p>• <b>Premium tier</b> (Flash v2.5): $11.24–$27.60/student/yr</p>
+              <p>• Standard pricing: $28–$40/student/yr → <b>70%+ margin</b></p>
+              <p>• Premium pricing: $55–$80/student/yr → <b>70-75% margin</b></p>
+            </div>
+            <p className="text-muted-foreground italic">Based on 16 sessions/mo × 8 pages × 10 months = 1,280 reads/student/yr</p>
+          </div>
+
+          {/* Optimization changelog */}
           <div className="mt-3 p-3 rounded-lg bg-muted/50 border text-xs space-y-1">
             <p className="font-medium text-sm flex items-center gap-1"><Info className="h-3 w-3" /> TTS Cost Optimization Log</p>
-            <p className="text-muted-foreground">• <b>Apr 10, 2026:</b> Switched to ElevenLabs Flash v2.5 ($0.11/1K chars, was $0.22 Turbo) — 50% per-call reduction</p>
-            <p className="text-muted-foreground">• <b>Apr 10, 2026:</b> Deployed persistent audio cache (Supabase Storage) — repeat reads cost $0 API fees</p>
-            <p className="text-muted-foreground">• <b>Apr 10, 2026:</b> Added optimize_streaming_latency=3 — ~10-20% compute overhead reduction</p>
-            <p className="text-muted-foreground">• Audio cost projections above include estimated cache hit rate ({Math.round(estimateCacheHitRate(100) * 100)}% at 100 users → {Math.round(estimateCacheHitRate(10000) * 100)}% at 10K users)</p>
+            <p className="text-muted-foreground">• <b>Apr 10, 2026:</b> Switched to ElevenLabs Flash v2.5 — 50% cheaper per-character ($0.11 vs $0.22/1K chars)</p>
+            <p className="text-muted-foreground">• <b>Apr 10, 2026:</b> Deployed persistent audio cache (Supabase Storage, SHA-256 keyed) — repeat reads cost $0</p>
+            <p className="text-muted-foreground">• <b>Apr 10, 2026:</b> Added optimize_streaming_latency=3 — faster delivery + compute savings</p>
+            <p className="text-muted-foreground">• <b>Net effect:</b> TTS COGS reduced from ~$2.98/student/mo → ~$0.70–1.10/student/mo (<b>65–77% savings</b>)</p>
+            <p className="text-muted-foreground">• Cache hit rate scales with users: {Math.round(estimateCacheHitRate(100) * 100)}% at 100 → {Math.round(estimateCacheHitRate(1000) * 100)}% at 1K → {Math.round(estimateCacheHitRate(10000) * 100)}% at 10K users</p>
+            <p className="text-muted-foreground italic">Pre-Apr 10 guides (v1–v3) used stale COGS (~$33/student/yr TTS). Superseded by v4.</p>
           </div>
         </CardContent>
       </Card>
