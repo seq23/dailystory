@@ -67,6 +67,7 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
   const [premiumSessions, setPremiumSessions] = useState(DEFAULTS.premium.sessionsPerMonth);
   const [subscriptionPrice, setSubscriptionPrice] = useState(9.99);
   const [guestTTS, setGuestTTS] = useState(true);
+  const [premiumTTS, setPremiumTTS] = useState(true);
 
   const sim = useMemo(() => {
     const guestCount = Math.round(totalUsers * (guestPct / 100));
