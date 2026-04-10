@@ -335,6 +335,78 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_country_stats: {
+        Row: {
+          city: string | null
+          country: string
+          created_at: string
+          id: string
+          region: string | null
+          request_count: number
+          stat_date: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          region?: string | null
+          request_count?: number
+          stat_date?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          region?: string | null
+          request_count?: number
+          stat_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      daily_usage_stats: {
+        Row: {
+          call_count: number
+          created_at: string
+          estimated_cost: number
+          id: string
+          operation_type: string
+          provider: string | null
+          stat_date: string
+          total_input_tokens: number
+          total_output_tokens: number
+          updated_at: string
+        }
+        Insert: {
+          call_count?: number
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          operation_type?: string
+          provider?: string | null
+          stat_date?: string
+          total_input_tokens?: number
+          total_output_tokens?: number
+          updated_at?: string
+        }
+        Update: {
+          call_count?: number
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          operation_type?: string
+          provider?: string | null
+          stat_date?: string
+          total_input_tokens?: number
+          total_output_tokens?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       data_breach_log: {
         Row: {
           breach_description: string
