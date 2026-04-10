@@ -1186,28 +1186,19 @@ serve((req) => {
   return req.json().catch(()=>null).then(async (payload) => {
     const requestId = `${Math.random().toString(36).substring(2)}`;
     
-    // Convert test probe payloads to production format
+    // FIXED: Test probes return mock success WITHOUT making real OpenAI API calls
     if (payload?.test === true) {
-      console.log('🔍 AISC: Test mode detected - converting to production payload format');
-      payload = {
-        pageText: 'Health check story text for AISC',
-        storyText: 'Health check story text for AISC',
-        userInfo: {
-          name: 'Test User',
-          age: 8,
-          grade: '2nd',
-          avatar: {
-            type: 'child',
-            skinTone: 'light'
-          }
-        },
-        sessionId: 'health-check-session-aisc',
-        pageNumber: 1,
-        seed: null,
-        isGuestUser: false,
-        difficultyLevel: 'medium'
-      };
-      console.log('✅ Converted AISC test payload to production format');
+      console.log('🔍 AISC: Test mode detected - returning mock success (no billable API call)');
+      return new Response(JSON.stringify({
+        success: true,
+        primaryScene: 'Mock health check scene - no real AI generation',
+        tier: 'health-check',
+        source: 'health-check-mock',
+        processingTime: 0
+      }), {
+        status: 200,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
+      });
     }
     
     const gateStartTime = Date.now();
