@@ -118,8 +118,9 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
       dbStatus, openaiStatus, runwareStatus, elevenStatus,
       peakRPM, peakImageRPM, peakAudioRPM,
       monthlyRevenue, breakEvenPrice, profit,
+      guestAudioSavings,
     };
-  }, [totalUsers, guestPct, guestSessions, premiumSessions, costPerUnit, subscriptionPrice]);
+  }, [totalUsers, guestPct, guestSessions, premiumSessions, costPerUnit, subscriptionPrice, guestTTS]);
 
   const needsUpgrade = sim.dbStatus.level !== 'green' || sim.openaiStatus.level !== 'green';
 
