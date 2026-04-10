@@ -1,51 +1,17 @@
-import { Check, Crown, Building2, ArrowRight } from "lucide-react";
+import { Check, Crown, Building2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { freeFeatures, premiumFeatures, additionalOfferings, enterpriseFeatures } from "@/constants/featureLists";
-import heroImage from "@/assets/hero-image.jpg";
-import vocabImg from "@/assets/story-illustration-12.jpg";
+import readingScreenshot from "@/assets/pricing-screenshot-reading.jpg";
+import libraryScreenshot from "@/assets/pricing-screenshot-library.jpg";
+import vocabScreenshot from "@/assets/pricing-screenshot-vocab.jpg";
 import ReadAloudCoach from "@/components/ReadAloudCoach";
 import { VoiceCommandsHelp } from "@/components/VoiceCommandsHelp";
 
-
 interface PricingSectionProps {
-  compact?: boolean; // compact version for homepage
+  compact?: boolean;
 }
-
-const phase2 = [
-  {
-    title: "Learning Management System (LMS)",
-    items: [
-      "Parent learning goals & overrides",
-      "Teacher dashboard & classroom management",
-      "Curriculum alignment tools",
-      "Assessment & reporting",
-      "Bulk user management",
-      "Learning outcomes tracking",
-    ],
-  },
-  {
-    title: "Social Features & Sharing",
-    items: [
-      "Story sharing with family/friends",
-      "Reading achievements sharing",
-      "Collaborative reading sessions",
-      "Community challenges",
-      "Peer reading groups",
-    ],
-  },
-  {
-    title: "Enhanced Multilingual Support",
-    items: [
-      "Full story translation",
-      "Native language audio",
-      "Cultural story adaptations",
-      "Cross-language vocabulary",
-      "Language-specific phonetics",
-    ],
-  },
-];
 
 export function PricingSection({ compact }: PricingSectionProps) {
   return (
@@ -60,7 +26,8 @@ export function PricingSection({ compact }: PricingSectionProps) {
           </p>
         </header>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        {/* ── 3-column pricing grid ── */}
+        <div className="grid gap-6 md:grid-cols-3">
           {/* Free */}
           <Card>
             <CardHeader>
@@ -75,7 +42,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
               <ul className="space-y-2 mb-6">
                 {freeFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1 shrink-0" />
                     <span>{f}</span>
                   </li>
                 ))}
@@ -106,7 +73,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 <ul className="space-y-2">
                   {premiumFeatures.map((f) => (
                     <li key={f} className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                      <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1 shrink-0" />
                       <span>{f}</span>
                     </li>
                   ))}
@@ -116,7 +83,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                   <ul className="mt-2 space-y-2">
                     {additionalOfferings.map((f) => (
                       <li key={f} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
+                        <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1 shrink-0" />
                         <span>{f}</span>
                       </li>
                     ))}
@@ -128,112 +95,140 @@ export function PricingSection({ compact }: PricingSectionProps) {
               </Link>
             </CardContent>
           </Card>
+
+          {/* Enterprise */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-primary" />
+                <CardTitle>Enterprise</CardTitle>
+              </div>
+              <CardDescription>For schools &amp; organizations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <div className="text-3xl font-bold">Custom</div>
+                <div className="text-muted-foreground">Tailored to your needs</div>
+              </div>
+              <ul className="space-y-2 mb-6">
+                {enterpriseFeatures.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1 shrink-0" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <a href="mailto:hello@time-2-read.com?subject=Enterprise%20Inquiry">
+                <Button variant="outline" className="w-full gap-2">
+                  <Mail className="w-4 h-4" />
+                  Contact Us
+                </Button>
+              </a>
+            </CardContent>
+          </Card>
         </div>
 
-            <div className="mt-12">
-              <h2 className="text-2xl font-bold mb-4">A closer look at Premium</h2>
-              <div className="grid gap-6 md:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Live story generation</CardTitle>
-                    <CardDescription>Stories evolve as you read—no limits.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <img
-                      src={heroImage}
-                      alt="Live story generation in Time2Read premium"
-                      loading="lazy"
-                      className="rounded-md w-full h-32 object-cover"
-                    />
-                    <p className="text-sm text-muted-foreground mt-3">
-                      Create, extend, and personalize stories on the fly. Keep the adventure going for as long as you like.
-                    </p>
-                  </CardContent>
-                </Card>
+        {/* ── A look inside the app ── */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-2">A look inside Time2Read</h2>
+          <p className="text-muted-foreground mb-6">
+            See what the reading experience looks like for free and premium users.
+          </p>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Read‑aloud coach (Premium)</CardTitle>
-                    <CardDescription>Speech‑to‑text feedback preview</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ReadAloudCoach />
-                  </CardContent>
-                </Card>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Reading experience – all users */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Interactive reading sessions</CardTitle>
+                <CardDescription>Available to all users</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <img
+                  src={readingScreenshot}
+                  alt="A reading session in Time2Read with illustrated story, interactive word highlighting, and floating timer"
+                  loading="lazy"
+                  width={1280}
+                  height={720}
+                  className="rounded-md w-full h-44 object-cover"
+                />
+                <p className="text-sm text-muted-foreground mt-3">
+                  Every session features AI-generated illustrations, interactive word highlighting, text-to-speech, and a floating reading timer.
+                </p>
+              </CardContent>
+            </Card>
 
+            {/* Story library – premium */}
+            <Card className="border-primary/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-yellow-500" />
+                  <CardTitle className="text-base">Story library &amp; profiles</CardTitle>
+                </div>
+                <CardDescription>Premium feature</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <img
+                  src={libraryScreenshot}
+                  alt="Premium story library showing saved stories, reading stats, and child profile"
+                  loading="lazy"
+                  width={1280}
+                  height={720}
+                  className="rounded-md w-full h-44 object-cover"
+                />
+                <p className="text-sm text-muted-foreground mt-3">
+                  Save unlimited stories, track reading streaks, manage multiple child profiles, and pick up right where you left off.
+                </p>
+              </CardContent>
+            </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Vocabulary & quizzes</CardTitle>
-                    <CardDescription>Build knowledge with practice activities.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <img
-                      src={vocabImg}
-                      alt="Vocabulary and comprehension activities preview"
-                      loading="lazy"
-                      className="rounded-md w-full h-32 object-cover"
-                    />
-                    <p className="text-sm text-muted-foreground mt-3">
-                      Track tricky words, review them later, and test understanding with quick comprehension checks.
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+            {/* Vocab & quizzes – premium */}
+            <Card className="border-primary/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-yellow-500" />
+                  <CardTitle className="text-base">Vocabulary &amp; quizzes</CardTitle>
+                </div>
+                <CardDescription>Premium feature</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <img
+                  src={vocabScreenshot}
+                  alt="Vocabulary word bank, comprehension quiz, achievement badges, and parent insights dashboard"
+                  loading="lazy"
+                  width={1280}
+                  height={720}
+                  className="rounded-md w-full h-44 object-cover"
+                />
+                <p className="text-sm text-muted-foreground mt-3">
+                  Build a personal word bank, test comprehension with quizzes, earn achievement badges, and view parent insights.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-              <div className="mt-10">
-                <VoiceCommandsHelp />
-              </div>
-            </div>
+        {/* ── Read-aloud coach ── */}
+        <div className="mt-10">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="border-primary/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-yellow-500" />
+                  <CardTitle className="text-base">Read‑aloud coach</CardTitle>
+                </div>
+                <CardDescription>Speech‑to‑text feedback — Premium</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ReadAloudCoach />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-            {/* Enterprise (Coming Soon) */}
-            <div className="mt-12">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                <span>Enterprise (Coming Soon)</span>
-              </h2>
-              <Card>
-                <CardContent className="pt-6">
-                  <ul className="grid gap-2 md:grid-cols-2">
-                    {enterpriseFeatures.map((f) => (
-                      <li key={f} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-6">
-                    <Button variant="outline" disabled className="cursor-not-allowed opacity-70">
-                      Contact Sales
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Phase 2 Roadmap */}
-            <div className="mt-12">
-              <h2 className="text-2xl font-bold mb-4">Phase 2 Premium Feature Roadmap</h2>
-              <div className="grid gap-6 md:grid-cols-3">
-                {phase2.map((section) => (
-                  <Card key={section.title}>
-                    <CardHeader>
-                      <CardTitle className="text-base">{section.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-2">
-                        {section.items.map((i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <ArrowRight className="w-4 h-4 text-primary mt-1" />
-                            <span>{i}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+        {/* ── Voice commands ── */}
+        <div className="mt-10">
+          <VoiceCommandsHelp />
+        </div>
       </div>
     </section>
   );
