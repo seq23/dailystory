@@ -133,6 +133,20 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResult = await emailResponse.json();
     console.log("Parental notification sent successfully:", emailResult);
 
+    // Fire-and-forget cost tracking
+    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    logCost(sb, {
+      sessionId: 'send-parental-notification',
+      provider: 'resend',
+      operationType: 'email_send',
+      modelUsed: 'resend-email',
+      cost: 0.001,
+      apiEndpoint: '/emails',
+      pricingModel: 'per_email',
+      quantityUsed: 1,
+      unitCost: 0.001,
+    });
+
     return new Response(JSON.stringify({
       success: true,
       messageId: emailResult.id || 'unknown',
