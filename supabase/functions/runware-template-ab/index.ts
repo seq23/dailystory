@@ -5,6 +5,7 @@
 // PHASE 2: Request Deduplication to eliminate duplicate API calls
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
+import { logCost } from '../_shared/costLogger.ts';
 
 // ========== LAZY RELIABILITY MANAGER (vendor-first loader) ==========
 let reliabilityManager: any = null;
@@ -943,6 +944,24 @@ async function callRunwareAPI(positivePrompt: string, negativePrompt: string, op
 
       console.log(`✅ Runware API call successful`, { imageURL: imageTask.imageURL, seed: imageTask.seed });
       clearTimeout(timeoutId);
+
+      // Fire-and-forget cost tracking
+      try {
+        const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+        const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+        logCost(sb, {
+          sessionId: sessionId,
+          provider: 'runware',
+          operationType: 'image_generation',
+          modelUsed: model,
+          cost: 0.02,
+          apiEndpoint: '/v1',
+          pricingModel: 'per_image',
+          quantityUsed: 1,
+          unitCost: 0.02,
+        });
+      } catch (_) {}
+
       return { imageURL: imageTask.imageURL, seed: imageTask.seed }; // ✅ Return object with seed
 
     } catch (error: any) {
