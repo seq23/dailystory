@@ -182,19 +182,33 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
           <div className="grid gap-4 md:grid-cols-3">
             <div>
               <label className="text-sm font-medium block mb-1">Guest Sessions/Mo: <span className="text-primary">{guestSessions}</span></label>
-              <Slider value={[guestSessions]} onValueChange={([v]) => setGuestSessions(v)} min={1} max={15} step={1} />
-              <p className="text-xs text-muted-foreground mt-1">20-min sessions, ~2.5 stories each</p>
+              <Slider value={[guestSessions]} onValueChange={([v]) => setGuestSessions(v)} min={1} max={30} step={1} />
+              <p className="text-xs text-muted-foreground mt-1">Industry avg: 4-8/mo for free ed-apps</p>
             </div>
             <div>
               <label className="text-sm font-medium block mb-1">Premium Sessions/Mo: <span className="text-primary">{premiumSessions}</span></label>
               <Slider value={[premiumSessions]} onValueChange={([v]) => setPremiumSessions(v)} min={1} max={30} step={1} />
-              <p className="text-xs text-muted-foreground mt-1">~20 pages per session</p>
+              <p className="text-xs text-muted-foreground mt-1">Industry avg: 12-20/mo for paid ed-apps</p>
             </div>
             <div>
               <label className="text-sm font-medium block mb-1">Subscription Price: <span className="text-primary">${subscriptionPrice.toFixed(2)}</span></label>
               <Slider value={[subscriptionPrice]} onValueChange={([v]) => setSubscriptionPrice(v)} min={1} max={30} step={0.5} />
-              <p className="text-xs text-muted-foreground mt-1">Monthly price per premium user</p>
+              <p className="text-xs text-muted-foreground mt-1">Industry avg: $8.13/mo for ed-apps</p>
             </div>
+          </div>
+
+          {/* Industry benchmarks */}
+          <div className="p-3 rounded-lg bg-muted/50 border text-xs space-y-1">
+            <p className="font-medium text-sm">📊 Industry Benchmarks (Education Apps, 2024-2025)</p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
+              <p>• D30 retention: ~2% (ed-app avg)</p>
+              <p>• DAU/MAU ratio: 10-20% (3-6 days/mo)</p>
+              <p>• Free users: 1-2 sessions/week</p>
+              <p>• Paid users: 3-5 sessions/week (2-3× more)</p>
+              <p>• Top apps (Duolingo): ~50% DAU/MAU</p>
+              <p>• Avg ed-app subscription: $8.13/mo</p>
+            </div>
+            <p className="text-muted-foreground italic">Sources: BusinessOfApps, RevenueCat, Qustodio 2024 Report</p>
           </div>
 
           {/* Guest TTS toggle */}
