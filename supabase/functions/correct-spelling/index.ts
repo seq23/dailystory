@@ -1,6 +1,8 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
