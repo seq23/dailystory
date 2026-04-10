@@ -17,6 +17,8 @@ serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const sb = createClient(supabaseUrl, serviceKey);
     const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 
     // Today's detailed data
     const { data: todayData, error: todayErr } = await sb
@@ -88,7 +90,26 @@ serve(async (req) => {
       todayOperationTotals[opType] = (todayOperationTotals[opType] || 0) + 1;
     });
 
-    const DAILY_LIMIT = 5.0;
+    // Monthly budget alert threshold
+    const MONTHLY_BUDGET = 100.0;
+
+    // This month's cost from cost_tracking
+    let monthCost = 0;
+    {
+      let page = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: batch } = await sb
+          .from('cost_tracking')
+          .select('cost')
+          .gte('timestamp', `${monthStart}T00:00:00Z`)
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+        if (!batch || batch.length === 0) break;
+        batch.forEach((e: any) => { monthCost += Number(e.cost || 0); });
+        if (batch.length < pageSize) break;
+        page++;
+      }
+    }
     const totalStories = operationTotals['story_generation'] || 0;
     const todayStories = todayOperationTotals['story_generation'] || 0;
 
@@ -106,9 +127,10 @@ serve(async (req) => {
           providerBreakdown: todayProviderBreakdown,
           operationBreakdown: todayOperationTotals,
           storiesGenerated: todayStories,
-          isLimitExceeded: todayCost > DAILY_LIMIT,
-          dailyLimit: DAILY_LIMIT,
-          remainingBudget: Math.max(0, DAILY_LIMIT - todayCost),
+          monthCost,
+          monthBudget: MONTHLY_BUDGET,
+          monthRemaining: Math.max(0, MONTHLY_BUDGET - monthCost),
+          isMonthlyBudgetExceeded: monthCost > MONTHLY_BUDGET,
         },
         totalCostSummary: {
           totalCost: allTimeCost,
