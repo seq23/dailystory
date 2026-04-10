@@ -25,7 +25,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const resendKey = Deno.env.get('RESEND_API_KEY');
-    const adminEmail = 'privacy@time-2-read.com';
+    const adminEmail = 'seq.taylor@gmail.com';
     const adminUserIds = (Deno.env.get('ADMIN_USER_IDS') || '').split(',').filter(Boolean);
 
     // No auth check - this function is protected by verify_jwt=false in config
