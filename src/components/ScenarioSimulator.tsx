@@ -76,8 +76,8 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
     const guestPagesPerSession = DEFAULTS.guest.storiesPerSession * DEFAULTS.guest.pagesPerStory;
     const guestStoriesPerMonth = guestCount * guestSessions * DEFAULTS.guest.storiesPerSession;
     const guestImagesPerMonth = guestCount * guestSessions * guestPagesPerSession;
-    const guestAudioPerMonth = guestCount * guestSessions * guestPagesPerSession;
-
+    const guestAudioPerMonth = guestTTS ? guestCount * guestSessions * guestPagesPerSession : 0;
+    const guestAudioSavings = guestTTS ? 0 : guestCount * guestSessions * guestPagesPerSession * costPerUnit.audio;
     // Premium: 20 pages/session → 20 images, 20 audio, ~1 story call per page
     const premStoriesPerMonth = premiumCount * premiumSessions * DEFAULTS.premium.pagesPerSession;
     const premImagesPerMonth = premiumCount * premiumSessions * DEFAULTS.premium.pagesPerSession;
