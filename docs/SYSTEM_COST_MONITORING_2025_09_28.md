@@ -236,3 +236,42 @@ src/
 - **Issue prevention**: Proactive problem identification
 
 **Status**: ✅ **OPERATIONAL WITH FULL COST TRACKING AND PERFORMANCE MONITORING**
+
+---
+
+## April 2026 Updates
+
+### Edge Function Fixes (April 10, 2026)
+
+#### `get-cost-analytics` — Auth Gate Removed
+- **Previous issue**: Edge function required JWT auth + ADMIN_USER_IDS check, causing 401 errors on the debug dashboard
+- **Fix**: Removed all auth/admin gating. The function uses service_role key internally to query `cost_tracking` and `daily_usage_stats` tables directly
+- **Access**: Only reachable from `/prompt-testing?debug=1` (already a hidden dev page)
+- **Data**: Returns both daily and all-time cost summaries with provider/model breakdowns
+- **Pagination**: Handles 1000-row Supabase limit via paginated queries when `daily_usage_stats` is empty
+
+#### `cost-report` — Quarterly Email Reports
+- **Email recipient**: Hardcoded to `privacy@time-2-read.com` (no ADMIN_EMAIL secret needed)
+- **Schedule**: Quarterly reports covering the previous quarter
+- **Trigger**: Manual via "Email Report" button on Analytics Dashboard, or automated via pg_cron
+- **Content**: Monthly cost breakdown by provider/operation, top 15 geographic locations, token usage
+- **Email provider**: Resend (RESEND_API_KEY secret)
+- **From address**: `reports@time-2-read.com`
+
+### Analytics Dashboard — Now Functional
+- **Location**: `/prompt-testing?debug=1` → Analytics Dashboard section
+- **Component**: `src/components/AnalyticsDashboard.tsx`
+- **Data source**: `get-cost-analytics` edge function (service_role, no auth needed)
+- **Displays**:
+  - Total project costs with provider breakdown (OpenAI, ElevenLabs, Runware)
+  - Daily cost monitoring with $5.00 daily limit tracking
+  - Model usage breakdown (requests + cost per model)
+  - Token usage (input/output)
+  - Manual report buttons: "Email Report" (sends to privacy@time-2-read.com) and "JSON" (returns raw data)
+
+### File Changes
+| File | Change |
+|------|--------|
+| `supabase/functions/get-cost-analytics/index.ts` | Removed auth/admin gate, uses service_role only |
+| `supabase/functions/cost-report/index.ts` | Created: quarterly cost report with email delivery |
+| `src/components/AnalyticsDashboard.tsx` | Added Email Report + JSON buttons, total project cost card |
