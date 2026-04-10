@@ -228,7 +228,22 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
               <Switch checked={guestTTS} onCheckedChange={setGuestTTS} />
             </div>
           </div>
-        </CardContent>
+
+          {/* Premium TTS toggle */}
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
+            <div>
+              <label className="text-sm font-medium">ElevenLabs TTS for Premium</label>
+              <p className="text-xs text-muted-foreground">Toggle off to model enterprise contracts with browser TTS</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {!premiumTTS && sim.premAudioSavings > 0 && (
+                <Badge variant="outline" className="text-green-600 border-green-600/30">
+                  Saving ${sim.premAudioSavings.toFixed(2)}/mo
+                </Badge>
+              )}
+              <Switch checked={premiumTTS} onCheckedChange={setPremiumTTS} />
+            </div>
+          </div>
       </Card>
 
       {/* ═══════════ PROJECTIONS ═══════════ */}
