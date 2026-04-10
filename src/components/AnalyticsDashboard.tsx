@@ -102,7 +102,27 @@ export const AnalyticsDashboard: React.FC = () => {
           )}
           <Button onClick={handleRefresh} variant="outline" size="sm" className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
-            Refresh Data
+            Refresh
+          </Button>
+          <Button 
+            onClick={() => handleSendReport(true)} 
+            variant="default" 
+            size="sm" 
+            disabled={isSendingReport}
+            className="flex items-center gap-2"
+          >
+            <Mail className="h-4 w-4" />
+            {isSendingReport ? 'Sending...' : 'Email Report'}
+          </Button>
+          <Button 
+            onClick={() => handleSendReport(false)} 
+            variant="ghost" 
+            size="sm"
+            disabled={isSendingReport}
+            className="flex items-center gap-2"
+          >
+            <Calendar className="h-4 w-4" />
+            JSON
           </Button>
         </div>
       </div>
