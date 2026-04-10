@@ -62,10 +62,11 @@ function capacityStatus(value: number, thresholds: { safe: number; warn: number;
 
 export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUnit }) => {
   const [totalUsers, setTotalUsers] = useState(100);
-  const [guestPct, setGuestPct] = useState(80); // 80% guest, 20% premium
+  const [guestPct, setGuestPct] = useState(80);
   const [guestSessions, setGuestSessions] = useState(DEFAULTS.guest.sessionsPerMonth);
   const [premiumSessions, setPremiumSessions] = useState(DEFAULTS.premium.sessionsPerMonth);
   const [subscriptionPrice, setSubscriptionPrice] = useState(9.99);
+  const [guestTTS, setGuestTTS] = useState(true);
 
   const sim = useMemo(() => {
     const guestCount = Math.round(totalUsers * (guestPct / 100));
