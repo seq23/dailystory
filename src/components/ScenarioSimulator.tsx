@@ -99,7 +99,7 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
     // Peak RPM: assume each concurrent user triggers ~2 API calls/min
     const peakRPM = peakConcurrent * 2;
     const peakImageRPM = peakConcurrent * 1;
-    const peakAudioRPM = peakConcurrent * 1;
+    const peakAudioRPM = (guestTTS || premiumTTS) ? peakConcurrent * 1 : 0;
 
     const dbStatus = capacityStatus(peakConcurrent, CAPACITY.dbConnections);
     const openaiStatus = capacityStatus(peakRPM, CAPACITY.openaiRPM);
