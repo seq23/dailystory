@@ -174,17 +174,21 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
           </div>
 
           {/* Sessions per month */}
-          <div className="grid gap-4 md:grid-cols-3">
+          {/* Guest TTS toggle */}
+          <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium block mb-1">Guest Sessions/Mo: <span className="text-primary">{guestSessions}</span></label>
-              <Slider value={[guestSessions]} onValueChange={([v]) => setGuestSessions(v)} min={1} max={15} step={1} />
-              <p className="text-xs text-muted-foreground mt-1">20-min sessions, ~2.5 stories each</p>
+              <label className="text-sm font-medium">ElevenLabs TTS for Guests</label>
+              <p className="text-xs text-muted-foreground">Toggle off to see savings without guest audio</p>
             </div>
-            <div>
-              <label className="text-sm font-medium block mb-1">Premium Sessions/Mo: <span className="text-primary">{premiumSessions}</span></label>
-              <Slider value={[premiumSessions]} onValueChange={([v]) => setPremiumSessions(v)} min={1} max={30} step={1} />
-              <p className="text-xs text-muted-foreground mt-1">~20 pages per session</p>
+            <div className="flex items-center gap-3">
+              {!guestTTS && sim.guestAudioSavings > 0 && (
+                <Badge variant="outline" className="text-green-600 border-green-600/30">
+                  Saving ${sim.guestAudioSavings.toFixed(2)}/mo
+                </Badge>
+              )}
+              <Switch checked={guestTTS} onCheckedChange={setGuestTTS} />
             </div>
+          </div>
             <div>
               <label className="text-sm font-medium block mb-1">Subscription Price: <span className="text-primary">${subscriptionPrice.toFixed(2)}</span></label>
               <Slider value={[subscriptionPrice]} onValueChange={([v]) => setSubscriptionPrice(v)} min={1} max={30} step={0.5} />
