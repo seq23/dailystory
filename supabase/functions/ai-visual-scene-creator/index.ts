@@ -5,6 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { UniversalLogger } from '../_shared/UniversalLogger.ts';
+import { logCost, estimateOpenAIChatCost } from '../_shared/costLogger.ts';
 
 // ========== LAZY RELIABILITY MANAGER (loaded on first POST) ==========
 let reliabilityManager: any = null;
@@ -810,6 +811,23 @@ PRIMARY OUTPUT FOCUS: Your "primaryScene" field is the most critical output - ma
           })
         }, 25000).then((res) => {
           const content = res.json?.choices?.[0]?.message?.content?.trim?.();
+          // Fire-and-forget cost tracking
+          const usage = res.json?.usage;
+          try {
+            import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
+              const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+              logCost(sb, {
+                sessionId: sessionId || 'ai-visual-scene-creator',
+                provider: 'openai',
+                operationType: 'scene_description',
+                modelUsed: 'gpt-4o-mini',
+                cost: estimateOpenAIChatCost('gpt-4o-mini', usage?.prompt_tokens || 200, usage?.completion_tokens || 200),
+                inputTokens: usage?.prompt_tokens || 0,
+                outputTokens: usage?.completion_tokens || 0,
+                apiEndpoint: '/v1/chat/completions',
+              });
+            }).catch(() => {});
+          } catch (_) {}
           return { ok: !!(res.ok && content), content, status: res.status };
         }),
         {

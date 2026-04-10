@@ -2,6 +2,8 @@
 console.log("[translate-universal] DIAGNOSTIC LOADED: 2025-01-23T03:00:00Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -228,6 +230,20 @@ Always use these exact translations for these words.`
   const data = await response.json();
   const translatedText = data.choices[0]?.message?.content?.trim() || text;
   
+  // Fire-and-forget cost tracking
+  const usage = data.usage;
+  const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  logCost(sb, {
+    sessionId: 'translate-universal',
+    provider: 'openai',
+    operationType: isToEnglish ? 'translation_to_english' : 'translation_from_english',
+    modelUsed: 'gpt-4o-mini',
+    cost: estimateOpenAIChatCost('gpt-4o-mini', usage?.prompt_tokens || 30, usage?.completion_tokens || 30),
+    inputTokens: usage?.prompt_tokens || 0,
+    outputTokens: usage?.completion_tokens || 0,
+    apiEndpoint: '/v1/chat/completions',
+  });
+
   // Remove quotes if OpenAI added them
   const cleanTranslatedText = translatedText.replace(/^["']|["']$/g, '');
   

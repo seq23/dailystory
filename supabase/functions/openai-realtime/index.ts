@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { logCost } from "../_shared/costLogger.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -251,6 +252,18 @@ Always acknowledge the command enthusiastically and call the function immediatel
 
     socket.onclose = () => {
       console.log('👤 Client disconnected');
+      // Fire-and-forget: log estimated session cost ($0.06/min avg for realtime)
+      const sb = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+      logCost(sb, {
+        sessionId: 'openai-realtime',
+        provider: 'openai',
+        operationType: 'realtime_session',
+        modelUsed: 'gpt-4o-realtime-preview',
+        cost: 0.12, // ~2 min avg session estimate
+        pricingModel: 'per_session',
+        quantityUsed: 1,
+        unitCost: 0.12,
+      });
       if (openaiWs) {
         openaiWs.close();
       }

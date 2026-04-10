@@ -1,5 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { logCost } from "../_shared/costLogger.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -105,6 +107,24 @@ serve(async (req) => {
 
     const result = await response.json();
 
+    // Fire-and-forget cost tracking
+    // Whisper pricing: $0.006/min, estimate from audio size (~16KB/sec for webm)
+    const audioSizeMB = binaryAudio.length / (1024 * 1024);
+    const estimatedMinutes = Math.max(0.1, audioSizeMB * 4); // rough estimate
+    const whisperCost = estimatedMinutes * 0.006;
+    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    logCost(sb, {
+      sessionId: 'voice-to-text',
+      provider: 'openai',
+      operationType: 'speech_to_text',
+      modelUsed: 'whisper-1',
+      cost: whisperCost,
+      apiEndpoint: '/v1/audio/transcriptions',
+      pricingModel: 'per_minute',
+      quantityUsed: Math.round(estimatedMinutes * 100) / 100,
+      unitCost: 0.006,
+    });
+
     // For pronunciation analysis, also make a verbose request if available
     let detailedResult = null;
     try {
@@ -123,6 +143,18 @@ serve(async (req) => {
 
       if (verboseResponse.ok) {
         detailedResult = await verboseResponse.json();
+        // Log second Whisper call
+        logCost(sb, {
+          sessionId: 'voice-to-text',
+          provider: 'openai',
+          operationType: 'speech_to_text_verbose',
+          modelUsed: 'whisper-1',
+          cost: whisperCost,
+          apiEndpoint: '/v1/audio/transcriptions',
+          pricingModel: 'per_minute',
+          quantityUsed: Math.round(estimatedMinutes * 100) / 100,
+          unitCost: 0.006,
+        });
       }
     } catch (error) {
       console.warn("Failed to get detailed transcription:", error);

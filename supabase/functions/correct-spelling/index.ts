@@ -1,6 +1,8 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -100,6 +102,20 @@ Deno.serve(async (req) => {
     const openAiData = await openAiResponse.json();
     const correctedText = openAiData.choices[0]?.message?.content?.trim() || text;
     
+    // Fire-and-forget cost tracking
+    const usage = openAiData.usage;
+    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    logCost(sb, {
+      sessionId: 'correct-spelling',
+      provider: 'openai',
+      operationType: 'spelling_correction',
+      modelUsed: 'gpt-4o-mini',
+      cost: estimateOpenAIChatCost('gpt-4o-mini', usage?.prompt_tokens || 50, usage?.completion_tokens || 50),
+      inputTokens: usage?.prompt_tokens || 0,
+      outputTokens: usage?.completion_tokens || 0,
+      apiEndpoint: '/v1/chat/completions',
+    });
+
     // Check if any corrections were made
     const hadErrors = correctedText !== text;
     const confidence = hadErrors ? 0.8 : 0.9;

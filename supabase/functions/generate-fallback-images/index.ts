@@ -7,6 +7,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { logCost } from "../_shared/costLogger.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -72,6 +74,20 @@ serve(async (req) => {
         index: i,
         variation: variations[i],
         base64: base64Data
+      });
+
+      // Fire-and-forget cost tracking per image
+      const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      logCost(sb, {
+        sessionId: 'generate-fallback-images',
+        provider: 'openai',
+        operationType: 'image_generation',
+        modelUsed: 'gpt-image-1',
+        cost: 0.04,
+        apiEndpoint: '/v1/images/generations',
+        pricingModel: 'per_image',
+        quantityUsed: 1,
+        unitCost: 0.04,
       });
     }
 
