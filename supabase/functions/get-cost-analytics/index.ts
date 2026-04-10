@@ -127,9 +127,10 @@ serve(async (req) => {
           providerBreakdown: todayProviderBreakdown,
           operationBreakdown: todayOperationTotals,
           storiesGenerated: todayStories,
-          isLimitExceeded: todayCost > DAILY_LIMIT,
-          dailyLimit: DAILY_LIMIT,
-          remainingBudget: Math.max(0, DAILY_LIMIT - todayCost),
+          monthCost,
+          monthBudget: MONTHLY_BUDGET,
+          monthRemaining: Math.max(0, MONTHLY_BUDGET - monthCost),
+          isMonthlyBudgetExceeded: monthCost > MONTHLY_BUDGET,
         },
         totalCostSummary: {
           totalCost: allTimeCost,
