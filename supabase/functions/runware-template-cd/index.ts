@@ -585,7 +585,7 @@ async function callRunwareAPI(positivePrompt: string, negativePrompt: string, se
         }
 
         await supabaseClient.from('cost_tracking').insert({
-          session_id: 'runware-session',
+          session_id: payload?.sessionId || 'runware-unknown',
           user_id: null,
           input_tokens: 0,
           output_tokens: 0,
@@ -697,30 +697,20 @@ async function handleRequest(req: Request) {
   let payload = await req.json();
   console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
     
-    // Convert test probe payloads to production format
+    // FIXED: Test probes return mock success WITHOUT making real API calls or logging costs
     if (payload.test === true) {
-      console.log('🔍 Runtime probe detected - converting to production payload format');
-      payload = {
-        pageText: 'Health check story text',
-        storyText: 'Health check story text',
-        primaryScene: 'A friendly scene for testing',
-        userInfo: {
-          name: 'Test User',
-          age: 8,
-          grade: '2nd',
-          avatar: {
-            type: 'child',
-            skinTone: 'light'
-          }
-        },
-        sessionId: 'health-check-session',
-        pageNumber: 1,
-        templateComplexity: 'C',
-        seed: null,
-        isGuestUser: false,
-        difficultyLevel: 'medium'
-      };
-      console.log('✅ Converted test payload to production format');
+      console.log('🔍 Runtime probe detected - returning mock success (no billable API call)');
+      return new Response(JSON.stringify({
+        success: true,
+        imageURL: 'https://placehold.co/512x512/png?text=Health+Check',
+        tier: 'TIER_2_5C',
+        source: 'health-check-mock',
+        processingTime: 0,
+        message: 'Test probe — no real image generated'
+      }), {
+        status: 200,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
+      });
     }
     
     // Detect emergency mode

@@ -48,7 +48,8 @@ export class SmartElevenLabsTTS {
           body: {
             text,
             voice_id: voiceId,
-            context
+            context,
+            session_id: `tts-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`
           }
         }),
         timeoutPromise
@@ -67,7 +68,8 @@ export class SmartElevenLabsTTS {
                 body: {
                   text,
                   voice_id: voiceId,
-                  context: 'conversation' // Use conversation context to avoid dictionary
+                  context: 'conversation',
+                  session_id: `tts-retry-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`
                 }
               }),
               timeoutPromise
