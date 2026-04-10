@@ -274,12 +274,44 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
               ))}
             </div>
             {needsUpgrade && (
-              <div className="mt-3 p-2 bg-muted rounded text-xs space-y-1">
+              <div className="mt-3 p-3 bg-muted rounded text-xs space-y-2">
                 <p className="font-medium">Recommended upgrades:</p>
-                {sim.dbStatus.level !== 'green' && <p>• Add PgBouncer for connection pooling</p>}
-                {sim.openaiStatus.level !== 'green' && <p>• Upgrade to OpenAI Tier 3+ for higher RPM</p>}
-                {sim.runwareStatus.level !== 'green' && <p>• Add generation queue for image requests</p>}
-                {sim.elevenStatus.level !== 'green' && <p>• Add TTS queue or caching layer</p>}
+                {sim.dbStatus.level !== 'green' && (
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">• {UPGRADE_COSTS.pgbouncer.label}</p>
+                      <p className="text-muted-foreground">{UPGRADE_COSTS.pgbouncer.detail}</p>
+                    </div>
+                    <span className="font-bold text-primary whitespace-nowrap ml-2">{UPGRADE_COSTS.pgbouncer.cost}</span>
+                  </div>
+                )}
+                {sim.openaiStatus.level !== 'green' && (
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">• {sim.peakRPM > 5000 ? UPGRADE_COSTS.openaiTier4.label : UPGRADE_COSTS.openaiTier3.label}</p>
+                      <p className="text-muted-foreground">{sim.peakRPM > 5000 ? UPGRADE_COSTS.openaiTier4.detail : UPGRADE_COSTS.openaiTier3.detail}</p>
+                    </div>
+                    <span className="font-bold text-primary whitespace-nowrap ml-2">{sim.peakRPM > 5000 ? UPGRADE_COSTS.openaiTier4.cost : UPGRADE_COSTS.openaiTier3.cost}</span>
+                  </div>
+                )}
+                {sim.runwareStatus.level !== 'green' && (
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">• {UPGRADE_COSTS.imageQueue.label}</p>
+                      <p className="text-muted-foreground">{UPGRADE_COSTS.imageQueue.detail}</p>
+                    </div>
+                    <span className="font-bold text-primary whitespace-nowrap ml-2">{UPGRADE_COSTS.imageQueue.cost}</span>
+                  </div>
+                )}
+                {sim.elevenStatus.level !== 'green' && (
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">• {UPGRADE_COSTS.elevenLabsScale.label}</p>
+                      <p className="text-muted-foreground">{UPGRADE_COSTS.elevenLabsScale.detail}</p>
+                    </div>
+                    <span className="font-bold text-primary whitespace-nowrap ml-2">{UPGRADE_COSTS.elevenLabsScale.cost}</span>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
