@@ -1,22 +1,17 @@
-// Enhanced Analytics Dashboard with Cost Tracking and Performance Monitoring
+// Analytics Dashboard — Cost Tracking and Usage Monitoring
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useProductionAnalytics } from '@/hooks/useProductionAnalytics';
-import { AlertTriangle, DollarSign, TrendingUp, Clock, RefreshCw, Mail, Calendar, BookOpen, Image, Mic } from 'lucide-react';
+import { AlertTriangle, DollarSign, TrendingUp, RefreshCw, Mail, Calendar, BookOpen, Mic } from 'lucide-react';
+import { ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const AnalyticsDashboard: React.FC = () => {
-  const { 
-    dashboard, 
-    refreshDashboard, 
-    getDailyCostSummary,
-    isTracking,
-    currentSession 
-  } = useProductionAnalytics();
+  const { dashboard, refreshDashboard, getDailyCostSummary } = useProductionAnalytics();
 
   const [costSummary, setCostSummary] = useState<any>(null);
   const [totalCostSummary, setTotalCostSummary] = useState<any>(null);
@@ -41,10 +36,7 @@ export const AnalyticsDashboard: React.FC = () => {
   };
 
   const handleRefresh = async () => {
-    await Promise.all([
-      refreshDashboard(),
-      loadCostData()
-    ]);
+    await Promise.all([refreshDashboard(), loadCostData()]);
   };
 
   const handleSendReport = async (emailOnly = true) => {
@@ -55,7 +47,7 @@ export const AnalyticsDashboard: React.FC = () => {
       });
       if (error) throw error;
       if (data?.success) {
-        toast.success(emailOnly ? '📧 Cost report sent to your email!' : '📊 Report generated');
+        toast.success(emailOnly ? '📧 Cost report emailed!' : '📊 Report generated');
       } else {
         toast.error(data?.error || 'Failed to generate report');
       }
@@ -86,86 +78,118 @@ export const AnalyticsDashboard: React.FC = () => {
   const monthCost = costSummary?.monthCost || 0;
   const monthPercentage = (monthCost / monthBudget) * 100;
 
-  // Extract operation breakdowns
   const todayOps = costSummary?.operationBreakdown || {};
   const allTimeOps = totalCostSummary?.operationBreakdown || {};
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">Monitor costs, performance, and usage</p>
+          <p className="text-muted-foreground">Real cost data from your Supabase cost_tracking table</p>
         </div>
         <div className="flex gap-2">
-          {isTracking && (
-            <Badge variant="default" className="animate-pulse">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-              Live Tracking
-            </Badge>
-          )}
           <Button onClick={handleRefresh} variant="outline" size="sm" className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
             Refresh
           </Button>
-          <Button 
-            onClick={() => handleSendReport(true)} 
-            variant="default" 
-            size="sm" 
-            disabled={isSendingReport}
-            className="flex items-center gap-2"
-          >
+          <Button onClick={() => handleSendReport(true)} variant="default" size="sm" disabled={isSendingReport} className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
             {isSendingReport ? 'Sending...' : 'Email Report'}
           </Button>
-          <Button 
-            onClick={() => handleSendReport(false)} 
-            variant="ghost" 
-            size="sm"
-            disabled={isSendingReport}
-            className="flex items-center gap-2"
-          >
+          <Button onClick={() => handleSendReport(false)} variant="ghost" size="sm" disabled={isSendingReport} className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             JSON
           </Button>
         </div>
       </div>
 
-      {/* All-Time Project Costs */}
+      {/* ═══════════════════ MONTHLY BUDGET ═══════════════════ */}
+      <Card className="border-2 border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-primary" />
+            Monthly Budget
+          </CardTitle>
+          <CardDescription>
+            Alert threshold: ${monthBudget}/month. Calculated from cost_tracking rows this calendar month.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-end gap-4 mb-3">
+            <div className="text-4xl font-bold text-primary">${monthCost.toFixed(2)}</div>
+            <div className="text-muted-foreground text-sm mb-1">of ${monthBudget.toFixed(0)} budget</div>
+          </div>
+          <Progress value={Math.min(monthPercentage, 100)} className="h-3" />
+          <p className="text-xs text-muted-foreground mt-2">
+            {monthPercentage >= 90 ? (
+              <span className="flex items-center text-destructive font-medium">
+                <AlertTriangle className="w-3 h-3 mr-1" />
+                ⚠️ Approaching ${monthBudget} monthly budget!
+              </span>
+            ) : (
+              `$${(monthBudget - monthCost).toFixed(2)} remaining (${(100 - monthPercentage).toFixed(1)}%)`
+            )}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* ═══════════════════ ALL-TIME COSTS ═══════════════════ */}
       {totalCostSummary && (
-        <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-xl font-bold flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-primary" />
-              All-Time Project Costs
-            </CardTitle>
-            <CardDescription>Cumulative spending across all operations since launch</CardDescription>
+            <CardTitle>All-Time Costs</CardTitle>
+            <CardDescription>Cumulative totals since project launch — every row in cost_tracking</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-primary mb-4">
+          <CardContent className="space-y-4">
+            <div className="text-3xl font-bold text-primary">
               ${totalCostSummary.totalCost.toFixed(4)}
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
+
+            {/* Provider breakdown */}
+            <div className="grid gap-3 md:grid-cols-3">
               <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg font-semibold">
-                  ${totalCostSummary.providerBreakdown?.openai?.cost?.toFixed(4) || '0.0000'}
-                </div>
-                <p className="text-xs text-muted-foreground">OpenAI</p>
+                <div className="text-lg font-semibold">${totalCostSummary.providerBreakdown?.openai?.cost?.toFixed(4) || '0.0000'}</div>
+                <p className="text-xs text-muted-foreground">OpenAI ({totalCostSummary.providerBreakdown?.openai?.requests || 0} calls)</p>
               </div>
               <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg font-semibold">
-                  ${totalCostSummary.providerBreakdown?.elevenlabs?.cost?.toFixed(4) || '0.0000'}
-                </div>
-                <p className="text-xs text-muted-foreground">ElevenLabs</p>
+                <div className="text-lg font-semibold">${totalCostSummary.providerBreakdown?.elevenlabs?.cost?.toFixed(4) || '0.0000'}</div>
+                <p className="text-xs text-muted-foreground">ElevenLabs ({totalCostSummary.providerBreakdown?.elevenlabs?.requests || 0} calls)</p>
               </div>
               <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-lg font-semibold">
-                  ${totalCostSummary.providerBreakdown?.runware?.cost?.toFixed(4) || '0.0000'}
-                </div>
-                <p className="text-xs text-muted-foreground">Runware</p>
+                <div className="text-lg font-semibold">${totalCostSummary.providerBreakdown?.runware?.cost?.toFixed(4) || '0.0000'}</div>
+                <p className="text-xs text-muted-foreground">Runware ({totalCostSummary.providerBreakdown?.runware?.requests || 0} calls)</p>
               </div>
             </div>
-            <div className="grid gap-2 md:grid-cols-2 mt-4 text-sm">
+
+            {/* Operation counts */}
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="font-bold">{allTimeOps.story_generation || 0}</div>
+                  <p className="text-xs text-muted-foreground">Stories Generated</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                <ImageIcon className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="font-bold">{allTimeOps.image_generation || 0}</div>
+                  <p className="text-xs text-muted-foreground">Images Generated</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                <Mic className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="font-bold">{allTimeOps.audio_generation || 0}</div>
+                  <p className="text-xs text-muted-foreground">Audio Generated</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Key metrics */}
+            <div className="grid gap-2 md:grid-cols-2 text-sm border-t pt-3">
               <div className="flex justify-between">
                 <span>Total API Requests:</span>
                 <span className="font-medium">{totalCostSummary.totalRequests.toLocaleString()}</span>
@@ -175,192 +199,74 @@ export const AnalyticsDashboard: React.FC = () => {
                 <span className="font-medium">${totalCostSummary.averageCostPerRequest.toFixed(6)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Cost/Story (avg):</span>
+                <span>Avg Cost/Story:</span>
                 <span className="font-medium">
-                  {totalCostSummary.totalStories > 0 
-                    ? `$${totalCostSummary.costPerStory.toFixed(4)}`
-                    : 'N/A'}
+                  ${(totalCostSummary.totalStories > 0 ? totalCostSummary.costPerStory : 0).toFixed(4)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Total Tokens:</span>
+                <span>All-Time Tokens:</span>
                 <span className="font-medium">{totalCostSummary.totalTokens.toLocaleString()}</span>
-              </div>
-            </div>
-
-            {/* All-time operation breakdown */}
-            <div className="grid gap-3 md:grid-cols-3 mt-4">
-              <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
-                <BookOpen className="h-4 w-4 text-blue-500" />
-                <div>
-                  <div className="text-sm font-semibold">{allTimeOps.story_generation || 0}</div>
-                  <p className="text-xs text-muted-foreground">Stories Generated</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
-                <Image className="h-4 w-4 text-green-500" />
-                <div>
-                  <div className="text-sm font-semibold">{allTimeOps.image_generation || 0}</div>
-                  <p className="text-xs text-muted-foreground">Images Generated</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
-                <Mic className="h-4 w-4 text-purple-500" />
-                <div>
-                  <div className="text-sm font-semibold">{allTimeOps.audio_generation || 0}</div>
-                  <p className="text-xs text-muted-foreground">Audio Generated</p>
-                </div>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Today's Costs */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Month's Cost</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${monthCost.toFixed(4)}
-            </div>
-            <Progress value={Math.min(monthPercentage, 100)} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-2">
-              {monthPercentage >= 90 ? (
-                <span className="flex items-center text-destructive">
-                  <AlertTriangle className="w-3 h-3 mr-1" />
-                  Approaching $${monthBudget} monthly budget
-                </span>
-              ) : (
-                `${(100 - monthPercentage).toFixed(1)}% remaining of $${monthBudget} monthly budget`
-              )}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Requests</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {costSummary?.totalRequests || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Avg: ${costSummary?.averageCostPerRequest?.toFixed(4) || '0.0000'}/request
-            </p>
-            <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-              <span>{todayOps.story_generation || 0} stories</span>
-              <span>{todayOps.image_generation || 0} images</span>
-              <span>{todayOps.audio_generation || 0} audio</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Session</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {currentSession ? 'Active' : 'Inactive'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {currentSession?.sessionId ? `ID: ${currentSession.sessionId.slice(-8)}` : 'No active session'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Model & Token Breakdown (Today) */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Today's Model Breakdown</CardTitle>
-            <CardDescription>Cost and requests by AI model for today</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {costSummary?.modelBreakdown && Object.keys(costSummary.modelBreakdown).length > 0 ? (
-              <div className="space-y-3">
-                {Object.entries(costSummary.modelBreakdown).map(([model, data]) => {
-                  const modelData = data as { requests: number; cost: number };
-                  return (
-                    <div key={model} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">{model}</Badge>
-                        <span className="text-sm">{modelData.requests} requests</span>
-                      </div>
-                      <div className="text-sm font-medium">
-                        ${modelData.cost.toFixed(4)}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-sm">No requests today yet</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Today's Token Usage</CardTitle>
-            <CardDescription>Input and output tokens consumed today</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-sm">Input Tokens</span>
-                <span className="font-medium">
-                  {costSummary?.totalInputTokens?.toLocaleString() || '0'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Output Tokens</span>
-                <span className="font-medium">
-                  {costSummary?.totalOutputTokens?.toLocaleString() || '0'}
-                </span>
-              </div>
-              <div className="flex justify-between border-t pt-2">
-                <span className="text-sm font-medium">Total Tokens</span>
-                <span className="font-bold">
-                  {((costSummary?.totalInputTokens || 0) + (costSummary?.totalOutputTokens || 0)).toLocaleString()}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* System Status */}
+      {/* ═══════════════════ TODAY ═══════════════════ */}
       <Card>
         <CardHeader>
-          <CardTitle>System Status</CardTitle>
-          <CardDescription>Monthly budget status</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Today ({costSummary?.date || new Date().toISOString().split('T')[0]})
+          </CardTitle>
+          <CardDescription>All cost_tracking rows with today's date</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold">
-                {costSummary?.isMonthlyBudgetExceeded ? '❌' : '✅'}
-              </div>
-              <p className="text-sm text-muted-foreground">Monthly Budget</p>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-2xl font-bold">${costSummary?.totalCost?.toFixed(4) || '0.0000'}</div>
+              <p className="text-xs text-muted-foreground">Cost Today</p>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">${costSummary?.monthRemaining?.toFixed(2) || monthBudget.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground">Remaining This Month</p>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-2xl font-bold">{costSummary?.totalRequests || 0}</div>
+              <p className="text-xs text-muted-foreground">API Calls</p>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">${monthBudget.toFixed(2)}</div>
-              <p className="text-sm text-muted-foreground">Monthly Budget</p>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-2xl font-bold">{costSummary?.totalInputTokens?.toLocaleString() || '0'}</div>
+              <p className="text-xs text-muted-foreground">Input Tokens</p>
+            </div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-2xl font-bold">{costSummary?.totalOutputTokens?.toLocaleString() || '0'}</div>
+              <p className="text-xs text-muted-foreground">Output Tokens</p>
             </div>
           </div>
+
+          {/* Today's operation breakdown */}
+          <div className="flex gap-4 text-sm">
+            <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" /> {todayOps.story_generation || 0} stories</span>
+            <span className="flex items-center gap-1"><ImageIcon className="h-3 w-3" /> {todayOps.image_generation || 0} images</span>
+            <span className="flex items-center gap-1"><Mic className="h-3 w-3" /> {todayOps.audio_generation || 0} audio</span>
+          </div>
+
+          {/* Today's model breakdown */}
+          {costSummary?.modelBreakdown && Object.keys(costSummary.modelBreakdown).length > 0 && (
+            <div className="space-y-2 border-t pt-3">
+              <p className="text-sm font-medium">By Model:</p>
+              {Object.entries(costSummary.modelBreakdown).map(([model, data]) => {
+                const d = data as { requests: number; cost: number };
+                return (
+                  <div key={model} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">{model}</Badge>
+                      <span className="text-muted-foreground">{d.requests} calls</span>
+                    </div>
+                    <span className="font-medium">${d.cost.toFixed(4)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
