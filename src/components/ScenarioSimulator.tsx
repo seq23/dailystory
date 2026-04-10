@@ -138,7 +138,12 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
         <CardContent className="space-y-6">
           {/* User count presets */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Total Monthly Users: <span className="text-primary font-bold">{totalUsers.toLocaleString()}</span></label>
+            <label className="text-sm font-medium mb-2 block">
+              Total Monthly Users: <span className="text-primary font-bold">{totalUsers.toLocaleString()}</span>
+              <span className="ml-3 text-muted-foreground font-normal">
+                (~${(sim.totalMonthlyCost / Math.max(totalUsers, 1)).toFixed(2)}/user)
+              </span>
+            </label>
             <div className="flex gap-2 flex-wrap">
               {USER_PRESETS.map(n => (
                 <button
