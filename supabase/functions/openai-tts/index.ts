@@ -90,6 +90,23 @@ serve(async (req) => {
     const audioBuffer = await response.arrayBuffer()
     console.log(`TTS Success: Generated ${audioBuffer.byteLength} bytes of audio`)
     
+    // Fire-and-forget cost tracking
+    // OpenAI TTS pricing: ~$15/1M chars for tts-1-hd
+    const charCount = text?.length || 0;
+    const ttsCost = (charCount / 1_000_000) * 15;
+    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    logCost(sb, {
+      sessionId: 'openai-tts',
+      provider: 'openai',
+      operationType: 'tts',
+      modelUsed: 'tts-1-hd',
+      cost: ttsCost,
+      apiEndpoint: '/v1/audio/speech',
+      pricingModel: 'per_character',
+      quantityUsed: charCount,
+      unitCost: 0.000015,
+    });
+
     // Convert audio buffer to base64 safely to avoid stack overflow
     const uint8Array = new Uint8Array(audioBuffer)
     const chunks = []
