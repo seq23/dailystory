@@ -151,9 +151,11 @@ serve(async (req) => {
     };
 
     // Send email if requested
+    console.log(`Email send check: sendEmail=${sendEmail}, hasResendKey=${!!resendKey}, adminEmail=${adminEmail}`);
     if (sendEmail && resendKey && adminEmail) {
       const emailHtml = buildReportEmail(report);
 
+      console.log('Sending email via Resend...');
       const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -167,6 +169,9 @@ serve(async (req) => {
           html: emailHtml,
         }),
       });
+
+      const emailBody = await emailRes.text();
+      console.log(`Resend response: status=${emailRes.status}, body=${emailBody}`);
 
       if (emailRes.ok) {
         logCost(sb, {
