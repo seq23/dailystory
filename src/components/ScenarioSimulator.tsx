@@ -291,10 +291,15 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
                 <span>${sim.imageCost.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="flex items-center gap-1"><Mic className="h-3 w-3" /> Audio ({sim.totalAudio.toLocaleString()})</span>
+                <span className="flex items-center gap-1"><Mic className="h-3 w-3" /> Audio ({sim.totalAudioBillable.toLocaleString()} billable)</span>
                 <span>${sim.audioCost.toFixed(2)}</span>
               </div>
-            </div>
+              {sim.cacheSavings > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span className="flex items-center gap-1 text-xs"><Info className="h-3 w-3" /> Cache savings ({Math.round(sim.cacheHitRate * 100)}% hit rate, {sim.totalAudioCached.toLocaleString()} cached)</span>
+                  <span className="text-xs">-${sim.cacheSavings.toFixed(2)}</span>
+                </div>
+              )}
             {sim.totalMonthlyCost > 100 && (
               <p className="text-xs text-destructive mt-2 flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" /> Exceeds $100 alert threshold
@@ -363,10 +368,10 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
                 {sim.elevenStatus.level !== 'green' && (
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-medium">• {UPGRADE_COSTS.elevenLabsScale.label}</p>
-                      <p className="text-muted-foreground">{UPGRADE_COSTS.elevenLabsScale.detail}</p>
+                      <p className="font-medium">• {sim.peakAudioRPM > 200 ? UPGRADE_COSTS.elevenLabsScale.label : UPGRADE_COSTS.elevenLabsPro.label}</p>
+                      <p className="text-muted-foreground">{sim.peakAudioRPM > 200 ? UPGRADE_COSTS.elevenLabsScale.detail : UPGRADE_COSTS.elevenLabsPro.detail}</p>
                     </div>
-                    <span className="font-bold text-primary whitespace-nowrap ml-2">{UPGRADE_COSTS.elevenLabsScale.cost}</span>
+                    <span className="font-bold text-primary whitespace-nowrap ml-2">{sim.peakAudioRPM > 200 ? UPGRADE_COSTS.elevenLabsScale.cost : UPGRADE_COSTS.elevenLabsPro.cost}</span>
                   </div>
                 )}
               </div>
@@ -471,6 +476,13 @@ export const ScenarioSimulator: React.FC<ScenarioSimulatorProps> = ({ costPerUni
           <p className="text-xs text-muted-foreground mt-3">
             Unit costs from your real data: story=${costPerUnit.story.toFixed(4)}, image=${costPerUnit.image.toFixed(4)}, audio=${costPerUnit.audio.toFixed(4)}
           </p>
+          <div className="mt-3 p-3 rounded-lg bg-muted/50 border text-xs space-y-1">
+            <p className="font-medium text-sm flex items-center gap-1"><Info className="h-3 w-3" /> TTS Cost Optimization Log</p>
+            <p className="text-muted-foreground">• <b>Apr 10, 2026:</b> Switched to ElevenLabs Flash v2.5 ($0.11/1K chars, was $0.22 Turbo) — 50% per-call reduction</p>
+            <p className="text-muted-foreground">• <b>Apr 10, 2026:</b> Deployed persistent audio cache (Supabase Storage) — repeat reads cost $0 API fees</p>
+            <p className="text-muted-foreground">• <b>Apr 10, 2026:</b> Added optimize_streaming_latency=3 — ~10-20% compute overhead reduction</p>
+            <p className="text-muted-foreground">• Audio cost projections above include estimated cache hit rate ({Math.round(estimateCacheHitRate(100) * 100)}% at 100 users → {Math.round(estimateCacheHitRate(10000) * 100)}% at 10K users)</p>
+          </div>
         </CardContent>
       </Card>
     </div>
