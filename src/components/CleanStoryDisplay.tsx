@@ -4256,7 +4256,7 @@ const handleRestartTimer = () => {
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image - Dynamic aspect ratio to prevent whitespace */}
-                  {currentImage ? (
+                  {displayImage ? (
                     imagesEnabled ? (
                       <AspectRatio 
                         ratio={imageAspectRatios[currentPage] || 4/3} 
@@ -4276,7 +4276,7 @@ const handleRestartTimer = () => {
                           </div>
                         )}
                         <ImageWithFallback
-                          src={currentImage}
+                          src={displayImage}
           alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
                           className="w-full h-full object-contain rounded-lg"
                           containerClassName="bg-gradient-to-br from-muted/10 to-muted/30"
@@ -4284,6 +4284,12 @@ const handleRestartTimer = () => {
                           onLoadingChange={handleImageLoadingChange}
                           onFallbackUsed={handleImageFallbackUsed}
                         />
+                        {/* Subtle loading overlay when current page's image is still being prepared */}
+                        {!currentImage && (isGeneratingImage || isPreparingImage || imageLoadingStates[currentPage]) && (
+                          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 backdrop-blur-[2px] pointer-events-none">
+                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                          </div>
+                        )}
                       </AspectRatio>
                     ) : (
                       <div className="relative w-full h-[120px] rounded-2xl overflow-hidden shadow-md bg-muted/20">
