@@ -52,6 +52,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   isPremium = false,
   language = "en",
   onUpgrade,
+  autoIntroduce = true,
 }) => {
   const { t } = useTranslation();
   // Reading coach now works for ALL languages - no restrictions!
