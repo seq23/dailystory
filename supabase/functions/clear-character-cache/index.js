@@ -17,10 +17,11 @@ async function clearCharacterCache() {
   const supabase = createClient(supabaseUrl, supabaseKey);
   
   // Clear character consistency cache table
+  // Note: this table has no `id` column — PK is (session_id, character_key)
   const { error } = await supabase
     .from('character_consistency_cache')
     .delete()
-    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+    .neq('session_id', '__never_matches__'); // Delete all records
   
   if (error) throw error;
   
