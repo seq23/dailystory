@@ -272,11 +272,21 @@ export class SessionCacheManager {
   private static clearCharacterState(userId?: string, sessionId?: string, avatarType?: string): void {
     try {
       // Clear character state from localStorage
-      // IMPORTANT: never wipe guest session-state keys (guest.active, guest.userInfo, guest.timer.*)
-      // — those are required for refresh-resume. They are NOT character state.
-      const isGuestSessionStateKey = (k: string) => k.startsWith('guest.');
+      // IMPORTANT: never wipe these protected keys — they are required for
+      // refresh-resume and progress tracking, NOT character state:
+      //  - guest.*           (guest session state: active flag, user info, timer)
+      //  - gamification_*    (premium progress towers data: words/pages/vocab/time)
+      //  - progressTowers*   (UI toggle for progress towers)
+      //  - readingTimer*     (timer enabled flag)
+      //  - premium.timer.*   (premium timer end-timestamps; lives in sessionStorage but defensive)
+      const isProtectedKey = (k: string) =>
+        k.startsWith('guest.') ||
+        k.startsWith('gamification_') ||
+        k.startsWith('progressTowers') ||
+        k.startsWith('readingTimer') ||
+        k.startsWith('premium.timer.');
       const characterKeys = Object.keys(localStorage).filter(key => {
-        if (isGuestSessionStateKey(key)) return false;
+        if (isProtectedKey(key)) return false;
         return (
           key.includes(this.CHARACTER_STATE_KEY) ||
           key.includes('character_') ||
