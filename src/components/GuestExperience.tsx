@@ -233,15 +233,15 @@ const handleBackToWelcome = () => {
             onNewStory={() => setCurrentState("form")}
             isPremium={false}
 onSessionEnded={async (stats) => {
-  // Clear ALL session caches comprehensively
+  // Clear guest session state FIRST so refresh can't auto-resume
+  try { guestSession.clearAll(); } catch {}
+  try { StorySessionCache.clearCachedSession('guest'); } catch {}
+  // Then clear ALL session caches comprehensively
   try {
     const { SessionCacheManager } = await import('@/services/SessionCacheManager');
     SessionCacheManager.clearOnSessionEnd('guest', userInfo?.avatar?.type);
   } catch (error) {
     DebugLogger.warn('performance', 'Failed to clear session caches, using fallback', error);
-    // Fallback clearing
-    try { guestSession.clearAll(); } catch {}
-    try { StorySessionCache.clearCachedSession('guest'); } catch {}
   }
   window.location.href = `/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium: false}))}`
 }}
