@@ -3962,6 +3962,13 @@ const handleRestartTimer = () => {
   // Get difficulty-based text configuration optimized for each reading level
   // ANTI-FLICKER FIX: Respect imagesEnabled state to prevent flash during toggle/navigation
   const currentImage = imagesEnabled ? pageImages[currentPage] : IMAGES_DISABLED_PLACEHOLDER;
+  // ANTI-FLICKER FIX (Gate B1.2): when navigating to a page whose image hasn't loaded yet,
+  // keep an adjacent page's image visible instead of unmounting to a loader spinner.
+  // Eliminates the white-flash/spinner flicker during page transitions on premium
+  // (page-by-page generation) AND smooths any cache-miss for guests.
+  const displayImage = currentImage || (imagesEnabled
+    ? (pageImages[Math.max(0, currentPage - 1)] || pageImages[currentPage + 1])
+    : undefined);
   const hasCurrentImage = !!currentImage;
   
   // 🔍 ENHANCED IMAGE DEBUGGING: Track what image is actually being displayed
@@ -4249,7 +4256,7 @@ const handleRestartTimer = () => {
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image - Dynamic aspect ratio to prevent whitespace */}
-                  {currentImage ? (
+                  {displayImage ? (
                     imagesEnabled ? (
                       <AspectRatio 
                         ratio={imageAspectRatios[currentPage] || 4/3} 
@@ -4269,7 +4276,7 @@ const handleRestartTimer = () => {
                           </div>
                         )}
                         <ImageWithFallback
-                          src={currentImage}
+                          src={displayImage}
           alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
                           className="w-full h-full object-contain rounded-lg"
                           containerClassName="bg-gradient-to-br from-muted/10 to-muted/30"
@@ -4277,6 +4284,12 @@ const handleRestartTimer = () => {
                           onLoadingChange={handleImageLoadingChange}
                           onFallbackUsed={handleImageFallbackUsed}
                         />
+                        {/* Subtle loading overlay when current page's image is still being prepared */}
+                        {!currentImage && (isGeneratingImage || isPreparingImage || imageLoadingStates[currentPage]) && (
+                          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 backdrop-blur-[2px] pointer-events-none">
+                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                          </div>
+                        )}
                       </AspectRatio>
                     ) : (
                       <div className="relative w-full h-[120px] rounded-2xl overflow-hidden shadow-md bg-muted/20">
@@ -4374,16 +4387,24 @@ const handleRestartTimer = () => {
                             {batchDone}/{batchTotal}
                           </div>
                         )}
-                        {currentImage ? (
-          <ImageWithFallback
-            src={currentImage} 
-            alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
-            fallbackText={`📖 Page ${currentPage + 1}`}
-            onLoadingChange={handleImageLoadingChange}
-            onFallbackUsed={handleImageFallbackUsed}
-            smartObjectFit={true}
-            containerHeight={dynamicHeight}
-          />
+                        {displayImage ? (
+                          <div className="relative w-full h-full">
+                            <ImageWithFallback
+                              src={displayImage}
+                              alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
+                              fallbackText={`📖 Page ${currentPage + 1}`}
+                              onLoadingChange={handleImageLoadingChange}
+                              onFallbackUsed={handleImageFallbackUsed}
+                              smartObjectFit={true}
+                              containerHeight={dynamicHeight}
+                            />
+                            {/* Subtle loading overlay when current page's image is still being prepared */}
+                            {!currentImage && (isGeneratingImage || isPreparingImage || imageLoadingStates[currentPage]) && (
+                              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 backdrop-blur-[2px] pointer-events-none">
+                                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                              </div>
+                            )}
+                          </div>
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <ImageMixingLoading />
