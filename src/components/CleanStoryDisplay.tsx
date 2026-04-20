@@ -4445,6 +4445,34 @@ const handleRestartTimer = () => {
                 </div>
               </div>
 
+              {/* Gate C1: Secondary navigation controls below story text — bigger, more prominent */}
+              <div className="mt-4 mb-6 px-2">
+                <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm shadow-sm py-3 px-4 [&_.navigation-button]:!h-12 [&_.navigation-button]:!text-base [&_.navigation-button]:!px-5 [&_.navigation-button]:!font-semibold">
+                  <StoryNavigationControls
+                    currentPage={currentPage}
+                    totalPages={displayedStory.length}
+                    isPremium={isPremium}
+                    isLoadingNextPage={isLoadingNextPage}
+                    isGeneratingNewStory={isGeneratingNewStory}
+                    canGoNext={!controlsBlocked && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked}
+                    canGoPrevious={currentPage > 0 && !controlsBlocked}
+                    onNext={handleNext}
+                    onPrevious={handlePrevious}
+                    onGenerateNext={handleGenerateNextPageAndAdvance}
+                    onGenerateNewStory={() => handleGenerateNewStory()}
+                    audioEngineRef={audioEngineRef}
+                    isAudioPlaying={isAudioPlaying}
+                    isAudioLoading={isAudioLoading}
+                    audioDisabled={!isPremium && audioPlayedPage === currentPage && !isAudioPlaying}
+                    currentStoryText={currentStoryText || ""}
+                    userInfo={userInfo}
+                    audioPlayedPage={audioPlayedPage ?? -1}
+                    onAudioStateChange={handleAudioStateChangeDual}
+                    onAudioPlayed={handleAudioPlayed}
+                    onUpgrade={onUpgrade}
+                  />
+                </div>
+              </div>
               {/* Ending burst/glow overlay after final page generation */}
               {showEndingBurst && (
                 <div className="fixed inset-0 z-50 pointer-events-none">
