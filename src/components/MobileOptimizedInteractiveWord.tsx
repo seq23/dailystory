@@ -271,19 +271,36 @@ if (props.forceModal || isMobileOrTablet) {
         <span
           onClick={handleClick}
           onTouchStart={(e) => {
-            // CRITICAL FIX: Enhanced touch handling - prevent conflicts with long-press
-            e.stopPropagation();
-            if (!shouldBeInteractive || isDebouncing) return;
-            // Only trigger modal if not a long-press (handled by PremiumHoverController)
-            setTimeout(() => {
-              if (!e.defaultPrevented) {
-                handleClick();
+            // Gate C2: Track touch position to distinguish tap vs scroll
+            const t = e.touches[0];
+            if (t) {
+              (e.currentTarget as any).__touchStartX = t.clientX;
+              (e.currentTarget as any).__touchStartY = t.clientY;
+              (e.currentTarget as any).__touchMoved = false;
+            }
+          }}
+          onTouchMove={(e) => {
+            const t = e.touches[0];
+            const sx = (e.currentTarget as any).__touchStartX;
+            const sy = (e.currentTarget as any).__touchStartY;
+            if (t && typeof sx === 'number' && typeof sy === 'number') {
+              const dx = Math.abs(t.clientX - sx);
+              const dy = Math.abs(t.clientY - sy);
+              // 10px threshold = scroll, not a tap
+              if (dx > 10 || dy > 10) {
+                (e.currentTarget as any).__touchMoved = true;
               }
-            }, 50); // Small delay to let long-press handler potentially prevent this
+            }
           }}
           onTouchEnd={(e) => {
-            // Prevent click event after touch
-            e.preventDefault();
+            const moved = (e.currentTarget as any).__touchMoved;
+            // If user scrolled (moved >10px), don't treat as tap → don't open modal
+            if (moved) {
+              e.preventDefault();
+              return;
+            }
+            // Allow native click event to fire (handles modal open via onClick)
+            // Do NOT call handleClick() here — onClick already does it.
           }}
           onMouseEnter={() => {
             if (!shouldBeInteractive || isMobileOrTablet) return; // CRITICAL FIX: Block hover on mobile
