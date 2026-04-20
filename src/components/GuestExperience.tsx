@@ -96,24 +96,39 @@ useEffect(() => {
 
   // Auto-resume guest session if active and timer not expired
   try {
-    if (guestSession.isActive()) {
-      const endTs = guestSession.getTimerEndTs();
-      const now = Date.now();
+    const active = guestSession.isActive();
+    const endTs = guestSession.getTimerEndTs();
+    const info = guestSession.getUserInfo();
+    const now = Date.now();
+    console.log('[GUEST RESUME] check', {
+      active,
+      endTs,
+      hasInfo: !!info,
+      now,
+      remainingMs: endTs ? endTs - now : null,
+      enableResume,
+    });
+    if (active) {
       if (endTs && endTs > now) {
-        const info = guestSession.getUserInfo();
         if (info) {
+          console.log('[GUEST RESUME] resuming reading state');
           setUserInfo(info);
           setCurrentState("reading");
           try { localStorage.setItem('readingTimerEnabled','1'); } catch {}
           try { window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: true })); } catch {}
           return;
         }
+        console.log('[GUEST RESUME] missing user info -> not resuming');
+      } else {
+        console.log('[GUEST RESUME] timer missing/expired -> clearing');
       }
       // Expired or invalid -> clear
       guestSession.clearAll();
       StorySessionCache.clearCachedSession('guest');
     }
-  } catch {}
+  } catch (err) {
+    console.warn('[GUEST RESUME] error', err);
+  }
 }, []);
 
   // Ensure reading timer is always enabled for guest sessions
