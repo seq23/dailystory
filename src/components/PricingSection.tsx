@@ -219,7 +219,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 <CardDescription>Speech‑to‑text feedback — Premium</CardDescription>
               </CardHeader>
               <CardContent>
-                <ReadAloudCoach />
+                <ReadAloudCoach autoIntroduce={false} />
               </CardContent>
             </Card>
           </div>
