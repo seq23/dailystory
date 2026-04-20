@@ -50,6 +50,9 @@ export const CollapsibleFloatingTimer = ({
   const [showChoice, setShowChoice] = useState(false);
   const [expiredAcknowledged, setExpiredAcknowledged] = useState(false); // Prevent re-trigger loop at 0s
   const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false); // Confirmation for guest users ending session
+  // Two-tap confirm state for the new top-right "End Session" pill (guest only)
+  const [endConfirmArmed, setEndConfirmArmed] = useState(false);
+  const endConfirmTimerRef = useRef<string | null>(null);
   // Celebration sound mute preference
   const [muted, setMuted] = useState<boolean>(() => {
     try { return localStorage.getItem('celebrationMuted') === '1'; } catch { return false; }
