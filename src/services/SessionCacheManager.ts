@@ -272,12 +272,18 @@ export class SessionCacheManager {
   private static clearCharacterState(userId?: string, sessionId?: string, avatarType?: string): void {
     try {
       // Clear character state from localStorage
-      const characterKeys = Object.keys(localStorage).filter(key => 
-        key.includes(this.CHARACTER_STATE_KEY) ||
-        key.includes('character_') ||
-        (sessionId && key.includes(sessionId)) ||
-        (userId && key.includes(userId))
-      );
+      // IMPORTANT: never wipe guest session-state keys (guest.active, guest.userInfo, guest.timer.*)
+      // — those are required for refresh-resume. They are NOT character state.
+      const isGuestSessionStateKey = (k: string) => k.startsWith('guest.');
+      const characterKeys = Object.keys(localStorage).filter(key => {
+        if (isGuestSessionStateKey(key)) return false;
+        return (
+          key.includes(this.CHARACTER_STATE_KEY) ||
+          key.includes('character_') ||
+          (sessionId && key.includes(sessionId)) ||
+          (userId && key.includes(userId))
+        );
+      });
 
       characterKeys.forEach(key => {
         localStorage.removeItem(key);
