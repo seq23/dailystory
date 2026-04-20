@@ -19,6 +19,8 @@ interface ReadAloudCoachProps {
   isPremium?: boolean;
   language?: string; // ISO code; coach shows only for 'en'
   onUpgrade?: () => void;
+  /** When false, skip the spoken intro on mount (e.g. marketing previews). Defaults to true. */
+  autoIntroduce?: boolean;
 }
 
 function blobToBase64(blob: Blob): Promise<string> {
