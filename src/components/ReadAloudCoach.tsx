@@ -81,9 +81,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const [dailyUsed, setDailyUsed] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
   
-  // NEW: Charlotte readiness and syllable display states
-  const [charlotteReady, setCharlotteReady] = useState(false);
-  const [charlotteIntroducing, setCharlotteIntroducing] = useState(true);
+  // NEW: Charlotte readiness and syllable display states.
+  // When autoIntroduce is false (e.g. marketing previews), mark coach as ready
+  // immediately and skip the "introducing" speaking state so no audio plays on mount.
+  const [charlotteReady, setCharlotteReady] = useState(!autoIntroduce);
+  const [charlotteIntroducing, setCharlotteIntroducing] = useState(autoIntroduce);
   const [wordSyllables, setWordSyllables] = useState<Record<string, string>>({});
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
