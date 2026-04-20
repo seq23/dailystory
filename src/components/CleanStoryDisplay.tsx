@@ -4928,6 +4928,7 @@ const handleRestartTimer = () => {
         isGenerating={isGeneratingNewStory}
         mode="refresh"
       />
+      {isPremium && (
       <ModernProgressTowers
         userId={userInfo?.name}
         userType={isPremium ? 'premium' : 'free'}

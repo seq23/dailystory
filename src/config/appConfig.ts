@@ -104,8 +104,8 @@ export const APP_CONFIG: AppConfig = {
       enabled: true
     },
     resumeOnRefresh: {
-      premium: false,
-      guest: false,
+      premium: true,
+      guest: true,
       allowUrlOverride: true
     },
     authorVoice: {
