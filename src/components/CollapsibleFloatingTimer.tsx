@@ -462,7 +462,8 @@ useEffect(() => {
             </Tooltip>
           )}
 
-           {/* X Button - Dismiss timer for premium, end session for guests */}
+           {/* X Button - Premium only: dismiss timer. Guests use top-right "End Session" pill instead. */}
+           {isPremium && (
            <Tooltip open={isMobileOrTablet ? mobileTooltip === 'dismiss' : undefined}>
              <TooltipTrigger asChild>
                <Button
@@ -473,25 +474,21 @@ useEffect(() => {
                       setMobileTooltip('dismiss');
                         ManagedTimers.setTimeout(() => setMobileTooltip(''), 3000, 'CollapsibleFloatingTimer');
                     }
-                    if (isPremium) {
-                      onKeepReadingUntimed?.();
-                      onDismiss?.();
-                    } else {
-                      // Show confirmation for guest users
-                      setShowEndSessionConfirm(true);
-                    }
+                    onKeepReadingUntimed?.();
+                    onDismiss?.();
                   }}
                  className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm border-2 border-red-500 text-red-500 hover:bg-red-50 hover:border-red-600"
-                aria-label={isPremium ? t("floatingTimer.dismissTimer", "Dismiss timer for unlimited reading") : t("floatingTimer.endSession", "End Reading Session")}
+                aria-label={t("floatingTimer.dismissTimer", "Dismiss timer for unlimited reading")}
                 id="timer-dismiss-x-button"
               >
                 <X className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              {isPremium ? t("floatingTimer.dismissNowHint", "Dismiss timer for unlimited reading") : t("floatingTimer.endNowHint", "End session now")}
+              {t("floatingTimer.dismissNowHint", "Dismiss timer for unlimited reading")}
             </TooltipContent>
           </Tooltip>
+          )}
 
            {/* Collapse Button */}
            <Tooltip open={isMobileOrTablet ? mobileTooltip === 'collapse' : undefined}>
