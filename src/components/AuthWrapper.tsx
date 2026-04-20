@@ -44,8 +44,11 @@ export const AuthWrapper = () => {
       // Clear caches when auth state changes
       EnhancedSubscriptionManager.clearCache();
       
-      // Clear all caches and session data when signing out
-      if (!session?.user) {
+      // Clear all caches and session data ONLY on actual sign-out.
+      // (Previously cleared on every "no user" event including INITIAL_SESSION,
+      // which wiped the guest sessionStorage on every page load and broke
+      // guest refresh-resume — Gate B2 fix.)
+      if (event === 'SIGNED_OUT') {
         localStorage.removeItem('story-session-data');
         sessionStorage.clear();
       }
