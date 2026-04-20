@@ -149,7 +149,13 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   useEffect(() => {
     loadDailyCount();
-    
+
+    // Skip the spoken intro entirely when the coach is rendered as a preview
+    // (e.g. on /pricing). It should only auto-speak inside an actual reading session.
+    if (!autoIntroduce) {
+      return;
+    }
+
     // NEW: Smart coach introduction with proper timing control
     const introduceCoach = async () => {
       try {
@@ -190,7 +196,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     };
     
     introduceCoach();
-  }, [loadDailyCount, userInfo?.nativeLanguage, t]);
+  }, [loadDailyCount, userInfo?.nativeLanguage, t, autoIntroduce]);
 
   useEffect(() => () => mediaRecorderRef.current?.stop(), []);
 
