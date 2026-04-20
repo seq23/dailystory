@@ -4387,16 +4387,24 @@ const handleRestartTimer = () => {
                             {batchDone}/{batchTotal}
                           </div>
                         )}
-                        {currentImage ? (
-          <ImageWithFallback
-            src={currentImage} 
-            alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
-            fallbackText={`📖 Page ${currentPage + 1}`}
-            onLoadingChange={handleImageLoadingChange}
-            onFallbackUsed={handleImageFallbackUsed}
-            smartObjectFit={true}
-            containerHeight={dynamicHeight}
-          />
+                        {displayImage ? (
+                          <div className="relative w-full h-full">
+                            <ImageWithFallback
+                              src={displayImage}
+                              alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
+                              fallbackText={`📖 Page ${currentPage + 1}`}
+                              onLoadingChange={handleImageLoadingChange}
+                              onFallbackUsed={handleImageFallbackUsed}
+                              smartObjectFit={true}
+                              containerHeight={dynamicHeight}
+                            />
+                            {/* Subtle loading overlay when current page's image is still being prepared */}
+                            {!currentImage && (isGeneratingImage || isPreparingImage || imageLoadingStates[currentPage]) && (
+                              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 backdrop-blur-[2px] pointer-events-none">
+                                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                              </div>
+                            )}
+                          </div>
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <ImageMixingLoading />
