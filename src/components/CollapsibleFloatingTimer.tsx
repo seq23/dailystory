@@ -288,6 +288,14 @@ useEffect(() => {
             onClick={() => {
               if (!endConfirmArmed) {
                 setEndConfirmArmed(true);
+                // Subtle haptic feedback on supported mobile devices
+                try {
+                  if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+                    navigator.vibrate(15);
+                  }
+                } catch {
+                  // Silently ignore if vibration API is unavailable or blocked
+                }
                 if (endConfirmTimerRef.current) ManagedTimers.clearTimer(endConfirmTimerRef.current);
                 endConfirmTimerRef.current = ManagedTimers.setTimeout(
                   () => setEndConfirmArmed(false),
