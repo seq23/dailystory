@@ -106,7 +106,10 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
     if (difficultyLevel <= 2) {
       return true; // Underline all words for easier levels
     } else {
-      return cleanWord.length >= 7; // Only 7+ letter words for harder levels
+      // GATE E: Underline 7+ letter words OR any rare word (deterministic)
+      // Catches short-but-rare words like "piqued", "wry", "deft" that the
+      // length heuristic misses for advanced/independent readers.
+      return cleanWord.length >= 7 || isRareWord(cleanWord);
     }
   }, [cleanWord, props.userInfo?.name, difficultyLevel]);
 
