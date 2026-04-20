@@ -100,21 +100,21 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
   };
 
   return (
-    <div className="story-navigation-controls flex items-center justify-between w-full">
+    <div className="story-navigation-controls flex items-center justify-between w-full gap-2">
       {/* Previous Button */}
       <Button
         onClick={handlePrevious}
         disabled={!canGoPrevious}
-        variant="ghost"
-        size="sm"
-        className="navigation-button"
+        variant="outline"
+        size="default"
+        className="navigation-button h-11 px-4 font-semibold"
       >
-        <ChevronLeft className="w-4 h-4 mr-2" />
+        <ChevronLeft className="w-5 h-5 mr-1" />
         Previous
       </Button>
 
       {/* Center Controls with Audio Buttons */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         {/* Read to Me Button - Left of page numbers - Guest Users Only */}
         {!isPremium && audioEngineRef && onAudioStateChange && onAudioPlayed && (
           <div className="xl:flex hidden">
@@ -135,7 +135,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         )}
         
         {/* Page Indicator */}
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
           Page {currentPage + 1} of {totalPages}
         </span>
         
@@ -173,9 +173,9 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         <Button
           onClick={handleNext}
           disabled={!canGoNext || isLoadingNextPage}
-          variant="ghost"
-          size="sm"
-          className="navigation-button"
+          variant="outline"
+          size="default"
+          className="navigation-button h-11 px-4 font-semibold"
         >
           {isLoadingNextPage ? (
             <>
@@ -185,7 +185,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
           ) : (
             <>
               Next
-              <ChevronRight className="w-4 h-4 ml-2" />
+              <ChevronRight className="w-5 h-5 ml-1" />
             </>
           )}
         </Button>

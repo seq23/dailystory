@@ -640,10 +640,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setIsLoading(false);
         setIsStoryStable(true);
         
-        // Show touch device instruction after saved story loads
-        ManagedTimers.setTimeout(() => {
-          showLongPressInstruction();
-        }, 1000, 'CleanStoryDisplay');
+        // Long-press instruction removed (Gate A3) — buttons now respond to single tap
         return; // Exit early - don't proceed with live generation logic
       }
       
@@ -1027,7 +1024,7 @@ useEffect(() => {
     DebugLogger.log('image', 'Story stabilized - checking for image generation opportunities', {
       pageCount: story.length,
       currentPage: currentPage,
-        sessionId: characterSessionIdValue,
+        sessionId: stableSessionId,
       contentHash: event.detail?.contentHash,
       layout: layout,
       isStoryStable: isStoryStable,
@@ -1089,7 +1086,7 @@ useEffect(() => {
   
   window.addEventListener('story:stabilized', handleStoryStabilized as EventListener);
   return () => window.removeEventListener('story:stabilized', handleStoryStabilized as EventListener);
-}, [story, currentPage, pageImages, isNetworkAvailable, userInfo, storyTitle, characterSessionIdValue, isPremium]);
+}, [story, currentPage, pageImages, isNetworkAvailable, userInfo, storyTitle, stableSessionId, isPremium]);
 
 // Voice command bridge moved below after currentStory/contentHash are defined
 
@@ -1173,14 +1170,7 @@ useEffect(() => {
     }
   }, [isStoryStable, story.length, isTimerRunning, isTimerCanceled, userPausedTimer, timerEnabled]);
 
-  // CRITICAL: Show long-press instruction immediately when story is stable on mobile/tablet
-  useEffect(() => {
-    if (isStoryStable && story.length > 0 && (isMobileOrTablet || hasTouchCapability)) {
-      DebugLogger.log('ui', 'Story stable - showing long-press instruction for mobile/tablet users');
-      // Immediate notification trigger for all mobile/tablet users
-      showLongPressInstruction();
-    }
-  }, [isStoryStable, story.length, isMobileOrTablet, hasTouchCapability, showLongPressInstruction]);
+  // Long-press instruction removed (Gate A3) — single-tap is now the dismiss action on dialogs/buttons
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -2219,7 +2209,7 @@ const initializeStory = async () => {
       // Initialize character context directly
       try {
         const storyState = StoryVisualStateManager.getOrCreateStoryState(
-          characterSessionIdValue,
+          stableSessionId,
           processedPages.length,
           'new',
           false,
@@ -2307,7 +2297,7 @@ const initializeStory = async () => {
             totalPages: processedPages.length,
             isStoryComplete: true,
             userInfo,
-            sessionId: characterSessionId
+            sessionId: stableSessionId
           }
         });
         window.dispatchEvent(stableEvent);
@@ -2350,22 +2340,14 @@ const initializeStory = async () => {
         // Debounced stability to prevent flickering
       setIsStoryStable(true);
       DebugLogger.log('story', 'PHASE 6: Story is now stable and locked - timer can start, images can generate');
-        
-        // Show touch device instruction after story loads
-        ManagedTimers.setTimeout(() => {
-          showLongPressInstruction();
-        }, 1000, 'CleanStoryDisplay');
+        // Long-press instruction removed (Gate A3)
       }, storyRemaining);
     } else {
       setIsLoading(false);
       // Debounced stability to prevent flickering
         setIsStoryStable(true);
         DebugLogger.log('story', 'PHASE 6: Story is now stable and locked - timer can start, images can generate');
-        
-        // Show touch device instruction after story loads
-        ManagedTimers.setTimeout(() => {
-          showLongPressInstruction();
-        }, 1000, 'CleanStoryDisplay');
+        // Long-press instruction removed (Gate A3)
     }
   }
 };
@@ -2604,7 +2586,7 @@ const initializeStory = async () => {
         avatar: safeUserInfo.avatar,
         difficultyLevel: safeUserInfo.difficultyLevel
       },
-      sessionId: characterSessionIdValue,
+      sessionId: stableSessionId,
       timestamp: new Date().toISOString()
     });
     
@@ -4463,6 +4445,34 @@ const handleRestartTimer = () => {
                 </div>
               </div>
 
+              {/* Gate C1: Secondary navigation controls below story text — bigger, more prominent */}
+              <div className="mt-4 mb-6 px-2">
+                <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm shadow-sm py-3 px-4 [&_.navigation-button]:!h-12 [&_.navigation-button]:!text-base [&_.navigation-button]:!px-5 [&_.navigation-button]:!font-semibold">
+                  <StoryNavigationControls
+                    currentPage={currentPage}
+                    totalPages={displayedStory.length}
+                    isPremium={isPremium}
+                    isLoadingNextPage={isLoadingNextPage}
+                    isGeneratingNewStory={isGeneratingNewStory}
+                    canGoNext={!controlsBlocked && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked}
+                    canGoPrevious={currentPage > 0 && !controlsBlocked}
+                    onNext={handleNext}
+                    onPrevious={handlePrevious}
+                    onGenerateNext={handleGenerateNextPageAndAdvance}
+                    onGenerateNewStory={() => handleGenerateNewStory()}
+                    audioEngineRef={audioEngineRef}
+                    isAudioPlaying={isAudioPlaying}
+                    isAudioLoading={isAudioLoading}
+                    audioDisabled={!isPremium && audioPlayedPage === currentPage && !isAudioPlaying}
+                    currentStoryText={currentStoryText || ""}
+                    userInfo={userInfo}
+                    audioPlayedPage={audioPlayedPage ?? -1}
+                    onAudioStateChange={handleAudioStateChangeDual}
+                    onAudioPlayed={handleAudioPlayed}
+                    onUpgrade={onUpgrade}
+                  />
+                </div>
+              </div>
               {/* Ending burst/glow overlay after final page generation */}
               {showEndingBurst && (
                 <div className="fixed inset-0 z-50 pointer-events-none">
@@ -4928,6 +4938,7 @@ const handleRestartTimer = () => {
         isGenerating={isGeneratingNewStory}
         mode="refresh"
       />
+      {isPremium && (
       <ModernProgressTowers
         userId={userInfo?.name}
         userType={isPremium ? 'premium' : 'free'}
@@ -4940,6 +4951,7 @@ const handleRestartTimer = () => {
         }}
         className="fixed"
       />
+      )}
       
       {/* Audio Fallback Notification */}
       <AudioFallbackNotification />
