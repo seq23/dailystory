@@ -19,6 +19,8 @@ interface ReadAloudCoachProps {
   isPremium?: boolean;
   language?: string; // ISO code; coach shows only for 'en'
   onUpgrade?: () => void;
+  /** When false, skip the spoken intro on mount (e.g. marketing previews). Defaults to true. */
+  autoIntroduce?: boolean;
 }
 
 function blobToBase64(blob: Blob): Promise<string> {
@@ -50,6 +52,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   isPremium = false,
   language = "en",
   onUpgrade,
+  autoIntroduce = true,
 }) => {
   const { t } = useTranslation();
   // Reading coach now works for ALL languages - no restrictions!
@@ -78,9 +81,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const [dailyUsed, setDailyUsed] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
   
-  // NEW: Charlotte readiness and syllable display states
-  const [charlotteReady, setCharlotteReady] = useState(false);
-  const [charlotteIntroducing, setCharlotteIntroducing] = useState(true);
+  // NEW: Charlotte readiness and syllable display states.
+  // When autoIntroduce is false (e.g. marketing previews), mark coach as ready
+  // immediately and skip the "introducing" speaking state so no audio plays on mount.
+  const [charlotteReady, setCharlotteReady] = useState(!autoIntroduce);
+  const [charlotteIntroducing, setCharlotteIntroducing] = useState(autoIntroduce);
   const [wordSyllables, setWordSyllables] = useState<Record<string, string>>({});
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -144,7 +149,13 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   useEffect(() => {
     loadDailyCount();
-    
+
+    // Skip the spoken intro entirely when the coach is rendered as a preview
+    // (e.g. on /pricing). It should only auto-speak inside an actual reading session.
+    if (!autoIntroduce) {
+      return;
+    }
+
     // NEW: Smart coach introduction with proper timing control
     const introduceCoach = async () => {
       try {
@@ -185,7 +196,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     };
     
     introduceCoach();
-  }, [loadDailyCount, userInfo?.nativeLanguage, t]);
+  }, [loadDailyCount, userInfo?.nativeLanguage, t, autoIntroduce]);
 
   useEffect(() => () => mediaRecorderRef.current?.stop(), []);
 
