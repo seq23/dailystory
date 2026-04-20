@@ -89,6 +89,34 @@ if (isStoryStable === true && story.length > 0) {
 - Prevents jarring fast loads that cause layout shifts
 - Consistent user experience across different performance conditions
 
+### 4. Image Persistence During Page Navigation (Gate B1.2 — Apr 2026)
+**Root cause of historical flicker:** When navigating to a page whose image
+hadn't been generated yet (especially on premium page-by-page generation),
+the `<ImageWithFallback>` element was unmounted and replaced by the
+`ImageMixingLoading` spinner, then re-mounted when the new image arrived.
+This swap caused the visible white-flash / spinner flicker.
+
+**Fix:** introduced `displayImage` in `CleanStoryDisplay.tsx`:
+```typescript
+const displayImage = currentImage || (imagesEnabled
+  ? (pageImages[currentPage - 1] || pageImages[currentPage + 1])
+  : undefined);
+```
+The image element keeps the previous (or next) page's image visible while
+the current page's image is still being prepared, with a subtle
+backdrop-blur loading overlay on top. The container is never unmounted,
+eliminating the flash. Benefits premium most because guest images are
+pre-batched up front.
+
+### 5. Premium Refresh-Resume Cache Protection (Apr 2026)
+`SessionCacheManager.clearCharacterState` previously filtered localStorage
+with `key.includes(userId)`. On premium (where `userId` is the auth UUID),
+this wiped `gamification_<uuid>` entries on every Next-Story / cache clear,
+deleting Progress Tower data and corrupting timer-resume state. Protected
+key prefixes are now excluded from character-state wipes:
+`guest.*`, `gamification_*`, `progressTowers*`, `readingTimer*`,
+`premium.timer.*`.
+
 ## Story Content Monitoring
 
 ### Rapid Change Detection
