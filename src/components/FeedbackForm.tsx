@@ -56,6 +56,23 @@ export function FeedbackForm({ onClose }: FeedbackFormProps) {
 
       if (error) throw error;
 
+      // Fire-and-forget email notification (don't block UX if it fails)
+      supabase.functions
+        .invoke('send-feedback-notification', {
+          body: {
+            rating: data.rating,
+            category: data.category,
+            message: data.message,
+            page_url: window.location.href,
+            user_agent: navigator.userAgent,
+            user_email: user?.email ?? null,
+            user_id: user?.id ?? null,
+          },
+        })
+        .catch((err) => {
+          DebugLogger.error('network', 'Feedback email notification failed', err);
+        });
+
       toast({
         title: t("feedback.messages.success"),
         description: t("feedback.messages.successDescription"),

@@ -112,6 +112,9 @@ verify_jwt = true
 [functions.send-parental-notification]
 verify_jwt = true
 
+[functions.send-feedback-notification]
+verify_jwt = false
+
 [functions.sync-subscription-status]
 verify_jwt = true
 
