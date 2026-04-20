@@ -9,6 +9,7 @@ import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { safeBase64Decode } from '@/utils/base64Decoder';
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
+import { isRareWord } from "@/utils/rareWordsList";
 import { DebugLogger } from '@/services/DebugLogger';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
