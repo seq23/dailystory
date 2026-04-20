@@ -9,6 +9,7 @@ import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { safeBase64Decode } from '@/utils/base64Decoder';
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
+import { isRareWord } from "@/utils/rareWordsList";
 import { DebugLogger } from '@/services/DebugLogger';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
@@ -172,7 +173,10 @@ export const UnifiedInteractiveWord: React.FC<UnifiedInteractiveWordProps> = ({
     if (difficultyLevel <= 2) {
       return true; // Underline all words for easier levels
     } else {
-      return cleanWord.length >= 7; // Only 7+ letter words for harder levels
+      // GATE E: Underline 7+ letter words OR any rare word (deterministic)
+      // Catches short-but-rare words like "piqued", "wry", "deft" that the
+      // length heuristic misses for advanced/independent readers.
+      return cleanWord.length >= 7 || isRareWord(cleanWord);
     }
   }, [cleanWord, userInfo?.name, difficultyLevel, word, isPurelyPunctuation]);
 

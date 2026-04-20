@@ -300,15 +300,24 @@ export class StoryGenerationService {
     }
 
     // Enhanced Natural Language Template (more AI-friendly)
+    // GATE D: Randomize preferences — pick 1-2 of the available prefs per story
+    // so the AI doesn't cram every favorite into every page. Profile data still
+    // persists in DB; this only controls per-story prompt injection.
     let userPreferences = '';
-    if (essentialUserInfo.favoriteColor || essentialUserInfo.favoriteAnimal || 
-        essentialUserInfo.favoriteFood || essentialUserInfo.hobbies) {
-      const preferences = [];
-      if (essentialUserInfo.favoriteColor) preferences.push(`favorite color: ${essentialUserInfo.favoriteColor}`);
-      if (essentialUserInfo.favoriteAnimal) preferences.push(`favorite animal: ${essentialUserInfo.favoriteAnimal}`);
-      if (essentialUserInfo.favoriteFood) preferences.push(`favorite food: ${essentialUserInfo.favoriteFood}`);
-      if (essentialUserInfo.hobbies) preferences.push(`hobbies: ${essentialUserInfo.hobbies}`);
-      userPreferences = `User preferences: ${preferences.join(', ')}. `;
+    {
+      const allPrefs: string[] = [];
+      if (essentialUserInfo.favoriteColor) allPrefs.push(`favorite color: ${essentialUserInfo.favoriteColor}`);
+      if (essentialUserInfo.favoriteAnimal) allPrefs.push(`favorite animal: ${essentialUserInfo.favoriteAnimal}`);
+      if (essentialUserInfo.favoriteFood) allPrefs.push(`favorite food: ${essentialUserInfo.favoriteFood}`);
+      if (essentialUserInfo.hobbies) allPrefs.push(`hobbies: ${essentialUserInfo.hobbies}`);
+
+      if (allPrefs.length > 0) {
+        // Shuffle and take 1-2 random preferences
+        const shuffled = [...allPrefs].sort(() => Math.random() - 0.5);
+        const pickCount = Math.min(allPrefs.length, 1 + Math.floor(Math.random() * 2)); // 1 or 2
+        const picked = shuffled.slice(0, pickCount);
+        userPreferences = `User preferences (weave naturally, do not force all): ${picked.join(', ')}. `;
+      }
     }
 
     // CULTURAL CONTEXT INTEGRATION
