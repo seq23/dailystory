@@ -4941,6 +4941,7 @@ const handleRestartTimer = () => {
         }}
         className="fixed"
       />
+      )}
       
       {/* Audio Fallback Notification */}
       <AudioFallbackNotification />
