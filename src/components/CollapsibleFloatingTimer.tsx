@@ -281,6 +281,47 @@ useEffect(() => {
     <div className={cn(getPositionClasses(), "flex flex-col items-center gap-3")}>
       {/* Expanded Timer Display */}
       <div className="relative">
+        {/* End Session pill — guest only, top-right of HUD container */}
+        {!isPremium && (
+          <button
+            type="button"
+            onClick={() => {
+              if (!endConfirmArmed) {
+                setEndConfirmArmed(true);
+                if (endConfirmTimerRef.current) ManagedTimers.clearTimer(endConfirmTimerRef.current);
+                endConfirmTimerRef.current = ManagedTimers.setTimeout(
+                  () => setEndConfirmArmed(false),
+                  3000,
+                  'CollapsibleFloatingTimer'
+                );
+                return;
+              }
+              if (endConfirmTimerRef.current) ManagedTimers.clearTimer(endConfirmTimerRef.current);
+              setEndConfirmArmed(false);
+              onEndSession();
+            }}
+            aria-label={endConfirmArmed
+              ? t('floatingTimer.endNowConfirm', 'Tap again to end')
+              : t('floatingTimer.endSession', 'End Session')}
+            className={cn(
+              "absolute -top-3 -right-3 z-10",
+              "inline-flex items-center gap-1.5 rounded-full",
+              "px-3 py-1.5 text-xs font-semibold shadow-lg",
+              "border-2 transition-all duration-200 active:scale-95",
+              endConfirmArmed
+                ? "bg-destructive text-destructive-foreground border-destructive animate-pulse"
+                : "bg-background text-destructive border-destructive hover:bg-destructive/10"
+            )}
+          >
+            <X className="w-3.5 h-3.5" />
+            <span className="whitespace-nowrap">
+              {endConfirmArmed
+                ? t('floatingTimer.endNowConfirm', 'Tap again to end')
+                : t('floatingTimer.endSession', 'End Session')}
+            </span>
+          </button>
+        )}
+
         {/* Main Timer Circle */}
         <div 
           className={cn(
