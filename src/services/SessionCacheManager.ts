@@ -490,9 +490,18 @@ export class SessionCacheManager {
       visualStateKeys.forEach(key => sessionStorage.removeItem(key));
       
       // 5. Clear character state from localStorage
+      // PROTECTED: never wipe guest session, gamification, progress towers, or timer keys
+      const isProtectedKey = (k: string) =>
+        k.startsWith('guest.') ||
+        k.startsWith('gamification_') ||
+        k.startsWith('progressTowers') ||
+        k.startsWith('readingTimer') ||
+        k.startsWith('premium.timer.');
       const characterKeys = Object.keys(localStorage).filter(key => 
-        key.includes('character_visual_state') ||
-        key.includes('character_')
+        !isProtectedKey(key) && (
+          key.includes('character_visual_state') ||
+          key.includes('character_')
+        )
       );
       characterKeys.forEach(key => localStorage.removeItem(key));
       
