@@ -3962,6 +3962,13 @@ const handleRestartTimer = () => {
   // Get difficulty-based text configuration optimized for each reading level
   // ANTI-FLICKER FIX: Respect imagesEnabled state to prevent flash during toggle/navigation
   const currentImage = imagesEnabled ? pageImages[currentPage] : IMAGES_DISABLED_PLACEHOLDER;
+  // ANTI-FLICKER FIX (Gate B1.2): when navigating to a page whose image hasn't loaded yet,
+  // keep an adjacent page's image visible instead of unmounting to a loader spinner.
+  // Eliminates the white-flash/spinner flicker during page transitions on premium
+  // (page-by-page generation) AND smooths any cache-miss for guests.
+  const displayImage = currentImage || (imagesEnabled
+    ? (pageImages[Math.max(0, currentPage - 1)] || pageImages[currentPage + 1])
+    : undefined);
   const hasCurrentImage = !!currentImage;
   
   // 🔍 ENHANCED IMAGE DEBUGGING: Track what image is actually being displayed
