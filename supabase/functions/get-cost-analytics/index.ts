@@ -126,7 +126,7 @@ serve(async (req) => {
     const todayOperationTotals: Record<string, number> = {};
 
     (todayData || []).forEach((e: any) => {
-      const cost = Number(e.cost || 0);
+      const cost = correctedCost(e);
 
       if (isInternalSession(e.session_id)) {
         todayInternalCost += cost;
@@ -160,13 +160,13 @@ serve(async (req) => {
       while (true) {
         const { data: batch } = await sb
           .from('cost_tracking')
-          .select('cost, session_id')
+          .select('cost, session_id, provider, timestamp')
           .gte('timestamp', `${monthStart}T00:00:00Z`)
           .range(page * pageSize, (page + 1) * pageSize - 1);
         if (!batch || batch.length === 0) break;
         batch.forEach((e: any) => {
           if (!isInternalSession(e.session_id)) {
-            monthCost += Number(e.cost || 0);
+            monthCost += correctedCost(e);
           }
         });
         if (batch.length < pageSize) break;
