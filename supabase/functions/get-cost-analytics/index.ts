@@ -27,6 +27,24 @@ function isInternalSession(sessionId: string | null): boolean {
   return INTERNAL_SESSION_PATTERNS.some(p => lower === p || lower.startsWith(p));
 }
 
+// ── Historical pricing correction ──
+// Pre-Apr 10, 2026 elevenlabs rows were logged at $0.22/1k chars ($0.00022/char),
+// but the actual price paid for Turbo v1 / Multilingual v2 on our tier was
+// closer to $0.30/1k chars ($0.00030/char). When we deployed Flash v2.5 on
+// Apr 10 we updated the dashboard but never corrected the historical rows,
+// which made all-time spend appear ~36% lower than reality.
+// We correct this at display time (read-only, no DB writes).
+const ELEVENLABS_FLASH_CUTOVER = '2026-04-10T00:00:00Z';
+const ELEVENLABS_LEGACY_CORRECTION = 0.30 / 0.22; // ≈ 1.3636×
+
+function correctedCost(entry: { cost: number; provider?: string | null; model_used?: string | null; timestamp?: string | null }): number {
+  const base = Number(entry.cost || 0);
+  if (entry.provider !== 'elevenlabs') return base;
+  if (!entry.timestamp || entry.timestamp >= ELEVENLABS_FLASH_CUTOVER) return base;
+  // Pre-cutover elevenlabs row → apply correction
+  return base * ELEVENLABS_LEGACY_CORRECTION;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
