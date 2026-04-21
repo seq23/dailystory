@@ -61,7 +61,7 @@ serve(async (req) => {
     // ── Today's detailed data ──
     const { data: todayData, error: todayErr } = await sb
       .from('cost_tracking')
-      .select('cost, input_tokens, output_tokens, model_used, provider, operation_type, session_id')
+      .select('cost, input_tokens, output_tokens, model_used, provider, operation_type, session_id, timestamp')
       .gte('timestamp', `${today}T00:00:00Z`)
       .lt('timestamp', `${today}T23:59:59Z`);
 
@@ -86,13 +86,13 @@ serve(async (req) => {
       while (true) {
         const { data: batch } = await sb
           .from('cost_tracking')
-          .select('cost, input_tokens, output_tokens, provider, operation_type, session_id')
+          .select('cost, input_tokens, output_tokens, provider, operation_type, session_id, timestamp')
           .range(page * pageSize, (page + 1) * pageSize - 1)
           .order('timestamp', { ascending: true });
 
         if (!batch || batch.length === 0) break;
         batch.forEach((entry: any) => {
-          const cost = Number(entry.cost || 0);
+          const cost = correctedCost(entry);
 
           if (isInternalSession(entry.session_id)) {
             internalCost += cost;
