@@ -29,14 +29,15 @@ function isInternalSession(sessionId: string | null): boolean {
 }
 
 // ── Historical pricing correction ──
-// Pre-Apr 10, 2026 elevenlabs rows were logged at $0.22/1k chars ($0.00022/char),
-// but the actual price paid for Turbo v1 / Multilingual v2 on our tier was
-// closer to $0.30/1k chars ($0.00030/char). When we deployed Flash v2.5 on
-// Apr 10 we updated the dashboard but never corrected the historical rows,
-// which made all-time spend appear ~36% lower than reality.
-// We correct this at display time (read-only, no DB writes).
+// Pre-Apr 10, 2026 elevenlabs rows reflect the old Turbo v2.5 model with
+// NO persistent caching. Per the Time2Read Enterprise Sales Guide v4
+// (docs/sales/Time2Read_Enterprise_Sales_Guide_v4.pdf, §9 Optimization
+// Changelog): pre-optimization TTS COGS was ~$2.98/student/mo vs.
+// post-optimization ~$0.70–$1.10/student/mo. Midpoint ratio:
+//   $2.98 / (($0.70 + $1.10)/2) = $2.98 / $0.90 ≈ 3.31×
+// We apply this correction at display time only (read-only, no DB writes).
 const ELEVENLABS_FLASH_CUTOVER = '2026-04-10T00:00:00Z';
-const ELEVENLABS_LEGACY_CORRECTION = 0.30 / 0.22; // ≈ 1.3636×
+const ELEVENLABS_LEGACY_CORRECTION = 2.98 / 0.90; // ≈ 3.31× (midpoint of sales guide v4 range)
 
 function correctedCost(entry: { cost: number; provider?: string | null; model_used?: string | null; timestamp?: string | null }): number {
   const base = Number(entry.cost || 0);
