@@ -9,9 +9,10 @@ const corsHeaders = {
 
 // Session IDs that represent internal/system/test traffic — NOT real user activity.
 // These are excluded from user-facing totals and shown in a separate "internal" bucket.
+// NOTE: 'elevenlabs-session' and 'runware-session' look internal but were actually
+// the DEFAULT session IDs used by the legacy logger for real user TTS/image
+// generation (pre-Apr 10, 2026). They are real spend and must NOT be filtered out.
 const INTERNAL_SESSION_PATTERNS = [
-  'elevenlabs-session',
-  'runware-session',
   'elevenlabs-unknown',
   'runware-unknown',
   'cost-report',
