@@ -338,6 +338,7 @@ export const AnalyticsDashboard: React.FC = () => {
             <CardContent className="text-xs text-muted-foreground space-y-1">
               <p><strong>Apr 10, 2026</strong> — ElevenLabs Flash v2.5 deployed (TTS cost ↓ ~57%). Persistent audio cache enabled (repeat reads = $0). Audio validator switched to dry-run (no billable calls on page load). Internal/system traffic now excluded from dashboard totals and shown separately. Dynamic session IDs for all edge functions.</p>
               <p><strong>Pre-Apr 10</strong> — ElevenLabs Turbo v1 ($0.0042/req). No persistent cache. Audio validator made real API calls on every page load.</p>
+              <p><strong>Apr 21, 2026</strong> — Historical pricing correction: pre-Apr 10 ElevenLabs rows were stored at $0.22/1k chars but actual paid rate was ~$0.30/1k chars. Display layer now applies a ~1.36× correction on legacy rows so all-time totals reflect true spend (DB rows untouched).</p>
             </CardContent>
           </Card>
         </TabsContent>
