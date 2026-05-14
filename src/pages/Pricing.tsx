@@ -23,6 +23,22 @@ const Pricing = () => {
     }
     link.setAttribute('href', window.location.origin + '/pricing');
 
+    // Per-route Open Graph tags
+    const ogUrl = window.location.origin + '/pricing';
+    const ogTitle = 'Pricing | Time2Read - Free, Premium, Enterprise';
+    const setOg = (property: string, content: string) => {
+      let el = document.head.querySelector(`meta[property="${property}"]`) as HTMLMetaElement | null;
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute('property', property);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    };
+    setOg('og:title', ogTitle);
+    setOg('og:description', desc);
+    setOg('og:url', ogUrl);
+
     // Structured data (Product + Offer)
     const script = document.createElement('script');
     script.type = 'application/ld+json';
