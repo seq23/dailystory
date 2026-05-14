@@ -1,0 +1,27 @@
+# Time2Read
+
+> Personalized, interactive reading adventures for children aged 3–15, with AI-generated illustrations, phonetic learning, and text-to-speech narration.
+
+Time2Read creates never-ending, age-appropriate stories tailored to each child's reading level (PreK–10th grade). Free guests get 20-minute sessions with 6-page stories; Premium subscribers get unlimited live story generation, a saved story library, voice narration, and parent analytics.
+
+## Pages
+
+- [Home](/): Create a personalized reading adventure.
+- [Pricing](/pricing): Free, Premium, and Enterprise plans.
+- [Sign in](/auth): Account login and signup.
+
+## Legal & Compliance
+
+- [Privacy Policy](/privacy): How we handle children's data.
+- [Terms of Service](/terms): User agreement.
+- [GDPR Rights](/gdpr): EU data subject rights.
+- [CCPA Rights](/ccpa): California privacy rights.
+- [FERPA](/ferpa): Education records compliance.
+- [Accessibility](/accessibility): WCAG conformance statement.
+- [Vendors](/vendors): Third-party service providers.
+- [Subprocessors](/subprocessors): Data subprocessor list.
+- [International Data Transfers](/data-transfers): Cross-border transfer safeguards.
+
+## Optional
+
+- Append `Sitemap: https://time-2-read.lovable.app/sitemap.xml` to robots.txt for crawler discovery.
