@@ -140,7 +140,7 @@ export class SessionCacheManager {
 
       // 7. Clear Server-Side Character Cache
       DebugLogger.log('performance', 'Step 7: Clearing Server-Side Character Cache');
-      this.clearServerSideCharacterCache();
+      this.clearServerSideCharacterCache(effectiveSessionId);
 
       DebugLogger.log('performance', 'All cache clearing steps completed successfully');
 
