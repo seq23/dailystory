@@ -57,7 +57,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
       {/* Header with Company Branding and Language Selector */}
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
         <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
-          
+          {/* Single descriptive page heading for SEO + screen readers */}
+          <h1 className="sr-only">Time2Read — Interactive AI Reading Adventures for Kids</h1>
+
           {/* Mobile Layout - Fixed Overlap Prevention */}
           <div className="flex sm:hidden justify-between items-center gap-2 min-h-[50px]">
             {/* Language Selector - Flexible */}
@@ -90,9 +92,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 className="w-5 h-5 flex-shrink-0 drop-shadow-lg"
               />
               <div className="flex items-center font-comic mobile-text-fixed truncate">
-                <h1 className="text-xs font-bold text-white drop-shadow-lg">Time</h1>
+                <span className="text-xs font-bold text-white drop-shadow-lg">Time</span>
                 <span className="text-sm font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5">2</span>
-                <h1 className="text-xs font-bold text-white drop-shadow-lg">Read!</h1>
+                <span className="text-xs font-bold text-white drop-shadow-lg">Read!</span>
               </div>
             </div>
 
@@ -194,15 +196,15 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 />
                 <div className="flex flex-col">
                   <div className="flex items-center font-comic">
-                    <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                    <span className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
                       Time
-                    </h1>
+                    </span>
                     <span className="text-2xl sm:text-4xl md:text-6xl font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
                       2
                     </span>
-                    <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                    <span className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
                       Read!
-                    </h1>
+                    </span>
                   </div>
                   <p className="text-xs sm:text-sm text-white/80 whitespace-nowrap">{t("welcomeHero.companyTagline")}</p>
                 </div>
@@ -233,6 +235,8 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                       <img 
                         src={carouselImage1} 
                         alt="Young girl reading on tablet in car - mobile reading anywhere experience" 
+                        fetchPriority="high"
+                        decoding="async"
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">

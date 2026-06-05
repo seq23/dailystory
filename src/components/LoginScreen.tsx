@@ -306,11 +306,13 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
           }
         }}
         className="absolute top-4 right-4 z-50 text-white hover:bg-red-500/30 border border-white/30 backdrop-blur-sm bg-black/20 rounded-lg p-2 shadow-lg transition-all duration-200 hover:scale-105"
+        aria-label={t("loginScreen.close", "Close")}
       >
         <X className="w-5 h-5" />
       </Button>
       
       <Card className="w-full max-w-2xl mx-auto bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
+        <h1 className="sr-only">Sign in or sign up for Time2Read</h1>
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             {userInfo ? t("loginScreen.title.upgrade") : t("loginScreen.title.join")}
