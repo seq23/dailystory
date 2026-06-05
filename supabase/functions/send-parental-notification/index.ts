@@ -11,6 +11,15 @@ const corsHeaders = {
   "Vary": "Origin, Access-Control-Request-Headers",
 };
 
+function escapeHtml(str: unknown): string {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 interface ParentalNotificationRequest {
   parentEmail: string;
   childName: string;
@@ -50,12 +59,41 @@ const handler = async (req: Request): Promise<Response> => {
       reportType
     }: ParentalNotificationRequest = await req.json();
 
-    console.log(`Sending ${reportType} parental notification to:`, parentEmail);
+    // ── Authorization: caller must own a child_profile with this parent email ──
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sbAuth = createClient(supabaseUrl, serviceKey);
+    const token = req.headers.get("Authorization")?.replace("Bearer ", "").trim();
+    if (!token) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        status: 401, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    const { data: { user } } = await sbAuth.auth.getUser(token);
+    if (!user) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        status: 401, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    const { data: ownedChild } = await sbAuth
+      .from("child_profiles")
+      .select("id")
+      .eq("parent_user_id", user.id)
+      .eq("parent_email", parentEmail)
+      .limit(1)
+      .maybeSingle();
+    if (!ownedChild) {
+      return new Response(JSON.stringify({ success: false, error: "Forbidden" }), {
+        status: 403, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    console.log(`Sending ${reportType} parental notification to verified parent`);
 
     const violationsList = recentViolations.map(violation => 
       `<li style="margin: 8px 0;">
-        <strong>${violation.violationType}</strong> on ${new Date(violation.timestamp).toLocaleDateString()}<br>
-        <span style="font-family: monospace; background: #f5f5f5; padding: 4px; border-radius: 3px;">${violation.content}</span>
+        <strong>${escapeHtml(violation.violationType)}</strong> on ${new Date(violation.timestamp).toLocaleDateString()}<br>
+        <span style="font-family: monospace; background: #f5f5f5; padding: 4px; border-radius: 3px;">${escapeHtml(violation.content)}</span>
       </li>`
     ).join('');
 
