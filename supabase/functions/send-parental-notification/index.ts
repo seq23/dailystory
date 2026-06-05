@@ -117,7 +117,7 @@ const handler = async (req: Request): Promise<Response> => {
 
           <p>Dear Parent/Guardian,</p>
 
-          <p>This is your ${reportType} summary of privacy-related activity for <strong>${childName}</strong>'s Time2Read account.</p>
+          <p>This is your ${reportType} summary of privacy-related activity for <strong>${escapeHtml(childName)}</strong>'s Time2Read account.</p>
 
           <div style="background: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
             <h3 style="margin-top: 0; color: #1e40af;">Summary</h3>
