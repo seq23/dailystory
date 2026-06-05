@@ -17,8 +17,9 @@ import {
 
 const BASE_URL = "https://time-2-read.lovable.app";
 
-function useLandingSeo(config: LandingPageConfig) {
+function useLandingSeo(config: LandingPageConfig | undefined) {
   useEffect(() => {
+    if (!config) return;
     const url = `${BASE_URL}/${config.slug}`;
     document.title = config.title;
 
@@ -104,9 +105,8 @@ const SightWordsSection = () => (
 
 const LandingPage = ({ slug }: { slug: string }) => {
   const config = landingPagesBySlug[slug];
-  if (!config) return null;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useLandingSeo(config);
+  if (!config) return null;
 
   return (
     <main className="min-h-screen bg-background">
