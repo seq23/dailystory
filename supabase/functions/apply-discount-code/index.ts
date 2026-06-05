@@ -192,41 +192,28 @@ serve(async (req) => {
       updated_at: new Date().toISOString()
     };
 
-    // Upsert the subscriber row (PATCH if it exists, otherwise INSERT) - service role bypasses RLS
-    let writeResponse: Response;
-    if (subscriber) {
-      writeResponse = await fetch(
-        `${supabaseUrl}/rest/v1/subscribers?user_id=eq.${userId}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(activationPayload)
-        }
-      );
-    } else {
-      writeResponse = await fetch(
-        `${supabaseUrl}/rest/v1/subscribers`,
-        {
-          method: 'POST',
-          headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates',
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            email: user.email,
-            created_at: new Date().toISOString(),
-            ...activationPayload
-          })
-        }
-      );
-    }
+    // Always UPSERT the subscriber row keyed on the unique `email` column.
+    // A plain INSERT path is unsafe: a subscriber row may be created concurrently
+    // (e.g. by check-subscription) between our read and write, causing a duplicate
+    // key violation on the email unique constraint. Upserting on email merges into
+    // the existing row regardless of read timing. Service role bypasses RLS.
+    const writeResponse = await fetch(
+      `${supabaseUrl}/rest/v1/subscribers?on_conflict=email`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates,return=minimal',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          email: user.email,
+          ...activationPayload
+        })
+      }
+    );
 
     if (!writeResponse.ok) {
       const errText = await writeResponse.text();
