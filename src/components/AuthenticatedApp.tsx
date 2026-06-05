@@ -402,7 +402,13 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const createDefaultPremiumProfile = async () => {
     try {
       const defaultUserInfo: UserInfo = {
-        name: user.email?.split('@')[0] || 'Reader',
+        // Prefer the display name captured at signup (stored in auth user metadata)
+        // so the protagonist isn't named after the email local-part. Use the first
+        // word so a full display name like "E2E Premium Tester" becomes "E2E".
+        name:
+          (user.user_metadata?.display_name as string | undefined)?.trim().split(/\s+/)[0] ||
+          user.email?.split('@')[0] ||
+          'Reader',
         age: 8,
         grade: 'K',
         gradeLevel: 'K',
