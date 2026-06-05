@@ -1554,8 +1554,9 @@ useEffect(() => {
   const wordsRef = useRef<string[]>([]);
 
   useEffect(() => {
-    wordsRef.current = (currentStory || '').split(/\s+/).filter(Boolean);
-  }, [currentStory]);
+    const storyText = typeof currentStoryText === 'string' ? currentStoryText : '';
+    wordsRef.current = storyText.split(/\s+/).filter(Boolean);
+  }, [currentStoryText]);
 
   // Gamification integration
   const {
