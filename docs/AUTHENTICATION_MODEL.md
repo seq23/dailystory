@@ -441,6 +441,28 @@ All payment functions are for business operations only:
 | `apply-discount-code` | Process discount application | ❌ No |
 | `check-subscription` | **Analytics ONLY** | ❌ No |
 
+### 🧒 Default Premium Profile — Protagonist Name Fallback
+
+When a premium user has no child profile yet, `createDefaultPremiumProfile()` in
+`src/components/AuthenticatedApp.tsx` seeds a default `UserInfo`. The protagonist
+name resolution order is:
+
+1. First word of the **display name** captured at signup
+   (`user.user_metadata.display_name`, e.g. `"E2E Premium Tester"` → `"E2E"`).
+2. Email local-part (`user.email.split('@')[0]`) — legacy fallback.
+3. Literal `"Reader"`.
+
+> Previously the email local-part was used first, so stories named the hero after
+> the email (e.g. `"e2e.uitest.0605-n7"`). The signup form already collects a
+> Display Name, so no new input was added — the fix simply prefers that value.
+
+### 🔑 Test-Script Note — Breached-Password Rejection (HTTP 422)
+
+Signup rejects breached/pwned passwords (Supabase HaveIBeenPwned check) with a
+`422`. This is **correct security behavior**, not a bug. Automated E2E/test
+scripts must use a strong, non-breached password (e.g. a random 16+ char mix);
+common samples like `TestPass123!` will be rejected.
+
 ### 🔍 Check-Subscription Function
 
 The `check-subscription` edge function exists for **business intelligence**:
