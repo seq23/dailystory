@@ -190,6 +190,32 @@ const LandingPage = ({ slug }: { slug: string }) => {
           </Button>
         </div>
       </section>
+
+      {/* Footer cross-links */}
+      <footer className="border-t border-border py-10">
+        <nav className="mx-auto max-w-6xl px-4" aria-label="More reading collections">
+          <h2 className="font-fun text-lg text-foreground mb-4">Explore more reading collections</h2>
+          <ul className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
+            {landingPages
+              .filter((p) => p.slug !== slug)
+              .map((p) => (
+                <li key={p.slug}>
+                  <Link
+                    to={`/${p.slug}`}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {p.navLabel}
+                  </Link>
+                </li>
+              ))}
+          </ul>
+          <div className="mt-6">
+            <Link to="/" className="text-sm font-medium text-primary hover:underline">
+              ← Back to Time2Read home
+            </Link>
+          </div>
+        </nav>
+      </footer>
     </main>
   );
 };
