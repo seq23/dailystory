@@ -57,7 +57,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
       {/* Header with Company Branding and Language Selector */}
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
         <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
-          
+          {/* Single descriptive page heading for SEO + screen readers */}
+          <h1 className="sr-only">Time2Read — Interactive AI Reading Adventures for Kids</h1>
+
           {/* Mobile Layout - Fixed Overlap Prevention */}
           <div className="flex sm:hidden justify-between items-center gap-2 min-h-[50px]">
             {/* Language Selector - Flexible */}
