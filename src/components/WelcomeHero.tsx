@@ -235,6 +235,8 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                       <img 
                         src={carouselImage1} 
                         alt="Young girl reading on tablet in car - mobile reading anywhere experience" 
+                        fetchPriority="high"
+                        decoding="async"
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
