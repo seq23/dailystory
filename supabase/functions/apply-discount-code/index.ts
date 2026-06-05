@@ -160,38 +160,77 @@ serve(async (req) => {
       });
     }
 
+    // Enforce usage limit when one is configured (max_uses null = unlimited)
+    if (codeDetails.max_uses != null && codeDetails.current_uses >= codeDetails.max_uses) {
+      console.error('[Apply Discount] Discount code usage limit reached');
+      return new Response(JSON.stringify({ 
+        activated: false, 
+        message: 'This discount code is no longer available' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     // Calculate end date
     const activationDate = new Date();
     const endDate = new Date(activationDate);
     endDate.setDate(endDate.getDate() + codeDetails.duration_days);
 
-    // Update subscriber with discount activation - PURE DATABASE WRITE
-    const updateResponse = await fetch(
-      `${supabaseUrl}/rest/v1/subscribers?user_id=eq.${userId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          subscribed: true,
-          subscription_tier: 'premium',
-          subscription_end: endDate.toISOString(),
-          discount_activated: true,
-          discount_activated_at: activationDate.toISOString(),
-          override_premium: true,
-          override_tier: 'premium',
-          override_end: endDate.toISOString(),
-          override_reason: `Discount code: ${discountCode}`,
-          override_set_by: 'system',
-          updated_at: new Date().toISOString()
-        })
-      }
-    );
+    const activationPayload = {
+      subscribed: true,
+      subscription_tier: 'premium',
+      subscription_end: endDate.toISOString(),
+      discount_code_pending: null,
+      discount_activated: true,
+      discount_activated_at: activationDate.toISOString(),
+      override_premium: true,
+      override_tier: 'premium',
+      override_end: endDate.toISOString(),
+      override_reason: `Discount code: ${discountCode}`,
+      override_set_by: 'system',
+      updated_at: new Date().toISOString()
+    };
 
-    if (!updateResponse.ok) {
+    // Upsert the subscriber row (PATCH if it exists, otherwise INSERT) - service role bypasses RLS
+    let writeResponse: Response;
+    if (subscriber) {
+      writeResponse = await fetch(
+        `${supabaseUrl}/rest/v1/subscribers?user_id=eq.${userId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(activationPayload)
+        }
+      );
+    } else {
+      writeResponse = await fetch(
+        `${supabaseUrl}/rest/v1/subscribers`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            email: user.email,
+            created_at: new Date().toISOString(),
+            ...activationPayload
+          })
+        }
+      );
+    }
+
+    if (!writeResponse.ok) {
+      const errText = await writeResponse.text();
+      console.error('[Apply Discount] Error writing subscriber:', errText);
       console.error('[Apply Discount] Error updating subscriber');
       return new Response(JSON.stringify({ 
         activated: false, 
