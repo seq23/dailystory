@@ -11,6 +11,7 @@ import {
 import {
   landingPagesBySlug,
   kindergartenSightWords,
+  landingPages,
   type LandingPageConfig,
 } from "@/data/landingPages";
 
