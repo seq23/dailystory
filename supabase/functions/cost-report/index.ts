@@ -28,8 +28,26 @@ serve(async (req) => {
     const adminEmail = 'seq.taylor@gmail.com';
     const adminUserIds = (Deno.env.get('ADMIN_USER_IDS') || '').split(',').filter(Boolean);
 
-    // No auth check - this function is protected by verify_jwt=false in config
-    // and is only accessible via the debug panel or pg_cron
+    const sb = createClient(supabaseUrl, serviceKey);
+
+    // ── Authorization: admins (or service_role for pg_cron) only ──
+    // This generates/sends full financial reports, so it must not be public.
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '').trim();
+    if (!token) {
+      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    let authorized = token === serviceKey;
+    if (!authorized) {
+      const { data: { user } } = await sb.auth.getUser(token);
+      authorized = !!user && adminUserIds.map(s => s.trim()).includes(user.id);
+    }
+    if (!authorized) {
+      return new Response(JSON.stringify({ success: false, error: 'Forbidden' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Parse request body
     let startDate: string;
@@ -50,8 +68,6 @@ serve(async (req) => {
       startDate = getQuarterStart();
       endDate = new Date().toISOString().split('T')[0];
     }
-
-    const sb = createClient(supabaseUrl, serviceKey);
 
     // Paginate through cost_tracking for the date range
     const allEntries: any[] = [];
