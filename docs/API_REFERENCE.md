@@ -172,9 +172,11 @@ if (data?.url) {
 ### validate-discount-code
 **Validate discount code without applying**
 
-**Authentication:** Not Required  
+**Authentication:** Not Required (public, pre-auth)  
 **Method:** POST  
 **Endpoint:** `/validate-discount-code`
+
+> ⚠️ This endpoint runs on the sign-up form **before** a user session exists, so it MUST stay public (`verify_jwt = false`, no in-code JWT check). Adding auth gating silently breaks all new-signup code redemptions. Brute-force enumeration is prevented via IP-based rate limiting (`rate_limits` table, action `validate-discount-code`, ~10 attempts / 5 min, fail-open). The real authorization control is `apply-discount-code`, which runs on first login and requires a JWT.
 
 **Request Body:**
 ```typescript
