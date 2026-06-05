@@ -5,11 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { RefreshCw, CreditCard, Calendar, CheckCircle, XCircle } from "lucide-react";
+import { RefreshCw, CreditCard, Calendar, CheckCircle, XCircle, Tag } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Tag } from "lucide-react";
 
 interface SubscriptionData {
   subscribed: boolean;
