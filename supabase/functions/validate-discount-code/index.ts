@@ -1,4 +1,5 @@
-// Discount Code Validation - Requires Authentication
+// Discount Code Validation - Public (pre-auth, used on the sign-up form)
+// Anti-enumeration is enforced via IP-based rate limiting (no auth required)
 // Direct Supabase REST API calls only
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
@@ -7,21 +8,46 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Cryptographic JWT verification via Supabase Auth API
-async function verifyUser(supabaseUrl: string, supabaseAnonKey: string, authHeader: string): Promise<{ id: string; email: string } | null> {
+// IP-based rate limiting to prevent brute-force code enumeration.
+// Returns true when the request is allowed, false when the limit is exceeded.
+const RATE_LIMIT_MAX = 10; // max attempts
+const RATE_LIMIT_WINDOW_MIN = 5; // per 5-minute window
+async function checkRateLimit(supabaseUrl: string, supabaseKey: string, ip: string): Promise<boolean> {
   try {
-    const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      headers: {
-        'apikey': supabaseAnonKey,
-        'Authorization': authHeader,
+    const action = 'validate-discount-code';
+    const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MIN * 60 * 1000).toISOString();
+
+    // Count recent attempts from this IP within the window
+    const countResp = await fetch(
+      `${supabaseUrl}/rest/v1/rate_limits?identifier=eq.${encodeURIComponent(ip)}&action=eq.${action}&window_start=gte.${encodeURIComponent(windowStart)}&select=id`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'count=exact',
+        }
       }
+    );
+    const rows = await countResp.json();
+    if (Array.isArray(rows) && rows.length >= RATE_LIMIT_MAX) {
+      return false;
+    }
+
+    // Record this attempt (best-effort)
+    await fetch(`${supabaseUrl}/rest/v1/rate_limits`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ identifier: ip, action })
     });
-    if (!response.ok) return null;
-    const user = await response.json();
-    if (!user?.id) return null;
-    return { id: user.id, email: user.email || '' };
+    return true;
   } catch {
-    return null;
+    // Fail open on rate-limit infra errors so legitimate users aren't blocked
+    return true;
   }
 }
 
@@ -46,7 +72,6 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || supabaseKey;
 
     if (!supabaseUrl || !supabaseKey) {
       return new Response(JSON.stringify({ 
@@ -58,25 +83,15 @@ serve(async (req) => {
       });
     }
 
-    // Require authentication to prevent brute-force enumeration
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    // Anti-enumeration: IP-based rate limiting (this is a pre-auth public endpoint)
+    const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
+    const allowed = await checkRateLimit(supabaseUrl, supabaseKey, ip);
+    if (!allowed) {
       return new Response(JSON.stringify({ 
         valid: false, 
-        message: 'Authentication required' 
+        message: 'Too many attempts. Please try again in a few minutes.' 
       }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    const user = await verifyUser(supabaseUrl, supabaseAnonKey!, authHeader);
-    if (!user) {
-      return new Response(JSON.stringify({ 
-        valid: false, 
-        message: 'Authentication failed' 
-      }), {
-        status: 401,
+        status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
@@ -93,7 +108,7 @@ serve(async (req) => {
       });
     }
 
-    console.log(`[Validate Discount] Checking code for user: ${user.id}`);
+    console.log(`[Validate Discount] Checking code (ip: ${ip})`);
 
     // PURE DATABASE READ - Direct REST API call
     const dbResponse = await fetch(
