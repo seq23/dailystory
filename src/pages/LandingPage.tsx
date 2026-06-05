@@ -17,8 +17,9 @@ import {
 
 const BASE_URL = "https://time-2-read.lovable.app";
 
-function useLandingSeo(config: LandingPageConfig) {
+function useLandingSeo(config: LandingPageConfig | undefined) {
   useEffect(() => {
+    if (!config) return;
     const url = `${BASE_URL}/${config.slug}`;
     document.title = config.title;
 
