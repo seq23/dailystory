@@ -196,15 +196,15 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 />
                 <div className="flex flex-col">
                   <div className="flex items-center font-comic">
-                    <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                    <span className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
                       Time
-                    </h1>
+                    </span>
                     <span className="text-2xl sm:text-4xl md:text-6xl font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
                       2
                     </span>
-                    <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                    <span className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
                       Read!
-                    </h1>
+                    </span>
                   </div>
                   <p className="text-xs sm:text-sm text-white/80 whitespace-nowrap">{t("welcomeHero.companyTagline")}</p>
                 </div>
