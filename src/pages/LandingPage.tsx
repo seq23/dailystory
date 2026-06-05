@@ -105,9 +105,8 @@ const SightWordsSection = () => (
 
 const LandingPage = ({ slug }: { slug: string }) => {
   const config = landingPagesBySlug[slug];
-  if (!config) return null;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useLandingSeo(config);
+  if (!config) return null;
 
   return (
     <main className="min-h-screen bg-background">
