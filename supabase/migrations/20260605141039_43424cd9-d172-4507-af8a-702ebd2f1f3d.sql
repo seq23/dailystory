@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.__set_service_role_vault_secret(text);

@@ -1480,10 +1480,6 @@ export type Database = {
       }
     }
     Functions: {
-      __set_service_role_vault_secret: {
-        Args: { p_value: string }
-        Returns: undefined
-      }
       anonymize_old_user_data: { Args: never; Returns: undefined }
       archive_legacy_character_tables: { Args: never; Returns: undefined }
       cleanup_expired_sessions: { Args: never; Returns: undefined }
