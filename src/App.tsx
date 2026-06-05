@@ -29,6 +29,8 @@ import Subprocessors from "./pages/Subprocessors";
 import { PromptStudio } from "./components/PromptStudio";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
+import LandingPage from "./pages/LandingPage";
+import { landingPages } from "./data/landingPages";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
 import { VoiceCommands } from "./components/VoiceCommands";
