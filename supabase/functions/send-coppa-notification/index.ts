@@ -12,6 +12,15 @@ const corsHeaders = {
   "Vary": "Origin, Access-Control-Request-Headers",
 };
 
+function escapeHtml(str: unknown): string {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 interface COPPANotificationRequest {
   parentEmail: string;
   childName: string;
@@ -49,7 +58,42 @@ const handler = async (req: Request): Promise<Response> => {
       timestamp 
     }: COPPANotificationRequest = await req.json();
 
-    console.log("Sending COPPA notification to:", parentEmail);
+    // ── Authorization: caller must own a child_profile with this parent email ──
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, serviceKey);
+
+    const token = req.headers.get("Authorization")?.replace("Bearer ", "").trim();
+    if (!token) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        status: 401, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    const { data: { user } } = await sb.auth.getUser(token);
+    if (!user) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        status: 401, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    // Verify the parentEmail belongs to a child profile owned by the caller
+    const { data: ownedChild } = await sb
+      .from("child_profiles")
+      .select("id")
+      .eq("parent_user_id", user.id)
+      .eq("parent_email", parentEmail)
+      .limit(1)
+      .maybeSingle();
+    if (!ownedChild) {
+      return new Response(JSON.stringify({ success: false, error: "Forbidden" }), {
+        status: 403, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    console.log("Sending COPPA notification to verified parent");
+
+    const safeChildName = escapeHtml(childName);
+    const safeDetectedContent = escapeHtml(detectedContent);
+    const safeViolations = (violations || []).map((v) => escapeHtml(v));
 
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -75,12 +119,12 @@ const handler = async (req: Request): Promise<Response> => {
 
           <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #d97706;">
             <h3 style="margin-top: 0; color: #92400e;">Content Detected:</h3>
-            <p style="margin-bottom: 0; font-family: monospace; background: #fff; padding: 10px; border-radius: 4px;">${detectedContent}</p>
+            <p style="margin-bottom: 0; font-family: monospace; background: #fff; padding: 10px; border-radius: 4px;">${safeDetectedContent}</p>
           </div>
 
           <h3 style="color: #1f2937;">Specific Privacy Concerns:</h3>
           <ul style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #dc2626;">
-            ${violations.map(violation => `<li style="margin: 5px 0;">${violation}</li>`).join('')}
+            ${safeViolations.map(violation => `<li style="margin: 5px 0;">${violation}</li>`).join('')}
           </ul>
 
           <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin: 20px 0;">

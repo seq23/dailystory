@@ -140,7 +140,7 @@ export class SessionCacheManager {
 
       // 7. Clear Server-Side Character Cache
       DebugLogger.log('performance', 'Step 7: Clearing Server-Side Character Cache');
-      this.clearServerSideCharacterCache();
+      this.clearServerSideCharacterCache(effectiveSessionId);
 
       DebugLogger.log('performance', 'All cache clearing steps completed successfully');
 
@@ -353,15 +353,19 @@ export class SessionCacheManager {
   /**
    * Clear server-side character cache to ensure synchronization
    */
-  private static clearServerSideCharacterCache(): void {
+  private static clearServerSideCharacterCache(sessionId?: string): void {
     try {
+      if (!sessionId) {
+        DebugLogger.warn('performance', 'Skipping server-side cache clear (no sessionId)');
+        return;
+      }
       // Call the server-side clear endpoint asynchronously (don't block the UI)
       fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/clear-character-cache', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reason: 'client-cache-clear' })
+        body: JSON.stringify({ sessionId, reason: 'client-cache-clear' })
       })
       .then(response => {
         if (response.ok) {
