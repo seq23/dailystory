@@ -113,6 +113,13 @@ const App = () => {
               <Route path="/subprocessors" element={<Subprocessors />} />
               <Route path="/success" element={<PaymentSuccess />} />
               <Route path="/cancel" element={<PaymentCancel />} />
+              {landingPages.map((p) => (
+                <Route
+                  key={p.slug}
+                  path={`/${p.slug}`}
+                  element={<LandingPage slug={p.slug} />}
+                />
+              ))}
               <Route path="*" element={<NotFound />} />
             </Routes>
             <VoiceHUD />
