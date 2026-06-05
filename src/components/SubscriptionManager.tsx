@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { RefreshCw, CreditCard, Calendar, CheckCircle, XCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Tag } from "lucide-react";
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -21,6 +23,8 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
   const [refreshing, setRefreshing] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [discountCode, setDiscountCode] = useState("");
+  const [redeeming, setRedeeming] = useState(false);
 
   const checkSubscription = async () => {
     try {
@@ -129,6 +133,50 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
     }
   };
 
+  const redeemDiscountCode = async () => {
+    const code = discountCode.trim().toUpperCase();
+    if (!code) {
+      toast.error("Please enter a discount code");
+      return;
+    }
+    try {
+      setRedeeming(true);
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        toast.error("Please sign in to redeem a discount code");
+        return;
+      }
+
+      // Validate first for a clear message, then activate via the service-role function.
+      const { data: validation } = await supabase.functions.invoke('validate-discount-code', {
+        body: { code },
+      });
+      if (validation && validation.valid === false) {
+        toast.error(validation.message || "Invalid discount code");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('apply-discount-code', {
+        headers: { Authorization: `Bearer ${session.session.access_token}` },
+        body: { discountCode: code },
+      });
+
+      if (error || !data?.activated) {
+        toast.error(data?.message || error?.message || "Could not apply discount code");
+        return;
+      }
+
+      toast.success(data.message || "Discount applied! Your premium access is now active.");
+      setDiscountCode("");
+      await checkSubscription();
+    } catch (err) {
+      DebugLogger.error('error', 'Discount redemption failed', { error: err });
+      toast.error("Could not apply discount code");
+    } finally {
+      setRedeeming(false);
+    }
+  };
+
   useEffect(() => {
     checkSubscription();
   }, []);
@@ -204,6 +252,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                 </div>
               </div>
             ) : (
+              <div className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <Card className="border-primary/20">
                   <CardContent className="p-4">
@@ -236,6 +285,31 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                     >
                       Subscribe Annually
                     </Button>
+                  </CardContent>
+                </Card>
+              </div>
+                <Card className="border-dashed">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Tag className="w-4 h-4 text-primary" />
+                      <h3 className="font-semibold">Have a discount code?</h3>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-3">
+                      Redeem a code for free premium access — no credit card required.
+                    </p>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter discount code"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                        onKeyDown={(e) => { if (e.key === 'Enter') redeemDiscountCode(); }}
+                        disabled={redeeming}
+                        className="uppercase"
+                      />
+                      <Button onClick={redeemDiscountCode} disabled={redeeming || !discountCode.trim()}>
+                        {redeeming ? "Applying..." : "Apply"}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
