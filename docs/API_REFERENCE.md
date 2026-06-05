@@ -241,6 +241,22 @@ subscriber row with `subscribed=true`, `subscription_tier='premium'`, and an
 > `discount_code_pending` itself. The legacy "activate on first login" path
 > (no body) still works for any pre-existing pending codes.
 
+> 🛠️ **Race-proof write (fixed 2026-06-05):** the subscriber row is written with a
+> single UPSERT keyed on the unique `email` column
+> (`POST /subscribers?on_conflict=email`, `Prefer: resolution=merge-duplicates`).
+> The previous read-then-branch logic (PATCH if the `user_id` read found a row,
+> otherwise INSERT) could lose a race: a subscriber row created concurrently
+> (e.g. by `check-subscription`) between the read and the write caused a duplicate
+> key violation on `subscribers_email_key`, so the discount silently failed and the
+> account stayed "inactive" despite a valid code. The UPSERT merges into the
+> existing row regardless of read timing.
+
+> 💳 **Redeemable post-signup:** users who created an account without paying and
+> received a code later can redeem it from **My Account → Subscription Management**
+> ("Have a discount code?"), in addition to entering a credit card. The
+> `SubscriptionManager` component validates via `validate-discount-code` then calls
+> this function with `{ discountCode }`.
+
 **Request Body:**
 ```typescript
 {
