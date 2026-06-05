@@ -84,6 +84,16 @@ serve(async (req) => {
     const userId = user.id;
     console.log(`[Apply Discount] Processing for user: ${userId}`);
 
+    // Optional: code supplied directly in the request body (e.g. right after sign-up,
+    // where the client cannot persist discount_code_pending due to RLS).
+    let bodyCode: string | null = null;
+    try {
+      const body = await req.json();
+      if (body?.discountCode) bodyCode = String(body.discountCode).trim().toUpperCase();
+    } catch {
+      // No/invalid body — fall back to pending code on the subscriber row
+    }
+
     // Check if user has a pending discount code - PURE DATABASE READ
     const subResponse = await fetch(
       `${supabaseUrl}/rest/v1/subscribers?user_id=eq.${userId}&select=*`,
@@ -99,7 +109,10 @@ serve(async (req) => {
     const subData = await subResponse.json();
     const subscriber = subData[0];
 
-    if (!subscriber?.discount_code_pending) {
+    // Prefer an explicitly supplied code, otherwise use any stored pending code.
+    const discountCode = bodyCode || subscriber?.discount_code_pending;
+
+    if (!discountCode) {
       return new Response(JSON.stringify({ 
         activated: false, 
         message: 'No pending discount code found' 
@@ -109,7 +122,7 @@ serve(async (req) => {
       });
     }
 
-    if (subscriber.discount_activated) {
+    if (subscriber?.discount_activated) {
       return new Response(JSON.stringify({ 
         activated: false, 
         message: 'Discount code already activated' 
@@ -119,7 +132,6 @@ serve(async (req) => {
       });
     }
 
-    const discountCode = subscriber.discount_code_pending;
     console.log(`[Apply Discount] Activating code: ${discountCode} for user: ${userId}`);
 
     // Get discount code details - PURE DATABASE READ
