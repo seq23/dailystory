@@ -139,28 +139,38 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         return;
       }
 
-      // If valid discount code, store it for activation on first login
+      // If a valid discount code was entered, activate it immediately on the
+      // freshly authenticated session. The client cannot persist the pending
+      // code (RLS blocks it), so the edge function activates it via service role.
+      let discountActivated = false;
       if (discountValidation.isValid && signUpData.discountCode.trim() && authData.user) {
-        const { error: subError } = await supabase
-          .from('subscribers')
-          .upsert({
-            user_id: authData.user.id,
-            email: signUpData.email,
-            discount_code_pending: signUpData.discountCode.trim().toUpperCase(),
-            discount_activated: false,
-            subscribed: false,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-
-        if (subError) {
-          DebugLogger.warn('auth', 'Error storing discount code', subError);
+        const code = signUpData.discountCode.trim().toUpperCase();
+        try {
+          const { data: session } = await supabase.auth.getSession();
+          const accessToken = session.session?.access_token;
+          if (accessToken) {
+            const { data: result, error: applyError } = await supabase.functions.invoke('apply-discount-code', {
+              headers: { Authorization: `Bearer ${accessToken}` },
+              body: { discountCode: code },
+            });
+            if (!applyError && result?.activated) {
+              discountActivated = true;
+            } else {
+              DebugLogger.warn('auth', 'Discount activation at signup did not succeed', applyError || result);
+            }
+          } else {
+            DebugLogger.warn('auth', 'No session after signup; discount will activate on first login');
+          }
+        } catch (applyErr) {
+          DebugLogger.warn('auth', 'Error activating discount at signup', applyErr);
         }
       }
 
-      toast.success(discountValidation.isValid 
-        ? "Check your email! Your discount code will be activated when you first log in."
-        : t("loginScreen.form.success.accountCreated"));
+      toast.success(discountActivated
+        ? "Your free premium access is now active. Enjoy!"
+        : discountValidation.isValid 
+          ? "Account created! Your discount code will be activated when you first log in."
+          : t("loginScreen.form.success.accountCreated"));
     } catch (error) {
       toast.error(t("loginScreen.form.errors.unexpected"));
       DebugLogger.error('auth', 'Signup error', error);

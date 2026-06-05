@@ -223,26 +223,41 @@ if (data?.url) {
 ---
 
 ### apply-discount-code
-**Apply discount code to checkout session**
+**Activate a discount code for the authenticated user (grants free premium override)**
 
 **Authentication:** Required (JWT)  
 **Method:** POST  
 **Endpoint:** `/apply-discount-code`
 
+Activates a discount code for the current user via the service role (bypasses RLS).
+It uses the code supplied in the request body when present, otherwise falls back to
+any `discount_code_pending` stored on the subscriber row. On success it upserts the
+subscriber row with `subscribed=true`, `subscription_tier='premium'`, and an
+`override_premium` window of `duration_days`. Idempotent: a second call returns
+`activated: false` with "Discount code already activated".
+
+> ℹ️ The sign-up form calls this immediately after `signUp()` with the validated
+> code (`{ discountCode }`), because RLS prevents the client from persisting
+> `discount_code_pending` itself. The legacy "activate on first login" path
+> (no body) still works for any pre-existing pending codes.
+
 **Request Body:**
 ```typescript
 {
-  code: string             // Discount code
-  sessionId: string        // Stripe checkout session ID
+  discountCode?: string    // Optional. Code to activate; falls back to pending code if omitted
 }
 ```
 
 **Response:**
 ```typescript
 {
-  applied: boolean
-  discountAmount: number
-  finalAmount: number
+  activated: boolean
+  message: string
+  code?: string
+  description?: string
+  duration_days?: number
+  activation_date?: string // ISO timestamp
+  end_date?: string        // ISO timestamp
 }
 ```
 
