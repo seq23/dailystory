@@ -92,9 +92,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 className="w-5 h-5 flex-shrink-0 drop-shadow-lg"
               />
               <div className="flex items-center font-comic mobile-text-fixed truncate">
-                <h1 className="text-xs font-bold text-white drop-shadow-lg">Time</h1>
+                <span className="text-xs font-bold text-white drop-shadow-lg">Time</span>
                 <span className="text-sm font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5">2</span>
-                <h1 className="text-xs font-bold text-white drop-shadow-lg">Read!</h1>
+                <span className="text-xs font-bold text-white drop-shadow-lg">Read!</span>
               </div>
             </div>
 
