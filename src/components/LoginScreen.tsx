@@ -373,230 +373,267 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
             </TabsList>
 
             <TabsContent value="signup" className="space-y-6">
-              {/* Pricing Plans - Hidden when valid discount code */}
-              {!discountValidation.isValid && (
-                <div className="grid md:grid-cols-2 gap-4 mb-6">
-                <Card 
-                  className={`cursor-pointer transition-all ${
-                    signUpData.selectedPlan === "monthly" 
-                      ? "ring-2 ring-primary bg-primary/5" 
-                      : "hover:bg-gray-50"
-                  }`}
-                  onClick={() => setSignUpData(prev => ({ ...prev, selectedPlan: "monthly" }))}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold">{t("loginScreen.plans.monthly.title")}</h3>
-                      {signUpData.selectedPlan === "monthly" && (
-                        <Check className="w-5 h-5 text-primary" />
-                      )}
-                    </div>
-                    <div className="text-2xl font-bold text-primary mb-2">
-                      {t("loginScreen.plans.monthly.price")}<span className="text-sm text-gray-500">{t("loginScreen.plans.monthly.period")}</span>
-                    </div>
-                    <ul className="text-sm space-y-1">
-                      <li className="flex items-center gap-2">
-                        <Star className="w-4 h-4 text-yellow-500" />
-                        {t("loginScreen.plans.monthly.features.unlimited")}
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-blue-500" />
-                        {t("loginScreen.plans.monthly.features.aiFeatures")}
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Volume2 className="w-4 h-4 text-purple-500" />
-                        Voice personalization & commands
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-green-500" />
-                        Reading assessment & feedback
-                      </li>
-                    </ul>
-                  </CardContent>
-                </Card>
+              {/* Step progress indicator */}
+              <div className="flex items-center justify-center gap-3 text-sm font-medium">
+                <span className={signupStep === 1 ? "text-primary" : "text-muted-foreground"}>
+                  {t("loginScreen.steps.step1", "Step 1 of 2")}
+                </span>
+                <span className="text-muted-foreground">›</span>
+                <span className={signupStep === 2 ? "text-primary" : "text-muted-foreground"}>
+                  {t("loginScreen.steps.step2", "Step 2 of 2")}
+                </span>
+              </div>
 
-                <Card 
-                  className={`cursor-pointer transition-all relative ${
-                    signUpData.selectedPlan === "annual" 
-                      ? "ring-2 ring-primary bg-primary/5" 
-                      : "hover:bg-gray-50"
-                  }`}
-                  onClick={() => setSignUpData(prev => ({ ...prev, selectedPlan: "annual" }))}
-                >
-                  <Badge className="absolute -top-2 -right-2 bg-green-500">
-                    {t("loginScreen.plans.annual.savings")}
-                  </Badge>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold">{t("loginScreen.plans.annual.title")}</h3>
-                      {signUpData.selectedPlan === "annual" && (
-                        <Check className="w-5 h-5 text-primary" />
-                      )}
-                    </div>
-                    <div className="text-2xl font-bold text-primary mb-2">
-                      {t("loginScreen.plans.annual.price")}<span className="text-sm text-gray-500">{t("loginScreen.plans.annual.period")}</span>
-                    </div>
-                    <ul className="text-sm space-y-1">
-                      <li className="flex items-center gap-2">
-                        <Star className="w-4 h-4 text-yellow-500" />
-                        {t("loginScreen.plans.annual.features.unlimited")}
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-blue-500" />
-                        {t("loginScreen.plans.annual.features.aiFeatures")}
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Volume2 className="w-4 h-4 text-purple-500" />
-                        Voice personalization & commands
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-green-500" />
-                        Reading assessment & feedback
-                      </li>
-                    </ul>
-                  </CardContent>
-                </Card>
-                </div>
-              )}
-
-              {/* Discount Success Message */}
-              {discountValidation.isValid && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <h3 className="font-semibold text-green-800 mb-1">🎉 No Payment Required!</h3>
-                  <p className="text-sm text-green-700">
-                    Your discount code will give you 90 days of free premium access starting when you first log in.
+              {/* STEP 1 — Your details */}
+              {signupStep === 1 && (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold text-center">
+                    {t("loginScreen.steps.detailsTitle", "Create your account")}
+                  </h2>
+                  <p className="text-sm text-muted-foreground text-center">
+                    {t("loginScreen.steps.detailsSubtitle", "Enter your details to get started.")}
                   </p>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-name">{t("loginScreen.form.labels.displayName")}</Label>
+                    <Input
+                      id="signup-name"
+                      type="text"
+                      value={signUpData.displayName}
+                      onChange={(e) => setSignUpData(prev => ({ ...prev, displayName: e.target.value }))}
+                      placeholder={t("loginScreen.form.placeholders.displayName")}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">{t("loginScreen.form.labels.email")}</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      value={signUpData.email}
+                      onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder={t("loginScreen.form.placeholders.email")}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">{t("loginScreen.form.labels.password")}</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      value={signUpData.password}
+                      onChange={(e) => setSignUpData(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder={t("loginScreen.form.placeholders.password")}
+                      required
+                    />
+                  </div>
+
+                  {/* COPPA Age Gate - Children's Privacy Protection */}
+                  <AgeGate
+                    isUnder13={isUnder13}
+                    parentEmail={parentEmail}
+                    onUnder13Change={setIsUnder13}
+                    onParentEmailChange={setParentEmail}
+                    showValidationError={false}
+                  />
+
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={() => { if (validateStep1()) setSignupStep(2); }}
+                  >
+                    {t("loginScreen.steps.continue", "Continue")}
+                  </Button>
                 </div>
               )}
 
-              {/* Sign Up Form */}
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">{t("loginScreen.form.labels.displayName")}</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    value={signUpData.displayName}
-                    onChange={(e) => setSignUpData(prev => ({ ...prev, displayName: e.target.value }))}
-                    placeholder={t("loginScreen.form.placeholders.displayName")}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">{t("loginScreen.form.labels.email")}</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    value={signUpData.email}
-                    onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder={t("loginScreen.form.placeholders.email")}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">{t("loginScreen.form.labels.password")}</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={signUpData.password}
-                    onChange={(e) => setSignUpData(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder={t("loginScreen.form.placeholders.password")}
-                    required
-                  />
-                </div>
-
-                {/* COPPA Age Gate - Children's Privacy Protection */}
-                <AgeGate
-                  isUnder13={isUnder13}
-                  parentEmail={parentEmail}
-                  onUnder13Change={setIsUnder13}
-                  onParentEmailChange={setParentEmail}
-                  showValidationError={false}
-                />
-
-                {/* Discount Code Section */}
-                <div className="space-y-2">
+              {/* STEP 2 — Choose how to start */}
+              {signupStep === 2 && (
+                <div className="space-y-6">
                   <button
                     type="button"
-                    onClick={() => setDiscountValidation(prev => ({ 
-                      ...prev, 
-                      showDiscountSection: !prev.showDiscountSection 
-                    }))}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                    onClick={() => setSignupStep(1)}
+                    className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
                   >
-                    Have a discount code?
-                    <span className={`transition-transform ${discountValidation.showDiscountSection ? 'rotate-90' : ''}`}>
-                      ▶
-                    </span>
+                    <ArrowLeft className="w-4 h-4" />
+                    {t("loginScreen.steps.back", "Back")}
                   </button>
-                  
-                  {discountValidation.showDiscountSection && (
-                    <div className="space-y-2 pt-2">
-                      <div className="relative">
-                        <Input
-                          type="text"
-                          placeholder="Enter discount code"
-                          value={signUpData.discountCode}
-                          onChange={(e) => {
-                            const code = e.target.value;
-                            setSignUpData(prev => ({ ...prev, discountCode: code }));
-                            // Debounced validation
-                            clearTimeout((window as any).discountTimeout);
-                            (window as any).discountTimeout = setTimeout(() => {
-                              validateDiscountCode(code);
-                            }, 500);
-                          }}
-                          className={`pr-8 ${
-                            discountValidation.isValid 
-                              ? 'border-green-500 focus:border-green-500' 
-                              : discountValidation.message && !discountValidation.isValidating
-                              ? 'border-red-500 focus:border-red-500'
-                              : ''
-                          }`}
-                        />
-                        {discountValidation.isValidating && (
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                          </div>
-                        )}
-                        {discountValidation.isValid && (
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500">
-                            ✓
-                          </div>
-                        )}
-                      </div>
-                      
-                      {discountValidation.message && (
-                        <p className={`text-xs ${
-                          discountValidation.isValid 
-                            ? 'text-green-600' 
-                            : 'text-red-600'
-                        }`}>
-                          {discountValidation.message}
-                        </p>
+
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold">
+                      {t("loginScreen.steps.chooseTitle", "Choose how to start")}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {t("loginScreen.steps.chooseSubtitle", "Have a discount code? Enter it below. Otherwise pick a plan.")}
+                    </p>
+                  </div>
+
+                  {/* Discount Code Section — always visible */}
+                  <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-4">
+                    <Label htmlFor="discount-code" className="font-medium">
+                      {t("loginScreen.discount.label", "Have a discount code?")}
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="discount-code"
+                        type="text"
+                        placeholder={t("loginScreen.discount.placeholder", "Enter discount code")}
+                        value={signUpData.discountCode}
+                        onChange={(e) => {
+                          const code = e.target.value;
+                          setSignUpData(prev => ({ ...prev, discountCode: code }));
+                          clearTimeout((window as any).discountTimeout);
+                          (window as any).discountTimeout = setTimeout(() => {
+                            validateDiscountCode(code);
+                          }, 500);
+                        }}
+                        className={`pr-8 ${
+                          discountValidation.isValid
+                            ? 'border-green-500 focus:border-green-500'
+                            : discountValidation.message && !discountValidation.isValidating
+                            ? 'border-red-500 focus:border-red-500'
+                            : ''
+                        }`}
+                      />
+                      {discountValidation.isValidating && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                        </div>
+                      )}
+                      {discountValidation.isValid && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500">
+                          ✓
+                        </div>
                       )}
                     </div>
+                    {discountValidation.message && (
+                      <p className={`text-xs ${discountValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                        {discountValidation.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Discount Success Message */}
+                  {discountValidation.isValid && (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <h3 className="font-semibold text-green-800 mb-1">🎉 No Payment Required!</h3>
+                      <p className="text-sm text-green-700">
+                        Your discount code will give you 90 days of free premium access starting when you first log in.
+                      </p>
+                    </div>
                   )}
-                </div>
 
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? t("loginScreen.form.buttons.creating") : t("loginScreen.form.buttons.createAccount")}
-                </Button>
-              </form>
+                  {/* Pricing Plans — Hidden when valid discount code */}
+                  {!discountValidation.isValid && (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Card
+                        className={`cursor-pointer transition-all ${
+                          signUpData.selectedPlan === "monthly"
+                            ? "ring-2 ring-primary bg-primary/5"
+                            : "hover:bg-gray-50"
+                        }`}
+                        onClick={() => setSignUpData(prev => ({ ...prev, selectedPlan: "monthly" }))}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-semibold">{t("loginScreen.plans.monthly.title")}</h3>
+                            {signUpData.selectedPlan === "monthly" && (
+                              <Check className="w-5 h-5 text-primary" />
+                            )}
+                          </div>
+                          <div className="text-2xl font-bold text-primary mb-2">
+                            {t("loginScreen.plans.monthly.price")}<span className="text-sm text-gray-500">{t("loginScreen.plans.monthly.period")}</span>
+                          </div>
+                          <ul className="text-sm space-y-1">
+                            <li className="flex items-center gap-2">
+                              <Star className="w-4 h-4 text-yellow-500" />
+                              {t("loginScreen.plans.monthly.features.unlimited")}
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Zap className="w-4 h-4 text-blue-500" />
+                              {t("loginScreen.plans.monthly.features.aiFeatures")}
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Volume2 className="w-4 h-4 text-purple-500" />
+                              Voice personalization & commands
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <BookOpen className="w-4 h-4 text-green-500" />
+                              Reading assessment & feedback
+                            </li>
+                          </ul>
+                        </CardContent>
+                      </Card>
 
-              {/* Payment Button - Hidden when valid discount code */}
-              {!discountValidation.isValid && (
-                <div className="border-t pt-4">
-                  <Button 
-                    onClick={handleStartPayment} 
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    disabled={loading || !signUpData.email}
-                  >
-                    {loading ? t("loginScreen.form.buttons.processing") : `${t("loginScreen.form.buttons.startPayment")} - ${signUpData.selectedPlan === "monthly" ? t("loginScreen.payment.monthly") : t("loginScreen.payment.annual")}`}
-                  </Button>
-                  <p className="text-xs text-gray-500 text-center mt-2">
-                    {t("loginScreen.payment.instruction")}
-                  </p>
+                      <Card
+                        className={`cursor-pointer transition-all relative ${
+                          signUpData.selectedPlan === "annual"
+                            ? "ring-2 ring-primary bg-primary/5"
+                            : "hover:bg-gray-50"
+                        }`}
+                        onClick={() => setSignUpData(prev => ({ ...prev, selectedPlan: "annual" }))}
+                      >
+                        <Badge className="absolute -top-2 -right-2 bg-green-500">
+                          {t("loginScreen.plans.annual.savings")}
+                        </Badge>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-semibold">{t("loginScreen.plans.annual.title")}</h3>
+                            {signUpData.selectedPlan === "annual" && (
+                              <Check className="w-5 h-5 text-primary" />
+                            )}
+                          </div>
+                          <div className="text-2xl font-bold text-primary mb-2">
+                            {t("loginScreen.plans.annual.price")}<span className="text-sm text-gray-500">{t("loginScreen.plans.annual.period")}</span>
+                          </div>
+                          <ul className="text-sm space-y-1">
+                            <li className="flex items-center gap-2">
+                              <Star className="w-4 h-4 text-yellow-500" />
+                              {t("loginScreen.plans.annual.features.unlimited")}
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Zap className="w-4 h-4 text-blue-500" />
+                              {t("loginScreen.plans.annual.features.aiFeatures")}
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Volume2 className="w-4 h-4 text-purple-500" />
+                              Voice personalization & commands
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <BookOpen className="w-4 h-4 text-green-500" />
+                              Reading assessment & feedback
+                            </li>
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+
+                  {/* Single context-aware primary CTA */}
+                  {discountValidation.isValid ? (
+                    <Button
+                      type="button"
+                      className="w-full"
+                      disabled={loading}
+                      onClick={() => handleSignUp()}
+                    >
+                      {loading ? t("loginScreen.form.buttons.creating") : t("loginScreen.steps.createFree", "Create Free Account")}
+                    </Button>
+                  ) : (
+                    <div>
+                      <Button
+                        type="button"
+                        onClick={handleCreateAndPay}
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        disabled={loading || !signUpData.email}
+                      >
+                        {loading ? t("loginScreen.form.buttons.processing") : `${t("loginScreen.steps.createAndPay", "Create Account & Pay")} - ${signUpData.selectedPlan === "monthly" ? t("loginScreen.payment.monthly") : t("loginScreen.payment.annual")}`}
+                      </Button>
+                      <p className="text-xs text-gray-500 text-center mt-2">
+                        {t("loginScreen.payment.instruction")}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </TabsContent>
