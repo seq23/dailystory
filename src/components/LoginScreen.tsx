@@ -48,17 +48,30 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
   });
   const [loading, setLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  // Two-step signup wizard: 1 = your details, 2 = choose how to start
+  const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [discountValidation, setDiscountValidation] = useState<{
     isValid: boolean;
     message: string;
     isValidating: boolean;
-    showDiscountSection: boolean;
   }>({
     isValid: false,
     message: "",
-    isValidating: false,
-    showDiscountSection: false
+    isValidating: false
   });
+
+  // Validate Step 1 (details) before advancing to Step 2
+  const validateStep1 = (): boolean => {
+    if (!signUpData.email || !signUpData.password || !signUpData.displayName) {
+      toast.error(t("loginScreen.form.errors.fillAllFields"));
+      return false;
+    }
+    if (isUnder13 && (!parentEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(parentEmail))) {
+      toast.error("Please provide a valid parent/guardian email address for accounts under 13.");
+      return false;
+    }
+    return true;
+  };
 
   // Validate discount code
   const validateDiscountCode = async (code: string) => {
