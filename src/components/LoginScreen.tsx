@@ -110,17 +110,17 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSignUp = async (e?: React.FormEvent): Promise<boolean> => {
+    e?.preventDefault();
     if (!signUpData.email || !signUpData.password || !signUpData.displayName) {
       toast.error(t("loginScreen.form.errors.fillAllFields"));
-      return;
+      return false;
     }
 
     // COPPA validation: require parent email if under 13
     if (isUnder13 && (!parentEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(parentEmail))) {
       toast.error("Please provide a valid parent/guardian email address for accounts under 13.");
-      return;
+      return false;
     }
 
     setLoading(true);
@@ -149,7 +149,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
 
       if (error) {
         toast.error(error.message);
-        return;
+        return false;
       }
 
       // If a valid discount code was entered, activate it immediately on the
@@ -184,11 +184,21 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         : discountValidation.isValid 
           ? "Account created! Your discount code will be activated when you first log in."
           : t("loginScreen.form.success.accountCreated"));
+      return true;
     } catch (error) {
       toast.error(t("loginScreen.form.errors.unexpected"));
       DebugLogger.error('auth', 'Signup error', error);
+      return false;
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Paid path: create the account, then open Stripe checkout in one click
+  const handleCreateAndPay = async () => {
+    const created = await handleSignUp();
+    if (created) {
+      await handleStartPayment();
     }
   };
 
