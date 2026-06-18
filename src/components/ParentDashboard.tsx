@@ -93,13 +93,12 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
         if (!user) { setIsPremiumUser(false); return; }
         const { data, error } = await supabase
           .from('user_preferences')
-          .select('id, active_child_id, story_preferences, is_premium')
+          .select('id, active_child_id, story_preferences')
           .eq('user_id', user.id)
           .maybeSingle();
         if (error) { DebugLogger.warn('error', 'User preferences fetch failed', { error }); return; }
         setPrefsRowId((data as any)?.id ?? null);
         setActiveChildId((data as any)?.active_child_id ?? null);
-        setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
         const sp = ((data as any)?.story_preferences) || {};
         setStoryPrefs(sp);
         const lists = sp?.teacherWordLists || {};
@@ -123,12 +122,11 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
           if (!user) return;
           const { data } = await supabase
             .from('user_preferences')
-            .select('id, active_child_id, story_preferences, is_premium')
+            .select('id, active_child_id, story_preferences')
             .eq('user_id', user.id)
             .maybeSingle();
           setPrefsRowId((data as any)?.id ?? null);
           setActiveChildId((data as any)?.active_child_id ?? null);
-          setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
           const sp = ((data as any)?.story_preferences) || {};
           setStoryPrefs(sp);
           const lists = sp?.teacherWordLists || {};
