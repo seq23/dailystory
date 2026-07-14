@@ -1,5 +1,15 @@
 # Implementation Changelog - Story Generation System
 
+## 2026-07-14 - Guided Mode (Partner Feedback #1, #5, #8)
+
+Added a tap-to-pick "Guided Mode" to the story-setup form to remove typing/creative burden for young and ESL learners, and to make the app usable without adult supervision.
+
+- **New data:** `src/data/guidedModeOptions.ts` — preset chip lists for Theme (8), Character (8), Setting (8), and 5 Vocabulary Packs (incl. Kindergarten sight words, Feelings, Colors & Shapes, Family & Home, Nature). `GUIDED_DEFAULT_GRADES` = PreK/K/1.
+- **New component:** `src/components/forms/steps/GuidedModePicker.tsx` — toggle + chip pickers with selection caps (2 themes, 2 characters, 1 setting, 1 vocab pack). Uses `aria-pressed` for accessibility.
+- **Integration:** `src/components/forms/steps/FormStep3Personalization.tsx` mounts the picker above the existing free-text sections. Selections compose into the existing `specialRequest` (Theme/Characters/Setting lines) and `targetVocabulary` (comma-separated words) — **no backend, prompt, or generation changes.** Free-text fields are snapshotted on enable and restored on disable.
+- **Default:** Guided Mode is ON when `formData.grade ∈ {PreK, K, 1}`, otherwise OFF and fully opt-in. Grade changes re-sync the default only if the user has not interacted with the toggle.
+- **Teacher word-list precedence:** unchanged — the existing teacher word-list rule (see `mem://features/teacher-word-list-logic`) still takes priority over the guided vocab pack.
+
 ## 2026-07-14 - Partner Feedback Remediation (Phases 1–4)
 
 Addressed ESL/young-learner feedback from a partner evaluation (item #10 sign-in fixed by client; Guided Mode #1/#5/#6/#7/#8 tracked as a separate plan).
