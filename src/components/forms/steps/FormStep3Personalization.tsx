@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
@@ -17,6 +17,14 @@ import { DebugLogger } from '@/services/DebugLogger';
 import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
 import { ValidationFeedback } from "@/components/ValidationFeedback";
 import type { UserInfo, Avatar } from "@/types";
+import { GuidedModePicker } from "./GuidedModePicker";
+import {
+  GUIDED_THEMES,
+  GUIDED_CHARACTERS,
+  GUIDED_SETTINGS,
+  GUIDED_VOCAB_PACKS,
+  GUIDED_DEFAULT_GRADES,
+} from "@/data/guidedModeOptions";
 
 interface FormStep3PersonalizationProps {
   formData: UserInfo;
@@ -39,6 +47,74 @@ export const FormStep3Personalization = ({
   const [appearanceOpen, setAppearanceOpen] = useState(true);
   const [interestsOpen, setInterestsOpen] = useState(true);
   const { validationState, validateFormOnSubmit, resetValidation } = useValidationOnSubmit();
+
+  // Guided Mode state (default ON for Pre-Reader/Beginner/Easy grades).
+  const [guidedEnabled, setGuidedEnabled] = useState<boolean>(
+    GUIDED_DEFAULT_GRADES.has(formData.grade || "K")
+  );
+  const [guidedSelected, setGuidedSelected] = useState<{
+    themes: string[];
+    characters: string[];
+    settings: string[];
+    vocabPack: string | null;
+  }>({ themes: [], characters: [], settings: [], vocabPack: null });
+  // Snapshot of free-text fields before Guided Mode was enabled so we can
+  // restore them if the user turns Guided Mode off.
+  const preGuidedSnapshot = useRef<{ specialRequest: string; targetVocabulary: string } | null>(null);
+
+  const composeGuidedText = (sel: typeof guidedSelected) => {
+    const parts: string[] = [];
+    const themes = sel.themes
+      .map((id) => GUIDED_THEMES.find((c) => c.id === id)?.value)
+      .filter(Boolean) as string[];
+    const chars = sel.characters
+      .map((id) => GUIDED_CHARACTERS.find((c) => c.id === id)?.value)
+      .filter(Boolean) as string[];
+    const setting = sel.settings
+      .map((id) => GUIDED_SETTINGS.find((c) => c.id === id)?.value)
+      .filter(Boolean)[0];
+    if (themes.length) parts.push(`Theme: ${themes.join(" AND ")}`);
+    if (chars.length) parts.push(`Characters: ${chars.join(" AND ")}`);
+    if (setting) parts.push(`Setting: ${setting}`);
+    return parts.join("\n");
+  };
+
+  const composeGuidedVocab = (sel: typeof guidedSelected) => {
+    if (!sel.vocabPack) return "";
+    const pack = GUIDED_VOCAB_PACKS.find((p) => p.id === sel.vocabPack);
+    return pack ? pack.words.join(", ") : "";
+  };
+
+  const handleGuidedToggle = (enabled: boolean) => {
+    if (enabled && !guidedEnabled) {
+      preGuidedSnapshot.current = {
+        specialRequest: formData.specialRequest || "",
+        targetVocabulary: formData.targetVocabulary || "",
+      };
+    } else if (!enabled && guidedEnabled) {
+      // Restore whatever was there before Guided Mode took over.
+      const snap = preGuidedSnapshot.current;
+      if (snap) {
+        onUpdate({ specialRequest: snap.specialRequest, targetVocabulary: snap.targetVocabulary });
+      }
+    }
+    setGuidedEnabled(enabled);
+  };
+
+  const handleGuidedChange = (next: typeof guidedSelected) => {
+    setGuidedSelected(next);
+    onUpdate({
+      specialRequest: composeGuidedText(next),
+      targetVocabulary: composeGuidedVocab(next),
+    });
+  };
+
+  // If grade changes and user hasn't touched Guided Mode, sync default.
+  useEffect(() => {
+    if (preGuidedSnapshot.current === null) {
+      setGuidedEnabled(GUIDED_DEFAULT_GRADES.has(formData.grade || "K"));
+    }
+  }, [formData.grade]);
   
   // Spellcheck and translation states
   const [spellcheckSuggestions, setSpellcheckSuggestions] = useState<{[key: string]: string}>({});
@@ -310,6 +386,13 @@ export const FormStep3Personalization = ({
       </p>
 
       <div className="space-y-6">
+        <GuidedModePicker
+          enabled={guidedEnabled}
+          onToggle={handleGuidedToggle}
+          selected={guidedSelected}
+          onChange={handleGuidedChange}
+        />
+
         {/* Appearance Section */}
         <Collapsible open={appearanceOpen} onOpenChange={setAppearanceOpen}>
           <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-card border border-border rounded-lg hover:bg-accent/50 transition-colors">
