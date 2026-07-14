@@ -12,6 +12,9 @@ interface TTSOptions {
   text: string;
   voice?: string;
   model?: string;
+  /** Optional UI language code (e.g. 'ur', 'hi'). When set and no explicit voice
+   *  is provided, the edge function resolves a language-appropriate accented voice. */
+  language?: string;
   stabilization?: number; // seconds to wait for audio to stabilize
   signal?: AbortSignal;
 }
@@ -87,8 +90,9 @@ export class EnhancedElevenLabsTTS {
   static async generateAudio(options: TTSOptions): Promise<TTSResult> {
     const {
       text,
-      voice = this.DEFAULT_VOICE,
+      voice,
       model = this.DEFAULT_MODEL,
+      language,
       stabilization = this.DEFAULT_STABILIZATION,
       signal
     } = options;
@@ -99,7 +103,7 @@ export class EnhancedElevenLabsTTS {
 
     // Sanitize text for better TTS compatibility
     const sanitizedText = this.sanitizeText(text);
-    const contentHash = this.generateContentHash(sanitizedText, voice, model);
+    const contentHash = this.generateContentHash(sanitizedText, voice || `lang:${language || 'en'}`, model);
 
     DebugLogger.log('audio', 'Enhanced TTS generation', {
       originalText: text,
@@ -120,6 +124,7 @@ export class EnhancedElevenLabsTTS {
               text: sanitizedText,
               voice,
               model,
+              language,
             },
           }),
           TIMEOUT_CONFIGS.TTS_REQUEST
