@@ -31,6 +31,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import LandingPage from "./pages/LandingPage";
 import { landingPages } from "./data/landingPages";
+import VoiceAdmin from "./pages/admin/VoiceAdmin";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
 import { VoiceCommands } from "./components/VoiceCommands";
@@ -113,6 +114,7 @@ const App = () => {
               <Route path="/subprocessors" element={<Subprocessors />} />
               <Route path="/success" element={<PaymentSuccess />} />
               <Route path="/cancel" element={<PaymentCancel />} />
+              <Route path="/admin/voices" element={<VoiceAdmin />} />
               {landingPages.map((p) => (
                 <Route
                   key={p.slug}

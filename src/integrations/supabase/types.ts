@@ -1443,6 +1443,39 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_overrides: {
+        Row: {
+          accent_note: string | null
+          created_at: string
+          display_name: string
+          language_code: string
+          model_id: string
+          updated_at: string
+          updated_by: string | null
+          voice_id: string
+        }
+        Insert: {
+          accent_note?: string | null
+          created_at?: string
+          display_name: string
+          language_code: string
+          model_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          voice_id: string
+        }
+        Update: {
+          accent_note?: string | null
+          created_at?: string
+          display_name?: string
+          language_code?: string
+          model_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          voice_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       subscription_status_view: {

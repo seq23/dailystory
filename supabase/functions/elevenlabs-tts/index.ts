@@ -1,6 +1,12 @@
 // Clean Deploy: 2026-04-10 - Flash v2.5 + persistent cache + latency optimization
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import {
+  LANGUAGE_VOICE_MAP,
+  CHARLOTTE_FALLBACK_ID,
+  DEFAULT_ELEVENLABS_MODEL,
+  TTS_MAX_CHARACTERS,
+} from "../_shared/languageVoiceMap.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -77,6 +83,29 @@ async function setCachedAudio(hash: string, audioBuffer: ArrayBuffer): Promise<v
   }
 }
 
+async function resolveVoiceForLanguage(language?: string | null): Promise<{ voiceId: string; modelId: string; source: string }> {
+  const code = (language || 'en').toLowerCase();
+  // 1. DB override
+  try {
+    const sb = await getSupabaseClient();
+    const { data } = await sb
+      .from('voice_overrides')
+      .select('voice_id, model_id')
+      .eq('language_code', code)
+      .maybeSingle();
+    if (data?.voice_id) {
+      return { voiceId: data.voice_id, modelId: data.model_id || DEFAULT_ELEVENLABS_MODEL, source: 'db_override' };
+    }
+  } catch (e) {
+    console.warn('voice_overrides lookup failed (non-blocking):', e);
+  }
+  // 2. Hardcoded default
+  const def = LANGUAGE_VOICE_MAP[code];
+  if (def) return { voiceId: def.voiceId, modelId: def.modelId, source: 'default_map' };
+  // 3. Final fallback
+  return { voiceId: CHARLOTTE_FALLBACK_ID, modelId: DEFAULT_ELEVENLABS_MODEL, source: 'charlotte_fallback' };
+}
+
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -115,7 +144,7 @@ async function handle(req: Request): Promise<Response> {
 
   try {
     console.log('ElevenLabs TTS function called');
-    const { text, voice, model, userInfo } = await req.json();
+    const { text, voice, model, language, userInfo } = await req.json();
     
     if (userInfo) {
       const Mapper = await getDifficultyMapper();
@@ -130,12 +159,25 @@ async function handle(req: Request): Promise<Response> {
     const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');
     if (!elevenLabsApiKey) throw new Error('ElevenLabs API key not configured');
 
-    // Flash v2.5 — 50% cheaper than Turbo v2.5
-    const DEFAULT_VOICE = 'XB0fDUnXU5powFXDhCwa'; // Charlotte
-    const DEFAULT_MODEL = 'eleven_flash_v2_5';
-    const effectiveVoice = (voice && String(voice).trim().length > 0) ? voice : DEFAULT_VOICE;
-    const effectiveModel = (model && String(model).trim().length > 0) ? model : DEFAULT_MODEL;
-    const sanitizedText = String(text).slice(0, 2000);
+    // Voice/model resolution:
+    //   - Explicit `voice` from caller wins (backward compatible)
+    //   - Otherwise resolve from `language` via voice_overrides table → default map → Charlotte
+    let effectiveVoice: string;
+    let effectiveModel: string;
+    let voiceSource = 'explicit';
+    if (voice && String(voice).trim().length > 0) {
+      effectiveVoice = String(voice);
+      effectiveModel = (model && String(model).trim().length > 0) ? String(model) : DEFAULT_ELEVENLABS_MODEL;
+    } else {
+      const resolved = await resolveVoiceForLanguage(language);
+      effectiveVoice = resolved.voiceId;
+      effectiveModel = (model && String(model).trim().length > 0) ? String(model) : resolved.modelId;
+      voiceSource = resolved.source;
+    }
+    console.log(`🎙️ Voice=${effectiveVoice} model=${effectiveModel} lang=${language || 'en'} source=${voiceSource}`);
+
+    // Cost guardrail: hard cap characters per request
+    const sanitizedText = String(text).slice(0, TTS_MAX_CHARACTERS);
 
     // --- PERSISTENT CACHE CHECK ---
     const cacheHash = await hashText(sanitizedText, effectiveVoice, effectiveModel);
@@ -221,7 +263,7 @@ async function handle(req: Request): Promise<Response> {
         model_used: effectiveModel,
         operation_type: 'audio_generation',
         provider: 'elevenlabs',
-        api_endpoint: `text-to-speech/${effectiveVoice}`,
+        api_endpoint: `text-to-speech/${effectiveVoice}?lang=${language || 'en'}`,
         pricing_model: 'characters',
         quantity_used: characterCount,
         unit_cost: 0.11 / 1000
