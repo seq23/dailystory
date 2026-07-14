@@ -168,7 +168,7 @@ async function handle(req: Request): Promise<Response> {
         text,
         model_id: modelId,
         voice_settings: voice_settings || {
-          stability: 0.5,
+          stability: 0.7,        // Steadier, clearer delivery for ESL learners
           similarity_boost: 0.5,
         },
         optimize_streaming_latency: 3,  // Reduce compute overhead ~10-20%
