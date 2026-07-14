@@ -2,6 +2,13 @@
 
 _Last updated: June 10, 2026_
 
+> **July 2026 update:** After sign-in, the story-setup screen (Step 3 —
+> Personalization) now includes a **Guided Mode** toggle that replaces the
+> free-text theme/character/vocabulary inputs with tap-to-pick chips. It
+> defaults ON for PreK/K/1st grade and is fully opt-in for older grades.
+> See `docs/IMPLEMENTATION_CHANGELOG.md` (2026-07-14 entry) and
+> `/mnt/documents/Time2Read_Guided_Mode_OnePager.md` for details.
+
 ## Overview
 The premium sign-up experience in `src/components/LoginScreen.tsx` uses a **two-step wizard**
 to make account creation and discount-code entry intuitive for all users, including
