@@ -15,4 +15,13 @@ describe('PhonicsMinDict', () => {
     expect(phonicsMiniDict['hello']).toEqual(['heh', 'loh']);
     expect(phonicsMiniDict['happy']).toEqual(['hap', 'ee']);
   });
+
+  it('provides accurate early-reader / ESL syllable breakdowns', () => {
+    expect(phonicsMiniDict['little']).toEqual(['lit', 'tul']);
+    expect(phonicsMiniDict['because']).toEqual(['bee', 'kuz']);
+    expect(phonicsMiniDict['brother']).toEqual(['bruh', 'ther']);
+    expect(phonicsMiniDict['again']).toEqual(['uh', 'gen']);
+    expect(phonicsMiniDict['picture']).toEqual(['pik', 'cher']);
+    expect(phonicsMiniDict['every']).toEqual(['ev', 'ree']);
+  });
 });

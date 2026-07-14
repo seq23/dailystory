@@ -56,10 +56,10 @@ export interface AudioSettings {
 
 export const defaultAudioConfig: AudioSettings = {
   speedByDifficulty: {
-    beginner: 0.8,  // Moderate for Level 0 - Pre-Reader
-    easy: 0.8,      // Moderate for Level 1 - Beginning Reader
-    medium: 0.8,    // Moderate for Level 2 - Developing Reader
-    hard: 1.0,      // Normal for Level 3 - Independent Reader
+    beginner: 0.65, // Slow & clear for Level 0 - Pre-Reader (ESL-friendly)
+    easy: 0.7,      // Slow for Level 1 - Beginning Reader (ESL-friendly)
+    medium: 0.75,   // Gentle for Level 2 - Developing Reader
+    hard: 0.9,      // Near-normal for Level 3 - Independent Reader
     expert: 1.0,    // Fixed speed for Level 4 - Advanced Reader
   },
   

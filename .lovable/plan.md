@@ -1,108 +1,71 @@
-## Goal
+## Partner Feedback Remediation (excluding #10 — you fixed sign-in)
 
-International users (e.g. Pakistan) cannot figure out how to create an account or where to enter a discount code. Fix by:
-1. **Unhiding the discount code field** (no longer collapsed behind a "Have a discount code?" toggle).
-2. **Overhauling account creation into an explicit Step 1 / Step 2 wizard** that is dead-simple and intuitive.
-
-Scope is confined to the existing `LoginScreen.tsx` (frontend/presentation only). No backend, edge function, or database changes.
+Sequenced from lowest-risk config/copy changes to the larger Guided Mode feature. Each phase is independently shippable so we can stop/verify between them.
 
 ---
 
-## Current State (verified)
+### Phase 1 — Reading pace too fast (#3)  [config only, low risk]
+`src/config/audioConfig.ts` currently sets `speedByDifficulty` to `0.8` for beginner/easy/medium and `1.0` for hard/expert.
 
-`src/components/LoginScreen.tsx` (638 lines) renders a single dense "Create Account" tab containing, top to bottom:
-- Two plan cards (monthly/annual)
-- Name / email / password fields
-- COPPA AgeGate
-- A **collapsed** "Have a discount code? ▶" toggle hiding the discount input
-- Two separate action buttons: "Create Account" (form submit) **and** a green "Start Payment" button
+- Lower the youngest/ESL levels: `beginner 0.65`, `easy 0.7`, `medium 0.75`, keep `hard 0.9`, `expert 1.0`.
+- No new UI. The existing "read slower / faster" voice commands and any current speed control keep working — we only shift the baseline.
 
-Problems:
-- The discount field is hidden — users never find it.
-- Everything is on one screen with two competing primary buttons → confusion about the path to take.
-- No guidance about the two distinct journeys: (A) paid signup, (B) discount-code signup.
-
-Discount logic itself works: `validateDiscountCode()` → `validate-discount-code` edge fn; on signup a valid code is applied via `apply-discount-code`. When a code is valid, plan cards + payment button already auto-hide. **This logic stays exactly as-is** — we only restructure presentation around it.
+Dependency check: values are consumed by the audio services via `speedByDifficulty`; lowering them only changes playback rate. Word-highlighting timing derives from actual audio duration (ElevenLabs timings), so it stays in sync automatically. No downstream breakage.
 
 ---
 
-## Proposed Design
+### Phase 2 — AI assistant tone feels forceful (#9)  [copy only, low risk]
+Audit and soften user-facing coach/assistant strings. From the code, `ReadAloudCoach.tsx` is already warm ("Great job", "That's okay!"). I will:
+- Grep every user-facing coach/buddy/toast string for imperative/forceful phrasing and soften wording (e.g. any "you must / try again / wrong" style copy → encouraging equivalents).
+- Prefer editing the i18n strings so all languages inherit the warmer tone.
 
-Convert the **signup tab** into a 2-step wizard (local `signupStep` state, values 1 and 2). The **sign-in tab stays unchanged**.
-
-```text
-STEP 1 — "Your details"
-  [ Step 1 of 2 ]  progress indicator
-  • Display name
-  • Email
-  • Password
-  • COPPA AgeGate (under-13 + parent email)
-  → [ Continue ]  (validates required fields before advancing)
-
-STEP 2 — "Choose how to start"
-  [ Step 2 of 2 ]  + Back link
-  • Discount code field — VISIBLE BY DEFAULT (no toggle), with
-    clear label "Have a discount code? Enter it here" + live
-    validation tick/spinner/message (reuse existing handler)
-  • If code valid → green "No payment required" panel + [ Create Free Account ]
-  • If no/!valid code → plan cards (monthly/annual) + [ Create Account & Pay ]
-  → on success: existing handleSignUp / handleStartPayment logic
-```
-
-Key UX rules:
-- Only **one** primary button visible at a time on step 2 (removes the two-competing-buttons problem).
-- Progress indicator ("Step 1 of 2") so users know where they are.
-- Discount field always rendered on step 2 — fully discoverable.
-- "Back" returns to step 1 preserving entered data (state is already lifted to `signUpData`).
+No logic changes — string values only.
 
 ---
 
-## Technical Details
-
-- All changes inside `src/components/LoginScreen.tsx`. Add `const [signupStep, setSignupStep] = useState<1|2>(1)`.
-- Add a `validateStep1()` guard (name, email, password present; if under-13, valid parent email) before allowing Continue — reuses the same checks currently inside `handleSignUp`, so no logic divergence.
-- Remove the `showDiscountSection` collapse behavior; render the discount input unconditionally on step 2. Keep `discountValidation` state and `validateDiscountCode()` untouched.
-- Keep `handleSignUp`, `handleSignIn`, `handleStartPayment`, COPPA AgeGate, discount activation, and i18n keys intact.
-- Reset `signupStep` to 1 when switching tabs is not required but harmless; will keep it simple.
-- Use existing shadcn components and semantic tokens already in the file. No new colors.
-
-### Dependency / downstream check (forward + backward)
-- **Callers of LoginScreen**: `GuestExperience.tsx` (login state) and `src/pages/Auth.tsx`. Both only pass `userInfo`/`onBack` props — the public props interface is **unchanged**, so no caller breaks.
-- **userInfo pre-fill** (display name) still applies on step 1 — preserved.
-- **Discount edge functions** (`validate-discount-code`, `apply-discount-code`): calls unchanged.
-- **i18n**: existing keys reused; a few new English-fallback strings added inline via `t(key, "fallback")` so missing translations degrade gracefully (consistent with existing code, e.g. line 333, 504).
-- **Tests**: no existing test imports LoginScreen internals (search showed none); props contract preserved.
-- **Pricing page / PricingSection**: untouched.
+### Phase 3 — Accent/dialect hard to understand for ESL (#4)  [config, low risk]
+Charlotte uses ElevenLabs voice `XB0fDUnXU5powFXDhCwa` with the multilingual model. For ESL clarity:
+- Nudge `voice_settings` toward clearer, steadier delivery (raise `stability`, keep `speed` aligned with the Phase 1 slower baselines) in the Charlotte TTS path.
+- This does not change the voice identity, only makes it slower and steadier — combined with Phase 1 it directly addresses "too fast / hard to follow."
 
 ---
 
-## Hostile Review — 15-yr Senior Architect POV
+### Phase 4 — Syllable segmentation accuracy (#2)  [data, incremental]
+`src/data/phonicsMiniDict.ts` is a curated override dictionary (covered by `phonicsMiniDict.test.ts`). Fix accuracy by:
+- Adding/correcting entries for common early-reader words that currently mis-segment.
+- Extending the test file with the new expected breakdowns so regressions are caught.
 
-1. **"You're splitting one form into two — does signup state survive navigation?"** Yes. `signUpData`, `isUnder13`, `parentEmail`, and `discountValidation` are component-level state, not per-step. Going Back/Continue does not unmount inputs, so nothing is lost. ✅
-2. **"Two competing primary buttons was the real bug. Did you actually fix it or just move it?"** Step 2 renders exactly one primary CTA based on `discountValidation.isValid`. The old simultaneous "Create Account" + "Start Payment" pair is eliminated. ✅
-3. **"COPPA gate must not be bypassable by the new step flow."** The under-13 + parent-email validation runs both in `validateStep1()` (to advance) and remains in `handleSignUp()` (final guard). Defense in depth; cannot skip. ✅
-4. **"Discount code applied at signup depends on an authenticated session — unchanged?"** Correct, `handleSignUp` still calls `apply-discount-code` with the post-signUp access token. Pure presentation change. ✅
-5. **"Does hiding plan cards on step 1 break the `selectedPlan` default?"** `selectedPlan` defaults to `"monthly"` in initial state; cards live on step 2; checkout reads `signUpData.selectedPlan`. No regression. ✅
-6. **"RTL / i18n for international users — this is literally the complaint."** Flow uses existing `t()` keys; new strings use inline English fallbacks. The app already supports RTL globally (per project memory); no hardcoded LTR-only layout introduced. ✅
-7. **"Accessibility — multiple h1s / focus management."** Existing `sr-only` h1 stays; on step change we keep a single h1. Labels remain associated with inputs via `htmlFor`. ✅
-8. **"Could a user reach Stripe checkout without an account?"** No — `handleStartPayment` already requires an active session and errors otherwise; flow unchanged. ✅
-9. **"Edge case: valid discount entered, then user clears it on step 2."** `validateDiscountCode("")` resets `isValid=false`, which re-shows plan cards + pay button. Already handled by existing logic. ✅
-
-No backend or schema risk. Blast radius limited to one presentation component with a stable props contract.
+No engine rewrite — just expand the authoritative override dict.
 
 ---
 
-## New things I plan to ADD (need your permission)
-1. Local `signupStep` state + a "Step 1 of 2 / Step 2 of 2" progress indicator UI inside `LoginScreen.tsx`.
-2. A "Continue" and "Back" button to move between the two steps.
-3. A `validateStep1()` helper (reuses existing field checks; no new validation rules).
-4. A small set of inline English fallback strings for the new step labels (e.g. "Step 1 of 2", "Continue", "Choose how to start").
+### Phase 5 — Guided Mode for young / ESL learners (#1, #5, #6, #7, #8)  [larger feature — separate detailed plan before building]
+Items 1, 5, 6, 7, 8 all reduce to: young/ESL kids can't self-drive prompts, themes, characters, and vocabulary. Proposed lean approach (to be detailed & approved separately, NOT built in this pass):
+- A "Guided Mode" toggle that swaps free-text prompt entry for a small set of pre-made, age-appropriate theme/character picker cards.
+- Optional teacher/parent-selected vocabulary list feeding the existing teacher word-list injection (that system already exists per memory).
 
-## Things I plan to REMOVE / CHANGE (need your permission)
-1. Remove the collapsible "Have a discount code? ▶" toggle and its `showDiscountSection` show/hide behavior — the discount input becomes always-visible on step 2. (The `showDiscountSection` field in `discountValidation` state would become unused and be deleted.)
-2. Remove the side-by-side placement of the two action buttons; replace with a single context-aware CTA per step.
+I will write this as its own plan for your approval rather than build it now.
 
-## Final step
-- Update documentation (`docs/` — likely a short note in the auth/onboarding doc or a new `docs/ACCOUNT_CREATION_FLOW.md`) describing the new 2-step flow, as the last step of implementation.
+---
 
-No backend, edge function, or DB changes. Awaiting your approval on the ADD and REMOVE lists before I implement.
+### Documentation (last step, per your rules)
+Update the relevant docs after Phases 1–4 land:
+- `docs/AUDIO_SYSTEM_ARCHITECTURE.md` (speed baselines, voice settings)
+- `docs/VOICE_CATALOG_TESTING.md` or phonics notes (syllable dict additions)
+- A short "Partner Feedback Remediation" note in `docs/IMPLEMENTATION_CHANGELOG.md`.
+
+---
+
+### ⚠️ Approval needed — things I would ADD
+1. New/corrected entries in `src/data/phonicsMiniDict.ts` + matching test cases (Phase 4).
+2. New i18n string edits for softened tone (Phase 2) — no new keys unless a hardcoded string needs extracting (I'll flag any).
+3. A short changelog note in docs.
+
+### Things I would REMOVE
+- Nothing is deleted. All changes are edits to existing config/copy/data.
+
+### Not in this pass
+- Guided Mode (Phase 5) — I'll deliver a separate plan.
+- Sign-in bug #10 — you fixed it.
+
+Confirm and I'll execute Phases 1–4, then write the Guided Mode plan.

@@ -161,9 +161,9 @@ async function handle(req: Request): Promise<Response> {
       text: sanitizedText,
       model_id: effectiveModel,
       voice_settings: {
-        stability: 0.5,
+        stability: 0.7,        // Steadier, clearer delivery for ESL learners
         similarity_boost: 0.8,
-        style: 0.2,
+        style: 0.1,            // Less stylization = easier to understand
         use_speaker_boost: true
       },
       apply_text_normalization: "auto",
