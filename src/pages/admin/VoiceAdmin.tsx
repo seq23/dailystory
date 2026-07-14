@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,33 @@ type Override = {
   updated_at?: string;
 };
 
+type AccessState = 'checking' | 'signed_out' | 'forbidden' | 'ready' | 'error';
+
+async function getFunctionErrorDetails(error: any) {
+  const status = error?.context?.status as number | undefined;
+  let message = error?.message || 'Request failed';
+  let code: string | undefined;
+
+  if (error?.context && typeof error.context.text === 'function') {
+    try {
+      const text = await error.context.text();
+      if (text) {
+        try {
+          const parsed = JSON.parse(text);
+          message = parsed?.error || parsed?.message || message;
+          code = parsed?.code;
+        } catch {
+          message = text;
+        }
+      }
+    } catch {
+      // Keep the Supabase client error message when the response body is unavailable.
+    }
+  }
+
+  return { status, message, code };
+}
+
 /**
  * Admin-only page to manage per-language ElevenLabs voice overrides.
  * Access is gated at the edge function by ADMIN_USER_IDS — non-admins get 403.
@@ -26,20 +54,73 @@ const VoiceAdmin: React.FC = () => {
   const [saving, setSaving] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState<string | null>(null);
   const [edits, setEdits] = useState<Record<string, Partial<Override>>>({});
+  const [accessState, setAccessState] = useState<AccessState>('checking');
+  const [lastError, setLastError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; email?: string } | null>(null);
 
-  const load = async () => {
+  const handleFunctionError = useCallback(async (error: any, title: string) => {
+    const details = await getFunctionErrorDetails(error);
+    const message = details.message || error?.message || 'Request failed';
+    setLastError(message);
+
+    if (details.status === 401 || details.code === 'sign_in_required') {
+      setAccessState('signed_out');
+      toast({ title: 'Sign in required', description: 'Please sign in before opening voice administration.', variant: 'destructive' });
+      return details;
+    }
+
+    if (details.status === 403 || details.code === 'admin_required' || details.code === 'admin_not_configured') {
+      setAccessState('forbidden');
+      toast({ title: 'Admin access required', description: message, variant: 'destructive' });
+      return details;
+    }
+
+    setAccessState('error');
+    toast({ title, description: message, variant: 'destructive' });
+    return details;
+  }, [toast]);
+
+  const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.functions.invoke('voice-overrides-admin', {
-      body: { action: 'list' },
-    });
-    setLoading(false);
-    if (error) { toast({ title: 'Load failed', description: error.message, variant: 'destructive' }); return; }
-    const map: Record<string, Override> = {};
-    (data?.overrides || []).forEach((o: Override) => { map[o.language_code] = o; });
-    setOverrides(map);
-  };
+    setAccessState('checking');
+    setLastError(null);
 
-  useEffect(() => { load(); }, []);
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      const session = sessionData.session;
+      if (!session?.user) {
+        setCurrentUser(null);
+        setAccessState('signed_out');
+        setLastError('Please sign in with an admin account to manage voice overrides.');
+        return;
+      }
+
+      setCurrentUser({ id: session.user.id, email: session.user.email || undefined });
+
+      const { data, error } = await supabase.functions.invoke('voice-overrides-admin', {
+        body: { action: 'list' },
+      });
+      if (error) {
+        await handleFunctionError(error, 'Load failed');
+        return;
+      }
+
+      const map: Record<string, Override> = {};
+      (data?.overrides || []).forEach((o: Override) => { map[o.language_code] = o; });
+      setOverrides(map);
+      setAccessState('ready');
+    } catch (e: any) {
+      setAccessState('error');
+      setLastError(e?.message || 'Unable to check admin access.');
+      toast({ title: 'Load failed', description: e?.message || 'Unable to check admin access.', variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  }, [handleFunctionError, toast]);
+
+  useEffect(() => { load(); }, [load]);
 
   const save = async (lang: SupportedLanguage) => {
     const patch = edits[lang] || {};
@@ -58,7 +139,7 @@ const VoiceAdmin: React.FC = () => {
       },
     });
     setSaving(null);
-    if (error) { toast({ title: 'Save failed', description: error.message, variant: 'destructive' }); return; }
+    if (error) { await handleFunctionError(error, 'Save failed'); return; }
     toast({ title: `Saved ${lang}` });
     setEdits((e) => { const n = { ...e }; delete n[lang]; return n; });
     load();
@@ -70,7 +151,7 @@ const VoiceAdmin: React.FC = () => {
       body: { action: 'delete', language_code: lang },
     });
     setSaving(null);
-    if (error) { toast({ title: 'Delete failed', description: error.message, variant: 'destructive' }); return; }
+    if (error) { await handleFunctionError(error, 'Delete failed'); return; }
     toast({ title: `Reset ${lang} to default` });
     load();
   };
@@ -108,7 +189,42 @@ const VoiceAdmin: React.FC = () => {
         Map each supported UI language to an ElevenLabs voice. Leaving a language
         without an override falls back to the compiled defaults (currently Charlotte).
       </p>
-      {loading && <p>Loading…</p>}
+      {loading && <p>Checking admin access…</p>}
+
+      {!loading && accessState !== 'ready' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {accessState === 'signed_out' ? 'Sign in required' : 'Admin access required'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            {accessState === 'signed_out' ? (
+              <p>Please sign in with an admin account before managing language voices.</p>
+            ) : (
+              <div className="space-y-2">
+                <p>This page is restricted to accounts listed in the ADMIN_USER_IDS setting.</p>
+                {currentUser && (
+                  <p>
+                    Current account: {currentUser.email || 'unknown email'} ({currentUser.id})
+                  </p>
+                )}
+              </div>
+            )}
+            {lastError && <p>{lastError}</p>}
+            <div className="flex flex-wrap gap-2">
+              {accessState === 'signed_out' && (
+                <Button asChild>
+                  <Link to="/auth">Sign in</Link>
+                </Button>
+              )}
+              <Button variant="secondary" onClick={load}>Try again</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {accessState === 'ready' && (
       <div className="grid gap-3">
         {SUPPORTED_LANGUAGE_CODES.map((lang) => {
           const current = overrides[lang];
@@ -162,6 +278,7 @@ const VoiceAdmin: React.FC = () => {
           );
         })}
       </div>
+      )}
       <p className="text-xs text-muted-foreground">
         Find voice IDs in the ElevenLabs Voice Library. All rendering is cached per
         (text, voice, model) hash, so once a language's voice is chosen, repeat reads
