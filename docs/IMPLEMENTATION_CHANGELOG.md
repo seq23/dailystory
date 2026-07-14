@@ -1,5 +1,16 @@
 # Implementation Changelog - Story Generation System
 
+## 2026-07-14 - Partner Feedback Remediation (Phases 1–4)
+
+Addressed ESL/young-learner feedback from a partner evaluation (item #10 sign-in fixed by client; Guided Mode #1/#5/#6/#7/#8 tracked as a separate plan).
+
+- **#3 Reading pace (config):** Lowered `speedByDifficulty` baselines in `src/config/audioConfig.ts` — beginner `0.8→0.65`, easy `0.8→0.7`, medium `0.8→0.75`, hard `1.0→0.9`, expert unchanged. Word-highlight timing derives from actual audio duration, so it stays in sync.
+- **#4 Accent/clarity (voice settings):** Raised `stability` to `0.7` and lowered `style` to `0.1` in `elevenlabs-tts` (and `stability 0.7` default in `elevenlabs-tts-smart`) for steadier, clearer delivery for ESL learners. Voice identity unchanged.
+- **#9 Assistant tone (copy):** Strengthened the Charlotte agent personality prompt in `elevenlabs-agent-signed-url` toward gentle, patient, non-forceful delivery with effort-first praise and simple ESL-friendly sentences.
+- **#2 Syllable accuracy (data):** Added ~26 curated early-reader/ESL syllable overrides to `src/data/phonicsMiniDict.ts` (e.g. little, because, brother, again, picture) with matching cases in `src/__tests__/phonicsMiniDict.test.ts`.
+
+Edge functions `elevenlabs-tts`, `elevenlabs-tts-smart`, and `elevenlabs-agent-signed-url` were redeployed.
+
 ## 2025-09-19 - Live Generation Continuation Fix + Netflix Service Validation
 
 ### **Live Generation Continuation Fix** 🔧
