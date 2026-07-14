@@ -1,71 +1,105 @@
-## Partner Feedback Remediation (excluding #10 — you fixed sign-in)
 
-Sequenced from lowest-risk config/copy changes to the larger Guided Mode feature. Each phase is independently shippable so we can stop/verify between them.
+# Plan · Accented-English narration per language (approved decisions applied)
+
+## Decisions locked in
+- **Persistence:** per-workspace, in a new `voice_overrides` table (admin can change defaults without redeploy).
+- **User-facing picker:** none. Voice is chosen automatically from the active UI `language`.
+
+## Goal
+For each supported UI language, narrate English text with a native-speaker-of-that-language English accent (e.g. Urdu → Pakistani-accented English). Replace the single-Charlotte pathway with a language→voice lookup. Charlotte stays as the English default.
+
+## Implementation
+
+### 1. Database — new `voice_overrides` table
+Small admin-only key/value table. Row per language code.
+
+```sql
+CREATE TABLE public.voice_overrides (
+  language_code text PRIMARY KEY,          -- 'en','ur','hi','ar','es','fr','zh','pt','sw','ru','tr'
+  voice_id      text NOT NULL,             -- ElevenLabs voice id
+  display_name  text NOT NULL,             -- e.g. "Pakistani English — Zara"
+  accent_note   text,                      -- human note for admin UI
+  model_id      text NOT NULL DEFAULT 'eleven_turbo_v2_5',
+  updated_by    uuid,
+  updated_at    timestamptz NOT NULL DEFAULT now()
+);
+
+GRANT SELECT ON public.voice_overrides TO authenticated;
+GRANT ALL    ON public.voice_overrides TO service_role;
+ALTER TABLE public.voice_overrides ENABLE ROW LEVEL SECURITY;
+
+-- Read: any authenticated user (edge function needs to look up voice)
+CREATE POLICY "voice_overrides_read_auth" ON public.voice_overrides
+  FOR SELECT TO authenticated USING (true);
+
+-- Write: admins only (uses existing ADMIN_USER_IDS pattern via edge function; no direct client writes)
+-- No INSERT/UPDATE/DELETE policies for authenticated -> only service_role can mutate.
+```
+
+Seed row for `en` = Charlotte's current ID. Other rows added by admin via the admin page.
+
+### 2. Language → Voice mapping (fallback baked into code)
+- New `src/services/tts/languageVoiceMap.ts` with hard-coded defaults per language so the app works even if the table is empty.
+- New `supabase/functions/_shared/languageVoiceMap.ts` mirror.
+- Runtime lookup order: **DB row → hard-coded default → Charlotte (English)**.
+
+### 3. Edge function routing
+- Update `supabase/functions/elevenlabs-tts/index.ts`:
+  - Accept optional `language` in request body.
+  - If explicit `voiceId` passed, honour it (unchanged behaviour).
+  - Otherwise: look up `voice_overrides` for `language`, fall back to code map, fall back to Charlotte.
+  - Cache key = `hash(text + voiceId + model + speed)` (accented audio caches independently → repeat reads = free).
+  - Explicit 4000-char cap with logged rejection.
+  - Emit `costLogger` with `tts.language=<code>` tag.
+
+### 4. Client wiring
+- `NewVoiceService.ts` and `enhancedElevenLabsTTS.ts`: pass active UI `language` into the edge function call. No component changes elsewhere.
+- Pace / stability settings from the earlier Beaconhouse fix are preserved per reading level.
+
+### 5. New admin edge function + page
+- New edge function `voice-overrides-admin` (POST): validates caller is in `ADMIN_USER_IDS`, upserts a row. Reads are done directly from `voice_overrides` via the anon client (RLS allows authenticated read).
+- New page `src/pages/admin/VoiceAdmin.tsx` at `/admin/voices`:
+  - Table of languages with current voice ID + name.
+  - "Play sample" button → calls `elevenlabs-tts` with a 1-sentence sample in the chosen voice.
+  - Inline edit → calls `voice-overrides-admin`.
+  - Admin-gated via existing pattern (same guard used by other admin routes).
+
+### 6. Docs + memory
+- Update `docs/MULTILINGUAL_TTS.md` with the new map, override flow, and cost table.
+- Update `mem://architecture/multilingual-tts-logic`.
+
+## What this does NOT change
+- No change to Charlotte for English users.
+- No change to guest vs. premium routing.
+- No change to billing, subscriptions, or Stripe.
+- No RLS changes on any existing table.
+
+## Verification
+- Unit: `languageVoiceMap` falls back correctly (DB miss → code default → Charlotte).
+- Playwright: switch UI language → generate 1 page → confirm `voiceId` in the network payload matches the map / override.
+- Cost tag: confirm `cost_tracking` rows show `tts.language=<code>`.
+
+## Cost recap (unchanged)
+ElevenLabs bills directly (not Lovable credits). Turbo v2.5 ≈ **$0.09 / 6-page guest story**, ≈ **$0.15 / 10-page premium story**, minus cache hits. Voice list pulls are free.
 
 ---
 
-### Phase 1 — Reading pace too fast (#3)  [config only, low risk]
-`src/config/audioConfig.ts` currently sets `speedByDifficulty` to `0.8` for beginner/easy/medium and `1.0` for hard/expert.
+## New items to CREATE (please confirm)
+1. **DB migration:** `voice_overrides` table + RLS + seed row for English/Charlotte
+2. `src/services/tts/languageVoiceMap.ts`
+3. `supabase/functions/_shared/languageVoiceMap.ts`
+4. `supabase/functions/voice-overrides-admin/index.ts` (admin-only upsert endpoint)
+5. `src/pages/admin/VoiceAdmin.tsx` (admin preview + edit page, no user-facing UI)
+6. `/admin/voices` route entry in `src/App.tsx`
+7. `docs/MULTILINGUAL_TTS.md`
 
-- Lower the youngest/ESL levels: `beginner 0.65`, `easy 0.7`, `medium 0.75`, keep `hard 0.9`, `expert 1.0`.
-- No new UI. The existing "read slower / faster" voice commands and any current speed control keep working — we only shift the baseline.
+## Items to MODIFY (please confirm)
+1. `supabase/functions/elevenlabs-tts/index.ts` — add language routing, DB lookup, length cap, cost tag
+2. `src/services/NewVoiceService.ts` — forward `language`
+3. `src/services/enhancedElevenLabsTTS.ts` — forward `language`
+4. `mem://architecture/multilingual-tts-logic` — update
 
-Dependency check: values are consumed by the audio services via `speedByDifficulty`; lowering them only changes playback rate. Word-highlighting timing derives from actual audio duration (ElevenLabs timings), so it stays in sync automatically. No downstream breakage.
+## Items to REMOVE
+**None.**
 
----
-
-### Phase 2 — AI assistant tone feels forceful (#9)  [copy only, low risk]
-Audit and soften user-facing coach/assistant strings. From the code, `ReadAloudCoach.tsx` is already warm ("Great job", "That's okay!"). I will:
-- Grep every user-facing coach/buddy/toast string for imperative/forceful phrasing and soften wording (e.g. any "you must / try again / wrong" style copy → encouraging equivalents).
-- Prefer editing the i18n strings so all languages inherit the warmer tone.
-
-No logic changes — string values only.
-
----
-
-### Phase 3 — Accent/dialect hard to understand for ESL (#4)  [config, low risk]
-Charlotte uses ElevenLabs voice `XB0fDUnXU5powFXDhCwa` with the multilingual model. For ESL clarity:
-- Nudge `voice_settings` toward clearer, steadier delivery (raise `stability`, keep `speed` aligned with the Phase 1 slower baselines) in the Charlotte TTS path.
-- This does not change the voice identity, only makes it slower and steadier — combined with Phase 1 it directly addresses "too fast / hard to follow."
-
----
-
-### Phase 4 — Syllable segmentation accuracy (#2)  [data, incremental]
-`src/data/phonicsMiniDict.ts` is a curated override dictionary (covered by `phonicsMiniDict.test.ts`). Fix accuracy by:
-- Adding/correcting entries for common early-reader words that currently mis-segment.
-- Extending the test file with the new expected breakdowns so regressions are caught.
-
-No engine rewrite — just expand the authoritative override dict.
-
----
-
-### Phase 5 — Guided Mode for young / ESL learners (#1, #5, #6, #7, #8)  [larger feature — separate detailed plan before building]
-Items 1, 5, 6, 7, 8 all reduce to: young/ESL kids can't self-drive prompts, themes, characters, and vocabulary. Proposed lean approach (to be detailed & approved separately, NOT built in this pass):
-- A "Guided Mode" toggle that swaps free-text prompt entry for a small set of pre-made, age-appropriate theme/character picker cards.
-- Optional teacher/parent-selected vocabulary list feeding the existing teacher word-list injection (that system already exists per memory).
-
-I will write this as its own plan for your approval rather than build it now.
-
----
-
-### Documentation (last step, per your rules)
-Update the relevant docs after Phases 1–4 land:
-- `docs/AUDIO_SYSTEM_ARCHITECTURE.md` (speed baselines, voice settings)
-- `docs/VOICE_CATALOG_TESTING.md` or phonics notes (syllable dict additions)
-- A short "Partner Feedback Remediation" note in `docs/IMPLEMENTATION_CHANGELOG.md`.
-
----
-
-### ⚠️ Approval needed — things I would ADD
-1. New/corrected entries in `src/data/phonicsMiniDict.ts` + matching test cases (Phase 4).
-2. New i18n string edits for softened tone (Phase 2) — no new keys unless a hardcoded string needs extracting (I'll flag any).
-3. A short changelog note in docs.
-
-### Things I would REMOVE
-- Nothing is deleted. All changes are edits to existing config/copy/data.
-
-### Not in this pass
-- Guided Mode (Phase 5) — I'll deliver a separate plan.
-- Sign-in bug #10 — you fixed it.
-
-Confirm and I'll execute Phases 1–4, then write the Guided Mode plan.
+Reply "approved" and I'll build it.
