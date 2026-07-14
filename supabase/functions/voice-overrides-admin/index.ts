@@ -1,5 +1,5 @@
 // Admin CRUD for public.voice_overrides.
-// Auth: bearer token must belong to a user listed in ADMIN_USER_IDS (or use service_role).
+// Auth: bearer token must belong to a signed-in user listed in ADMIN_USER_IDS (or use service_role).
 //
 // POST { action: "list" }                              → all overrides
 // POST { action: "upsert", language_code, voice_id, display_name?, accent_note?, model_id? }
@@ -85,11 +85,19 @@ serve(async (req) => {
   let authorized = token === serviceKey;
   let actingUserId: string | null = null;
   if (!authorized) {
-    const { data: { user } } = await sb.auth.getUser(token);
-    if (user && adminUserIds.includes(user.id)) {
-      authorized = true;
-      actingUserId = user.id;
+    const { data: { user }, error: userError } = await sb.auth.getUser(token);
+    if (userError || !user) {
+      return json({ error: 'Sign in required', code: 'sign_in_required' }, 401);
     }
+    if (adminUserIds.length === 0) {
+      console.error('[voice-overrides-admin] ADMIN_USER_IDS is not configured; denying access');
+      return json({ error: 'Admin access is not configured', code: 'admin_not_configured' }, 403);
+    }
+    if (!adminUserIds.includes(user.id)) {
+      return json({ error: 'Admin access required', code: 'admin_required' }, 403);
+    }
+    authorized = true;
+    actingUserId = user.id;
   }
   if (!authorized) return json({ error: 'Forbidden' }, 403);
 

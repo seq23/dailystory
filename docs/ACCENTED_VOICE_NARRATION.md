@@ -44,7 +44,10 @@ at `TTS_MAX_CHARACTERS = 4000`.
 `/admin/voices` calls the `voice-overrides-admin` edge function, which
 authorizes the caller against the `ADMIN_USER_IDS` env var (same pattern as
 `get-cost-analytics`, `security-dashboard`, `cost-report`, `notify-data-breach`).
-Non-admins get 403.
+The page now checks for a real signed-in session before calling the function, so
+the Supabase anon token is not treated as an admin attempt. Signed-out users see
+a sign-in prompt, signed-in non-admins get a clear 403/admin-access message, and
+the page remains visible instead of blanking.
 
 ## Adding a new language
 1. Add the code to `SupportedLanguage` in both `languageVoiceMap.ts` files with
