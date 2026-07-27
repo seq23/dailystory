@@ -1675,6 +1675,8 @@ useEffect(() => {
         if (!isPremium) {
           guestSession.clearAll();
           StorySessionCache.clearCachedSession('guest');
+          // Guest session over — drop this session's illustrations too.
+          StoryImageService.clearSession(stableSessionId);
         } else {
           let id = safeUserInfo.name || 'premium';
           try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
