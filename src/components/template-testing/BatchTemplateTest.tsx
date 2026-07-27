@@ -150,7 +150,7 @@ export function BatchTemplateTest() {
           {
             name: 'Direct Mode (Frontend)',
             testMode: 'direct-frontend',
-            edgeFunction: 'runware-template-cd',
+            edgeFunction: 'runware-generate-image',
             payload: (basePayload: any) => ({
               ...basePayload,
               templateComplexity: 'C'
@@ -179,7 +179,7 @@ export function BatchTemplateTest() {
           {
             name: 'Tier 2.5A (Full CCS)',
             testMode: '2.5A',
-            edgeFunction: 'runware-template-ab',
+            edgeFunction: 'runware-generate-image',
             payload: (basePayload: any) => ({
               pageText: basePayload.pageText,
               storyText: basePayload.storyText,
@@ -196,7 +196,7 @@ export function BatchTemplateTest() {
           {
             name: 'Tier 2.5B (Partial CCS)',
             testMode: '2.5B',
-            edgeFunction: 'runware-template-ab',
+            edgeFunction: 'runware-generate-image',
             payload: (basePayload: any) => ({
               pageText: basePayload.pageText,
               storyText: basePayload.storyText,
@@ -213,7 +213,7 @@ export function BatchTemplateTest() {
           {
             name: 'Tier 2.5C (Nuclear Hardcoded)',
             testMode: '2.5C',
-            edgeFunction: 'runware-template-cd',
+            edgeFunction: 'runware-generate-image',
             payload: (basePayload: any) => ({
               ...basePayload,
               templateComplexity: 'C'
@@ -222,7 +222,7 @@ export function BatchTemplateTest() {
           {
             name: 'Tier 2.5D (Emergency)',
             testMode: '2.5D',
-            edgeFunction: 'runware-template-cd',
+            edgeFunction: 'runware-generate-image',
             payload: (basePayload: any) => ({
               pageText: basePayload.pageText,
               storyText: basePayload.storyText,
