@@ -135,6 +135,89 @@ const AVATAR_TYPES: Record<string, string> = {
   'prefer-not-to-answer': 'child',
 };
 
+// ---------------------------------------------------------------------------
+// 2b. AFRO-DESCENT RENDERING
+//
+// "deep brown skin" alone gives diffusion models no ancestry anchor, so they
+// fall back to their strongest dark-skin prior (usually South Asian / Middle
+// Eastern features with straight hair). For readers whose cultural background
+// is English / Spanish / Portuguese / French AND whose chosen skin tone is
+// `dark`, we name the ancestry, the undertone and the hairstyle explicitly.
+//
+// Other languages are deliberately untouched: an Urdu reader with `dark`
+// should still get South Asian features.
+// ---------------------------------------------------------------------------
+
+const AFRO_DESCENT: Record<string, string> = {
+  en: 'African American Black child of West African descent',
+  es: 'Afro-Latina/Afro-Latino Black child of African descent',
+  pt: 'Afro-Brazilian Black child of African descent',
+  fr: 'Black child of West African / Afro-Caribbean descent',
+};
+
+// Named tone word + explicit warm undertone (kills the grey/ashy cast) +
+// "full tonal range" (kills shadows blocking up into black voids).
+const AFRO_SKIN =
+  'rich deep mahogany-brown African skin with warm golden-red undertones, ' +
+  'luminous and even, natural healthy sheen, full tonal range with soft readable shadows';
+
+// "curly hair" reliably produces loose Caucasian curls; type-4 coils only
+// appear when the STYLE IS NAMED. One fixed style per boy/neutral, and four
+// options for girls picked deterministically per child (see pickAfroHair).
+const AFRO_HAIR_GIRL = [
+  'natural 4C afro-textured hair in two neat afro puff buns with soft baby hairs',
+  'shoulder-length box braids with colourful beads at the ends, neat parted rows',
+  'neat cornrow braids in even rows gathered into a small ponytail',
+  'soft rounded natural 4C afro, glossy and well-shaped',
+];
+const AFRO_HAIR_BOY = 'short natural 4C coily afro with a neatly shaped hairline';
+const AFRO_HAIR_NEUTRAL = 'soft rounded natural 4C afro-textured hair';
+
+// Lighting recipe for deep skin: large soft key + generous fill + gentle rim.
+// Appended to STYLE on this path only.
+const AFRO_LIGHTING =
+  'soft warm wrap-around key light with generous fill, gentle rim light for ' +
+  'separation, warm colour temperature that flatters deep skin';
+
+const AFRO_NEGATIVE =
+  // anti-washout / anti-ashy
+  'washed out skin, desaturated skin, ashy grey skin, grey cast, purple shadow cast, ' +
+  'pale skin, light brown skin, skin lightening, whitewashed, overexposed face, ' +
+  'blown-out highlights, flat muddy skin tone, ' +
+  // anti-wrong-ethnicity / anti-wrong-hair
+  'straight hair, silky hair, loose wavy hair, blonde hair, South Asian features, ' +
+  'Indian features, Middle Eastern features, Arab features, tanned white person';
+
+/**
+ * Returns the Afro-descent appearance/skin/hair triple, or null when this
+ * reader is not on that path. Deterministic for a given (user, session).
+ */
+function afroProfile(
+  user: ImageUserInfo,
+  sessionId: string,
+): { appearance: string; skin: string; hair: string } | null {
+  if (user.avatar?.skinTone !== 'dark') return null;
+
+  const lang = user.nativeLanguage ?? 'en';
+  // The two explicitly Afro culture codes always qualify, whatever the base.
+  const explicit = lang === 'en-african-american' || lang === 'fr-francophone-african';
+  const base = lang.split('-')[0];
+  const appearance = explicit ? AFRO_DESCENT[base] ?? AFRO_DESCENT.en : AFRO_DESCENT[base];
+  if (!appearance) return null;
+
+  const type = user.avatar?.type;
+  let hair = AFRO_HAIR_NEUTRAL;
+  if (type === 'boy') {
+    hair = AFRO_HAIR_BOY;
+  } else if (type === 'girl') {
+    // Fixed for the whole session (same seed input as the image seed), but
+    // different children get different styles.
+    hair = AFRO_HAIR_GIRL[seedFrom(sessionId, sanitizeName(user.name)) % AFRO_HAIR_GIRL.length];
+  }
+
+  return { appearance, skin: AFRO_SKIN, hair };
+}
+
 function sanitizeName(name?: string): string {
   const raw = (name ?? '').trim();
   // Never let an email local-part or an id leak into the prompt.
@@ -142,8 +225,9 @@ function sanitizeName(name?: string): string {
   return raw.split(/\s+/)[0].slice(0, 24);
 }
 
-export function buildCharacterSheet(user: ImageUserInfo): string {
+export function buildCharacterSheet(user: ImageUserInfo, sessionId = ''): string {
   const culture = getCulture(user.nativeLanguage);
+  const afro = afroProfile(user, sessionId);
   const kind = AVATAR_TYPES[user.avatar?.type ?? ''] ?? 'child';
   const skin = SKIN_TONES[user.avatar?.skinTone ?? ''] ?? 'warm medium-tan skin';
   const age = user.age && user.age >= 3 && user.age <= 17 ? user.age : 7;
@@ -153,10 +237,10 @@ export function buildCharacterSheet(user: ImageUserInfo): string {
     `a cheerful young ${kind}, exactly ${age} years old, unmistakably a small child`,
     'child body proportions with a large head and short limbs',
     'round soft childlike face, no makeup, no jewellery',
-    `${culture.appearance}`,
-    skin,
+    afro ? afro.appearance : culture.appearance,
+    afro ? afro.skin : skin,
     'expressive friendly eyes',
-    'neat age-appropriate hair',
+    afro ? afro.hair : 'neat age-appropriate hair',
   ];
 
   if (user.favoriteColor) {
@@ -330,7 +414,8 @@ export function assemblePrompt(opts: {
 }): { positivePrompt: string; negativePrompt: string; seed: number } {
   const { scene, user, sessionId } = opts;
   const culture = getCulture(user.nativeLanguage);
-  const characterSheet = buildCharacterSheet(user);
+  const characterSheet = buildCharacterSheet(user, sessionId);
+  const afro = afroProfile(user, sessionId);
   const name = sanitizeName(user.name);
 
   // The page's own setting always wins; culture only fills an unstated backdrop.
@@ -345,12 +430,12 @@ export function assemblePrompt(opts: {
     `Scene: ${scene.replace(/[.\s]+$/, '')}${backdropHint}.`,
     // Keep the child whole and in context — stops close-ups of stray hands.
     'The child is fully visible in the scene, head to at least the waist.',
-    STYLE,
+    afro ? `${STYLE}, ${AFRO_LIGHTING}` : STYLE,
   ].join(' ');
 
   return {
     positivePrompt,
-    negativePrompt: NEGATIVE,
+    negativePrompt: afro ? `${NEGATIVE}, ${AFRO_NEGATIVE}` : NEGATIVE,
     seed: seedFrom(sessionId, name),
   };
 }
