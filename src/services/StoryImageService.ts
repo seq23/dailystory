@@ -25,9 +25,15 @@ export interface StoryImageResult {
 interface CacheEntry {
   url: string;
   scene?: string;
+  /** true when this is the static placeholder, not a real illustration */
+  isFallback?: boolean;
+  /** epoch ms the placeholder was stored — used for the retry cooldown */
+  at?: number;
 }
 
 const STORAGE_PREFIX = 't2r:img:';
+/** How long a failed page keeps showing the placeholder before we retry. */
+const FALLBACK_RETRY_MS = 45_000;
 
 export class StoryImageService {
   /** page-keyed cache for the active session */
@@ -45,13 +51,14 @@ export class StoryImageService {
 
   private static readCache(key: string): CacheEntry | null {
     const hit = this.memoryCache.get(key);
-    if (hit) return hit;
+    if (hit) return this.freshEnough(hit) ? hit : null;
 
     try {
       const raw = sessionStorage.getItem(STORAGE_PREFIX + key);
       if (!raw) return null;
       const parsed = JSON.parse(raw) as CacheEntry;
       if (!parsed?.url) return null;
+      if (!this.freshEnough(parsed)) return null;
       this.memoryCache.set(key, parsed);
       return parsed;
     } catch {
@@ -59,8 +66,20 @@ export class StoryImageService {
     }
   }
 
+  /**
+   * Real illustrations are cached forever (back-navigation must be stable).
+   * Placeholders expire, so one bad minute doesn't poison the page for the
+   * whole session — the next visit to that page tries again.
+   */
+  private static freshEnough(entry: CacheEntry): boolean {
+    if (!entry.isFallback) return true;
+    return Date.now() - (entry.at ?? 0) < FALLBACK_RETRY_MS;
+  }
+
   private static writeCache(key: string, entry: CacheEntry): void {
     this.memoryCache.set(key, entry);
+    // Placeholders stay in memory only — never persisted across a reload.
+    if (entry.isFallback) return;
     try {
       sessionStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(entry));
     } catch {
@@ -94,14 +113,37 @@ export class StoryImageService {
     }
   }
 
-  /** Images already produced for a session — used when saving a story. */
+  /**
+   * Real images produced for a session — used when saving a story.
+   * Placeholders are excluded: a saved library story must never persist the
+   * "images not working" artwork.
+   */
   static getSessionImages(sessionId: string): Record<number, string> {
     const out: Record<number, string> = {};
-    for (const [key, entry] of this.memoryCache.entries()) {
-      if (!key.startsWith(`${sessionId}::`)) continue;
+    const take = (key: string, entry: CacheEntry) => {
+      if (entry.isFallback || !entry.url) return;
       const pageNumber = Number(key.split('::')[1]);
       if (Number.isFinite(pageNumber)) out[pageNumber] = entry.url;
+    };
+
+    for (const [key, entry] of this.memoryCache.entries()) {
+      if (!key.startsWith(`${sessionId}::`)) continue;
+      take(key, entry);
     }
+
+    // Survive a page reload: sessionStorage holds the same real images.
+    try {
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const storageKey = sessionStorage.key(i);
+        if (!storageKey?.startsWith(`${STORAGE_PREFIX}${sessionId}::`)) continue;
+        const raw = sessionStorage.getItem(storageKey);
+        if (!raw) continue;
+        take(storageKey.slice(STORAGE_PREFIX.length), JSON.parse(raw) as CacheEntry);
+      }
+    } catch {
+      /* ignore */
+    }
+
     return out;
   }
 
@@ -124,7 +166,12 @@ export class StoryImageService {
 
     const cached = this.readCache(key);
     if (cached) {
-      return { success: true, url: cached.url, scene: cached.scene, isFallback: false };
+      return {
+        success: true,
+        url: cached.url,
+        scene: cached.scene,
+        isFallback: Boolean(cached.isFallback),
+      };
     }
 
     const pending = this.inFlight.get(key);
@@ -188,7 +235,7 @@ export class StoryImageService {
   private static fallback(key: string, pageNumber: number, error: string): StoryImageResult {
     console.warn(`[StoryImageService] page ${pageNumber} fallback:`, error);
     const url = ImageFallbackService.generateStoryPlaceholder('', pageNumber);
-    this.writeCache(key, { url });
+    this.writeCache(key, { url, isFallback: true, at: Date.now() });
     return { success: true, url, isFallback: true, error };
   }
 
