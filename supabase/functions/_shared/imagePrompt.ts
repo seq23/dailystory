@@ -190,6 +190,19 @@ const ANCESTRY_LOCKS: Record<string, AncestryLock> = {
       'East Asian features, Arab features, African features, European features, ' +
       'blonde hair, red hair, light eyes, pale white skin',
   },
+  zh: {
+    appearance:
+      'Chinese child from China, East Asian features with warm almond-shaped ' +
+      'dark eyes, round soft cheeks and straight glossy black hair',
+    hair: {
+      boy: 'short straight glossy black hair with a neat fringe',
+      girl: 'straight glossy black hair in a neat bob or twin ponytails with a fringe',
+      neutral: 'neat straight glossy black hair',
+    },
+    negative:
+      'South Asian features, Arab features, African features, European features, ' +
+      'blonde hair, red hair, curly hair, light eyes',
+  },
 };
 
 function ancestryLock(user: ImageUserInfo): AncestryLock | null {
