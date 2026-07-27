@@ -91,8 +91,7 @@ export const ApiKeyDiagnostic: React.FC = () => {
       // Test 2: Template services health check
       addResult('warning', '🔐 Testing Runware template services...');
       const templateServices = [
-        { name: 'AB Templates', endpoint: 'runware-template-ab' },
-        { name: 'CD Templates', endpoint: 'runware-template-cd' }
+        { name: 'Image Generation', endpoint: 'runware-generate-image' }
       ];
 
       for (const service of templateServices) {
@@ -118,32 +117,32 @@ export const ApiKeyDiagnostic: React.FC = () => {
       // Test 3: Individual tier testing
       addResult('warning', '🎯 Testing individual image generation tiers...');
       
-      // Test 3: AI Visual Scene Creator health
-      addResult('warning', '🎯 Testing AI Visual Scene Creator...');
+      // Test 3: Image Generation health
+      addResult('warning', '🎯 Testing Image Generation...');
       try {
         // Try GET health check using proper Supabase client method
-        const { data: healthData, error: getError } = await supabase.functions.invoke('ai-visual-scene-creator', {
+        const { data: healthData, error: getError } = await supabase.functions.invoke('runware-generate-image', {
           method: 'GET'
         });
 
         if (!getError && healthData) {
-          addResult('success', `✅ AI Visual Scene Creator - ${healthData.status || 'healthy'} (Tier ${healthData.tier || 'N/A'})`, healthData);
+          addResult('success', `✅ Image Generation - ${healthData.status || 'healthy'} (Tier ${healthData.tier || 'N/A'})`, healthData);
         } else {
           // Fallback to POST health check if GET fails
           addResult('warning', '⚠️ GET health check failed, trying POST health check...');
           
-          const { data: postHealthData, error: postError } = await supabase.functions.invoke('ai-visual-scene-creator', {
+          const { data: postHealthData, error: postError } = await supabase.functions.invoke('runware-generate-image', {
             body: { diagnostic: 'health_check' }
           });
           
           if (!postError && postHealthData) {
-            addResult('success', `✅ AI Visual Scene Creator (POST) - ${postHealthData.status || 'healthy'}`, postHealthData);
+            addResult('success', `✅ Image Generation (POST) - ${postHealthData.status || 'healthy'}`, postHealthData);
           } else {
-            addResult('warning', `⚠️ AI Visual Scene Creator - Health check inconclusive: ${getError?.message || postError?.message || 'Unknown issue'}`, { getError, postError });
+            addResult('warning', `⚠️ Image Generation - Health check inconclusive: ${getError?.message || postError?.message || 'Unknown issue'}`, { getError, postError });
           }
         }
       } catch (err) {
-        addResult('error', `❌ AI Visual Scene Creator - Test failed: ${err.message}`, err);
+        addResult('error', `❌ Image Generation - Test failed: ${err.message}`, err);
       }
 
       addResult('success', '🎉 Diagnostic complete! Check results above for any issues.');
@@ -196,7 +195,7 @@ export const ApiKeyDiagnostic: React.FC = () => {
     try {
       addResult('warning', '🔄 Attempting to reset circuit breaker...');
       
-      const { data, error } = await supabase.functions.invoke('ai-visual-scene-creator', {
+      const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         body: { diagnostic: 'reset_circuit_breaker' }
       });
       
