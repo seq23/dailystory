@@ -1,105 +1,54 @@
-# Image Generation Rebuild — one path, one fallback
+## Hostile review — what is actually broken today
 
-## What exists today (verified)
+I read the page and every panel it mounts. Findings:
 
-| Layer | File | LOC |
-|---|---|---|
-| Frontend orchestrator | `src/services/SimpleImageService.ts` | 2,185 |
-| Backend orchestrator | `supabase/functions/runware-generate-image/index.ts` | 3,765 |
-| Scene creator | `supabase/functions/ai-visual-scene-creator/index.ts` | 1,449 |
-| Template A/B | `supabase/functions/runware-template-ab/index.ts` (+backup) | 1,644 |
-| Template C/D | `supabase/functions/runware-template-cd/index.ts` | 1,146 |
-| Character consistency | `_shared/CharacterConsistencyService.ts` (+ inline JS copy) | 2,532 |
-| Test/debug harness | `ImageTierTester.tsx` alone | 5,302 |
+1. **`ApiKeyDiagnostic`** — calls `runware-generate-image` with `method: 'GET'`, `{diagnostic:'health_check'}`, `{diagnostic:'reset_circuit_breaker'}`, and `forceTier: 2.5`. The rewritten image function has **no GET handler, no diagnostic verbs, no tiers, and no circuit breaker**. Every one of those buttons now reports fake/garbled status. It also hardcodes the project URL + anon key inline.
+2. **`RunwareConnectionTest`** — same problem: expects `{status:'healthy', tier, environment:{hasRunwareApiKey,...}, deployment_version}` and compares against a hardcoded `2025-09-27` deployment string. Dead code against the new contract.
+3. **`PromptTestingEnhancement`** — sends `dryRun: true` + `enhancedStoryData` to `runware-generate-image` and parses `metadata.templateStructure / characterConsistency / PhaseIntegrationOrchestrator` fields that no longer exist. (Currently not even mounted on the page.)
+4. **`DebugDataViewer`** — has a "Tier Cascade" tab built on `image_generation_debug.tier`; the new function writes a single value there, so the tab is a one-row-per-page list mislabelled as a cascade.
+5. **Cost surface** — `AnalyticsDashboard` + `ScenarioSimulator` are real (they read `cost_tracking` through `get-cost-analytics`, which is admin-gated), but they are buried below the debug viewer, the forecast is not tied to the *observed* per-unit costs of the new single-path image system, and there's no "spend so far" number visible at the top of the page.
+6. **No auth guard** — the page renders for anyone; the cost function 403s for non-admins, so a non-admin sees a broken dashboard instead of a clear "admin only" message.
+7. **No doc** exists for this console.
 
-The real cascade is **six** hops (`TIER_1 → DIRECT_MODE → T25A → T25B → T25C → T25D`), plus a second, independent cascade on the client. Underneath, every tier does the identical thing: `POST https://api.runware.ai/v1`, model `runware:100@1`, 1024x1024, 25 steps, CFG 8. The tiers differ only in prompt wording — so when Runware is down, all six fail together. The cascade buys ~40s of latency and zero availability.
+## What I'd build
 
-## Target architecture
+**A. Real system tests (replacing the fake ones)**
+- One `SystemHealthPanel`: pings each live service with its *actual* contract — `runware-generate-image` (real `{pageText, sessionId, pageNumber, userInfo}` POST, renders the returned image + `scene`, `sceneSource`, `seed`, `prompt`, latency), `template-service`, `elevenlabs-tts` (language-resolved voice), `get-cost-analytics`. Pass/fail is derived from the real response shape, not from invented fields.
+- Add a small `GET` health branch to `runware-generate-image` returning `{status, model, hasRunwareApiKey, hasOpenAiApiKey, hasServiceRole}` so key presence can be checked honestly.
+- `StoryPromptTester` stays (it already drives the real `NetflixStyleStoryService` / `LiveGenerationService` / `template-service`), but each test result gains **measured cost** for that run, read back from `cost_tracking` by its `session_id`.
 
-```text
-Page renders
-   │
-   ▼
-StoryImageService.getImage(sessionId, page, pageText, profile)
-   ├─ cache hit (memory → sessionStorage) ──────► same image on back-nav
-   ├─ in-flight dedupe ─────────────────────────► await existing promise
-   ▼
-edge fn: runware-generate-image   (rewritten, ~300 LOC)
-   │
-   ├─ 1. SCENE DISTILLER  (small fast model, ~0.4s)
-   │      page text + previous page's scene
-   │      → one English sentence: what is visually happening
-   │      → on failure/timeout: first 2 sentences, quotes stripped
-   │
-   ├─ 2. CHARACTER SHEET  (deterministic, from saved settings)
-   │      name, age/grade, avatar type, skin tone, hair,
-   │      favorite color/animal + cultural presentation
-   │
-   ├─ 3. CULTURAL BACKDROP  (from native_language)
-   ├─ 4. STYLE + NEGATIVE constants
-   ├─ 5. SEED = hash(sessionId + characterName)   ← page-to-page consistency
-   ▼
-   POST api.runware.ai/v1   (1 retry, 25s timeout)
-   │
-   success → url          failure → ImageFallbackService (the kept "Tier 4" picture)
-```
+**B. Money**
+- New `SpendSummary` strip pinned at the top: today / this month / all-time spend, split by provider (OpenAI, Runware, ElevenLabs, Resend) and by operation, straight from `get-cost-analytics`. Plus month-budget progress and the internal-vs-user-traffic split that function already computes.
+- Forecast: keep `ScenarioSimulator` but feed it **observed** per-unit costs (all-time cost ÷ all-time units per operation) instead of the hardcoded defaults, and show which numbers are measured vs. assumed. Add per-story and per-page projections for guest (6 pages) and premium (unlimited) shapes.
+- "Cost of this test run" readout: every test on the page records its session id, then queries `cost_tracking` for exactly what that run spent.
 
-One code path. Identical for guest and premium.
+**C. Structure + access**
+- Tabbed layout: **Spend** · **Story generation** · **Images** · **Audio/Voice** · **Logs**. Sections gated on `?debug=1` keep that behaviour.
+- Admin gate: if the signed-in user isn't in `ADMIN_USER_IDS`, show a clear "admin only" card rather than silent 403s.
 
-### How each picture matches the page
+**D. Docs**
+- New `docs/PROMPT_TESTING_CONSOLE.md`: how to reach it (`https://time-2-read.com/prompt-testing?debug=1` — type the path onto the home URL; it is intentionally unlinked from the UI), what each tab does, what each test really calls, how costs are measured and forecast, and admin requirements.
+- Update `docs/IMAGE_GENERATION.md` (health endpoint), `docs/DOCS_MASTER_INDEX.md`, and `docs/SYSTEM_COST_MONITORING_2025_09_28.md` to point at the new console doc.
 
-The scene distiller reads the actual page and returns one concrete visual sentence — no dialogue, no feelings, no character names. The previous page's scene is passed as a single line of context so "she climbed higher" resolves. The character is **never** described by the distiller; the character sheet is always injected from the user's saved settings, so appearance can't drift.
-
-### Language = culture, not translation (corrected)
-
-Story text is **always English**. `native_language` is a cultural-background signal only:
-- **Character presentation** — a French reader's hero reads as French; an Urdu reader's hero as South Asian.
-- **Scenery** — culturally familiar backdrops may appear (French → Parisian street, Eiffel Tower).
-- **The page always wins.** If the text names a setting (kitchen, forest, spaceship), that is the setting; cultural flavor only fills unspecified or generic backdrops.
-
-No prompt translation anywhere.
-
-### Behaviour preserved (checked forward and backward)
-
-- Back-navigation shows the identical image (memory + `sessionStorage: current_page_images`).
-- `image:generation:start` / `:end` events still fire — the guest 20-min timer pauses on these.
-- Saved premium stories still restore `cachedImages` / `stories.image_urls` untouched.
-- `image_generation_debug` logging kept (`get-cost-analytics` reads it).
-- `image-proxy` kept (CORS/hotlink). `ImageGenerationStatusIndicator`, `useImageWithFallback` kept.
-- Fresh image per page for guest and premium alike.
-
-Estimated result: **~14,000 LOC → ~600 LOC.**
+## Technical notes
+- No DB migrations. All reads use the existing `cost_tracking` / `image_generation_debug` tables and the existing `get-cost-analytics` edge function.
+- The only edge-function change is an additive `GET` health branch on `runware-generate-image` — the POST contract used by `StoryImageService` is untouched.
 
 ---
 
-## ⚠️ Permission needed — things I plan to CREATE
+### NEW things I plan to create — need your OK
+1. `src/components/testing/SpendSummary.tsx` — real spend so far (today/month/all-time, by provider + operation).
+2. `src/components/testing/SystemHealthPanel.tsx` — real contract pings for image / template / TTS / cost services.
+3. `src/components/testing/ImageGenerationTester.tsx` — real single-path image test (image, scene, seed, prompt, latency, cost).
+4. `src/components/testing/TestRunCostReadout.tsx` — per-test-run measured cost from `cost_tracking`.
+5. `src/hooks/useCostAnalytics.ts` — one shared fetch/cache for `get-cost-analytics` (today, page currently fetches it twice).
+6. `GET` health branch inside existing `supabase/functions/runware-generate-image/index.ts`.
+7. `docs/PROMPT_TESTING_CONSOLE.md`.
 
-1. `src/services/StoryImageService.ts` — new ~200-line frontend service (cache + dedupe + one invoke + fallback).
-2. `supabase/functions/_shared/imagePrompt.ts` — scene distiller + character sheet + cultural backdrop, the single prompt source of truth (~180 lines).
-3. `docs/IMAGE_GENERATION.md` — replaces the scattered tier docs.
+### Things I plan to DELETE — need your OK
+1. `src/components/ApiKeyDiagnostic.tsx` (tier/circuit-breaker era; replaced by SystemHealthPanel).
+2. `src/components/RunwareConnectionTest.tsx` (same; replaced).
+3. `src/components/PromptTestingEnhancement.tsx` (dryRun/PhaseIntegrationOrchestrator — those code paths no longer exist; not mounted anywhere).
+4. The "Tier Cascade" tab inside `DebugDataViewer.tsx` + `DebugDataViewer_TierTab.tsx` (tiers are gone) — folded into a single "Image log" view.
 
-No new tables, no new secrets, no new dependencies. `RUNWARE_API_KEY` and `LOVABLE_API_KEY` (for the distiller) already exist.
-
-## ⚠️ Permission needed — things I plan to DELETE
-
-**Edge functions (whole folders):** `ai-visual-scene-creator`, `runware-template-ab` (+`index-backup.ts`), `runware-template-cd`, `background-image-pregeneration`, `generate-fallback-images`, `clear-character-cache`, `vendor-first-selftest`
-
-**Shared backend modules:** `_shared/CharacterConsistencyService.ts` + `CharacterConsistencyServiceInline.js`; `_shared/ResilientRunwareWebSocket.ts`, `_shared/RunwareWebSocketService.{ts,js}`, `_vendor/RunwareWebSocketService.js`; `_shared/runwareErrorHandler.ts`, `tierFailureMonitoring.js`, `tierLogging.js`; `_vendor/reliability-manager@1.0.0.bundle.mjs`
-
-**Frontend:** `SimpleImageService.ts`, `BatchImageService.ts`, `imageDeduplicationService.ts`, `OptimizedImageCache.ts`, `utils/SmartOrchestrationBypass.ts`, `utils/imageGenerationTrigger.ts`, `hooks/useImageGenerationWithDeduplication.ts`
-
-**Dev/test harnesses (+ their routes in `App.tsx`):** `ImageTierTester.tsx` (5,302), `RunwareConnectionTest.tsx`, `RunwareQualityControls.tsx`, `PromptStudio.tsx`, `Tier1TemplateTest.tsx` (orphan), `PromptTestingEnhancement.tsx` (orphan), `template-testing/BatchTemplateTest.tsx`, `pages/PromptTesting.tsx`, `ImageDebugPanel.tsx`, `BackendTierChecker.tsx`, `dev/ImageGenerationDebugPanel.tsx`
-
-**Rewritten in place (not deleted):**
-- `supabase/functions/runware-generate-image/index.ts` — 3,765 → ~300 LOC, same function name so nothing else needs rewiring.
-- `src/components/CleanStoryDisplay.tsx` — image call sites swapped to `StoryImageService`; story/timer/nav logic untouched.
-- `HealthCheckService.ts`, `SessionCacheManager.ts`, `ErrorRecoveryManager.ts`, `enhancedImageCache.ts` — image-tier branches stripped; the story-generation parts stay.
-
-## ⚠️ Permission needed — database
-I plan to **keep all tables** (no drops), just stop writing to `character_consistency_cache` and `visual_details_cache`. Say the word if you'd rather drop them later.
-
-## Not touched
-Story generation, the story fallback chain, emergency content, timers, TTS/voices, subscriptions, auth.
-
-## Last step
-Update `docs/COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md`, `supabase/functions/README.md` (function count 60 → 53), `docs/CURRENT_TEMPLATE_SYSTEM_AND_FALLBACK_CHAIN.md`, and add `docs/IMAGE_GENERATION.md`.
+Say "approved" and I'll build it, or tell me which items to drop.
