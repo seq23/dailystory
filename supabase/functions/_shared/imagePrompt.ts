@@ -184,7 +184,7 @@ export async function distillScene(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3.1-flash-lite',
+        model: 'google/gemini-3.6-flash',
         messages: [
           {
             role: 'system',
@@ -202,7 +202,8 @@ export async function distillScene(
               `Page text:\n${pageText.slice(0, 1200)}`,
           },
         ],
-solid_placeholder_remove_me
+        max_tokens: 80,
+        temperature: 0.3,
       }),
     });
 
