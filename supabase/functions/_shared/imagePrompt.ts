@@ -414,7 +414,8 @@ export function assemblePrompt(opts: {
 }): { positivePrompt: string; negativePrompt: string; seed: number } {
   const { scene, user, sessionId } = opts;
   const culture = getCulture(user.nativeLanguage);
-  const characterSheet = buildCharacterSheet(user);
+  const characterSheet = buildCharacterSheet(user, sessionId);
+  const afro = afroProfile(user, sessionId);
   const name = sanitizeName(user.name);
 
   // The page's own setting always wins; culture only fills an unstated backdrop.
@@ -429,12 +430,12 @@ export function assemblePrompt(opts: {
     `Scene: ${scene.replace(/[.\s]+$/, '')}${backdropHint}.`,
     // Keep the child whole and in context — stops close-ups of stray hands.
     'The child is fully visible in the scene, head to at least the waist.',
-    STYLE,
+    afro ? `${STYLE}, ${AFRO_LIGHTING}` : STYLE,
   ].join(' ');
 
   return {
     positivePrompt,
-    negativePrompt: NEGATIVE,
+    negativePrompt: afro ? `${NEGATIVE}, ${AFRO_NEGATIVE}` : NEGATIVE,
     seed: seedFrom(sessionId, name),
   };
 }
