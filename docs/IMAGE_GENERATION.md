@@ -89,12 +89,12 @@ in `DEEP_NEGATIVE` — those belong to the Afro path below.
 
 On top of the deep-tone treatment above, these languages also get:
 
-`deep brown skin` on its own gives the model no ancestry anchor, so it falls
-back to its strongest dark-skin prior — usually South Asian or Middle Eastern
-features with straight hair. When `avatar.skinTone === 'dark'` **and** the
-language base is `en`, `es`, `pt` or `fr` (plus the explicit
-`en-african-american` / `fr-francophone-african` codes), `afroProfile()`
-substitutes three fields in the character sheet:
+A deep tone alone gives the model no ancestry anchor, so it falls back to its
+strongest dark-skin prior — usually South Asian or Middle Eastern features with
+straight hair. When `avatar.skinTone === 'dark'` **and** the language base is
+`en`, `es`, `pt` or `fr` (plus the explicit `en-african-american` /
+`fr-francophone-african` codes), `afroProfile()` substitutes three fields in
+the character sheet:
 
 | Field | Value |
 | --- | --- |
@@ -102,8 +102,8 @@ substitutes three fields in the character sheet:
 | Skin | rich deep mahogany-brown African skin, **warm golden-red undertones**, luminous and even, full tonal range with soft readable shadows |
 | Hair | named style (see below) — replaces the generic "neat age-appropriate hair" |
 
-Other languages are deliberately untouched: an Urdu reader with `dark` still
-gets South Asian features.
+Other languages keep their own ancestry: an Urdu reader with `dark` gets South
+Asian Pakistani features at the deep tone described in the section above.
 
 **Hair.** "Curly" reliably yields loose Caucasian curls; type-4 coils only
 appear when the style is *named*.
@@ -118,16 +118,14 @@ The girl style is chosen with the same `FNV-1a(sessionId + name)` hash used for
 the image seed, so it is **fixed for the whole session** while differing
 between children. No randomness anywhere.
 
-**Lighting.** Deep skin renders ashy/muddy under the default "gentle natural
-lighting". On this path only, `STYLE` gains: soft warm wrap-around key light
-with generous fill, gentle rim light for separation, warm colour temperature.
+**Lighting.** Shared with every deep tone (see the section above): soft warm
+wrap-around key light with generous fill, gentle rim light, warm colour
+temperature.
 
-**Negatives.** On this path only, `NEGATIVE` gains an anti-washout group
-(washed out / desaturated / ashy grey / grey cast / purple shadow cast / pale /
-skin lightening / overexposed / blown-out highlights / flat muddy skin tone)
-and an anti-wrong-ethnicity group (straight hair, silky hair, loose wavy hair,
-blonde hair, South Asian / Indian / Middle Eastern / Arab features, tanned
-white person).
+**Negatives.** On top of the shared anti-washout group, this path only adds an
+anti-wrong-ethnicity group (straight hair, silky hair, loose wavy hair, blonde
+hair, South Asian / Indian / Middle Eastern / Arab features, tanned white
+person).
 
 Image cache keys are `session + page`, so live sessions keep their already
 generated images — only new generations use the new wording.
