@@ -71,8 +71,6 @@ truck-art patterns"). The full backdrop is used only for a scene that names no
 setting at all. This avoids the old failure mode of "a hallway, set in a
 street".
 
-### Consistency seed
-
 ### Afro-descent rendering (skin tone `dark` + en/es/pt/fr)
 
 `deep brown skin` on its own gives the model no ancestry anchor, so it falls
@@ -117,6 +115,8 @@ white person).
 
 Image cache keys are `session + page`, so live sessions keep their already
 generated images — only new generations use the new wording.
+
+### Consistency seed
 
 `seed = FNV-1a(sessionId + characterName)`. Same session ⇒ same seed ⇒ the same
 hero look across every page, with no database tables involved.
