@@ -105,11 +105,18 @@ export function useCostAnalytics(autoLoad = true): CostAnalyticsState {
       const { data, error: fnError } = await supabase.functions.invoke('get-cost-analytics');
 
       if (fnError) {
-        // supabase-js surfaces non-2xx as FunctionsHttpError; 401/403 = not an admin
+        // supabase-js surfaces non-2xx as FunctionsHttpError with a generic
+        // message ("non-2xx status code"), so read the real status off context.
+        const status = (fnError as any)?.context?.status as number | undefined;
         const message = fnError.message || 'Request failed';
-        const isAuth = /401|403|forbidden|unauthor/i.test(message);
+        const isAuth =
+          status === 401 || status === 403 || /401|403|forbidden|unauthor/i.test(message);
         setForbidden(isAuth);
-        setError(isAuth ? 'Admin access required' : message);
+        setError(
+          isAuth
+            ? 'Admin access required — sign in with an account listed in ADMIN_USER_IDS to see cost data.'
+            : `${message}${status ? ` (HTTP ${status})` : ''}`
+        );
         setCostSummary(null);
         setTotalCostSummary(null);
         return;
