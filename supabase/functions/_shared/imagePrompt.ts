@@ -355,6 +355,10 @@ const SETTING_WORDS = [
   'library', 'store', 'shop', 'market', 'cafe', 'zoo', 'museum', 'space', 'ship',
   'cave', 'desert', 'island', 'bridge', 'street', 'road', 'train', 'boat', 'sky',
   'barn', 'attic', 'basement', 'yard', 'pond', 'meadow', 'jungle', 'snow', 'moon',
+  'hall', 'hallway', 'corridor', 'doorway', 'porch', 'stairs', 'staircase', 'tent',
+  'cabin', 'bus', 'car', 'plane', 'bathroom', 'hospital', 'stadium', 'rooftop',
+  'tunnel', 'harbour', 'harbor', 'dock', 'alley', 'courtyard', 'stage', 'circus',
+  'indoors', 'outdoors', 'inside', 'outside', 'underwater', 'planet', 'spaceship',
 ];
 
 export function sceneHasSetting(scene: string): boolean {
