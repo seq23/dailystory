@@ -100,22 +100,16 @@ export class ImageGenerationTrigger {
     
     try {
       // Import and use the image service
-      const { SimpleImageService } = await import('@/services/SimpleImageService');
+      const { StoryImageService } = await import('@/services/StoryImageService');
       
       const sessionId = options.sessionId || generateSessionId();
       
-      // Ensure userTier is set for consistent routing
-      const userInfoWithTier = {
-        ...options.userInfo,
-        userTier: options.isGuestUser ? 'guest' : 'premium'
-      };
-      
-      const result = await SimpleImageService.generateStoryImage(
+      // Guest and premium use the exact same image path.
+      const result = await StoryImageService.generateStoryImage(
         options.pageText,
-        userInfoWithTier,
+        options.userInfo as Record<string, unknown>,
         sessionId,
-        options.currentPage,
-        !options.isGuestUser // For analytics only - all users get same quality
+        options.currentPage
       );
       
       if (result.success && result.url) {
@@ -127,8 +121,8 @@ export class ImageGenerationTrigger {
         const event = new CustomEvent('image:generated', {
           detail: {
             pageIndex: options.currentPage,
-            imageUrl: result.url,
-            provider: result.provider,
+          imageUrl: result.url,
+            provider: 'runware',
             sessionId,
             contentHash: this.generateContentHash(options.pageText)
           }
