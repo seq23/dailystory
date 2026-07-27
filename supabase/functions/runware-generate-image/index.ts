@@ -220,6 +220,7 @@ Deno.serve(async (req) => {
       contract: 'POST { pageText, sessionId, pageNumber, userInfo, previousScene? }',
       model: RUNWARE_MODEL,
       costPerImageUsd: COST_PER_IMAGE_USD,
+      promptBuild: PROMPT_BUILD,
       hasRunwareApiKey: !!Deno.env.get('RUNWARE_API_KEY'),
       hasLovableApiKey: !!Deno.env.get('LOVABLE_API_KEY'),
       hasServiceRoleKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
@@ -285,6 +286,7 @@ Deno.serve(async (req) => {
       prompt: built.positivePrompt,
       provider: 'runware',
       model: RUNWARE_MODEL,
+      promptBuild: PROMPT_BUILD,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Image generation failed';
