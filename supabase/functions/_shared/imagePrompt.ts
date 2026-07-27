@@ -215,17 +215,45 @@ export async function distillScene(
     }
 
     const data = await response.json();
-    const scene = (data?.choices?.[0]?.message?.content ?? '')
+    const choice = data?.choices?.[0];
+
+    // A completion cut off by the token budget is reasoning debris, not a
+    // scene ("ually happening for an"). Never let it reach the illustrator.
+    if (choice?.finish_reason === 'length') {
+      console.warn('[distiller] truncated completion, using extracted scene');
+      return fallback;
+    }
+
+    const scene = (choice?.message?.content ?? '')
       .replace(/^["'\s]+|["'\s.]+$/g, '')
       .trim();
 
-    if (!scene || scene.length < 8) return fallback;
+    if (!isUsableScene(scene)) {
+      console.warn('[distiller] unusable scene, using extracted:', scene.slice(0, 80));
+      return fallback;
+    }
     return { scene: scene.slice(0, 300), source: 'ai' };
   } catch {
     return fallback;
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** Guards against truncated / meta / non-descriptive distiller output. */
+export function isUsableScene(scene: string): boolean {
+  const trimmed = (scene ?? '').trim();
+  if (trimmed.length < 12) return false;
+  if (trimmed.split(/\s+/).length < 4) return false;
+  // Model talking about the task instead of describing the page.
+  if (/\b(illustrator|page text|previous illustration|sentence|as an ai)\b/i.test(trimmed)) {
+    return false;
+  }
+  // Truncated mid-word debris usually starts as a word fragment.
+  if (/^[a-z]{1,6}\b/.test(trimmed) && !/^(a|an|the|two|three|inside|under|near|on|at|in)\b/i.test(trimmed)) {
+    return false;
+  }
+  return true;
 }
 
 // ---------------------------------------------------------------------------
