@@ -85,7 +85,7 @@ Ancestry wording still comes from `CULTURES`, so an Urdu reader stays South
 Asian Pakistani, just at the tone they actually chose. No ethnicity terms are
 in `DEEP_NEGATIVE` — those belong to the Afro path below.
 
-### Ancestry locks: Arabic (`ar`) and Hindi (`hi`)
+### Ancestry locks: Arabic (`ar`), Hindi (`hi`), Chinese (`zh`)
 
 `Middle Eastern features` / `South Asian Indian features` were too vague and
 the model drifted to a generic tanned face. `ANCESTRY_LOCKS` in
@@ -97,10 +97,12 @@ type, plus a wrong-ethnicity negative group:
   (short for boys, long softly wavy for girls)
 - `hi` — "Indian child from India, South Asian Indian features…", glossy black
   hair (side part for boys, two braids with ribbons for girls)
+- `zh` — "Chinese child from China, East Asian features…", straight glossy
+  black hair (neat fringe for boys, bob/twin ponytails for girls)
 
 Locks apply at every skin tone and stack with the deep-tone treatment above.
 The Afro path takes precedence and disables the lock (it can never trigger for
-`ar`/`hi` anyway).
+`ar`/`hi`/`zh` anyway).
 
 ### Afro-descent rendering (skin tone `dark` + en/es/pt/fr)
 
