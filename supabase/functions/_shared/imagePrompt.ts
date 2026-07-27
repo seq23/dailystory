@@ -41,51 +41,74 @@ export interface BuiltPrompt {
 
 interface Culture {
   appearance: string;
+  /** Full location, used only when the page states no setting at all. */
   backdrop: string;
+  /** Non-conflicting cultural styling, safe to add to ANY scene. */
+  flavor: string;
 }
 
 const CULTURES: Record<string, Culture> = {
   en: {
     appearance: 'North American features',
     backdrop: 'a friendly North American neighbourhood',
+    flavor:
+      'North American everyday details',
   },
   'en-african-american': {
     appearance:
       'African American features with richly melanated skin and natural textured hair',
     backdrop: 'a warm American neighbourhood',
+    flavor:
+      'warm American community details',
   },
   es: {
     appearance: 'Latin American / Hispanic features',
     backdrop: 'a sunlit plaza with colourful tiled buildings',
+    flavor:
+      'Latin American cultural details, colourful tilework and textiles',
   },
   fr: {
     appearance: 'French European features',
     backdrop: 'a Parisian street with wrought-iron balconies and a distant Eiffel Tower',
+    flavor:
+      'French cultural details, café signage and wrought-iron trim',
   },
   'fr-francophone-african': {
     appearance:
       'West African features with deep melanated skin and natural textured hair',
     backdrop: 'a vibrant Francophone West African street market',
+    flavor:
+      'West African cultural details, bright wax-print fabrics',
   },
   pt: {
     appearance: 'Brazilian / Portuguese features',
     backdrop: 'a lush coastal Brazilian street with mosaic pavements',
+    flavor:
+      'Brazilian cultural details, tropical plants and mosaic patterns',
   },
   ar: {
     appearance: 'Middle Eastern / North African features',
     backdrop: 'a sunlit courtyard with arched doorways and geometric tilework',
+    flavor:
+      'Middle Eastern cultural details, arches and geometric tilework',
   },
   ur: {
     appearance: 'South Asian Pakistani features',
     backdrop: 'a lively South Asian street with colourful awnings and Mughal-style arches',
+    flavor:
+      'South Asian Pakistani cultural details, embroidered fabrics and truck-art patterns',
   },
   hi: {
     appearance: 'South Asian Indian features',
     backdrop: 'a bright Indian courtyard with marigold garlands and carved stonework',
+    flavor:
+      'South Asian Indian cultural details, marigolds and carved woodwork',
   },
   zh: {
     appearance: 'East Asian Chinese features',
     backdrop: 'a peaceful garden with curved rooftops and red lanterns',
+    flavor:
+      'East Asian Chinese cultural details, red lanterns and curved rooflines',
   },
 };
 
@@ -126,7 +149,10 @@ export function buildCharacterSheet(user: ImageUserInfo): string {
   const age = user.age && user.age >= 3 && user.age <= 17 ? user.age : 7;
 
   const parts = [
-    `a cheerful ${age}-year-old ${kind}`,
+    // Explicit child cues: without them the model happily paints a young adult.
+    `a cheerful young ${kind}, exactly ${age} years old, unmistakably a small child`,
+    'child body proportions with a large head and short limbs',
+    'round soft childlike face, no makeup, no jewellery',
     `${culture.appearance}`,
     skin,
     'expressive friendly eyes',
@@ -158,7 +184,9 @@ export function extractScene(pageText: string): string {
   return scene.slice(0, 300);
 }
 
-const DISTILL_TIMEOUT_MS = 3000;
+// Reasoning models spend ~2-4s before emitting the sentence; 3s aborted most
+// calls and silently degraded every scene to the crude extracted fallback.
+const DISTILL_TIMEOUT_MS = 7000;
 
 /**
  * Turn a story page into ONE concrete visual sentence.
@@ -202,9 +230,11 @@ export async function distillScene(
               `Page text:\n${pageText.slice(0, 1200)}`,
           },
         ],
-        // Generous budget: this model spends tokens on internal reasoning first,
-        // and a truncated completion yields a garbage scene.
-        max_tokens: 400,
+        // This model burns budget on internal reasoning before emitting text,
+        // and a truncated completion is garbage. Ask for no reasoning and keep
+        // a budget large enough to survive it when the provider ignores us.
+        reasoning_effort: 'none',
+        max_tokens: 1200,
         temperature: 0.3,
       }),
     });
@@ -215,17 +245,49 @@ export async function distillScene(
     }
 
     const data = await response.json();
-    const scene = (data?.choices?.[0]?.message?.content ?? '')
+    const choice = data?.choices?.[0];
+
+    // A completion cut off by the token budget is reasoning debris, not a
+    // scene ("ually happening for an"). Never let it reach the illustrator.
+    if (choice?.finish_reason === 'length') {
+      console.warn('[distiller] truncated completion, using extracted scene');
+      return fallback;
+    }
+
+    const scene = (choice?.message?.content ?? '')
       .replace(/^["'\s]+|["'\s.]+$/g, '')
       .trim();
 
-    if (!scene || scene.length < 8) return fallback;
+    if (!isUsableScene(scene)) {
+      console.warn('[distiller] unusable scene, using extracted:', scene.slice(0, 80));
+      return fallback;
+    }
     return { scene: scene.slice(0, 300), source: 'ai' };
-  } catch {
+  } catch (error) {
+    console.warn(
+      '[distiller] failed, using extracted scene:',
+      (error as Error)?.name === 'AbortError' ? 'timeout' : (error as Error)?.message,
+    );
     return fallback;
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** Guards against truncated / meta / non-descriptive distiller output. */
+export function isUsableScene(scene: string): boolean {
+  const trimmed = (scene ?? '').trim();
+  if (trimmed.length < 12) return false;
+  if (trimmed.split(/\s+/).length < 4) return false;
+  // Model talking about the task instead of describing the page.
+  if (/\b(illustrator|page text|previous illustration|sentence|as an ai)\b/i.test(trimmed)) {
+    return false;
+  }
+  // Truncated mid-word debris usually starts as a word fragment.
+  if (/^[a-z]{1,6}\b/.test(trimmed) && !/^(a|an|the|two|three|inside|under|near|on|at|in)\b/i.test(trimmed)) {
+    return false;
+  }
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -256,7 +318,10 @@ const NEGATIVE =
   'blurry, low quality, deformed, extra limbs, extra fingers, distorted face, ' +
   'multiple heads, scary, horror, violence, blood, weapons, gore, ' +
   'adult content, nudity, suggestive, photorealistic, 3d render, collage, grid, ' +
-  'picture frame, border, matte, vignette, inset panel';
+  'picture frame, border, matte, vignette, inset panel, ' +
+  // The model drifts to young adults unless this is spelled out.
+  'adult, grown woman, grown man, teenager, mature face, makeup, lipstick, ' +
+  'earrings, jewellery, high heels, cleavage, disembodied hand, extreme close-up';
 
 export function assemblePrompt(opts: {
   scene: string;
@@ -269,13 +334,17 @@ export function assemblePrompt(opts: {
   const name = sanitizeName(user.name);
 
   // The page's own setting always wins; culture only fills an unstated backdrop.
+  // A stated setting is never overridden — we only add non-conflicting
+  // cultural styling. A setting-less scene gets the full cultural backdrop.
   const backdropHint = sceneHasSetting(scene)
-    ? ''
+    ? `, ${culture.flavor}`
     : `, set in ${culture.backdrop}`;
 
   const positivePrompt = [
     `${characterSheet}.`,
     `Scene: ${scene.replace(/[.\s]+$/, '')}${backdropHint}.`,
+    // Keep the child whole and in context — stops close-ups of stray hands.
+    'The child is fully visible in the scene, head to at least the waist.',
     STYLE,
   ].join(' ');
 
@@ -294,11 +363,16 @@ const SETTING_WORDS = [
   'library', 'store', 'shop', 'market', 'cafe', 'zoo', 'museum', 'space', 'ship',
   'cave', 'desert', 'island', 'bridge', 'street', 'road', 'train', 'boat', 'sky',
   'barn', 'attic', 'basement', 'yard', 'pond', 'meadow', 'jungle', 'snow', 'moon',
+  'hall', 'hallway', 'corridor', 'doorway', 'porch', 'stairs', 'staircase', 'tent',
+  'cabin', 'bus', 'car', 'plane', 'bathroom', 'hospital', 'stadium', 'rooftop',
+  'tunnel', 'harbour', 'harbor', 'dock', 'alley', 'courtyard', 'stage', 'circus',
+  'indoors', 'outdoors', 'inside', 'outside', 'underwater', 'planet', 'spaceship',
 ];
 
 export function sceneHasSetting(scene: string): boolean {
   const lower = scene.toLowerCase();
-  return SETTING_WORDS.some((w) => lower.includes(w));
+  // Whole-word match: "street" must not count as "tree", "season" as "sea".
+  return SETTING_WORDS.some((w) => new RegExp(`\\b${w}s?\\b`).test(lower));
 }
 
 /** One-call convenience wrapper used by the edge function. */
