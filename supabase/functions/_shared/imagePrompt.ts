@@ -433,6 +433,9 @@ export function assemblePrompt(opts: {
   const characterSheet = buildCharacterSheet(user, sessionId);
   const afro = afroProfile(user, sessionId);
   const name = sanitizeName(user.name);
+  // Any deep tone gets the warm fill-light recipe and the anti-washout
+  // negatives; only the Afro path additionally gets ancestry/hair wording.
+  const isDark = user.avatar?.skinTone === 'dark';
 
   // The page's own setting always wins; culture only fills an unstated backdrop.
   // A stated setting is never overridden — we only add non-conflicting
@@ -446,12 +449,16 @@ export function assemblePrompt(opts: {
     `Scene: ${scene.replace(/[.\s]+$/, '')}${backdropHint}.`,
     // Keep the child whole and in context — stops close-ups of stray hands.
     'The child is fully visible in the scene, head to at least the waist.',
-    afro ? `${STYLE}, ${AFRO_LIGHTING}` : STYLE,
+    isDark ? `${STYLE}, ${AFRO_LIGHTING}` : STYLE,
   ].join(' ');
 
   return {
     positivePrompt,
-    negativePrompt: afro ? `${NEGATIVE}, ${AFRO_NEGATIVE}` : NEGATIVE,
+    negativePrompt: afro
+      ? `${NEGATIVE}, ${AFRO_NEGATIVE}`
+      : isDark
+        ? `${NEGATIVE}, ${DEEP_NEGATIVE}`
+        : NEGATIVE,
     seed: seedFrom(sessionId, name),
   };
 }
