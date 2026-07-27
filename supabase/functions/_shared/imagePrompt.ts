@@ -249,13 +249,14 @@ export function seedFrom(sessionId: string, characterName: string): number {
 const STYLE =
   'warm hand-painted children\'s picture-book illustration, soft rounded shapes, ' +
   'gentle natural lighting, rich saturated colours, clean composition, ' +
-  'wholesome and age-appropriate, single illustration';
+  'wholesome and age-appropriate, single full-bleed illustration filling the whole frame';
 
 const NEGATIVE =
   'text, letters, words, captions, watermark, signature, speech bubbles, ' +
   'blurry, low quality, deformed, extra limbs, extra fingers, distorted face, ' +
   'multiple heads, scary, horror, violence, blood, weapons, gore, ' +
-  'adult content, nudity, suggestive, photorealistic, 3d render, collage, grid';
+  'adult content, nudity, suggestive, photorealistic, 3d render, collage, grid, ' +
+  'picture frame, border, matte, vignette, inset panel';
 
 export function assemblePrompt(opts: {
   scene: string;
