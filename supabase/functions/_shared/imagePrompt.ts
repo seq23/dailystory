@@ -129,6 +129,19 @@ const SKIN_TONES: Record<string, string> = {
   dark: 'deep brown skin',
 };
 
+// "deep brown skin" alone renders medium-tan: the model washes deep tones out.
+// Non-Afro readers (Urdu, Hindi, Arabic, Chinese…) keep their own ancestry
+// wording from CULTURES and only get the tone fixed here.
+const DEEP_SKIN =
+  'deep rich brown skin with warm golden undertones, luminous and even, ' +
+  'full tonal range with soft readable shadows';
+
+// Anti-washout only — no ethnicity terms, those belong to the Afro path.
+const DEEP_NEGATIVE =
+  'washed out skin, desaturated skin, ashy grey skin, grey cast, pale skin, ' +
+  'light brown skin, skin lightening, whitewashed, overexposed face, ' +
+  'blown-out highlights, flat muddy skin tone';
+
 const AVATAR_TYPES: Record<string, string> = {
   boy: 'boy',
   girl: 'girl',
@@ -229,7 +242,10 @@ export function buildCharacterSheet(user: ImageUserInfo, sessionId = ''): string
   const culture = getCulture(user.nativeLanguage);
   const afro = afroProfile(user, sessionId);
   const kind = AVATAR_TYPES[user.avatar?.type ?? ''] ?? 'child';
-  const skin = SKIN_TONES[user.avatar?.skinTone ?? ''] ?? 'warm medium-tan skin';
+  const isDark = user.avatar?.skinTone === 'dark';
+  const skin = isDark
+    ? DEEP_SKIN
+    : SKIN_TONES[user.avatar?.skinTone ?? ''] ?? 'warm medium-tan skin';
   const age = user.age && user.age >= 3 && user.age <= 17 ? user.age : 7;
 
   const parts = [
@@ -417,6 +433,9 @@ export function assemblePrompt(opts: {
   const characterSheet = buildCharacterSheet(user, sessionId);
   const afro = afroProfile(user, sessionId);
   const name = sanitizeName(user.name);
+  // Any deep tone gets the warm fill-light recipe and the anti-washout
+  // negatives; only the Afro path additionally gets ancestry/hair wording.
+  const isDark = user.avatar?.skinTone === 'dark';
 
   // The page's own setting always wins; culture only fills an unstated backdrop.
   // A stated setting is never overridden — we only add non-conflicting
@@ -430,12 +449,16 @@ export function assemblePrompt(opts: {
     `Scene: ${scene.replace(/[.\s]+$/, '')}${backdropHint}.`,
     // Keep the child whole and in context — stops close-ups of stray hands.
     'The child is fully visible in the scene, head to at least the waist.',
-    afro ? `${STYLE}, ${AFRO_LIGHTING}` : STYLE,
+    isDark ? `${STYLE}, ${AFRO_LIGHTING}` : STYLE,
   ].join(' ');
 
   return {
     positivePrompt,
-    negativePrompt: afro ? `${NEGATIVE}, ${AFRO_NEGATIVE}` : NEGATIVE,
+    negativePrompt: afro
+      ? `${NEGATIVE}, ${AFRO_NEGATIVE}`
+      : isDark
+        ? `${NEGATIVE}, ${DEEP_NEGATIVE}`
+        : NEGATIVE,
     seed: seedFrom(sessionId, name),
   };
 }
