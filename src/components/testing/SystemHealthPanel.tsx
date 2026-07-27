@@ -107,11 +107,11 @@ export const SystemHealthPanel: React.FC = () => {
       });
       push({
         name: 'Cost analytics (get-cost-analytics)',
-        contract: 'POST (admin only) → { costSummary, totalCostSummary }',
+        contract: 'POST (signed-in) → { costSummary, totalCostSummary }',
         billable: false,
         status: err ? 'fail' : data?.success ? 'pass' : 'warn',
         message: err
-          ? `${err} — this endpoint requires an admin account (ADMIN_USER_IDS)`
+          ? `${err} — this endpoint requires a signed-in account`
           : `all-time $${Number(data?.data?.totalCostSummary?.totalCost || 0).toFixed(4)} across ${data?.data?.totalCostSummary?.totalRequests || 0} calls`,
         ms,
       });

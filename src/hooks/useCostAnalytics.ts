@@ -114,7 +114,7 @@ export function useCostAnalytics(autoLoad = true): CostAnalyticsState {
         setForbidden(isAuth);
         setError(
           isAuth
-            ? 'Admin access required — sign in with an account listed in ADMIN_USER_IDS to see cost data.'
+            ? 'Sign-in required — sign in to see cost data.'
             : `${message}${status ? ` (HTTP ${status})` : ''}`
         );
         setCostSummary(null);

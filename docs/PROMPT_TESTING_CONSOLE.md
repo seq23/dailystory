@@ -12,9 +12,9 @@ There is no link to this page in the app UI — it is deliberately URL-only.
    `https://time-2-read.com/prompt-testing?debug=1`
 
 Without `?debug=1` you get the safe subset (story, image, audio, health tabs).
-Cost data additionally requires an admin account — `get-cost-analytics` checks
-the caller against `ADMIN_USER_IDS`; a non-admin sees an explicit
-"admin only" message rather than empty numbers.
+Cost data requires only a signed-in account — `get-cost-analytics` accepts any
+authenticated caller (the `ADMIN_USER_IDS` restriction was removed); signed-out
+visitors see an explicit "sign-in required" message rather than empty numbers.
 
 ## Tabs
 

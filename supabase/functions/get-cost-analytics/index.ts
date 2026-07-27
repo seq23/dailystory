@@ -57,22 +57,21 @@ serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const sb = createClient(supabaseUrl, serviceKey);
 
-    // ── Authorization: admins (or service_role) only — this exposes business cost data ──
+    // ── Authorization: any signed-in user (or service_role). Admin allow-list removed. ──
     const token = req.headers.get('Authorization')?.replace('Bearer ', '').trim();
     if (!token) {
       return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const adminUserIds = (Deno.env.get('ADMIN_USER_IDS') || '').split(',').map(s => s.trim()).filter(Boolean);
     let authorized = token === serviceKey;
     if (!authorized) {
       const { data: { user } } = await sb.auth.getUser(token);
-      authorized = !!user && adminUserIds.includes(user.id);
+      authorized = !!user;
     }
     if (!authorized) {
-      return new Response(JSON.stringify({ success: false, error: 'Forbidden' }), {
-        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 

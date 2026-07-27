@@ -164,7 +164,7 @@ export default function PromptTesting() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Spend, forecast and log tabs are hidden. Add <code>?debug=1</code> to the URL to open
-              the full console (admin account required for cost data).
+              the full console (sign-in required for cost data).
             </AlertDescription>
           </Alert>
         )}

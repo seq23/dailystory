@@ -28,10 +28,9 @@ export const SpendSummary: React.FC<{ analytics: CostAnalyticsState }> = ({ anal
     return (
       <Alert variant="destructive">
         <ShieldAlert className="h-4 w-4" />
-        <AlertTitle>Admin access required</AlertTitle>
+        <AlertTitle>Sign-in required</AlertTitle>
         <AlertDescription>
-          Spend data is restricted to accounts listed in the <code>ADMIN_USER_IDS</code> secret.
-          Sign in with an admin account to see cost figures.
+          Spend data requires a signed-in account. Sign in to see cost figures.
         </AlertDescription>
       </Alert>
     );
