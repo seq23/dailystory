@@ -149,7 +149,10 @@ export function buildCharacterSheet(user: ImageUserInfo): string {
   const age = user.age && user.age >= 3 && user.age <= 17 ? user.age : 7;
 
   const parts = [
-    `a cheerful ${age}-year-old ${kind}`,
+    // Explicit child cues: without them the model happily paints a young adult.
+    `a cheerful young ${kind}, exactly ${age} years old, unmistakably a small child`,
+    'child body proportions with a large head and short limbs',
+    'round soft childlike face, no makeup, no jewellery',
     `${culture.appearance}`,
     skin,
     'expressive friendly eyes',
@@ -315,7 +318,10 @@ const NEGATIVE =
   'blurry, low quality, deformed, extra limbs, extra fingers, distorted face, ' +
   'multiple heads, scary, horror, violence, blood, weapons, gore, ' +
   'adult content, nudity, suggestive, photorealistic, 3d render, collage, grid, ' +
-  'picture frame, border, matte, vignette, inset panel';
+  'picture frame, border, matte, vignette, inset panel, ' +
+  // The model drifts to young adults unless this is spelled out.
+  'adult, grown woman, grown man, teenager, mature face, makeup, lipstick, ' +
+  'earrings, jewellery, high heels, cleavage, disembodied hand, extreme close-up';
 
 export function assemblePrompt(opts: {
   scene: string;
@@ -337,6 +343,8 @@ export function assemblePrompt(opts: {
   const positivePrompt = [
     `${characterSheet}.`,
     `Scene: ${scene.replace(/[.\s]+$/, '')}${backdropHint}.`,
+    // Keep the child whole and in context — stops close-ups of stray hands.
+    'The child is fully visible in the scene, head to at least the waist.',
     STYLE,
   ].join(' ');
 
