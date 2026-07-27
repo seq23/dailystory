@@ -326,7 +326,8 @@ const SETTING_WORDS = [
 
 export function sceneHasSetting(scene: string): boolean {
   const lower = scene.toLowerCase();
-  return SETTING_WORDS.some((w) => lower.includes(w));
+  // Whole-word match: "street" must not count as "tree", "season" as "sea".
+  return SETTING_WORDS.some((w) => new RegExp(`\\b${w}s?\\b`).test(lower));
 }
 
 /** One-call convenience wrapper used by the edge function. */
