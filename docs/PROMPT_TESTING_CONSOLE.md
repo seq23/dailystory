@@ -20,7 +20,7 @@ the caller against `ADMIN_USER_IDS`; a non-admin sees an explicit
 
 | Tab | What it does | Costs money? |
 | --- | --- | --- |
-| **Spend** | Real money already spent, from the `cost_tracking` table: today vs all-time, split by provider (OpenAI / Runware / ElevenLabs / Resend) and by operation. Also the per-test-session readout. | No |
+| **Spend** | Real money already spent, from the `cost_tracking` table: today vs all-time, split by provider (OpenAI / Runware / ElevenLabs / Resend) and by operation. | No |
 | **Forecast** | Per-unit costs and the scale simulator (users, guest/premium mix, sessions, TTS on/off) projecting monthly cost, cache savings, capacity headroom and break-even price. | No |
 | **Story generation** | `StoryPromptTester` — runs the real story pipeline across reading levels and reports which tier answered (AI / template / emergency). | Yes (OpenAI) |
 | **Images** | `ImageGenerationTester` — posts the exact production payload to `runware-generate-image` and shows the distilled scene, seed, latency and image. | Yes (~$0.0013/image) |
@@ -46,9 +46,12 @@ Nothing on this page is hardcoded marketing math.
 
 ## Measuring the cost of one test run
 
-Each tester stamps its calls with a prefixed session ID. Paste that session ID
-into the "Test run cost" box on the Spend tab to get the exact USD total that
-run wrote to `cost_tracking`, itemised by provider.
+Each tester stamps its calls with a prefixed session ID (e.g. `img-test-…`).
+The Images tab shows a "what this run cost" readout underneath the results: it
+queries `cost_tracking` for those exact session IDs and totals them by
+provider. RLS only exposes rows attributed to the signed-in user, so rows an
+edge function logged without a user id are counted in the all-time totals on
+the Spend tab but not in the per-run readout.
 
 ## Architecture
 
