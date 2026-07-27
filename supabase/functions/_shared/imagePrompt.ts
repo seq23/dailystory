@@ -202,18 +202,19 @@ export async function distillScene(
               `Page text:\n${pageText.slice(0, 1200)}`,
           },
         ],
-        max_tokens: 80,
+        // Generous budget: this model spends tokens on internal reasoning first,
+        // and a truncated completion yields a garbage scene.
+        max_tokens: 400,
         temperature: 0.3,
       }),
     });
 
     if (!response.ok) {
-      console.warn('[distiller] gateway HTTP', response.status, (await response.text()).slice(0, 300));
+      console.warn('[distiller] gateway HTTP', response.status);
       return fallback;
     }
 
     const data = await response.json();
-    console.log('[distiller] raw', JSON.stringify(data).slice(0, 600));
     const scene = (data?.choices?.[0]?.message?.content ?? '')
       .replace(/^["'\s]+|["'\s.]+$/g, '')
       .trim();
@@ -273,7 +274,7 @@ export function assemblePrompt(opts: {
 
   const positivePrompt = [
     `${characterSheet}.`,
-    `Scene: ${scene}${backdropHint}.`,
+    `Scene: ${scene.replace(/[.\s]+$/, '')}${backdropHint}.`,
     STYLE,
   ].join(' ');
 
