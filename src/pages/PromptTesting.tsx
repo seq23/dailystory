@@ -13,7 +13,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { SpendSummary } from '@/components/testing/SpendSummary';
-import { TestRunCostReadout } from '@/components/testing/TestRunCostReadout';
 import { ForecastPanel } from '@/components/testing/ForecastPanel';
 import { SystemHealthPanel } from '@/components/testing/SystemHealthPanel';
 import { ImageGenerationTester } from '@/components/testing/ImageGenerationTester';
@@ -205,9 +204,6 @@ export default function PromptTesting() {
             <TabsContent value="spend" className="space-y-6">
               <ErrorBoundary>
                 <SpendSummary analytics={analytics} />
-              </ErrorBoundary>
-              <ErrorBoundary>
-                <TestRunCostReadout />
               </ErrorBoundary>
             </TabsContent>
           )}
