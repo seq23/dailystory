@@ -41,51 +41,74 @@ export interface BuiltPrompt {
 
 interface Culture {
   appearance: string;
+  /** Full location, used only when the page states no setting at all. */
   backdrop: string;
+  /** Non-conflicting cultural styling, safe to add to ANY scene. */
+  flavor: string;
 }
 
 const CULTURES: Record<string, Culture> = {
   en: {
     appearance: 'North American features',
     backdrop: 'a friendly North American neighbourhood',
+    flavor:
+      'North American everyday details',
   },
   'en-african-american': {
     appearance:
       'African American features with richly melanated skin and natural textured hair',
     backdrop: 'a warm American neighbourhood',
+    flavor:
+      'warm American community details',
   },
   es: {
     appearance: 'Latin American / Hispanic features',
     backdrop: 'a sunlit plaza with colourful tiled buildings',
+    flavor:
+      'Latin American cultural details, colourful tilework and textiles',
   },
   fr: {
     appearance: 'French European features',
     backdrop: 'a Parisian street with wrought-iron balconies and a distant Eiffel Tower',
+    flavor:
+      'French cultural details, café signage and wrought-iron trim',
   },
   'fr-francophone-african': {
     appearance:
       'West African features with deep melanated skin and natural textured hair',
     backdrop: 'a vibrant Francophone West African street market',
+    flavor:
+      'West African cultural details, bright wax-print fabrics',
   },
   pt: {
     appearance: 'Brazilian / Portuguese features',
     backdrop: 'a lush coastal Brazilian street with mosaic pavements',
+    flavor:
+      'Brazilian cultural details, tropical plants and mosaic patterns',
   },
   ar: {
     appearance: 'Middle Eastern / North African features',
     backdrop: 'a sunlit courtyard with arched doorways and geometric tilework',
+    flavor:
+      'Middle Eastern cultural details, arches and geometric tilework',
   },
   ur: {
     appearance: 'South Asian Pakistani features',
     backdrop: 'a lively South Asian street with colourful awnings and Mughal-style arches',
+    flavor:
+      'South Asian Pakistani cultural details, embroidered fabrics and truck-art patterns',
   },
   hi: {
     appearance: 'South Asian Indian features',
     backdrop: 'a bright Indian courtyard with marigold garlands and carved stonework',
+    flavor:
+      'South Asian Indian cultural details, marigolds and carved woodwork',
   },
   zh: {
     appearance: 'East Asian Chinese features',
     backdrop: 'a peaceful garden with curved rooftops and red lanterns',
+    flavor:
+      'East Asian Chinese cultural details, red lanterns and curved rooflines',
   },
 };
 
@@ -305,8 +328,10 @@ export function assemblePrompt(opts: {
   const name = sanitizeName(user.name);
 
   // The page's own setting always wins; culture only fills an unstated backdrop.
+  // A stated setting is never overridden — we only add non-conflicting
+  // cultural styling. A setting-less scene gets the full cultural backdrop.
   const backdropHint = sceneHasSetting(scene)
-    ? ''
+    ? `, ${culture.flavor}`
     : `, set in ${culture.backdrop}`;
 
   const positivePrompt = [
