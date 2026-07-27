@@ -27,7 +27,7 @@ export class DiagnosticTool {
       console.log('🔍 DIAGNOSTIC: Testing edge function accessibility...');
       
       // Test if the AI Story Enhancer edge function exists and is accessible
-      const { data, error } = await supabase.functions.invoke('ai-visual-scene-creator', {
+      const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         body: { 
           diagnostic: 'health_check',
           storyText: 'Test story content',
