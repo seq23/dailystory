@@ -27,6 +27,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
+const PROMPT_BUILD = 'ancestry-locks-v1';
 const RUNWARE_ENDPOINT = 'https://api.runware.ai/v1';
 const RUNWARE_MODEL = 'runware:100@1';
 const RUNWARE_TIMEOUT_MS = 25000;
