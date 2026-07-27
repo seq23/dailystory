@@ -99,8 +99,7 @@ export const RunwareConnectionTest: React.FC = () => {
       // Test 2: Template Services Health
       DebugLogger.log('network', 'Testing Runware template services...');
       const templateServices = [
-        { name: 'AB Templates', endpoint: 'runware-template-ab' },
-        { name: 'CD Templates', endpoint: 'runware-template-cd' }
+        { name: 'Image Generation', endpoint: 'runware-generate-image' }
       ];
 
       for (const service of templateServices) {

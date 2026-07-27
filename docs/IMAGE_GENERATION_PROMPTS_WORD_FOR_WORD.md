@@ -1,3 +1,5 @@
+> **OUTDATED (superseded July 2026).** The tiered image pipeline described below no longer exists. See [IMAGE_GENERATION.md](./IMAGE_GENERATION.md) for the current system.
+
 # IMAGE GENERATION PROMPTS - WORD-FOR-WORD DOCUMENTATION
 
 **Created**: 2025-10-01  

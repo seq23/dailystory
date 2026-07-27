@@ -1,3 +1,5 @@
+> **OUTDATED (superseded July 2026).** The tiered image pipeline described below no longer exists. See [IMAGE_GENERATION.md](./IMAGE_GENERATION.md) for the current system.
+
 # Image Generation System - Complete Snapshot (October 5, 2025)
 
 **Snapshot Date**: 2025-10-05T22:21:04Z  

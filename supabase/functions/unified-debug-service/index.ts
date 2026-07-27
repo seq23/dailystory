@@ -242,7 +242,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
         const { data: result, error } = await supabase
           .functions
-          .invoke('ai-visual-scene-creator', { body: testPayload });
+          .invoke('runware-generate-image', { body: testPayload });
 
         const diagnosticResult = {
           environmentCheck: {

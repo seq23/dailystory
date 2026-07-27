@@ -1,14 +1,12 @@
-// Phase 3: Shared batch processing service for library error recovery
-// 
-// TIER POLICY COMPLIANCE: All batch-generated images use Tier 1 quality
-// The isPremium parameter (passed as false) is for analytics only
-// ALL users receive the same high-quality image generation regardless of subscription
-import { SimpleImageService } from '@/services/SimpleImageService';
+// Shared batch processing service for library error recovery.
+// One image path for everyone — see StoryImageService.
+import { StoryImageService } from '@/services/StoryImageService';
 import type { UserInfo } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
 
 export interface BatchImageConfig {
   concurrencyLimit?: number;
+  sessionId?: string;
   onProgress?: (completed: number, total: number) => void;
   onError?: (pageIndex: number, error: any) => void;
 }
@@ -21,6 +19,7 @@ export class BatchImageService {
     config: BatchImageConfig = {}
   ): Promise<Record<number, string>> {
     const { concurrencyLimit = 4, onProgress, onError } = config;
+    const sessionId = config.sessionId ?? `batch-${Date.now()}`;
     const missing = pages.map((_, i) => i).filter(i => !existingImages[i]);
     
     if (!missing.length) return existingImages;
@@ -38,13 +37,12 @@ export class BatchImageService {
     for (const batch of batches) {
       const promises = batch.map(async (pageIndex) => {
         try {
-      const result = await SimpleImageService.generateStoryImage(
-        pages[pageIndex],
-        userInfo,
-        undefined, // No session ID for batch
-        pageIndex + 1,
-        false // For analytics only - all users get Tier 1 quality regardless
-      );
+          const result = await StoryImageService.generateStoryImage(
+            pages[pageIndex],
+            userInfo as unknown as Record<string, unknown>,
+            sessionId,
+            pageIndex + 1
+          );
           
           if (result.success && result.url) {
             results[pageIndex] = result.url;

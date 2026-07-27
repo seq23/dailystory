@@ -1,3 +1,5 @@
+> **OUTDATED (superseded July 2026).** The tiered image pipeline described below no longer exists. See [IMAGE_GENERATION.md](./IMAGE_GENERATION.md) for the current system.
+
 # Universal Image Validation System
 **Created:** 2025-09-30  
 **Version:** 1.0  

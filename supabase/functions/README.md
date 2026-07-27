@@ -1,3 +1,5 @@
+> **Image generation rebuilt (July 2026).** `ai-visual-scene-creator`, `runware-template-ab`, and `runware-template-cd` were deleted. `runware-generate-image` is now the only image function. Every mention of those three functions or of image "tiers" below is historical — see [docs/IMAGE_GENERATION.md](../../docs/IMAGE_GENERATION.md).
+
 # Supabase Edge Functions Manifest
 
 This directory contains all Edge Functions for the project. GitHub is the source of truth - any functions not listed below should be removed from the Supabase dashboard.

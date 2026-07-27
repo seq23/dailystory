@@ -1,105 +1,105 @@
+# Image Generation Rebuild — one path, one fallback
 
-# Plan · Accented-English narration per language (approved decisions applied)
+## What exists today (verified)
 
-## Decisions locked in
-- **Persistence:** per-workspace, in a new `voice_overrides` table (admin can change defaults without redeploy).
-- **User-facing picker:** none. Voice is chosen automatically from the active UI `language`.
+| Layer | File | LOC |
+|---|---|---|
+| Frontend orchestrator | `src/services/SimpleImageService.ts` | 2,185 |
+| Backend orchestrator | `supabase/functions/runware-generate-image/index.ts` | 3,765 |
+| Scene creator | `supabase/functions/ai-visual-scene-creator/index.ts` | 1,449 |
+| Template A/B | `supabase/functions/runware-template-ab/index.ts` (+backup) | 1,644 |
+| Template C/D | `supabase/functions/runware-template-cd/index.ts` | 1,146 |
+| Character consistency | `_shared/CharacterConsistencyService.ts` (+ inline JS copy) | 2,532 |
+| Test/debug harness | `ImageTierTester.tsx` alone | 5,302 |
 
-## Goal
-For each supported UI language, narrate English text with a native-speaker-of-that-language English accent (e.g. Urdu → Pakistani-accented English). Replace the single-Charlotte pathway with a language→voice lookup. Charlotte stays as the English default.
+The real cascade is **six** hops (`TIER_1 → DIRECT_MODE → T25A → T25B → T25C → T25D`), plus a second, independent cascade on the client. Underneath, every tier does the identical thing: `POST https://api.runware.ai/v1`, model `runware:100@1`, 1024x1024, 25 steps, CFG 8. The tiers differ only in prompt wording — so when Runware is down, all six fail together. The cascade buys ~40s of latency and zero availability.
 
-## Implementation
+## Target architecture
 
-### 1. Database — new `voice_overrides` table
-Small admin-only key/value table. Row per language code.
-
-```sql
-CREATE TABLE public.voice_overrides (
-  language_code text PRIMARY KEY,          -- 'en','ur','hi','ar','es','fr','zh','pt','sw','ru','tr'
-  voice_id      text NOT NULL,             -- ElevenLabs voice id
-  display_name  text NOT NULL,             -- e.g. "Pakistani English — Zara"
-  accent_note   text,                      -- human note for admin UI
-  model_id      text NOT NULL DEFAULT 'eleven_turbo_v2_5',
-  updated_by    uuid,
-  updated_at    timestamptz NOT NULL DEFAULT now()
-);
-
-GRANT SELECT ON public.voice_overrides TO authenticated;
-GRANT ALL    ON public.voice_overrides TO service_role;
-ALTER TABLE public.voice_overrides ENABLE ROW LEVEL SECURITY;
-
--- Read: any authenticated user (edge function needs to look up voice)
-CREATE POLICY "voice_overrides_read_auth" ON public.voice_overrides
-  FOR SELECT TO authenticated USING (true);
-
--- Write: admins only (uses existing ADMIN_USER_IDS pattern via edge function; no direct client writes)
--- No INSERT/UPDATE/DELETE policies for authenticated -> only service_role can mutate.
+```text
+Page renders
+   │
+   ▼
+StoryImageService.getImage(sessionId, page, pageText, profile)
+   ├─ cache hit (memory → sessionStorage) ──────► same image on back-nav
+   ├─ in-flight dedupe ─────────────────────────► await existing promise
+   ▼
+edge fn: runware-generate-image   (rewritten, ~300 LOC)
+   │
+   ├─ 1. SCENE DISTILLER  (small fast model, ~0.4s)
+   │      page text + previous page's scene
+   │      → one English sentence: what is visually happening
+   │      → on failure/timeout: first 2 sentences, quotes stripped
+   │
+   ├─ 2. CHARACTER SHEET  (deterministic, from saved settings)
+   │      name, age/grade, avatar type, skin tone, hair,
+   │      favorite color/animal + cultural presentation
+   │
+   ├─ 3. CULTURAL BACKDROP  (from native_language)
+   ├─ 4. STYLE + NEGATIVE constants
+   ├─ 5. SEED = hash(sessionId + characterName)   ← page-to-page consistency
+   ▼
+   POST api.runware.ai/v1   (1 retry, 25s timeout)
+   │
+   success → url          failure → ImageFallbackService (the kept "Tier 4" picture)
 ```
 
-Seed row for `en` = Charlotte's current ID. Other rows added by admin via the admin page.
+One code path. Identical for guest and premium.
 
-### 2. Language → Voice mapping (fallback baked into code)
-- New `src/services/tts/languageVoiceMap.ts` with hard-coded defaults per language so the app works even if the table is empty.
-- New `supabase/functions/_shared/languageVoiceMap.ts` mirror.
-- Runtime lookup order: **DB row → hard-coded default → Charlotte (English)**.
+### How each picture matches the page
 
-### 3. Edge function routing
-- Update `supabase/functions/elevenlabs-tts/index.ts`:
-  - Accept optional `language` in request body.
-  - If explicit `voiceId` passed, honour it (unchanged behaviour).
-  - Otherwise: look up `voice_overrides` for `language`, fall back to code map, fall back to Charlotte.
-  - Cache key = `hash(text + voiceId + model + speed)` (accented audio caches independently → repeat reads = free).
-  - Explicit 4000-char cap with logged rejection.
-  - Emit `costLogger` with `tts.language=<code>` tag.
+The scene distiller reads the actual page and returns one concrete visual sentence — no dialogue, no feelings, no character names. The previous page's scene is passed as a single line of context so "she climbed higher" resolves. The character is **never** described by the distiller; the character sheet is always injected from the user's saved settings, so appearance can't drift.
 
-### 4. Client wiring
-- `NewVoiceService.ts` and `enhancedElevenLabsTTS.ts`: pass active UI `language` into the edge function call. No component changes elsewhere.
-- Pace / stability settings from the earlier Beaconhouse fix are preserved per reading level.
+### Language = culture, not translation (corrected)
 
-### 5. New admin edge function + page
-- New edge function `voice-overrides-admin` (POST): validates caller is in `ADMIN_USER_IDS`, upserts a row. Reads are done directly from `voice_overrides` via the anon client (RLS allows authenticated read).
-- New page `src/pages/admin/VoiceAdmin.tsx` at `/admin/voices`:
-  - Table of languages with current voice ID + name.
-  - "Play sample" button → calls `elevenlabs-tts` with a 1-sentence sample in the chosen voice.
-  - Inline edit → calls `voice-overrides-admin`.
-  - Admin-gated via existing pattern (same guard used by other admin routes).
+Story text is **always English**. `native_language` is a cultural-background signal only:
+- **Character presentation** — a French reader's hero reads as French; an Urdu reader's hero as South Asian.
+- **Scenery** — culturally familiar backdrops may appear (French → Parisian street, Eiffel Tower).
+- **The page always wins.** If the text names a setting (kitchen, forest, spaceship), that is the setting; cultural flavor only fills unspecified or generic backdrops.
 
-### 6. Docs + memory
-- Update `docs/MULTILINGUAL_TTS.md` with the new map, override flow, and cost table.
-- Update `mem://architecture/multilingual-tts-logic`.
+No prompt translation anywhere.
 
-## What this does NOT change
-- No change to Charlotte for English users.
-- No change to guest vs. premium routing.
-- No change to billing, subscriptions, or Stripe.
-- No RLS changes on any existing table.
+### Behaviour preserved (checked forward and backward)
 
-## Verification
-- Unit: `languageVoiceMap` falls back correctly (DB miss → code default → Charlotte).
-- Playwright: switch UI language → generate 1 page → confirm `voiceId` in the network payload matches the map / override.
-- Cost tag: confirm `cost_tracking` rows show `tts.language=<code>`.
+- Back-navigation shows the identical image (memory + `sessionStorage: current_page_images`).
+- `image:generation:start` / `:end` events still fire — the guest 20-min timer pauses on these.
+- Saved premium stories still restore `cachedImages` / `stories.image_urls` untouched.
+- `image_generation_debug` logging kept (`get-cost-analytics` reads it).
+- `image-proxy` kept (CORS/hotlink). `ImageGenerationStatusIndicator`, `useImageWithFallback` kept.
+- Fresh image per page for guest and premium alike.
 
-## Cost recap (unchanged)
-ElevenLabs bills directly (not Lovable credits). Turbo v2.5 ≈ **$0.09 / 6-page guest story**, ≈ **$0.15 / 10-page premium story**, minus cache hits. Voice list pulls are free.
+Estimated result: **~14,000 LOC → ~600 LOC.**
 
 ---
 
-## New items to CREATE (please confirm)
-1. **DB migration:** `voice_overrides` table + RLS + seed row for English/Charlotte
-2. `src/services/tts/languageVoiceMap.ts`
-3. `supabase/functions/_shared/languageVoiceMap.ts`
-4. `supabase/functions/voice-overrides-admin/index.ts` (admin-only upsert endpoint)
-5. `src/pages/admin/VoiceAdmin.tsx` (admin preview + edit page, no user-facing UI)
-6. `/admin/voices` route entry in `src/App.tsx`
-7. `docs/MULTILINGUAL_TTS.md`
+## ⚠️ Permission needed — things I plan to CREATE
 
-## Items to MODIFY (please confirm)
-1. `supabase/functions/elevenlabs-tts/index.ts` — add language routing, DB lookup, length cap, cost tag
-2. `src/services/NewVoiceService.ts` — forward `language`
-3. `src/services/enhancedElevenLabsTTS.ts` — forward `language`
-4. `mem://architecture/multilingual-tts-logic` — update
+1. `src/services/StoryImageService.ts` — new ~200-line frontend service (cache + dedupe + one invoke + fallback).
+2. `supabase/functions/_shared/imagePrompt.ts` — scene distiller + character sheet + cultural backdrop, the single prompt source of truth (~180 lines).
+3. `docs/IMAGE_GENERATION.md` — replaces the scattered tier docs.
 
-## Items to REMOVE
-**None.**
+No new tables, no new secrets, no new dependencies. `RUNWARE_API_KEY` and `LOVABLE_API_KEY` (for the distiller) already exist.
 
-Reply "approved" and I'll build it.
+## ⚠️ Permission needed — things I plan to DELETE
+
+**Edge functions (whole folders):** `ai-visual-scene-creator`, `runware-template-ab` (+`index-backup.ts`), `runware-template-cd`, `background-image-pregeneration`, `generate-fallback-images`, `clear-character-cache`, `vendor-first-selftest`
+
+**Shared backend modules:** `_shared/CharacterConsistencyService.ts` + `CharacterConsistencyServiceInline.js`; `_shared/ResilientRunwareWebSocket.ts`, `_shared/RunwareWebSocketService.{ts,js}`, `_vendor/RunwareWebSocketService.js`; `_shared/runwareErrorHandler.ts`, `tierFailureMonitoring.js`, `tierLogging.js`; `_vendor/reliability-manager@1.0.0.bundle.mjs`
+
+**Frontend:** `SimpleImageService.ts`, `BatchImageService.ts`, `imageDeduplicationService.ts`, `OptimizedImageCache.ts`, `utils/SmartOrchestrationBypass.ts`, `utils/imageGenerationTrigger.ts`, `hooks/useImageGenerationWithDeduplication.ts`
+
+**Dev/test harnesses (+ their routes in `App.tsx`):** `ImageTierTester.tsx` (5,302), `RunwareConnectionTest.tsx`, `RunwareQualityControls.tsx`, `PromptStudio.tsx`, `Tier1TemplateTest.tsx` (orphan), `PromptTestingEnhancement.tsx` (orphan), `template-testing/BatchTemplateTest.tsx`, `pages/PromptTesting.tsx`, `ImageDebugPanel.tsx`, `BackendTierChecker.tsx`, `dev/ImageGenerationDebugPanel.tsx`
+
+**Rewritten in place (not deleted):**
+- `supabase/functions/runware-generate-image/index.ts` — 3,765 → ~300 LOC, same function name so nothing else needs rewiring.
+- `src/components/CleanStoryDisplay.tsx` — image call sites swapped to `StoryImageService`; story/timer/nav logic untouched.
+- `HealthCheckService.ts`, `SessionCacheManager.ts`, `ErrorRecoveryManager.ts`, `enhancedImageCache.ts` — image-tier branches stripped; the story-generation parts stay.
+
+## ⚠️ Permission needed — database
+I plan to **keep all tables** (no drops), just stop writing to `character_consistency_cache` and `visual_details_cache`. Say the word if you'd rather drop them later.
+
+## Not touched
+Story generation, the story fallback chain, emergency content, timers, TTS/voices, subscriptions, auth.
+
+## Last step
+Update `docs/COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md`, `supabase/functions/README.md` (function count 60 → 53), `docs/CURRENT_TEMPLATE_SYSTEM_AND_FALLBACK_CHAIN.md`, and add `docs/IMAGE_GENERATION.md`.

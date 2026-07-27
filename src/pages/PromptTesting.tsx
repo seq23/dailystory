@@ -15,7 +15,6 @@ import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 
 import { VoiceCatalogTester } from '@/components/VoiceCatalogTester';
-import { ImageTierTester } from '@/components/ImageTierTester';
 import { AudioE2ETestingPanel } from '@/components/AudioE2ETestingPanel';
 // AudioPlaybackTester integrated into UnifiedDebugMonitor
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -182,19 +181,6 @@ export default function PromptTesting() {
 
               <Separator />
 
-
-              {/* Image Tier Testing */}
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <Layers className="w-5 h-5 text-primary" />
-                  <h2 className="text-2xl font-semibold">Image Tier Testing</h2>
-                </div>
-                <ErrorBoundary>
-                  <ImageTierTester />
-                </ErrorBoundary>
-              </section>
-
-              <Separator />
 
               {/* Audio E2E Testing - Real User Flow Testing */}
               <section>
