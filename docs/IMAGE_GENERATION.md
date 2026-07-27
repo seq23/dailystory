@@ -78,6 +78,9 @@ tones out. So **every** reader who picks `dark`, in any language, gets:
 
 - skin: `deep rich brown skin with warm golden undertones, luminous and even,
   full tonal range with soft readable shadows` (replaces `SKIN_TONES.dark`)
+- the word `dark-skinned` inside the very first clause
+  (`a cheerful dark-skinned young girl…`) — with the tone word only in the skin
+  slot the model still washed it back to medium-tan
 - the warm fill-light recipe appended to `STYLE`
 - the anti-washout negative group (`DEEP_NEGATIVE`)
 
@@ -85,11 +88,11 @@ Ancestry wording still comes from `CULTURES`, so an Urdu reader stays South
 Asian Pakistani, just at the tone they actually chose. No ethnicity terms are
 in `DEEP_NEGATIVE` — those belong to the Afro path below.
 
-### Ancestry locks: Arabic (`ar`), Hindi (`hi`), Chinese (`zh`)
+### Ancestry locks: Arabic (`ar`), Hindi (`hi`), Urdu (`ur`), Chinese (`zh`)
 
 `Middle Eastern features` / `South Asian Indian features` were too vague and
 the model drifted to a generic tanned face. `ANCESTRY_LOCKS` in
-`imagePrompt.ts` replaces the culture appearance line for these two languages
+`imagePrompt.ts` replaces the culture appearance line for these languages
 with an explicit nationality, facial cues and a named hairstyle per avatar
 type, plus a wrong-ethnicity negative group:
 
@@ -97,12 +100,15 @@ type, plus a wrong-ethnicity negative group:
   (short for boys, long softly wavy for girls)
 - `hi` — "Indian child from India, South Asian Indian features…", glossy black
   hair (side part for boys, two braids with ribbons for girls)
+- `ur` — "Pakistani child from Pakistan, South Asian Pakistani features…",
+  glossy black hair (side part for boys, one neat braid with a ribbon for
+  girls). Its negative omits `South Asian features` so it never fights itself
 - `zh` — "Chinese child from China, East Asian features…", straight glossy
   black hair (neat fringe for boys, bob/twin ponytails for girls)
 
 Locks apply at every skin tone and stack with the deep-tone treatment above.
 The Afro path takes precedence and disables the lock (it can never trigger for
-`ar`/`hi`/`zh` anyway).
+`ar`/`hi`/`ur`/`zh` anyway).
 
 Lock negatives contain **only** wrong-ethnicity terms (no `pale white skin`),
 so they never fight a reader who chose a pale or light tone.
