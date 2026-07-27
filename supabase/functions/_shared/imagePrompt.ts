@@ -149,6 +149,55 @@ const AVATAR_TYPES: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// 2a. ANCESTRY LOCKS (non-Afro)
+//
+// "Middle Eastern features" and "South Asian Indian features" are too vague:
+// the model drifts to a generic tanned face. Naming the nationality, the hair
+// texture and the wrong-ethnicity negatives keeps Arabic readers looking
+// Emirati/Gulf Arab and Hindi readers looking Indian.
+// ---------------------------------------------------------------------------
+
+interface AncestryLock {
+  appearance: string;
+  hair: { boy: string; girl: string; neutral: string };
+  negative: string;
+}
+
+const ANCESTRY_LOCKS: Record<string, AncestryLock> = {
+  ar: {
+    appearance:
+      'Emirati Gulf Arab child, Khaleeji features with softly rounded cheeks, ' +
+      'dark almond eyes and full dark eyebrows',
+    hair: {
+      boy: 'short neat glossy black hair',
+      girl: 'long glossy black hair, softly wavy and neatly kept',
+      neutral: 'neat glossy black hair',
+    },
+    negative:
+      'East Asian features, African features, European features, blonde hair, ' +
+      'red hair, light eyes, pale white skin',
+  },
+  hi: {
+    appearance:
+      'Indian child from India, South Asian Indian features with warm brown eyes, ' +
+      'thick dark eyebrows and glossy black hair',
+    hair: {
+      boy: 'short neat glossy black hair with a side part',
+      girl: 'long glossy black hair in two neat braids with ribbons',
+      neutral: 'neat glossy black hair',
+    },
+    negative:
+      'East Asian features, Arab features, African features, European features, ' +
+      'blonde hair, red hair, light eyes, pale white skin',
+  },
+};
+
+function ancestryLock(user: ImageUserInfo): AncestryLock | null {
+  const base = (user.nativeLanguage ?? '').split('-')[0];
+  return ANCESTRY_LOCKS[base] ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // 2b. AFRO-DESCENT RENDERING
 //
 // "deep brown skin" alone gives diffusion models no ancestry anchor, so they
@@ -241,6 +290,7 @@ function sanitizeName(name?: string): string {
 export function buildCharacterSheet(user: ImageUserInfo, sessionId = ''): string {
   const culture = getCulture(user.nativeLanguage);
   const afro = afroProfile(user, sessionId);
+  const lock = afro ? null : ancestryLock(user);
   const kind = AVATAR_TYPES[user.avatar?.type ?? ''] ?? 'child';
   const isDark = user.avatar?.skinTone === 'dark';
   const skin = isDark
@@ -253,10 +303,20 @@ export function buildCharacterSheet(user: ImageUserInfo, sessionId = ''): string
     `a cheerful young ${kind}, exactly ${age} years old, unmistakably a small child`,
     'child body proportions with a large head and short limbs',
     'round soft childlike face, no makeup, no jewellery',
-    afro ? afro.appearance : culture.appearance,
+    afro ? afro.appearance : lock ? lock.appearance : culture.appearance,
     afro ? afro.skin : skin,
     'expressive friendly eyes',
-    afro ? afro.hair : 'neat age-appropriate hair',
+    afro
+      ? afro.hair
+      : lock
+        ? lock.hair[
+            user.avatar?.type === 'boy'
+              ? 'boy'
+              : user.avatar?.type === 'girl'
+                ? 'girl'
+                : 'neutral'
+          ]
+        : 'neat age-appropriate hair',
   ];
 
   if (user.favoriteColor) {
@@ -432,6 +492,7 @@ export function assemblePrompt(opts: {
   const culture = getCulture(user.nativeLanguage);
   const characterSheet = buildCharacterSheet(user, sessionId);
   const afro = afroProfile(user, sessionId);
+  const lock = afro ? null : ancestryLock(user);
   const name = sanitizeName(user.name);
   // Any deep tone gets the warm fill-light recipe and the anti-washout
   // negatives; only the Afro path additionally gets ancestry/hair wording.
@@ -456,9 +517,9 @@ export function assemblePrompt(opts: {
     positivePrompt,
     negativePrompt: afro
       ? `${NEGATIVE}, ${AFRO_NEGATIVE}`
-      : isDark
-        ? `${NEGATIVE}, ${DEEP_NEGATIVE}`
-        : NEGATIVE,
+      : [NEGATIVE, isDark ? DEEP_NEGATIVE : '', lock ? lock.negative : '']
+          .filter(Boolean)
+          .join(', '),
     seed: seedFrom(sessionId, name),
   };
 }
