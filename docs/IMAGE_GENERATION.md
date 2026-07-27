@@ -71,7 +71,23 @@ truck-art patterns"). The full backdrop is used only for a scene that names no
 setting at all. This avoids the old failure mode of "a hallway, set in a
 street".
 
+### Deep skin tone (`skinTone = 'dark'`, every language)
+
+`deep brown skin` on its own renders medium-tan — diffusion models wash deep
+tones out. So **every** reader who picks `dark`, in any language, gets:
+
+- skin: `deep rich brown skin with warm golden undertones, luminous and even,
+  full tonal range with soft readable shadows` (replaces `SKIN_TONES.dark`)
+- the warm fill-light recipe appended to `STYLE`
+- the anti-washout negative group (`DEEP_NEGATIVE`)
+
+Ancestry wording still comes from `CULTURES`, so an Urdu reader stays South
+Asian Pakistani, just at the tone they actually chose. No ethnicity terms are
+in `DEEP_NEGATIVE` — those belong to the Afro path below.
+
 ### Afro-descent rendering (skin tone `dark` + en/es/pt/fr)
+
+On top of the deep-tone treatment above, these languages also get:
 
 `deep brown skin` on its own gives the model no ancestry anchor, so it falls
 back to its strongest dark-skin prior — usually South Asian or Middle Eastern
