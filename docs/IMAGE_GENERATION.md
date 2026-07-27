@@ -44,8 +44,13 @@ Every prompt is exactly three parts:
    character's face, age, skin, hair, or clothing — that is the character
    sheet's job. The previous page's scene is passed in for continuity, so
    pronouns ("she climbed higher") resolve correctly.
-3. **Style + negatives** — fixed picture-book style; negatives block text,
-   frames, deformities, and anything unsafe for children.
+ 3. **Style + negatives** — fixed picture-book style; negatives block text,
+    frames, deformities, extreme close-ups, disembodied hands, and anything
+    unsafe for children. Negatives also explicitly reject adults, teenagers,
+    makeup and jewellery: without that, the model reliably paints the hero as
+    a young adult. The character sheet reinforces it ("unmistakably a small
+    child", child body proportions), and the prompt requires the child to be
+    visible head-to-waist so pages don't become close-ups of a stray hand.
 
 If the AI distiller fails or times out, `extractScene()` falls back to the
 page's first two sentences with dialogue stripped (`sceneSource: 'extracted'`).
@@ -56,9 +61,15 @@ An image is always attempted.
 Story text is **always English**. `native_language` only signals the reader's
 cultural background and drives two things: the character's features and an
 ambient backdrop (e.g. `ur` → South Asian street with Mughal arches, `fr` →
-Parisian street). The backdrop is only added when the page itself does not
-state a setting — if the page says "spaceship", the page wins
-(`sceneHasSetting()`).
+Parisian street).
+
+A stated setting always wins. If `sceneHasSetting()` finds a location word in
+the distilled scene (hallway, spaceship, kitchen…), the full backdrop is
+dropped and only a non-conflicting **cultural flavor** phrase is appended
+(e.g. "South Asian Pakistani cultural details, embroidered fabrics and
+truck-art patterns"). The full backdrop is used only for a scene that names no
+setting at all. This avoids the old failure mode of "a hallway, set in a
+street".
 
 ### Consistency seed
 
