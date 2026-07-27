@@ -104,6 +104,18 @@ Locks apply at every skin tone and stack with the deep-tone treatment above.
 The Afro path takes precedence and disables the lock (it can never trigger for
 `ar`/`hi`/`zh` anyway).
 
+Lock negatives contain **only** wrong-ethnicity terms (no `pale white skin`),
+so they never fight a reader who chose a pale or light tone.
+
+### Deploy caveat
+
+Editing only `_shared/imagePrompt.ts` did **not** invalidate the deployed
+`runware-generate-image` bundle — the function kept serving the old prompt
+across repeated deploys until `index.ts` itself changed. `index.ts` now carries
+a `PROMPT_BUILD` marker that is returned by both the `GET` health check and
+every successful generation. **Bump `PROMPT_BUILD` whenever you change
+`imagePrompt.ts`**, then verify the response echoes the new value.
+
 ### Afro-descent rendering (skin tone `dark` + en/es/pt/fr)
 
 On top of the deep-tone treatment above, these languages also get:
