@@ -174,13 +174,12 @@ const ANCESTRY_LOCKS: Record<string, AncestryLock> = {
       neutral: 'neat glossy black hair',
     },
     negative:
-      'East Asian features, African features, European features, blonde hair, ' +
-      'red hair, light eyes, pale white skin',
+      'East Asian features, African features, European features, blonde hair, red hair',
   },
   hi: {
     appearance:
-      'Indian child from India, South Asian Indian features with warm brown eyes, ' +
-      'thick dark eyebrows and glossy black hair',
+      'Indian child from India, South Asian Indian features with warm brown eyes ' +
+      'and thick dark eyebrows',
     hair: {
       boy: 'short neat glossy black hair with a side part',
       girl: 'long glossy black hair in two neat braids with ribbons',
@@ -188,12 +187,12 @@ const ANCESTRY_LOCKS: Record<string, AncestryLock> = {
     },
     negative:
       'East Asian features, Arab features, African features, European features, ' +
-      'blonde hair, red hair, light eyes, pale white skin',
+      'blonde hair, red hair',
   },
   zh: {
     appearance:
       'Chinese child from China, East Asian features with warm almond-shaped ' +
-      'dark eyes, round soft cheeks and straight glossy black hair',
+      'dark eyes and round soft cheeks',
     hair: {
       boy: 'short straight glossy black hair with a neat fringe',
       girl: 'straight glossy black hair in a neat bob or twin ponytails with a fringe',
@@ -201,7 +200,7 @@ const ANCESTRY_LOCKS: Record<string, AncestryLock> = {
     },
     negative:
       'South Asian features, Arab features, African features, European features, ' +
-      'blonde hair, red hair, curly hair, light eyes',
+      'blonde hair, red hair, curly hair',
   },
 };
 
