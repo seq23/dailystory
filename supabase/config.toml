@@ -83,7 +83,6 @@ verify_jwt = false
 
 [functions.runware-generate-image]
 verify_jwt = false
-import_map = "../deno.jsonc"
 
 [functions.security-alert]
 verify_jwt = true
