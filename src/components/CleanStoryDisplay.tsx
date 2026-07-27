@@ -136,7 +136,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
 import { ErrorHandlingManager } from "@/services/errorHandlingManager";
 import { DiagnosticPanel } from "@/components/DiagnosticPanel";
-import { ApiKeyDiagnostic } from "@/components/ApiKeyDiagnostic";
+import { SystemHealthPanel } from "@/components/testing/SystemHealthPanel";
 import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
 import { supabase } from "@/integrations/supabase/client";
 import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
@@ -4130,7 +4130,7 @@ const handleRestartTimer = () => {
               <details className="bg-white/5 rounded p-2">
                 <summary className="cursor-pointer">Developer Diagnostics</summary>
                 <DiagnosticPanel userInfo={userInfo} />
-                <ApiKeyDiagnostic />
+                <SystemHealthPanel />
               </details>
             </div>
           )}

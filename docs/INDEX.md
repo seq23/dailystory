@@ -170,8 +170,7 @@ Critical snapshots of fully operational systems that must never be consolidated 
 - Supabase Project: [cpzeuogomaixamrtnnmj](https://supabase.com/dashboard/project/cpzeuogomaixamrtnnmj)
 
 ### Useful Tools
-- [Prompt Testing Page](../prompt-testing) - System diagnostics
-- [Image Tier Tester](../components/ImageTierTester.tsx) - Image generation testing
+- [Testing Console](./PROMPT_TESTING_CONSOLE.md) - `/prompt-testing?debug=1`: live system tests, real spend, cost forecasting
 - [Debug Logger](../src/utils/DebugLogger.ts) - Logging utilities
 
 ---

@@ -24,7 +24,7 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
     'authorization, x-client-info, apikey, content-type, x-requested-with',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 const RUNWARE_ENDPOINT = 'https://api.runware.ai/v1';
@@ -210,6 +210,21 @@ Deno.serve(async (req) => {
       status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
+  // Health check: reports the real contract of this function. No generation,
+  // no cost. Used by the /prompt-testing console.
+  if (req.method === 'GET') {
+    return json({
+      status: 'healthy',
+      contract: 'POST { pageText, sessionId, pageNumber, userInfo, previousScene? }',
+      model: RUNWARE_MODEL,
+      costPerImageUsd: COST_PER_IMAGE_USD,
+      hasRunwareApiKey: !!Deno.env.get('RUNWARE_API_KEY'),
+      hasLovableApiKey: !!Deno.env.get('LOVABLE_API_KEY'),
+      hasServiceRoleKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+      timestamp: new Date().toISOString(),
+    });
+  }
 
   let payload: RequestPayload;
   try {

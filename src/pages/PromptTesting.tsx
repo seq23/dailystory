@@ -2,21 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Zap, Cable, ArrowRight, Bug, BarChart3, Brain, Layers, Volume2, AlertCircle, Activity } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Zap, Cable, ArrowRight, Bug, DollarSign, Calculator, Volume2, AlertCircle, Activity, Image as ImageIcon,
+} from 'lucide-react';
 import { StoryPromptTester } from '@/components/StoryPromptTester';
 import { supabase } from '@/integrations/supabase/client';
 
-import { RunwareConnectionTest } from '@/components/RunwareConnectionTest';
-import { ApiKeyDiagnostic } from '@/components/ApiKeyDiagnostic';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
-import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
+import { SpendSummary } from '@/components/testing/SpendSummary';
+import { ForecastPanel } from '@/components/testing/ForecastPanel';
+import { SystemHealthPanel } from '@/components/testing/SystemHealthPanel';
+import { ImageGenerationTester } from '@/components/testing/ImageGenerationTester';
+import { useCostAnalytics } from '@/hooks/useCostAnalytics';
 
 import { VoiceCatalogTester } from '@/components/VoiceCatalogTester';
 import { AudioE2ETestingPanel } from '@/components/AudioE2ETestingPanel';
-// AudioPlaybackTester integrated into UnifiedDebugMonitor
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { errorSuppressionManager } from '@/utils/errorSuppressionManager';
 
@@ -112,6 +115,7 @@ const LoggingHealthCheck = () => {
 export default function PromptTesting() {
   const [searchParams] = useSearchParams();
   const isDebugMode = searchParams.get('debug') === '1';
+  const analytics = useCostAnalytics(isDebugMode);
 
   // Initialize error suppression for cleaner console
   useEffect(() => {
@@ -132,7 +136,7 @@ export default function PromptTesting() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start mb-6">
             <div className="lg:col-span-2">
               <h1 className="text-4xl font-fun font-bold text-foreground mb-2">
-                Story Generation Testing
+                Time2Read Testing Console
                 {isDebugMode && (
                   <span className="ml-3 text-sm bg-primary/10 text-primary px-2 py-1 rounded-md">
                     Debug Mode Active
@@ -140,7 +144,8 @@ export default function PromptTesting() {
                 )}
               </h1>
               <p className="text-muted-foreground">
-                Comprehensive testing suite for AI story generation, validation, and infrastructure
+                Live tests against the real story, image and narration systems — plus what they have
+                cost so far and what they will cost at scale.
               </p>
             </div>
             <div className="flex justify-start lg:justify-end">
@@ -154,95 +159,101 @@ export default function PromptTesting() {
           </div>
         </div>
 
-        {/* Test Sections */}
-        <div className="space-y-8">
-          {/* Debug Data Viewer - Only show when debug=1 */}
+        {!isDebugMode && (
+          <Alert className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Spend, forecast and log tabs are hidden. Add <code>?debug=1</code> to the URL to open
+              the full console (admin account required for cost data).
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <Tabs defaultValue={isDebugMode ? 'spend' : 'story'} className="space-y-6">
+          <TabsList className="flex flex-wrap h-auto">
+            {isDebugMode && (
+              <>
+                <TabsTrigger value="spend" className="flex items-center gap-1.5">
+                  <DollarSign className="w-4 h-4" /> Spend
+                </TabsTrigger>
+                <TabsTrigger value="forecast" className="flex items-center gap-1.5">
+                  <Calculator className="w-4 h-4" /> Forecast
+                </TabsTrigger>
+              </>
+            )}
+            <TabsTrigger value="story" className="flex items-center gap-1.5">
+              <Zap className="w-4 h-4" /> Story generation
+            </TabsTrigger>
+            <TabsTrigger value="images" className="flex items-center gap-1.5">
+              <ImageIcon className="w-4 h-4" /> Images
+            </TabsTrigger>
+            <TabsTrigger value="audio" className="flex items-center gap-1.5">
+              <Volume2 className="w-4 h-4" /> Audio & voice
+            </TabsTrigger>
+            <TabsTrigger value="health" className="flex items-center gap-1.5">
+              <Cable className="w-4 h-4" /> Health
+            </TabsTrigger>
+            {isDebugMode && (
+              <TabsTrigger value="logs" className="flex items-center gap-1.5">
+                <Bug className="w-4 h-4" /> Logs
+              </TabsTrigger>
+            )}
+          </TabsList>
+
           {isDebugMode && (
-            <>
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <Bug className="w-5 h-5 text-primary" />
-                  <h2 className="text-2xl font-semibold">Debug Data Viewer</h2>
-                </div>
-                <LoggingHealthCheck />
-                <DebugDataViewer />
-              </section>
-
-              <Separator />
-
-              {/* Analytics Dashboard */}
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <BarChart3 className="w-5 h-5 text-primary" />
-                  <h2 className="text-2xl font-semibold">Analytics Dashboard</h2>
-                </div>
-                <AnalyticsDashboard />
-              </section>
-
-              <Separator />
-
-
-              {/* Audio E2E Testing - Real User Flow Testing */}
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <Volume2 className="w-5 h-5 text-primary" />
-                  <h2 className="text-2xl font-semibold">Audio E2E Testing</h2>
-                  
-                </div>
-                <ErrorBoundary>
-                  <AudioE2ETestingPanel />
-                </ErrorBoundary>
-              </section>
-
-              <Separator />
-
-              {/* Audio testing now integrated into UnifiedDebugMonitor */}
-            </>
+            <TabsContent value="spend" className="space-y-6">
+              <ErrorBoundary>
+                <SpendSummary analytics={analytics} />
+              </ErrorBoundary>
+            </TabsContent>
           )}
 
-          {/* Advanced Comprehensive Tests */}
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Zap className="w-5 h-5 text-primary" />
-              <h2 className="text-2xl font-semibold">Advanced Testing Suite</h2>
-            </div>
-            
+          {isDebugMode && (
+            <TabsContent value="forecast" className="space-y-6">
+              <ErrorBoundary>
+                <ForecastPanel analytics={analytics} />
+              </ErrorBoundary>
+            </TabsContent>
+          )}
+
+          <TabsContent value="story" className="space-y-6">
             <ErrorBoundary>
               <StoryPromptTester />
             </ErrorBoundary>
-          </section>
+          </TabsContent>
 
-          <Separator />
+          <TabsContent value="images" className="space-y-6">
+            <ErrorBoundary>
+              <ImageGenerationTester />
+            </ErrorBoundary>
+          </TabsContent>
 
-          {/* Voice Catalog Testing */}
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Brain className="w-5 h-5 text-primary" />
-              <h2 className="text-2xl font-semibold">Voice Catalog Testing</h2>
-            </div>
+          <TabsContent value="audio" className="space-y-6">
             <ErrorBoundary>
               <VoiceCatalogTester />
             </ErrorBoundary>
-          </section>
-
-          <Separator />
-
-          {/* Infrastructure Tests */}
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Cable className="w-5 h-5 text-primary" />
-              <h2 className="text-2xl font-semibold">Infrastructure Testing</h2>
-            </div>
-            <div className="space-y-6">
+            {isDebugMode && (
               <ErrorBoundary>
-                <ApiKeyDiagnostic />
+                <AudioE2ETestingPanel />
               </ErrorBoundary>
+            )}
+          </TabsContent>
+
+          <TabsContent value="health" className="space-y-6">
+            <ErrorBoundary>
+              <SystemHealthPanel />
+            </ErrorBoundary>
+          </TabsContent>
+
+          {isDebugMode && (
+            <TabsContent value="logs" className="space-y-6">
+              <LoggingHealthCheck />
               <ErrorBoundary>
-                <RunwareConnectionTest />
+                <DebugDataViewer />
               </ErrorBoundary>
-            </div>
-          </section>
-        </div>
+            </TabsContent>
+          )}
+        </Tabs>
       </div>
     </div>
   );
