@@ -2740,12 +2740,14 @@ const initializeStory = async () => {
         });
         
         // Store image metadata for debug panel
-        if (result.metadata) {
-          setPageImageMetadata(prev => ({
-            ...prev,
-            [currentPage]: result.metadata
-          }));
-        }
+        setPageImageMetadata(prev => ({
+          ...prev,
+          [currentPage]: {
+            scene: result.scene,
+            isFallback: result.isFallback,
+            provider: 'runware'
+          }
+        }));
         
         // Cache with story continuity markers to prevent re-generation
         try {
