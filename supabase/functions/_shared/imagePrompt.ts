@@ -204,9 +204,11 @@ export async function distillScene(
               `Page text:\n${pageText.slice(0, 1200)}`,
           },
         ],
-        // Generous budget: this model spends tokens on internal reasoning first,
-        // and a truncated completion yields a garbage scene.
-        max_tokens: 400,
+        // This model burns budget on internal reasoning before emitting text,
+        // and a truncated completion is garbage. Ask for no reasoning and keep
+        // a budget large enough to survive it when the provider ignores us.
+        reasoning_effort: 'none',
+        max_tokens: 1200,
         temperature: 0.3,
       }),
     });
