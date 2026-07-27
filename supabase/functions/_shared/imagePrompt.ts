@@ -242,7 +242,10 @@ export function buildCharacterSheet(user: ImageUserInfo, sessionId = ''): string
   const culture = getCulture(user.nativeLanguage);
   const afro = afroProfile(user, sessionId);
   const kind = AVATAR_TYPES[user.avatar?.type ?? ''] ?? 'child';
-  const skin = SKIN_TONES[user.avatar?.skinTone ?? ''] ?? 'warm medium-tan skin';
+  const isDark = user.avatar?.skinTone === 'dark';
+  const skin = isDark
+    ? DEEP_SKIN
+    : SKIN_TONES[user.avatar?.skinTone ?? ''] ?? 'warm medium-tan skin';
   const age = user.age && user.age >= 3 && user.age <= 17 ? user.age : 7;
 
   const parts = [
