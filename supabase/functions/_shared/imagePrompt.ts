@@ -325,7 +325,10 @@ export function buildCharacterSheet(user: ImageUserInfo, sessionId = ''): string
 
   const parts = [
     // Explicit child cues: without them the model happily paints a young adult.
-    `a cheerful young ${kind}, exactly ${age} years old, unmistakably a small child`,
+    // For deep tones the tone word has to appear in the FIRST clause too — put
+    // it only in the skin slot and the model washes it back to medium-tan.
+    `a cheerful ${!afro && isDark ? 'dark-skinned ' : ''}young ${kind}, ` +
+      `exactly ${age} years old, unmistakably a small child`,
     'child body proportions with a large head and short limbs',
     'round soft childlike face, no makeup, no jewellery',
     afro ? afro.appearance : lock ? lock.appearance : culture.appearance,
