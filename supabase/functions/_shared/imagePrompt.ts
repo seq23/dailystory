@@ -158,7 +158,9 @@ export function extractScene(pageText: string): string {
   return scene.slice(0, 300);
 }
 
-const DISTILL_TIMEOUT_MS = 3000;
+// Reasoning models spend ~2-4s before emitting the sentence; 3s aborted most
+// calls and silently degraded every scene to the crude extracted fallback.
+const DISTILL_TIMEOUT_MS = 7000;
 
 /**
  * Turn a story page into ONE concrete visual sentence.
@@ -233,7 +235,11 @@ export async function distillScene(
       return fallback;
     }
     return { scene: scene.slice(0, 300), source: 'ai' };
-  } catch {
+  } catch (error) {
+    console.warn(
+      '[distiller] failed, using extracted scene:',
+      (error as Error)?.name === 'AbortError' ? 'timeout' : (error as Error)?.message,
+    );
     return fallback;
   } finally {
     clearTimeout(timer);
