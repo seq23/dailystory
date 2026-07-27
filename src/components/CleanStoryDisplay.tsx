@@ -3384,7 +3384,17 @@ const handleRestartTimer = () => {
         DebugLogger.log('story', 'New story: Clearing character state for fresh generation');
         StoryVisualStateManager.clearBasedOnContext(characterSessionIdValue, isPremium, 'next-story');
       }
-      
+
+      // Single image cache: drop this session's illustrations so a new story
+      // (or a rewrite) starts with fresh artwork for guest AND premium alike.
+      try {
+        StoryImageService.clearSession(stableSessionId);
+        StoryImageService.clearSession(characterSessionIdValue);
+        setPageImages({});
+      } catch (error) {
+        DebugLogger.warn('image', 'Failed to clear StoryImageService cache', error);
+      }
+
       // Clear previous story cache for free users to prevent cache growth
       if (!isPremium) {
         try {
