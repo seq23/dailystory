@@ -129,6 +129,19 @@ const SKIN_TONES: Record<string, string> = {
   dark: 'deep brown skin',
 };
 
+// "deep brown skin" alone renders medium-tan: the model washes deep tones out.
+// Non-Afro readers (Urdu, Hindi, Arabic, Chinese…) keep their own ancestry
+// wording from CULTURES and only get the tone fixed here.
+const DEEP_SKIN =
+  'deep rich brown skin with warm golden undertones, luminous and even, ' +
+  'full tonal range with soft readable shadows';
+
+// Anti-washout only — no ethnicity terms, those belong to the Afro path.
+const DEEP_NEGATIVE =
+  'washed out skin, desaturated skin, ashy grey skin, grey cast, pale skin, ' +
+  'light brown skin, skin lightening, whitewashed, overexposed face, ' +
+  'blown-out highlights, flat muddy skin tone';
+
 const AVATAR_TYPES: Record<string, string> = {
   boy: 'boy',
   girl: 'girl',
