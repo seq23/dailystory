@@ -207,9 +207,13 @@ export async function distillScene(
       }),
     });
 
-    if (!response.ok) return fallback;
+    if (!response.ok) {
+      console.warn('[distiller] gateway HTTP', response.status, (await response.text()).slice(0, 300));
+      return fallback;
+    }
 
     const data = await response.json();
+    console.log('[distiller] raw', JSON.stringify(data).slice(0, 600));
     const scene = (data?.choices?.[0]?.message?.content ?? '')
       .replace(/^["'\s]+|["'\s.]+$/g, '')
       .trim();
