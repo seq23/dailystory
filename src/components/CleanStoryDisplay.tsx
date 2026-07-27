@@ -124,7 +124,7 @@ import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 import { DiagnosticTool } from "@/utils/diagnostics";
 import { UnifiedValidator } from "@/utils/unifiedValidator";
 
-import { SimpleImageService } from "@/services/SimpleImageService";
+import { StoryImageService } from "@/services/StoryImageService";
 import { ImageFallbackService } from "@/services/ImageFallbackService";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { ImageMixingLoading } from "@/components/ImageMixingLoading";
@@ -2677,16 +2677,16 @@ const initializeStory = async () => {
         isPremium
       });
       
-      const result = await SimpleImageService.generateStoryImage(
-        pageText, // Use pageText instead of storyText for consistency 
-        { ...userInfo, difficultyLevel: currentDifficulty, userTier: isPremium ? 'premium' : 'guest' }, 
-        stableSessionId, // CRITICAL FIX: Use stableSessionId (was characterSessionIdValue) to match useSessionAwareImageLoader
-        currentPage + 1,
-        isPremium
+      // Guest and premium share one image path — no tier routing.
+      const result = await StoryImageService.generateStoryImage(
+        pageText,
+        { ...userInfo, difficultyLevel: currentDifficulty },
+        stableSessionId, // must match useSessionAwareImageLoader
+        currentPage + 1
       );
       
       // 🔍 ENHANCED RESULT TRACKING: Log which method succeeded
-      DebugLogger.log('image', 'SimpleImageService result received', {
+      DebugLogger.log('image', 'StoryImageService result received', {
         currentPage,
         pageText: pageText.substring(0, 50) + '...',
         result: {
@@ -2866,12 +2866,11 @@ const initializeStory = async () => {
     
     try {
       const sessionId = stableSessionId; // ✅ CRITICAL FIX: Use stableSessionId for batch generation
-      const result = await SimpleImageService.generateStoryImage(
+      const result = await StoryImageService.generateStoryImage(
         storyText,
-        { ...userInfo, difficultyLevel: currentDifficulty, userTier: isPremium ? 'premium' : 'guest' },
+        { ...userInfo, difficultyLevel: currentDifficulty },
         sessionId,
-        index + 1,
-        isPremium
+        index + 1
       );
       if (result.success && result.url) {
         const nextMap = { ...pageImages, [index]: result.url } as Record<number, string>;
