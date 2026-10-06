@@ -1,0 +1,56 @@
+name: Supabase keep-alive
+
+# Supabase Free pauses a project after seven idle days ("Free projects are paused after 1 week of
+# inactivity" — supabase.com/pricing). This repo left the Pro plan on 6 Oct 2026, so one real
+# request a day keeps the clock at zero. The four daily monitors already hit the functions, but
+# they can be edited or switched off; this one exists for the single purpose of staying awake and
+# fails loudly, with an issue, the day the project stops answering.
+#
+# Two requests: auth health (the gateway) and the cache-health function (runs inside the project).
+# The anon key is the public client key; it lives in the SUPABASE_ANON_KEY repo secret.
+
+on:
+  schedule:
+    - cron: "41 5 * * *"   # daily 05:41 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: supabase-keep-alive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    name: One request a day so the project stays awake
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PROJECT_URL: https://cpzeuogomaixamrtnnmj.supabase.co
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    steps:
+      - name: Auth health and cache-health function
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          if [ -z "${SUPABASE_ANON_KEY}" ]; then echo "SUPABASE_ANON_KEY secret is not set"; exit 1; fi
+          fail=0
+          for path in auth/v1/health functions/v1/cache-health; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+              -H "apikey: ${SUPABASE_ANON_KEY}" -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+              "${PROJECT_URL}/${path}" || echo 000)
+            echo "${path} -> ${code}"
+            [ "${code}" = "200" ] || fail=1
+          done
+          exit ${fail}
+      - name: Open an issue if the project did not answer
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create -R "${GITHUB_REPOSITORY}" \
+            --title "Supabase project did not answer the keep-alive ($(date -u +%F))" \
+            --body "The daily keep-alive got a non-200 from the Supabase project. If the project is paused, restore it at https://supabase.com/dashboard/project/cpzeuogomaixamrtnnmj and re-run this workflow. If the key was rotated, update the SUPABASE_ANON_KEY repo secret. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            || true
