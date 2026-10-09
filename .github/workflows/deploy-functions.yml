@@ -294,6 +294,29 @@ jobs:
           echo "🔍 Verifying deployment..."
           supabase functions list --project-ref $SUPABASE_PROJECT_ID || echo "⚠️ Could not verify deployment"
 
+      - name: Payment functions load Stripe (post-deploy smoke)
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          # A payment function that cannot load its dependencies answers
+          # IMPORT_FAILURE before it even checks the caller. An anon call must
+          # get past that point (to an auth error); anything else fails the deploy.
+          BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
+          if [ -z "$SUPABASE_ANON_KEY" ]; then echo "SUPABASE_ANON_KEY secret missing"; exit 1; fi
+          failed=0
+          for func in create-checkout customer-portal; do
+            body=""
+            for attempt in 1 2 3; do
+              body=$(curl -s --max-time 30 -X POST "$BASE_URL/$func" \
+                -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+                -H "Content-Type: application/json" -d '{"plan":"monthly"}' || true)
+              case "$body" in *IMPORT_FAILURE*|"") sleep 15 ;; *) break ;; esac
+            done
+            echo "$func -> $(echo "$body" | head -c 200)"
+            case "$body" in *IMPORT_FAILURE*|"") echo "::error::$func cannot load its dependencies"; failed=1 ;; esac
+          done
+          exit $failed
+
       - name: Post-Deploy Function Warm-Up
         if: success()
         env:

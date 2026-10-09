@@ -4,6 +4,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { memoizedImport, createPaymentSupabaseClient, createPaymentUnavailableResponse, createImportFailureResponse } from "../_shared/resilientLoader.ts";
+import Stripe from "../_shared/stripe.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +28,6 @@ serve(async (req) => {
     logStep("Function started");
 
     // Load Stripe with resilient import
-    const { default: Stripe } = await memoizedImport('stripe');
     
     // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
     const supabaseClient = await createPaymentSupabaseClient();

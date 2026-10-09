@@ -3,7 +3,8 @@
 // Returns 503 if both network and vendor fail
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
-import { memoizedImport, createPaymentSupabaseClient, createPaymentUnavailableResponse, createImportFailureResponse } from "../_shared/resilientLoader.ts";
+import { createPaymentSupabaseClient, createPaymentUnavailableResponse, createImportFailureResponse } from "../_shared/resilientLoader.ts";
+import Stripe from "../_shared/stripe.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +28,6 @@ serve(async (req) => {
     logStep("Function started");
 
     // Load Stripe with resilient import
-    const { default: Stripe } = await memoizedImport('stripe');
     
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {

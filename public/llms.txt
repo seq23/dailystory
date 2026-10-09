@@ -24,4 +24,4 @@ Time2Read creates never-ending, age-appropriate stories tailored to each child's
 
 ## Optional
 
-- Append `Sitemap: https://time-2-read.lovable.app/sitemap.xml` to robots.txt for crawler discovery.
+- Append `Sitemap: https://time-2-read.com/sitemap.xml` to robots.txt for crawler discovery.

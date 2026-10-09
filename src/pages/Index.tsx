@@ -4,6 +4,7 @@ import { ReadingCollectionsLinks } from "@/components/ReadingCollectionsLinks";
 
 import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { SITE_URL } from "@/config/site";
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,7 +12,7 @@ const Index = () => {
   const isStoryAction = new URLSearchParams(location.search).get('action') === 'new-story';
 
   useEffect(() => {
-    const url = "https://time-2-read.lovable.app/";
+    const url = `${SITE_URL}/`;
     const title = "Time2Read - Interactive Reading Adventures for Kids";
     const desc = "Personalized AI reading adventures for kids 3-15. Interactive stories with illustrations, phonics, and text-to-speech to build reading confidence.";
 
