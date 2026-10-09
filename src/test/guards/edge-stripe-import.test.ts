@@ -66,4 +66,10 @@ describe("edge functions load Stripe statically", () => {
     expect(step).toMatch(/\*"Authentication error"\*\) ;; \*\) echo "::error::[^\n]*failed=1/);
     expect(step).toContain("exit $failed");
   });
+
+  it("the deploy workflow cannot report success when deploys fail", () => {
+    const wf = readFileSync(join(FUNCTIONS_DIR, "../../.github/workflows/deploy-functions.yml"), "utf8");
+    expect(wf).toContain("NAMED STOP: Supabase rejected SUPABASE_ACCESS_TOKEN");
+    expect(wf).toMatch(/failed_deployments\[@\]\} -gt 0 \]; then\n[^\n]*::error::[^\n]*\n\s*exit 1/);
+  });
 });

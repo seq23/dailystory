@@ -91,6 +91,15 @@ jobs:
         with:
           version: 1.211.0
           
+      - name: Supabase access token is accepted
+        run: |
+          # Every deploy since the token went stale failed with 401 and the job
+          # still reported success. Stop here, red and named, instead.
+          if ! supabase functions list --project-ref "$SUPABASE_PROJECT_ID" >/dev/null 2>/tmp/auth.err; then
+            echo "::error::NAMED STOP: Supabase rejected SUPABASE_ACCESS_TOKEN ($(grep -o 'status [0-9]*' /tmp/auth.err | head -1)). Replace the repo secret with a new personal access token (supabase.com/dashboard/account/tokens) and re-run."
+            exit 1
+          fi
+
       - name: Function health check (optional)
         run: |
           echo "🏥 Running function health check..."
@@ -289,6 +298,11 @@ jobs:
             echo "  ❌ Failed: ${failed_deployments[*]}"
           fi
           
+          if [ ${#failed_deployments[@]} -gt 0 ]; then
+            echo "::error::${#failed_deployments[@]} function(s) failed to deploy: ${failed_deployments[*]}"
+            exit 1
+          fi
+
           # Verify deployment with supabase functions list
           echo ""
           echo "🔍 Verifying deployment..."
