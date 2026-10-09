@@ -50,12 +50,20 @@ describe("edge functions load Stripe statically", () => {
     expect(src).toMatch(/new Stripe\(/);
   });
 
-  it("the deploy workflow fails when a deployed payment function reports IMPORT_FAILURE", () => {
+  it.each(["create-checkout", "customer-portal"])("%s verifies the caller with the real SDK, not the vendor stub", (fn) => {
+    const src = readFileSync(join(FUNCTIONS_DIR, fn, "index.ts"), "utf8");
+    expect(src).toMatch(/^import \{ createPaymentServiceClient \} from "\.\.\/_shared\/paymentSupabase\.ts";$/m);
+    expect(src).not.toMatch(/createPaymentSupabaseClient|memoizedImport/);
+    const shared = readFileSync(join(FUNCTIONS_DIR, "_shared/paymentSupabase.ts"), "utf8");
+    expect(shared).toMatch(/^import \{ createClient \} from "https:\/\/esm\.sh\/@supabase\/supabase-js@\d+\.\d+\.\d+\?target=deno";$/m);
+  });
+
+  it("the deploy workflow fails unless each deployed payment function reaches its auth check", () => {
     const wf = readFileSync(join(FUNCTIONS_DIR, "../../.github/workflows/deploy-functions.yml"), "utf8");
     const step = wf.slice(wf.indexOf("Payment functions load Stripe (post-deploy smoke)"));
     expect(step.length).toBeGreaterThan(100);
     for (const fn of ["create-checkout", "customer-portal"]) expect(step).toContain(fn);
-    expect(step).toMatch(/IMPORT_FAILURE[^\n]*failed=1/);
+    expect(step).toMatch(/\*"Authentication error"\*\) ;; \*\) echo "::error::[^\n]*failed=1/);
     expect(step).toContain("exit $failed");
   });
 });

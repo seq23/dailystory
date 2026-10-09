@@ -3,7 +3,8 @@
 // Returns 503 if both network and vendor fail
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
-import { createPaymentSupabaseClient, createPaymentUnavailableResponse, createImportFailureResponse } from "../_shared/resilientLoader.ts";
+import { createImportFailureResponse } from "../_shared/resilientLoader.ts";
+import { createPaymentServiceClient } from "../_shared/paymentSupabase.ts";
 import Stripe from "../_shared/stripe.ts";
 
 const corsHeaders = {
@@ -36,11 +37,7 @@ serve(async (req) => {
     logStep("Stripe key verified");
 
     // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
-    const supabaseClient = await createPaymentSupabaseClient();
-    if (!supabaseClient) {
-      logStep("Payment service unavailable - database connection failed");
-      return createPaymentUnavailableResponse('customer-portal');
-    }
+    const supabaseClient = createPaymentServiceClient();
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");

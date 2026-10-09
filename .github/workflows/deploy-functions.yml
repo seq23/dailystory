@@ -299,8 +299,9 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           # A payment function that cannot load its dependencies answers
-          # IMPORT_FAILURE before it even checks the caller. An anon call must
-          # get past that point (to an auth error); anything else fails the deploy.
+          # IMPORT_FAILURE, and one built on the stub client crashes before it
+          # checks the caller. An anon call must reach the real auth check and
+          # be refused with "Authentication error"; anything else fails the deploy.
           BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
           if [ -z "$SUPABASE_ANON_KEY" ]; then echo "SUPABASE_ANON_KEY secret missing"; exit 1; fi
           failed=0
@@ -310,10 +311,10 @@ jobs:
               body=$(curl -s --max-time 30 -X POST "$BASE_URL/$func" \
                 -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
                 -H "Content-Type: application/json" -d '{"plan":"monthly"}' || true)
-              case "$body" in *IMPORT_FAILURE*|"") sleep 15 ;; *) break ;; esac
+              case "$body" in *"Authentication error"*) break ;; *) sleep 15 ;; esac
             done
             echo "$func -> $(echo "$body" | head -c 200)"
-            case "$body" in *IMPORT_FAILURE*|"") echo "::error::$func cannot load its dependencies"; failed=1 ;; esac
+            case "$body" in *"Authentication error"*) ;; *) echo "::error::$func did not reach its auth check (IMPORT_FAILURE or crash)"; failed=1 ;; esac
           done
           exit $failed
 
