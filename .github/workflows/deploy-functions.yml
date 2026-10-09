@@ -134,8 +134,10 @@ jobs:
         run: |
           echo "🔍 Discovering edge functions..."
           
-          # Discover all functions with index.ts files
-          FUNCTIONS=$(find supabase/functions -name "index.ts" -type f | sed 's|supabase/functions/||' | sed 's|/index.ts||' | sort)
+          # Discover all functions: a top-level folder with an index.ts. Folders starting with "_"
+          # (_shared and its subfolders, e.g. _shared/types) are helper modules, not functions;
+          # deploying _shared/types failed the run on 9 Oct 2026 though every real function shipped.
+          FUNCTIONS=$(find supabase/functions -mindepth 2 -maxdepth 2 -name "index.ts" -type f -not -path "supabase/functions/_*" | sed 's|supabase/functions/||' | sed 's|/index.ts||' | sort)
           
           if [ -z "$FUNCTIONS" ]; then
             echo "❌ No functions found"
