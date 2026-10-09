@@ -2,6 +2,7 @@ import { Check, Crown, Building2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { FREE_STORY_LIMIT, HEYGETONMYLEVEL_URL, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
 import { freeFeatures, premiumFeatures, additionalOfferings, enterpriseFeatures } from "@/constants/featureLists";
 import readingScreenshot from "@/assets/pricing-screenshot-reading.jpg";
 import libraryScreenshot from "@/assets/pricing-screenshot-library.jpg";
@@ -22,7 +23,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
             Simple, transparent pricing
           </h1>
           <p className="text-muted-foreground mt-3">
-            Choose the plan that fits your family or organization. Upgrade anytime.
+            Built for parents of 4–8-year-olds learning to read. Try {FREE_STORY_LIMIT} stories free, then {TRIAL_DAYS} days of Premium free.
           </p>
         </header>
 
@@ -32,12 +33,12 @@ export function PricingSection({ compact }: PricingSectionProps) {
           <Card>
             <CardHeader>
               <CardTitle>Free</CardTitle>
-              <CardDescription>Great to get started</CardDescription>
+              <CardDescription>Try it out</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
                 <div className="text-3xl font-bold">$0</div>
-                <div className="text-muted-foreground">Forever</div>
+                <div className="text-muted-foreground">{FREE_STORY_LIMIT} free stories</div>
               </div>
               <ul className="space-y-2 mb-6">
                 {freeFeatures.map((f) => (
@@ -62,13 +63,21 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 <Crown className="w-5 h-5 text-yellow-500" />
                 <CardTitle>Premium</CardTitle>
               </div>
-              <CardDescription>Best for families</CardDescription>
+              <CardDescription>For families with early readers (ages 4–8)</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
-                <div className="text-3xl font-bold">$10</div>
-                <div className="text-muted-foreground">per month</div>
+                <div className="text-3xl font-bold">{PLAN_PRICES.monthly.label}</div>
+                <div className="text-muted-foreground">per month, or {PLAN_PRICES.annual.label} per year</div>
+                <div className="text-sm font-medium text-primary mt-1">{TRIAL_DAYS}-day free trial</div>
               </div>
+              <p className="mb-4 rounded-md bg-primary/5 border border-primary/20 px-3 py-2 text-sm" data-testid="heygetonmylevel-bonus">
+                Includes{" "}
+                <a href={HEYGETONMYLEVEL_URL} target="_blank" rel="noopener noreferrer" className="font-medium underline">
+                  HeyGetOnMyLevel
+                </a>{" "}
+                reading practice free
+              </p>
               <div className="space-y-4 mb-6">
                 <ul className="space-y-2">
                   {premiumFeatures.map((f) => (
@@ -91,7 +100,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 </div>
               </div>
               <Link to="/auth">
-                <Button className="w-full">Upgrade to Premium</Button>
+                <Button className="w-full">Start {TRIAL_DAYS}-day free trial</Button>
               </Link>
             </CardContent>
           </Card>
@@ -101,14 +110,14 @@ export function PricingSection({ compact }: PricingSectionProps) {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-primary" />
-                <CardTitle>Enterprise</CardTitle>
+                <CardTitle>Schools</CardTitle>
               </div>
-              <CardDescription>For schools &amp; organizations</CardDescription>
+              <CardDescription>For schools, classrooms &amp; organizations</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
-                <div className="text-3xl font-bold">Custom</div>
-                <div className="text-muted-foreground">Tailored to your needs</div>
+                <div className="text-3xl font-bold">Contact us</div>
+                <div className="text-muted-foreground">Classroom and district pricing</div>
               </div>
               <ul className="space-y-2 mb-6">
                 {enterpriseFeatures.map((f) => (
@@ -118,7 +127,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                   </li>
                 ))}
               </ul>
-              <a href="mailto:hello@time-2-read.com?subject=Enterprise%20Inquiry">
+              <a href="mailto:hello@time-2-read.com?subject=School%20pricing">
                 <Button variant="outline" className="w-full gap-2">
                   <Mail className="w-4 h-4" />
                   Contact Us

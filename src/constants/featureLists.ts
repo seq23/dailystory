@@ -6,8 +6,9 @@
 // Premium benefits focus on other features as documented below.
 
 export const freeFeatures: string[] = [
+  "3 free stories to try Time2Read",
   "Customize your story (Limited)",
-  "Free 20-minute reading sessions with images",
+  "Reading sessions with images",
   "Text-to-speech suite: Hear it, Explain it, phonetic breakdown, and precise word-by-word highlighting",
   "Audio Narration (Limited)",
   "Achievements, points, badges, and reading streaks (In session only)",

@@ -62,7 +62,7 @@
     "plans": {
       "monthly": {
         "title": "ماہانہ پلان",
-        "price": "$10",
+        "price": "$9.99",
         "period": "/ماہ",
         "features": {
           "unlimited": "لامحدود کہانیاں",
@@ -71,9 +71,9 @@
       },
       "annual": {
         "title": "سالانہ پلان",
-        "price": "$100",
+        "price": "$79",
         "period": "/سال",
-        "savings": "$20 بچائیں",
+        "savings": "$40 بچائیں",
         "features": {
           "unlimited": "لامحدود کہانیاں",
           "aiFeatures": "جدید AI خصوصیات"
@@ -115,8 +115,8 @@
     },
     "payment": {
       "instruction": "پہلے اکاؤنٹ بنائیں، پھر محفوظ ادائیگی جاری رکھیں",
-      "monthly": "$10/ماہ",
-      "annual": "$100/سال"
+      "monthly": "$9.99/ماہ",
+      "annual": "$79/سال"
     },
     "guarantees": {
       "moneyBack": "✓ 30 دن کی واپسی کی ضمانت",

@@ -13,13 +13,15 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { ParentDashboard } from "@/components/ParentDashboard";
 import { PremiumStoryLibrary } from "@/components/PremiumStoryLibrary";
 import CleanStoryDisplay from "@/components/CleanStoryDisplay";
+import { StoryPaywall } from "@/components/StoryPaywall";
+import { useFreeStoryAllowance } from "@/hooks/useFreeStoryAllowance";
+import { TRIAL_DAYS } from "@/lib/freeStoryAllowance";
 
 import { MyAccount } from "@/components/MyAccount";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { PremiumHomeTutorial } from "@/components/PremiumHomeTutorial";
 
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
-import { NonBlockingSubscriptionBanner } from "@/components/NonBlockingSubscriptionBanner";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { DiscountActivationBanner } from "@/components/DiscountActivationBanner";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
@@ -92,8 +94,12 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   
   // Authoritative billing status from database for gating premium features
   const { isPremium: isSubscriptionActive, loading: subLoading } = useCachedSubscriptionStatus(user.id);
-  // While subscription status is loading, assume active to prevent flash of "Subscription Required"
-  const effectiveSubscriptionActive = subLoading ? true : isSubscriptionActive;
+  // While subscription status is loading, assume active to prevent a flash of the paywall
+  const hasPaidAccess = subLoading ? true : isSubscriptionActive;
+  // PAYWALL: unpaid accounts get FREE_STORY_LIMIT stories, then the 7-day-trial checkout.
+  // The server enforces the same limit (generate-adaptive-story answers 402).
+  const freeStories = useFreeStoryAllowance(user.id);
+  const effectiveSubscriptionActive = hasPaidAccess || freeStories.loading || !freeStories.exhausted;
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [devTestMode, setDevTestMode] = useState(false);
@@ -756,7 +762,14 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               <DiscountActivationBanner />
               
               {/* Subscription status banner - non-blocking */}
-              <NonBlockingSubscriptionBanner userId={user.id} />
+              {!hasPaidAccess && !freeStories.loading && !freeStories.exhausted && (
+                <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2 text-sm flex flex-wrap items-center justify-between gap-2" data-testid="free-stories-banner">
+                  <span>
+                    {freeStories.remaining} of {freeStories.limit} free stories left. Then try Premium free for {TRIAL_DAYS} days.
+                  </span>
+                  <a href="/pricing" className="font-medium text-primary underline">See plans</a>
+                </div>
+              )}
               
               {/* Email verification banner for unverified premium users */}
               {!user.email_confirmed_at && (
@@ -867,17 +880,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                        />
                     </div>
                     ) : (
-                      <div className="space-y-6">
-                        <div className="border-red-200 bg-red-50 rounded-lg p-8 text-center">
-                          <h2 className="text-xl font-semibold text-gray-900 mb-2">Subscription Required</h2>
-                          <p className="text-gray-600 mb-6">
-                            Your subscription is inactive. Please update your billing to continue.
-                          </p>
-                          <div className="flex gap-3 justify-center">
-                            <Button onClick={() => setCurrentView('account')}>Manage Billing</Button>
-                          </div>
-                        </div>
-                      </div>
+                      <StoryPaywall />
                     )
                   )}
 
@@ -937,17 +940,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                        />
                     </div>
                     ) : (
-                      <div className="space-y-6">
-                        <div className="border-red-200 bg-red-50 rounded-lg p-8 text-center">
-                          <h2 className="text-xl font-semibold text-gray-900 mb-2">Subscription Required</h2>
-                          <p className="text-gray-600 mb-6">
-                            Your subscription is inactive. Please update your billing to continue.
-                          </p>
-                          <div className="flex gap-3 justify-center">
-                            <Button onClick={() => setCurrentView('account')}>Manage Billing</Button>
-                          </div>
-                        </div>
-                      </div>
+                      <StoryPaywall />
                     )
                   )}
 

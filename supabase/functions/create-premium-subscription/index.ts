@@ -41,7 +41,7 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
       },
       yearly: {
         priceId: 'price_yearly_premium', // Replace with actual Stripe price ID
-        amount: 7999, // $79.99 in cents
+        amount: 7900, // $79.00 in cents
         name: 'Yearly Premium'
       }
     }

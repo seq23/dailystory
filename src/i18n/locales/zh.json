@@ -62,7 +62,7 @@
     "plans": {
       "monthly": {
         "title": "月度计划",
-        "price": "$10",
+        "price": "$9.99",
         "period": "/月",
         "features": {
           "unlimited": "无限故事",
@@ -71,9 +71,9 @@
       },
       "annual": {
         "title": "年度计划",
-        "price": "$100",
+        "price": "$79",
         "period": "/年",
-        "savings": "节省$20",
+        "savings": "节省$40",
         "features": {
           "unlimited": "无限故事",
           "aiFeatures": "高级AI功能"
@@ -115,8 +115,8 @@
     },
     "payment": {
       "instruction": "先完成账户创建，然后进行安全付款",
-      "monthly": "$10/月",
-      "annual": "$100/年"
+      "monthly": "$9.99/月",
+      "annual": "$79/年"
     },
     "guarantees": {
       "moneyBack": "✓ 30天退款保证",

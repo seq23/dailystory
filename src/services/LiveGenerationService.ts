@@ -1,4 +1,5 @@
 // Live Generation Service for Premium Users
+import { FREE_LIMIT_CODE } from '@/lib/freeStoryAllowance';
 // Generates stories page-by-page with backend validation
 
 import { supabase } from '@/integrations/supabase/client';
@@ -90,6 +91,12 @@ export class LiveGenerationService {
         difficulty,
         sessionId: actualSessionId
       });
+
+      // PAYWALL: free stories used up. The paywall replaces this view; never
+      // serve template content in place of a refused story.
+      if (result.error === FREE_LIMIT_CODE) {
+        return { content: '', isComplete: true, error: FREE_LIMIT_CODE };
+      }
 
       if (!result.success || !result.pages || result.pages.length === 0) {
         DebugLogger.error('story', '4-tier system failed', result.error);

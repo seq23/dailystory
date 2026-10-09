@@ -1,4 +1,13 @@
 // Unified Story Generation Service with 4-Layer Priority System
+import { isFreeLimitError, announceFreeLimitReached, FREE_LIMIT_CODE } from '@/lib/freeStoryAllowance';
+
+export class FreeStoryLimitError extends Error {
+  readonly code = FREE_LIMIT_CODE;
+  constructor() {
+    super(FREE_LIMIT_CODE);
+    this.name = 'FreeStoryLimitError';
+  }
+}
 // Voice Layer replaces Creative Seeds - AI chooses voice with theme priority and level clamping
 // Sends fully resolved bundles to streamlined edge function
 
@@ -399,12 +408,21 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
             existingStory: config.existingStory,
             expertGradeLevel: config.expertGradeLevel,
             difficulty: config.difficulty,
-            isEndingPage: config.isEndingPage
+            isEndingPage: config.isEndingPage,
+            // One story = one sessionId, so the server counts a free story once, not per retry
+            sessionId: config.sessionId
           }
         }
       });
 
       const processingTime = Date.now() - startTime;
+
+      // PAYWALL: the server refused a new story (free limit used). Show the
+      // trial paywall; never fall through to template content.
+      if (isFreeLimitError(error, data)) {
+        announceFreeLimitReached();
+        throw new FreeStoryLimitError();
+      }
 
       if (error) {
         throw new Error(error.message || 'Edge function error');

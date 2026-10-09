@@ -19,6 +19,7 @@ import { PremiumStoryLibrary } from "@/components/PremiumStoryLibrary";
 import { supabase } from "@/integrations/supabase/client";
 import { StorySessionCache } from "@/services/storySessionCache";
 import CleanStoryDisplay from "@/components/CleanStoryDisplay";
+import { StoryPaywall } from "@/components/StoryPaywall";
 import type { UserInfo, Story, SessionStats } from "@/types";
 import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
@@ -130,17 +131,7 @@ useEffect(() => {
   // Hard-block entire premium display if subscription is inactive
   if (!isSubscriptionActive) {
     return (
-      <div className="space-y-6">
-        <div className="border-red-200 bg-red-50 rounded-lg p-8 text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Subscription Required</h2>
-          <p className="text-gray-600 mb-6">
-            Your subscription is inactive. Please update your billing to continue.
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Button onClick={() => window.location.href = '/account'}>Manage Billing</Button>
-          </div>
-        </div>
-      </div>
+      <StoryPaywall />
     );
   }
 

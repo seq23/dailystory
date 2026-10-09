@@ -399,7 +399,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             <div className="flex items-center gap-2">
               <span>© {new Date().getFullYear()} {t("welcomeHero.footer.companyName")}. {t("welcomeHero.footer.copyright")}</span>
               <span className="text-white/30">·</span>
-              <span>Free for personal &amp; educational use. <a href="/terms" className="underline hover:text-white/80 transition-colors">Commercial license</a> required for institutions.</span>
+              <span data-testid="footer-pitch">Helping 4–8-year-olds learn to read. <a href="/pricing" className="underline hover:text-white/80 transition-colors">Try 3 stories free, then 7 days of Premium free</a>. Schools: <a href="mailto:hello@time-2-read.com?subject=School%20pricing" className="underline hover:text-white/80 transition-colors">contact us</a>.</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
               <a href="/pricing" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.plansAndPricing", "Pricing")}</a>

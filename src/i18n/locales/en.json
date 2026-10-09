@@ -62,7 +62,7 @@
     "plans": {
       "monthly": {
         "title": "Monthly Plan",
-        "price": "$10",
+        "price": "$9.99",
         "period": "/month",
         "features": {
           "unlimited": "Unlimited stories",
@@ -71,9 +71,9 @@
       },
       "annual": {
         "title": "Annual Plan",
-        "price": "$100",
+        "price": "$79",
         "period": "/year",
-        "savings": "Save $20",
+        "savings": "Save $40",
         "features": {
           "unlimited": "Unlimited stories",
           "aiFeatures": "Advanced AI features"
@@ -115,8 +115,8 @@
     },
     "payment": {
       "instruction": "Complete account creation first, then proceed with secure payment",
-      "monthly": "$10/month",
-      "annual": "$100/year"
+      "monthly": "$9.99/month",
+      "annual": "$79/year"
     },
     "guarantees": {
       "moneyBack": "✓ 30-day money-back guarantee",

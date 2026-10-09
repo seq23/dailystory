@@ -6,6 +6,7 @@ import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
 import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
 import { handleStreamlinedGeneration } from './streamlined-handler.ts';
+import { checkFreeStoryAllowance, freeLimitResponse } from '../_shared/freeStoryAllowance.ts';
 
 // Supabase client will be created inside handler for better error handling
 
@@ -401,6 +402,13 @@ serve(async (req) => {
       });
     }
     
+    // PAYWALL: a signed-in account without a subscription gets 3 free stories in total.
+    const allowance = await checkFreeStoryAllowance(req, requestBody);
+    if (!allowance.allowed) {
+      console.log('🔒 Free story limit reached', { used: allowance.used, limit: allowance.limit });
+      return freeLimitResponse(allowance, corsHeaders);
+    }
+
     // UNIFIED 4-TIER ARCHITECTURE: Handle pre-processed bundles from StoryGenerationService
     if (requestBody.bundle) {
       console.log('🎯 Processing bundle request');
