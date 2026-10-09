@@ -4,7 +4,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { withSecurity, SecurityMiddleware } from "../_shared/security.ts"
 import type { AuthenticatedUser } from "../_shared/security.ts"
-import { memoizedImport, createImportFailureResponse, createPaymentSupabaseClient, createPaymentUnavailableResponse } from "../_shared/resilientLoader.ts"
+import { createImportFailureResponse, createPaymentSupabaseClient, createPaymentUnavailableResponse } from "../_shared/resilientLoader.ts"
+import Stripe from "../_shared/stripe.ts";
 
 console.log("[create-premium-subscription] Function loaded successfully");
 
@@ -13,7 +14,6 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
   
   try {
     // Load dependencies with tiered import system
-    const { default: Stripe } = await memoizedImport('stripe');
     
     const { planId } = await req.json()
     

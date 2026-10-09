@@ -14,8 +14,9 @@ import {
   landingPages,
   type LandingPageConfig,
 } from "@/data/landingPages";
+import { SITE_URL } from "@/config/site";
 
-const BASE_URL = "https://time-2-read.lovable.app";
+const BASE_URL = SITE_URL;
 
 function useLandingSeo(config: LandingPageConfig | undefined) {
   useEffect(() => {
