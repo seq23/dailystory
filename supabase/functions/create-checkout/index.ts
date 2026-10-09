@@ -3,7 +3,8 @@
 // Returns 503 if both network and vendor fail
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
-import { memoizedImport, createPaymentSupabaseClient, createPaymentUnavailableResponse, createImportFailureResponse } from "../_shared/resilientLoader.ts";
+import { createImportFailureResponse } from "../_shared/resilientLoader.ts";
+import { createPaymentServiceClient } from "../_shared/paymentSupabase.ts";
 import Stripe from "../_shared/stripe.ts";
 
 const corsHeaders = {
@@ -29,26 +30,9 @@ serve(async (req) => {
 
     // Load Stripe with resilient import
     
-    // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
-    const supabaseClient = await createPaymentSupabaseClient();
-    if (!supabaseClient) {
-      logStep("Payment service unavailable - database connection failed");
-      return createPaymentUnavailableResponse('create-checkout');
-    }
-    
-    // Create service role client with same fallback pattern
-    let supabaseService;
-    try {
-      const { createClient } = await memoizedImport('@supabase/supabase-js');
-      supabaseService = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-        { auth: { persistSession: false } }
-      );
-    } catch (importError) {
-      console.error('Failed to create service client, using payment client as fallback');
-      supabaseService = supabaseClient;
-    }
+    // Real SDK, service role: verifies the caller and reads subscribers
+    const supabaseClient = createPaymentServiceClient();
+    const supabaseService = supabaseClient;
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
