@@ -62,7 +62,7 @@
     "plans": {
       "monthly": {
         "title": "الخطة الشهرية",
-        "price": "$10",
+        "price": "$9.99",
         "period": "/شهر",
         "features": {
           "unlimited": "قصص غير محدودة",
@@ -71,9 +71,9 @@
       },
       "annual": {
         "title": "الخطة السنوية",
-        "price": "$100",
+        "price": "$79",
         "period": "/سنة",
-        "savings": "وفر $20",
+        "savings": "وفر $40",
         "features": {
           "unlimited": "قصص غير محدودة",
           "aiFeatures": "ميزات الذكاء الاصطناعي المتقدمة"
@@ -115,8 +115,8 @@
     },
     "payment": {
       "instruction": "أكمل إنشاء الحساب أولاً، ثم تابع مع الدفع الآمن",
-      "monthly": "$10/شهر",
-      "annual": "$100/سنة"
+      "monthly": "$9.99/شهر",
+      "annual": "$79/سنة"
     },
     "guarantees": {
       "moneyBack": "✓ ضمان استرداد الأموال لمدة 30 يوماً",

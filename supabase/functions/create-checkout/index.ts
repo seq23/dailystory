@@ -91,37 +91,44 @@ serve(async (req) => {
       logStep("Creating new customer");
     }
 
-    // Define pricing based on plan
-    let priceData;
-    if (plan === "monthly") {
-      priceData = {
-        currency: "usd",
-        product_data: { name: "Premium Monthly Subscription" },
-        unit_amount: 1000, // $10.00
-        recurring: { interval: "month" },
-      };
-    } else if (plan === "annual") {
-      priceData = {
-        currency: "usd",
-        product_data: { name: "Premium Annual Subscription" },
-        unit_amount: 10000, // $100.00
-        recurring: { interval: "year" },
-      };
-    } else {
+    // Pricing: $9.99/month or $79/year, 7-day free trial, card taken up front.
+    // STRIPE_PRICE_MONTHLY / STRIPE_PRICE_ANNUAL (Stripe price ids) win when set;
+    // otherwise the amounts below are sent inline. Pinned by
+    // src/test/guards/free-story-paywall.test.ts.
+    if (plan !== "monthly" && plan !== "annual") {
       throw new Error("Invalid plan selected. Choose 'monthly' or 'annual'.");
     }
+    const configuredPrice = Deno.env.get(plan === "monthly" ? "STRIPE_PRICE_MONTHLY" : "STRIPE_PRICE_ANNUAL");
+    const productId = Deno.env.get("STRIPE_PRODUCT_ID");
+    const inlinePrice = {
+      currency: "usd",
+      ...(productId ? { product: productId } : { product_data: { name: "Time2Read Premium" } }),
+      unit_amount: plan === "monthly" ? 999 : 7900, // $9.99 / $79.00
+      recurring: { interval: plan === "monthly" ? "month" : "year" },
+    };
+    const lineItem = configuredPrice
+      ? { price: configuredPrice, quantity: 1 }
+      : { price_data: inlinePrice, quantity: 1 };
+
+    // One free trial per customer: a returning customer who already had a subscription pays from day one.
+    let hadSubscription = false;
+    if (customerId) {
+      const previous = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 1 });
+      hadSubscription = previous.data.length > 0;
+    }
+    const TRIAL_DAYS = 7;
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price_data: priceData,
-          quantity: 1,
-        },
-      ],
+      line_items: [lineItem],
       mode: "subscription",
+      payment_method_collection: "always",
+      subscription_data: {
+        ...(hadSubscription ? {} : { trial_period_days: TRIAL_DAYS }),
+        metadata: { user_id: user.id, plan },
+      },
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cancel`,
       metadata: {

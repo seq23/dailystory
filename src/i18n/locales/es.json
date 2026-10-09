@@ -62,7 +62,7 @@
     "plans": {
       "monthly": {
         "title": "Plan Mensual",
-        "price": "$10",
+        "price": "$9.99",
         "period": "/mes",
         "features": {
           "unlimited": "Historias ilimitadas",
@@ -71,9 +71,9 @@
       },
       "annual": {
         "title": "Plan Anual",
-        "price": "$100",
+        "price": "$79",
         "period": "/año",
-        "savings": "Ahorra $20",
+        "savings": "Ahorra $40",
         "features": {
           "unlimited": "Historias ilimitadas",
           "aiFeatures": "Funciones de IA avanzadas"
@@ -115,8 +115,8 @@
     },
     "payment": {
       "instruction": "Completa la creación de cuenta primero, luego procede con el pago seguro",
-      "monthly": "$10/mes",
-      "annual": "$100/año"
+      "monthly": "$9.99/mes",
+      "annual": "$79/año"
     },
     "guarantees": {
       "moneyBack": "✓ Garantía de devolución de dinero de 30 días",

@@ -42,9 +42,9 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
     {
       id: 'yearly',
       name: 'Yearly Premium',
-      price: '$79.99',
+      price: '$79',
       period: '/year',
-      savings: 'Save 33%',
+      savings: 'Save 34%',
       popular: true,
       features: [
         'Everything in Monthly',
@@ -64,12 +64,17 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
       setIsLoading(true);
       setSelectedPlan(planId);
       
-      // Create subscription via Supabase edge function
-      const { data, error } = await supabase.functions.invoke('create-premium-subscription', {
-        body: {
-          planId,
-          email: 'guest@time2read.com' // Default for guest users
-        }
+      // Checkout needs an account (the subscription is tied to it). Guests sign up first.
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        window.location.href = '/auth';
+        return;
+      }
+
+      // 7-day free trial, card up front — create-checkout owns prices and trial.
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { plan: planId === 'yearly' ? 'annual' : 'monthly' },
+        headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
       });
 
       if (error) throw error;

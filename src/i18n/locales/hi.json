@@ -62,7 +62,7 @@
     "plans": {
       "monthly": {
         "title": "मासिक योजना",
-        "price": "$10",
+        "price": "$9.99",
         "period": "/महीना",
         "features": {
           "unlimited": "असीमित कहानियां",
@@ -71,9 +71,9 @@
       },
       "annual": {
         "title": "वार्षिक योजना",
-        "price": "$100",
+        "price": "$79",
         "period": "/वर्ष",
-        "savings": "$20 बचाएं",
+        "savings": "$40 बचाएं",
         "features": {
           "unlimited": "असीमित कहानियां",
           "aiFeatures": "उन्नत AI सुविधाएं"
@@ -115,8 +115,8 @@
     },
     "payment": {
       "instruction": "पहले खाता निर्माण पूरा करें, फिर सुरक्षित भुगतान के साथ आगे बढ़ें",
-      "monthly": "$10/महीना",
-      "annual": "$100/वर्ष"
+      "monthly": "$9.99/महीना",
+      "annual": "$79/वर्ष"
     },
     "guarantees": {
       "moneyBack": "✓ 30-दिन की मनी-बैक गारंटी",
