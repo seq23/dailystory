@@ -53,6 +53,31 @@
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://time-2-read.com/" />
+    <!-- Structured data in the static shell so crawlers see it without running JS -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://time-2-read.com/#organization",
+          "name": "Time2Read",
+          "url": "https://time-2-read.com/",
+          "logo": "https://storage.googleapis.com/gpt-engineer-file-uploads/dVPwHmSLKid0GwEoF6n0FXqKtvA2/social-images/social-1757466735375-time2read-logo.png",
+          "email": "privacy@time-2-read.com"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://time-2-read.com/#website",
+          "name": "Time2Read",
+          "url": "https://time-2-read.com/",
+          "description": "Personalized AI reading adventures for kids 3-15. Interactive stories with illustrations, phonics, and text-to-speech to build reading confidence.",
+          "inLanguage": "en-US",
+          "publisher": { "@id": "https://time-2-read.com/#organization" }
+        }
+      ]
+    }
+    </script>
     
     <!-- Google Fonts - Multilingual typography for children's reading -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Comic+Neue:wght@300;400;700&family=Schoolbell&family=Inter:wght@400;500;600&display=swap">
