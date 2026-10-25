@@ -4,8 +4,9 @@ Decided by Sequoia, 25 Oct 2026. This file is read by code:
 `src/test/guards/pricing-doc.test.ts` parses the block below and fails if
 `supabase/functions/create-checkout/index.ts`, `src/lib/freeStoryAllowance.ts`
 (`PLAN_PRICES`, used by PricingSection and StoryPaywall), PremiumUpgrade,
-SubscriptionManager, the locale files or `public/llms.txt` say anything else.
-Change the price here and in those places in the same PR.
+SubscriptionManager, the locale files or `public/llms.txt` say anything else,
+or if `src/config/ttsConfig.ts` gives a tier a different voice than `free_voice` /
+`premium_voice` below. Change the price here and in those places in the same PR.
 
 ```pricing
 monthly_cents: 1299
@@ -18,6 +19,9 @@ trial_days: 7
 code_HOMESCHOOL15_days: 15
 previous_monthly_cents: 999
 previous_annual_cents: 7900
+free_voice: browser
+premium_voice: elevenlabs
+premium_fallback: browser
 ```
 
 ## What a family pays
@@ -67,29 +71,53 @@ Market as of Oct 2026, from comparison sites (re-check before the next change):
 - **The yearly plan stays about 36% off** (was 34%), so the annual pitch stays strong and
   sits right at the $99.99 of the closest comparable.
 
-## What a story costs us (estimate)
+## Narration: who hears which voice
 
-Every story is AI-written, illustrated and can be narrated, so daily use has a real cost.
-Unit costs are the ones the code logs to `cost_tracking`:
+- **Free and guest readers hear the browser voice** (the device's own speechSynthesis): **$0**,
+  for story pages, word help and coaching alike. `GUEST_TTS_PROVIDER: 'browser'`.
+- **Premium readers hear Charlotte** (ElevenLabs Flash v2.5). "Premium" here is the paid
+  status (a subscription or an active override, from `subscribers`), set in
+  `AuthenticatedApp`; a signed-in account on its 3 free stories is not premium for the voice.
+- **Premium narration is capped by her ElevenLabs credit balance.** The account is on the
+  Free plan with pay-as-you-go credits (23,736 credits, 0 used this cycle on 25 Oct 2026).
+  When the credits run out, ElevenLabs refuses (out of credits or quota, 401/402/429), and so
+  does a slow answer (the function gives up after 12s). **The page is then read once in the
+  browser voice**, after Charlotte is silenced: never silence, never two voices at once.
+  One code path does this for every voice entry point: `src/services/narrationRouter.ts`.
+- **Each fallback is counted.** The function writes a zero-cost `cost_tracking` row
+  (`operation_type 'tts_refused'`, reason in `api_endpoint`); the browser keeps
+  `t2r_narration_fallbacks` and fires `audio:fallback`. The weekly
+  `.github/workflows/tts-usage-report.yml` prints the refusal count, the characters
+  generated, and the credits the deployed key's account reports.
+- **Caches still apply first:** a persistent `tts-cache` in Supabase storage, then an
+  in-memory last-known-good cache; at most 4,000 characters per request.
 
-| Part | Unit cost (source) | Per page (assumed) | Per 12-page story |
-|---|---|---|---|
-| Text, gpt-4o-mini | $0.15 / $0.60 per 1M tokens in/out (`_shared/costLogger.ts`) | ~1,500 in + 350 out = $0.0004 | ~$0.005 |
-| Illustration, Runware | $0.0013 per image (`runware-generate-image`) | 1 image = $0.0013 | ~$0.016 |
-| Narration, ElevenLabs Flash v2.5 | $0.11 per 1K characters (`elevenlabs-tts-smart`) | ~330 characters = $0.036 | ~$0.44 |
+## What a story costs us
 
-- **Without narration: about $0.02 a story, about $8 a year** for a child reading one
-  story every day. $99 covers it many times over.
-- **With every page narrated: about $0.46 a story, about $168 a year** for daily use.
-  **That is more than $99/year** (about $95.80 after Stripe's 2.9% + 30c) and more than
-  12 months at $12.99 (about $147.80 after fees). Narration is the whole gap; the audio
-  cache rarely hits because personalized text seldom repeats.
-- The yearly plan breaks even at roughly 7 narrated pages a day on top of the text and
-  pictures.
-- **Status: SUSPECTED, not measured.** The page count, words per page and the ElevenLabs
-  rate (list rate; the plan's real per-character rate may be lower) are assumptions. The
-  measured figure is `costPerStory` from the `get-cost-analytics` function (all-time cost
-  divided by stories), and `MAINTENANCE_CADENCE.md` alerts above $0.03/$0.05 per call.
-  Re-check that number before the next price change; if narrated daily users are common,
-  the levers are a narration allowance, the cheaper OpenAI TTS path ($15 per 1M characters,
-  about $0.005 a page) as the default voice, or a higher yearly price.
+**The real narration cost is the ElevenLabs credits she buys, not a per-story list price.**
+Spend cannot run past the balance: when it is used up, premium readers get the browser
+voice until she adds credits.
+
+Measured from `cost_tracking` on 25 Oct 2026 (all time, the numbers `get-cost-analytics`
+reads):
+
+| | Measured |
+|---|---|
+| Stories generated | 307 |
+| All logged AI cost, every provider (at list rates) | $14.20, so **about $0.05 a story** |
+| ElevenLabs calls / characters | 1,652 calls, 57,334 characters (about 35 characters a call: mostly words and short lines) |
+| Sessions that used ElevenLabs | 18, so **about 3,200 characters a narrated session** |
+| Last ElevenLabs generation | 22 Jun 2026; **0 characters this month** |
+| ElevenLabs refusals logged | 0 (counted from 25 Oct 2026) |
+
+- **Without narration a story costs about $0.02** (gpt-4o-mini text about $0.005,
+  Runware illustrations at $0.0013 an image about $0.016 for 12 pages).
+- **What the credits buy:** at the measured ~3,200 characters a narrated session, 23,736
+  credits cover about 7 narrated sessions at 1 credit a character, or about 15 if Flash v2.5
+  bills half a credit a character. SUSPECTED: the per-character credit rate of her plan is
+  not measured; the usage report's `character_count` against `character_limit` settles it.
+- The logged `cost` for ElevenLabs uses a list rate ($0.11 per 1K characters now, higher in
+  older rows). It is a ceiling for comparison, not what she paid.
+- Before the next price change, re-read the usage report. If narrated premium use grows
+  past the credits she wants to buy, the levers are a monthly narration allowance or a
+  larger credit purchase; free readers already cost nothing to narrate.

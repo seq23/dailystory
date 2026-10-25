@@ -185,6 +185,10 @@ describe("no ElevenLabs path bypasses the router", () => {
     });
   }
 
+  // Admin and operator screens, never shown to a child: the health panel's one-word
+  // ping and the voice-override admin. Adding a file here is a decision, not a fix.
+  const OPERATOR_TOOLS = ["src/components/testing/SystemHealthPanel.tsx", "src/pages/admin/VoiceAdmin.tsx"];
+
   it("only CharlotteVoiceService generates ElevenLabs speech; direct function calls check the tier", () => {
     const all = files("src");
     expect(all.length).toBeGreaterThan(100); // an empty scan is a failure, not a pass
@@ -195,7 +199,7 @@ describe("no ElevenLabs path bypasses the router", () => {
     for (const f of direct) {
       // The generators themselves, and the operator health panel's one-word ping.
       if (f.startsWith("src/services/smartElevenLabsTTS") || f.startsWith("src/services/SynchronizedElevenLabsTTS")) continue;
-      if (f === "src/components/testing/SystemHealthPanel.tsx") continue;
+      if (OPERATOR_TOOLS.includes(f)) continue;
       expect(read(f), `${f} calls ElevenLabs without checking the narration tier`).toMatch(/currentNarrationProvider\(\) === 'browser'/);
     }
   });
