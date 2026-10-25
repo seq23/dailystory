@@ -3,18 +3,14 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   landingPagesBySlug,
   kindergartenSightWords,
   landingPages,
   type LandingPageConfig,
 } from "@/data/landingPages";
 import { SITE_URL } from "@/config/site";
+import { FREE_STORY_LIMIT } from "@/lib/freeStoryAllowance";
+import { landingJsonLd } from "@/data/landingJsonLd";
 
 const BASE_URL = SITE_URL;
 
@@ -53,15 +49,7 @@ function useLandingSeo(config: LandingPageConfig | undefined) {
     const script = document.createElement("script");
     script.type = "application/ld+json";
     script.id = ldId;
-    script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: config.faqs.map((f) => ({
-        "@type": "Question",
-        name: f.q,
-        acceptedAnswer: { "@type": "Answer", text: f.a },
-      })),
-    });
+    script.text = JSON.stringify(landingJsonLd(config));
     document.head.appendChild(script);
 
     return () => {
@@ -103,6 +91,88 @@ const SightWordsSection = () => (
     </Card>
   </section>
 );
+
+const LOG_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+/** Printable weekly log. Nothing to type in and nothing sent anywhere: it prints. */
+const ReadingLogSection = () => (
+  <section className="mx-auto max-w-4xl px-4 py-12" aria-labelledby="reading-log-heading">
+    <div className="printable-log rounded-2xl border-2 border-primary/30 bg-card p-6 md:p-8">
+      <h2 id="reading-log-heading" className="font-fun text-2xl md:text-3xl text-foreground mb-1">
+        My 20-Minute Reading Log
+      </h2>
+      <p className="text-muted-foreground mb-6">
+        Name: ____________________ &nbsp; Week of: ______________ &nbsp; Goal: 20 minutes a day
+      </p>
+      <table className="w-full border-collapse text-left text-sm">
+        <thead>
+          <tr>
+            <th scope="col" className="border border-border p-2 w-28">Day</th>
+            <th scope="col" className="border border-border p-2">What I read</th>
+            <th scope="col" className="border border-border p-2 w-24">Minutes</th>
+            <th scope="col" className="border border-border p-2 w-32">Grown-up initials</th>
+          </tr>
+        </thead>
+        <tbody>
+          {LOG_DAYS.map((d) => (
+            <tr key={d}>
+              <th scope="row" className="border border-border p-2 font-medium">{d}</th>
+              <td className="border border-border p-2 h-12"></td>
+              <td className="border border-border p-2"></td>
+              <td className="border border-border p-2"></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="mt-4 text-sm text-muted-foreground">
+        Total minutes this week: ________ &nbsp; Days I hit 20 minutes: ____ / 7
+      </p>
+      <p className="mt-2 text-xs text-muted-foreground">Free printable from time-2-read.com</p>
+    </div>
+    <div className="mt-6 flex flex-wrap gap-3 justify-center">
+      <Button size="lg" variant="outline" onClick={() => window.print()}>
+        Print the reading log
+      </Button>
+      <Button asChild size="lg">
+        <Link to="/?action=new-story">Start a story with the 20-minute timer</Link>
+      </Button>
+    </div>
+  </section>
+);
+
+const GuideSections = ({ config }: { config: LandingPageConfig }) => (
+  <>
+    {config.sections?.map((sec) => (
+      <section key={sec.heading} className="mx-auto max-w-3xl px-4 py-6">
+        <h2 className="font-fun text-2xl md:text-3xl text-foreground mb-4">{sec.heading}</h2>
+        {sec.paragraphs?.map((p, i) => (
+          <p key={i} className="text-base md:text-lg text-foreground/80 mb-4 leading-relaxed">{p}</p>
+        ))}
+        {sec.bullets && (
+          <ul className="list-disc pl-6 space-y-2 text-base md:text-lg text-foreground/80">
+            {sec.bullets.map((b, i) => <li key={i}>{b}</li>)}
+          </ul>
+        )}
+      </section>
+    ))}
+  </>
+);
+
+const Sources = ({ config }: { config: LandingPageConfig }) =>
+  config.sources?.length ? (
+    <section className="mx-auto max-w-3xl px-4 py-6" aria-labelledby="sources-heading">
+      <h2 id="sources-heading" className="font-fun text-xl text-foreground mb-3">Sources</h2>
+      <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
+        {config.sources.map((s) => (
+          <li key={s.url}>
+            <a href={s.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
+              {s.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ) : null;
 
 const LandingPage = ({ slug }: { slug: string }) => {
   const config = landingPagesBySlug[slug];
@@ -160,6 +230,10 @@ const LandingPage = ({ slug }: { slug: string }) => {
         </div>
       </section>
 
+      {config.variant === "readingLog" && <ReadingLogSection />}
+
+      <GuideSections config={config} />
+
       {config.variant === "sightWords" && <SightWordsSection />}
 
       {/* FAQ */}
@@ -167,15 +241,21 @@ const LandingPage = ({ slug }: { slug: string }) => {
         <h2 className="font-fun text-2xl md:text-3xl text-foreground mb-6 text-center">
           Frequently asked questions
         </h2>
-        <Accordion type="single" collapsible className="w-full">
+        {/* Native details/summary: answers stay in the HTML for crawlers (prerendered). */}
+        <div className="w-full divide-y divide-border border-y border-border">
           {config.faqs.map((f, i) => (
-            <AccordionItem key={i} value={`faq-${i}`}>
-              <AccordionTrigger className="text-left">{f.q}</AccordionTrigger>
-              <AccordionContent>{f.a}</AccordionContent>
-            </AccordionItem>
+            <details key={i} className="group py-4">
+              <summary className="cursor-pointer list-none font-medium text-left text-foreground flex justify-between gap-4">
+                {f.q}
+                <span aria-hidden="true" className="transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <p className="mt-3 text-muted-foreground">{f.a}</p>
+            </details>
           ))}
-        </Accordion>
+        </div>
       </section>
+
+      <Sources config={config} />
 
       {/* CTA */}
       <section className="bg-primary/5 py-14">
@@ -184,10 +264,10 @@ const LandingPage = ({ slug }: { slug: string }) => {
             Ready to start reading?
           </h2>
           <p className="text-muted-foreground mb-6">
-            Create a personalized, illustrated story in seconds — free to try, no signup required.
+            Create a personalized, illustrated story in seconds. Your first {FREE_STORY_LIMIT} stories are free.
           </p>
           <Button asChild size="lg">
-            <Link to="/?action=new-story">Start a free story</Link>
+            <Link to="/?action=new-story">Start your {FREE_STORY_LIMIT} free stories</Link>
           </Button>
         </div>
       </section>
@@ -195,10 +275,22 @@ const LandingPage = ({ slug }: { slug: string }) => {
       {/* Footer cross-links */}
       <footer className="border-t border-border py-10">
         <nav className="mx-auto max-w-6xl px-4" aria-label="More reading collections">
+          <h2 className="font-fun text-lg text-foreground mb-4">Guides for parents and teachers</h2>
+          <ul className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2 mb-8">
+            {landingPages
+              .filter((p) => p.kind === "guide" && p.slug !== slug)
+              .map((p) => (
+                <li key={p.slug}>
+                  <Link to={`/${p.slug}`} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    {p.navLabel}
+                  </Link>
+                </li>
+              ))}
+          </ul>
           <h2 className="font-fun text-lg text-foreground mb-4">Explore more reading collections</h2>
           <ul className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
             {landingPages
-              .filter((p) => p.slug !== slug)
+              .filter((p) => p.kind !== "guide" && p.slug !== slug)
               .map((p) => (
                 <li key={p.slug}>
                   <Link
