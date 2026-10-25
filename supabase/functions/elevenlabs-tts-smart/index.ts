@@ -95,6 +95,46 @@ async function handle(req: Request): Promise<Response> {
     });
   }
 
+  // Read-only credit check for .github/workflows/tts-usage-report.yml: what the
+  // ElevenLabs account behind ELEVENLABS_API_KEY reports about its own credits.
+  // Answers only the service-role key; returns counts, never the key.
+  if (url.pathname.endsWith("/usage")) {
+    const auth = (req.headers.get("Authorization") || "").replace("Bearer ", "").trim();
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    if (!serviceKey || auth !== serviceKey) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        status: 401, headers: { "Content-Type": "application/json" }
+      });
+    }
+    const key = Deno.env.get("ELEVENLABS_API_KEY");
+    if (!key) {
+      return new Response(JSON.stringify({ success: true, usage: { key_present: false } }), {
+        status: 200, headers: { "Content-Type": "application/json" }
+      });
+    }
+    const r = await fetch("https://api.elevenlabs.io/v1/user/subscription", {
+      headers: { "xi-api-key": key },
+      signal: AbortSignal.timeout(15000),
+    });
+    const sub = r.ok ? await r.json() : null;
+    const usage = sub
+      ? {
+          key_present: true,
+          http_status: r.status,
+          tier: sub.tier,
+          status: sub.status,
+          character_count: sub.character_count,
+          character_limit: sub.character_limit,
+          next_reset: sub.next_character_count_reset_unix
+            ? new Date(sub.next_character_count_reset_unix * 1000).toISOString()
+            : null,
+        }
+      : { key_present: true, http_status: r.status, note: "key cannot read its subscription (missing user_read permission, or refused)" };
+    return new Response(JSON.stringify({ success: true, usage }), {
+      status: 200, headers: { "Content-Type": "application/json" }
+    });
+  }
+
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ success: false, error: "Method not allowed" }), {
       status: 405, headers: { "Content-Type": "application/json" }
@@ -157,8 +197,17 @@ async function handle(req: Request): Promise<Response> {
     
     console.log('🔄 Cache MISS — generating via ElevenLabs Flash v2.5');
 
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    // A refusal (out of credits or quota, 401/402/429) or a slow answer comes back
+    // as { success: false, useFallback: true }; the client then reads the page once
+    // in the browser voice (src/services/narrationRouter.ts). Each refusal is logged
+    // as a zero-cost cost_tracking row, operation_type 'tts_refused', so it can be
+    // counted (.github/workflows/tts-usage-report.yml). The deadline is under the
+    // client's 15s adaptive timeout, so the server answers first.
+    let response: Response;
+    try {
+      response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: "POST",
+      signal: AbortSignal.timeout(ELEVENLABS_DEADLINE_MS),
       headers: {
         "Accept": "audio/mpeg",
         "Content-Type": "application/json",
@@ -174,8 +223,13 @@ async function handle(req: Request): Promise<Response> {
         optimize_streaming_latency: 3,  // Reduce compute overhead ~10-20%
       }),
     });
+    } catch (e) {
+      await logRefusal(clientSessionId, text.length, "timeout");
+      throw new Error(`ElevenLabs API timeout or network error: ${e instanceof Error ? e.message : e}`);
+    }
 
     if (!response.ok) {
+      await logRefusal(clientSessionId, text.length, `status:${response.status}`);
       throw new Error(`ElevenLabs API error: ${response.status}`);
     }
 
@@ -237,5 +291,30 @@ async function handle(req: Request): Promise<Response> {
   } catch (error) {
     console.error("Error in elevenlabs-tts-smart:", error);
     throw error;
+  }
+}
+
+const ELEVENLABS_DEADLINE_MS = 12000;
+
+async function logRefusal(sessionId: string | undefined, characters: number, reason: string): Promise<void> {
+  try {
+    const sb = await getSupabaseClient();
+    await sb.from('cost_tracking').insert({
+      session_id: sessionId || 'elevenlabs-unknown',
+      user_id: null,
+      input_tokens: 0,
+      output_tokens: 0,
+      cost: 0,
+      model_used: 'eleven_flash_v2_5',
+      operation_type: 'tts_refused',
+      provider: 'elevenlabs',
+      api_endpoint: reason,
+      pricing_model: 'characters',
+      quantity_used: characters,
+      unit_cost: 0,
+    });
+    console.warn(`🔇 ElevenLabs refused (${reason}); client falls back to the browser voice`);
+  } catch (e) {
+    console.warn('Failed to log TTS refusal:', e);
   }
 }

@@ -4,6 +4,7 @@ import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useCachedSubscriptionStatus } from "@/hooks/useCachedSubscriptionStatus";
+import { setNarrationPremium } from "@/services/narrationRouter";
 import { MultiStepUserForm } from "@/components/forms/MultiStepUserForm";
 import { PremiumProfileEditor } from "@/components/PremiumProfileEditor";
 import { PremiumMyStoriesView } from "@/components/PremiumMyStoriesView";
@@ -96,6 +97,12 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const { isPremium: isSubscriptionActive, loading: subLoading } = useCachedSubscriptionStatus(user.id);
   // While subscription status is loading, assume active to prevent a flash of the paywall
   const hasPaidAccess = subLoading ? true : isSubscriptionActive;
+  // Narration voice follows the PAID status only: free accounts get the browser voice,
+  // paying (or overridden) accounts get Charlotte. Unknown while loading = browser.
+  useEffect(() => {
+    setNarrationPremium(!subLoading && !!isSubscriptionActive);
+    return () => setNarrationPremium(false);
+  }, [subLoading, isSubscriptionActive]);
   // PAYWALL: unpaid accounts get FREE_STORY_LIMIT stories, then the 7-day-trial checkout.
   // The server enforces the same limit (generate-adaptive-story answers 402).
   const freeStories = useFreeStoryAllowance(user.id);
