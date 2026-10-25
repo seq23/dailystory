@@ -100,6 +100,20 @@ jobs:
             exit 1
           fi
 
+      - name: Stripe price-id secrets report (names only)
+        run: |
+          # create-checkout sends its price inline (docs/PRICING.md) and no longer reads
+          # STRIPE_PRICE_MONTHLY / STRIPE_PRICE_ANNUAL. This lists which Stripe-related
+          # function secrets exist, by NAME only (values are never fetched into output),
+          # so a leftover price-id override is visible instead of silently assumed.
+          names=$(curl -sS --max-time 20 "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_ID/secrets" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" | jq -r '.[]?.name // empty' | grep '^STRIPE_' | sort | tr '\n' ' ')
+          echo "Stripe function secrets present: ${names:-none}"
+          case " $names " in
+            *" STRIPE_PRICE_MONTHLY "*|*" STRIPE_PRICE_ANNUAL "*)
+              echo "::notice::STRIPE_PRICE_* secrets are set but unused: create-checkout charges the inline amounts from docs/PRICING.md." ;;
+          esac
+
       - name: Function health check (optional)
         run: |
           echo "🏥 Running function health check..."

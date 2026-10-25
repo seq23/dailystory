@@ -36,12 +36,12 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
     const plans = {
       monthly: {
         priceId: 'price_monthly_premium', // Replace with actual Stripe price ID
-        amount: 999, // $9.99 in cents
+        amount: 1299, // $12.99 in cents
         name: 'Monthly Premium'
       },
       yearly: {
         priceId: 'price_yearly_premium', // Replace with actual Stripe price ID
-        amount: 7900, // $79.00 in cents
+        amount: 9900, // $99.00 in cents
         name: 'Yearly Premium'
       }
     }
@@ -82,7 +82,7 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
             product_data: {
               name: `Time2Read ${selectedPlan.name}`,
               description: planId === 'yearly' 
-                ? 'Unlimited reading with advanced features - Save 33%!'
+                ? 'Unlimited reading with advanced features - Save 36%!'
                 : 'Unlimited reading with advanced features',
               images: ['https://your-domain.com/logo.png'], // Replace with your logo
             },

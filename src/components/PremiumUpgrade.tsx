@@ -28,7 +28,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
     {
       id: 'monthly',
       name: 'Monthly Premium',
-      price: '$9.99',
+      price: '$12.99',
       period: '/month',
       savings: null,
       popular: false,
@@ -46,9 +46,9 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
     {
       id: 'yearly',
       name: 'Yearly Premium',
-      price: '$79',
+      price: '$99',
       period: '/year',
-      savings: 'Save 34%',
+      savings: 'Save $57 (36%)',
       popular: true,
       features: [
         'Everything in Monthly',

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import PricingSection from "@/components/PricingSection";
+import { PLAN_PRICES } from "@/lib/freeStoryAllowance";
 
 const Pricing = () => {
   useEffect(() => {
@@ -47,12 +48,14 @@ const Pricing = () => {
       "@type": "Product",
       name: "Time2Read Premium",
       description: desc,
-      offers: {
+      // Prices come from PLAN_PRICES (docs/PRICING.md), never typed here.
+      offers: (["monthly", "annual"] as const).map((plan) => ({
         "@type": "Offer",
-        price: "10.00",
+        name: plan === "monthly" ? "Premium monthly" : "Premium yearly",
+        price: (PLAN_PRICES[plan].amountCents / 100).toFixed(2),
         priceCurrency: "USD",
         availability: "https://schema.org/InStock"
-      }
+      }))
     });
     document.head.appendChild(script);
 
