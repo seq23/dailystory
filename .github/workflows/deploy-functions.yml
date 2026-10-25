@@ -320,13 +320,23 @@ jobs:
           # be refused with "Authentication error"; anything else fails the deploy.
           BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
           if [ -z "$SUPABASE_ANON_KEY" ]; then echo "SUPABASE_ANON_KEY secret missing"; exit 1; fi
+          # A bundle can come out broken (BOOT_ERROR) though the same source boots
+          # (25 Oct 2026: create-checkout, fixed by redeploying it alone). So a
+          # function that fails all three probes is redeployed once and probed again.
+          probe() {
+            curl -s --max-time 30 -X POST "$BASE_URL/$1" \
+              -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+              -H "Content-Type: application/json" -d '{"plan":"monthly"}' || true
+          }
           failed=0
           for func in create-checkout customer-portal; do
             body=""
-            for attempt in 1 2 3; do
-              body=$(curl -s --max-time 30 -X POST "$BASE_URL/$func" \
-                -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
-                -H "Content-Type: application/json" -d '{"plan":"monthly"}' || true)
+            for attempt in 1 2 3 4 5 6; do
+              if [ "$attempt" = 4 ]; then
+                echo "$func did not boot ($(echo "$body" | head -c 120)); redeploying it once"
+                supabase functions deploy "$func" --project-ref "$SUPABASE_PROJECT_ID" 2>&1 | tail -3 || true
+              fi
+              body=$(probe "$func")
               case "$body" in *"Authentication error"*) break ;; *) sleep 15 ;; esac
             done
             echo "$func -> $(echo "$body" | head -c 200)"
