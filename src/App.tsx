@@ -26,6 +26,7 @@ import FERPA from "./pages/FERPA";
 import VerifyConsent from "./pages/VerifyConsent";
 import DataTransfers from "./pages/DataTransfers";
 import Subprocessors from "./pages/Subprocessors";
+import About from "./pages/About";
 import { PromptStudio } from "./components/PromptStudio";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
@@ -112,6 +113,7 @@ const App = () => {
               <Route path="/verify-consent" element={<VerifyConsent />} />
               <Route path="/data-transfers" element={<DataTransfers />} />
               <Route path="/subprocessors" element={<Subprocessors />} />
+              <Route path="/about" element={<About />} />
               <Route path="/success" element={<PaymentSuccess />} />
               <Route path="/cancel" element={<PaymentCancel />} />
               <Route path="/admin/voices" element={<VoiceAdmin />} />

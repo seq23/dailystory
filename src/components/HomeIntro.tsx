@@ -28,7 +28,8 @@ export const HomeIntro = () => (
         Your first {FREE_STORY_LIMIT} stories are free. Premium starts with a {TRIAL_DAYS}-day free trial, then{" "}
         {PLAN_PRICES.monthly.label}
         {PLAN_PRICES.monthly.period} or {PLAN_PRICES.annual.label}
-        {PLAN_PRICES.annual.period}. <Link to="/pricing" className="underline hover:text-primary">See pricing</Link>.
+        {PLAN_PRICES.annual.period}. <Link to="/pricing" className="underline hover:text-primary">See pricing</Link>, or read{" "}
+        <Link to="/about" className="underline hover:text-primary">about Time2Read</Link> and who makes it.
       </p>
       <h2 className="font-fun text-lg text-foreground mb-2">Guides for parents and teachers</h2>
       <ul className="list-disc pl-6 space-y-1 text-foreground/80">

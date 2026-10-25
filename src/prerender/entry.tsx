@@ -23,13 +23,16 @@ import GDPR from "@/pages/GDPR";
 import FERPA from "@/pages/FERPA";
 import DataTransfers from "@/pages/DataTransfers";
 import Subprocessors from "@/pages/Subprocessors";
+import About from "@/pages/About";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
+export { pageGraph, ORGANIZATION, WEBSITE, OG_IMAGE_URL } from "@/seo/schema";
 
 const HOME_TITLE = "Time2Read - Interactive Reading Adventures for Kids";
 
 export const prerenderRoutes: { path: string; element: ReactElement }[] = [
   // The homepage app (AuthWrapper) needs a live session; its static twin is the
   // same HomeIntro + collection links that Index renders beneath the app.
-  { path: "/", element: <div className="homepage"><HomeIntro /><ReadingCollectionsLinks /></div> },
+  { path: "/", element: <div className="homepage"><HomeIntro /><ReadingCollectionsLinks /><SiteFooterNav /></div> },
   { path: "/pricing", element: <Pricing /> },
   { path: "/privacy", element: <Privacy /> },
   { path: "/terms", element: <Terms /> },
@@ -40,6 +43,7 @@ export const prerenderRoutes: { path: string; element: ReactElement }[] = [
   { path: "/ferpa", element: <FERPA /> },
   { path: "/data-transfers", element: <DataTransfers /> },
   { path: "/subprocessors", element: <Subprocessors /> },
+  { path: "/about", element: <About /> },
   ...landingPages.map((p) => ({ path: `/${p.slug}`, element: <LandingPage slug={p.slug} /> })),
 ];
 

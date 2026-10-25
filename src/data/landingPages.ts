@@ -82,7 +82,7 @@ const collectionPages: LandingPageConfig[] = [
     slug: "kindergarten-sight-words",
     title: "Kindergarten Sight Words List + Practice | Time2Read",
     metaDescription:
-      "Free kindergarten sight words list to practice at home. Plus: Time2Read's beginner stories are built on Dolch sight words, with your child as the main character.",
+      "Free kindergarten sight words list to practice at home. Time2Read's beginner stories are built on Dolch sight words, with your child as the hero.",
     h1: "Kindergarten Sight Words",
     navLabel: "Kindergarten sight words",
     heroSubtitle:

@@ -8,7 +8,7 @@ const DataTransfers = () => {
   useEffect(() => {
     document.title = "International Data Transfers | Time2Read";
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', 'How Spry VSL LLC handles international data transfers for Time2Read under GDPR Articles 44-49.');
+    if (meta) meta.setAttribute('content', 'How Spry VSL LLC handles international data transfers for Time2Read under GDPR Articles 44-49, and where to send any question about them.');
   }, []);
 
   const processors = [

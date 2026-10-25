@@ -93,7 +93,7 @@ const vendors: VendorInfo[] = [
 const Vendors = () => {
   useEffect(() => {
     const title = "Third-Party Vendors | Spry VSL LLC";
-    const desc = "Information about the third-party services we use to provide Time2Read.";
+    const desc = "The third-party services Time2Read relies on to run, what each vendor does for us, and the kind of data it handles on our behalf.";
     document.title = title;
 
     let meta = document.querySelector('meta[name="description"]');

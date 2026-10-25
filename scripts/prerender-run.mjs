@@ -26,7 +26,8 @@ globalThis.window = w; globalThis.self = w;
 globalThis.IS_REACT_ACT_ENVIRONMENT = false;
 const shellHead = w.document.head.innerHTML;
 
-const { prerenderRoutes, renderRoute } = await import(pathToFileURL(entryFile).href);
+const { prerenderRoutes, renderRoute, pageGraph } = await import(pathToFileURL(entryFile).href);
+if (typeof pageGraph !== "function") { console.error("PRERENDER_NO_PAGE_GRAPH entry does not export pageGraph"); process.exit(1); }
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const setAttr = (html, re, value) => {
   if (!re.test(html)) throw new Error(`PRERENDER_TEMPLATE_MISSING ${re}`);
@@ -54,7 +55,9 @@ for (const { path } of prerenderRoutes) {
   out = setAttr(out, /(<meta name="twitter:description" content=")([^"]*)(")/, r.description);
   out = setAttr(out, /(<meta name="twitter:url" content=")([^"]*)(")/, url);
   out = setAttr(out, /(<link rel="canonical" href=")([^"]*)(")/, url);
-  const ld = r.jsonLd.filter(Boolean).map((j) => `<script type="application/ld+json">${j.replace(/</g, "\\u003c")}</script>`).join("\n    ");
+  // WebPage on every page, BreadcrumbList on inner pages, the priced product where it is sold (src/seo/schema.ts).
+  const graph = JSON.stringify(pageGraph(path, r.title, r.description));
+  const ld = [...r.jsonLd.filter(Boolean), graph].map((j) => `<script type="application/ld+json">${j.replace(/</g, "\\u003c")}</script>`).join("\n    ");
   if (ld) out = out.replace("</head>", `    ${ld}\n  </head>`);
   // Served as the SPA fallback too (dist/index.html), so the static markup is
   // dropped before first paint on any path it was not rendered for.

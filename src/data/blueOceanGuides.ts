@@ -60,9 +60,9 @@ export const blueOceanGuides: LandingPageConfig[] = [
   {
     slug: "is-reading-20-minutes-a-day-enough",
     kind: "guide",
-    title: "Is Reading 20 Minutes a Day Enough? What the Research Says | Time2Read",
+    title: "Is Reading 20 Minutes a Day Enough? The Research | Time2Read",
     metaDescription:
-      "Where the \"read 20 minutes a day\" rule comes from, what the 1.8 million words figure really means, how long kids should read by age, and how to make 20 minutes stick.",
+      "Where the \"20 minutes a day\" rule comes from, what the 1.8 million words figure means, how long kids should read by age, and how to make it stick.",
     h1: "Is Reading 20 Minutes a Day Enough?",
     navLabel: "Is 20 minutes of reading a day enough?",
     heroSubtitle:
@@ -146,7 +146,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     kind: "guide",
     title: "Reading App With a Timer for Kids: 20-Minute Stories | Time2Read",
     metaDescription:
-      "A kids' reading app with a built-in 20-minute reading timer: personalized illustrated stories at your child's level, tap-to-hear words, ages 3 to 15. First 3 stories free.",
+      "A kids' reading app with a built-in 20-minute timer: personalized illustrated stories at your child's level, tap-to-hear words. First 3 stories free.",
     h1: "A Reading App With a Built-In Timer for Kids",
     navLabel: "Reading app with a timer",
     heroSubtitle:
@@ -214,9 +214,9 @@ export const blueOceanGuides: LandingPageConfig[] = [
   {
     slug: "reading-app-for-kids-struggling-to-read",
     kind: "guide",
-    title: "Reading App for Kids Struggling to Read: What to Look For | Time2Read",
+    title: "Reading App for Kids Struggling to Read: A Guide | Time2Read",
     metaDescription:
-      "What to look for in a reading app for a child who is struggling to read: the right level, help with hard words, short sessions, and interest. Plus when to ask the school for help.",
+      "What to look for in a reading app for a struggling reader: the right level, help with hard words, short sessions, and when to ask the school for help.",
     h1: "A Reading App for Kids Who Are Struggling to Read",
     navLabel: "Reading app for struggling readers",
     heroSubtitle:
@@ -287,9 +287,9 @@ export const blueOceanGuides: LandingPageConfig[] = [
   {
     slug: "high-interest-low-level-stories",
     kind: "guide",
-    title: "High Interest, Low Level Stories for Kids (Hi-Lo Reading) | Time2Read",
+    title: "Hi-Lo Stories: High Interest, Low Level Reading | Time2Read",
     metaDescription:
-      "What high-interest, low-level (hi-lo) stories are, why they help reluctant and struggling readers, and how to get hi-lo stories about exactly what your child loves, ages 6 to 15.",
+      "What high-interest, low-level (hi-lo) stories are, why they help reluctant readers, and how to get hi-lo stories about what your child loves.",
     h1: "High-Interest, Low-Level Stories for Kids",
     navLabel: "High-interest, low-level stories",
     heroSubtitle:
@@ -365,7 +365,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     kind: "guide",
     title: "Bedtime Stories About Your Child's Favorite Things | Time2Read",
     metaDescription:
-      "A bedtime story for the kid who is obsessed with dinosaurs, unicorns, trucks or football: personalized, illustrated, read-aloud stories starring your child. Ages 3 to 15.",
+      "A bedtime story for the kid obsessed with dinosaurs, unicorns, trucks or football: personalized, illustrated, read-aloud stories starring your child.",
     h1: "Bedtime Stories About Your Child's Favorite Things",
     navLabel: "Bedtime stories about their favorite things",
     heroSubtitle:
@@ -433,9 +433,9 @@ export const blueOceanGuides: LandingPageConfig[] = [
   {
     slug: "sight-word-story-generator",
     kind: "guide",
-    title: "Sight Word Story Generator: Stories Built on Dolch Words | Time2Read",
+    title: "Sight Word Story Generator Built on Dolch Words | Time2Read",
     metaDescription:
-      "Generate illustrated sight word stories for beginning readers. Time2Read's early levels are built on Dolch sight words, with your child as the main character. Free to start.",
+      "Generate illustrated sight word stories for beginning readers. Time2Read's early levels use Dolch sight words, with your child as the main character.",
     h1: "A Sight Word Story Generator for Beginning Readers",
     navLabel: "Sight word story generator",
     heroSubtitle:
@@ -510,7 +510,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     kind: "guide",
     title: "How to Make Reading Fun for Kids With ADHD | Time2Read",
     metaDescription:
-      "Practical, supportive ways to make reading easier and more fun for a child with ADHD: interest-led topics, short timed sessions, movement, choice, and read-aloud support.",
+      "Supportive ways to make reading easier and more fun for a child with ADHD: interest-led topics, short timed sessions, movement, choice and read-aloud.",
     h1: "How to Make Reading Fun for a Child With ADHD",
     navLabel: "Reading for kids with ADHD",
     heroSubtitle:
@@ -579,9 +579,9 @@ export const blueOceanGuides: LandingPageConfig[] = [
   {
     slug: "reading-app-for-esl-kids",
     kind: "guide",
-    title: "Reading App for ESL Kids: Easy English Stories Read Aloud | Time2Read",
+    title: "Reading App for ESL Kids: Easy English Stories | Time2Read",
     metaDescription:
-      "Easy English reading practice for ESL and English-learner kids: personalized illustrated stories at the right level, tap any word to hear it, ages 3 to 15. First 3 stories free.",
+      "Easy English reading practice for ESL kids: personalized illustrated stories at the right level, tap any word to hear it. First 3 stories free.",
     h1: "A Reading App for ESL Kids Learning English",
     navLabel: "Reading app for ESL kids",
     heroSubtitle:
