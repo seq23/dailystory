@@ -82,11 +82,11 @@ const SightWordsSection = () => (
         Turn sight words into stories ✨
       </h3>
       <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-        Inside Time2Read, type in the exact sight words your child is learning. Our AI weaves them into a
-        personalized, illustrated story — so practice feels like play and the words actually stick.
+        Time2Read's beginner reading levels are written mostly with Dolch sight words, so your child meets
+        them again and again inside a personalized, illustrated story where they are the main character.
       </p>
       <Button asChild size="lg">
-        <Link to="/?action=new-story">Start a free story with your words</Link>
+        <Link to="/?action=new-story">Start a free sight word story</Link>
       </Button>
     </Card>
   </section>

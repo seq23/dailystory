@@ -34,5 +34,8 @@ for (const loc of locs) {
   if (types.includes("Article") && /<(form|input|textarea)\b/i.test(root?.[2] ?? "")) fails.push(`${path}: guide page collects data`);
   checked++;
 }
+// Bing Webmaster site-ownership tag (public code, not a secret) must survive the build.
+const home = existsSync(join(dist, "index.html")) ? readFileSync(join(dist, "index.html"), "utf8") : "";
+if (!/<meta name="msvalidate\.01" content="306F2E6DD99A91CBBA16C94091284F00"/.test(home)) fails.push("/: dist/index.html lost the msvalidate.01 Bing verification tag");
 if (fails.length) { console.error(`PRERENDER_CHECK_FAILED\n  ${fails.join("\n  ")}`); process.exit(1); }
 console.log(`prerender check: ${checked} pages carry real HTML, title, description, canonical and schema`);
