@@ -55,6 +55,8 @@ for (const loc of locs) {
   else if (descs[0].length < 120 || descs[0].length > 160) fails.push(`${path}: description is ${descs[0].length} chars (120-160)`);
   const ogImage = html.match(/<meta property="og:image" content="([^"]+)"/)?.[1] ?? "";
   if (!ogImage.startsWith(`${SITE}/`)) fails.push(`${path}: og:image is not on ${SITE}: ${ogImage || "missing"}`);
+  // Clarity (search-readiness e6/i8): the per-host project, loaded for signed-out visitors only.
+  if (!html.includes('clarity.ms/tag/"+i') || !html.includes('"z3erswoh8e"') || !/sb-\.\*-auth-token/.test(html)) fails.push(`${path}: Clarity tag z3erswoh8e (signed-out only) missing`);
   else if (!existsSync(join("public", new URL(ogImage).pathname.slice(1)))) fails.push(`${path}: og:image ${ogImage} is not in public/`);
   const nodes = lds.flatMap((b) => b["@graph"] ?? [b]);
   const org = nodes.find((n) => /Organization/.test(n["@type"]));
