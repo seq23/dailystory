@@ -10,8 +10,8 @@ export const PAYWALL_EVENT = "t2r:free-limit-reached";
 export const TRIAL_DAYS = 7;
 
 export const PLAN_PRICES = {
-  monthly: { label: "$9.99", period: "/month", amountCents: 999 },
-  annual: { label: "$79", period: "/year", amountCents: 7900 },
+  monthly: { label: "$12.99", period: "/month", amountCents: 1299 },
+  annual: { label: "$99", period: "/year", amountCents: 9900 },
 } as const;
 
 export const HEYGETONMYLEVEL_URL = "https://heygetonmylevel.com";

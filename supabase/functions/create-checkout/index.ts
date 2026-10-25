@@ -100,24 +100,23 @@ serve(async (req) => {
       logStep("Creating new customer");
     }
 
-    // Pricing: $9.99/month or $79/year, 7-day free trial (or an access code's days), card taken up front.
-    // STRIPE_PRICE_MONTHLY / STRIPE_PRICE_ANNUAL (Stripe price ids) win when set;
-    // otherwise the amounts below are sent inline. Pinned by
-    // src/test/guards/free-story-paywall.test.ts.
+    // Pricing: $12.99/month or $99/year (docs/PRICING.md), 7-day free trial (or an access code's days), card taken up front.
+    // The amounts below are always sent inline, so this file and docs/PRICING.md are the
+    // one source of the price. Stripe price-id env overrides (STRIPE_PRICE_MONTHLY /
+    // STRIPE_PRICE_ANNUAL) are deliberately not read: a stored Price would silently win over
+    // a price change here. Existing subscriptions keep the Price they were created on.
+    // Pinned by src/test/guards/pricing-doc.test.ts and free-story-paywall.test.ts.
     if (plan !== "monthly" && plan !== "annual") {
       throw new Error("Invalid plan selected. Choose 'monthly' or 'annual'.");
     }
-    const configuredPrice = Deno.env.get(plan === "monthly" ? "STRIPE_PRICE_MONTHLY" : "STRIPE_PRICE_ANNUAL");
     const productId = Deno.env.get("STRIPE_PRODUCT_ID");
     const inlinePrice = {
       currency: "usd",
       ...(productId ? { product: productId } : { product_data: { name: "Time2Read Premium" } }),
-      unit_amount: plan === "monthly" ? 999 : 7900, // $9.99 / $79.00
+      unit_amount: plan === "monthly" ? 1299 : 9900, // $12.99 / $99.00
       recurring: { interval: plan === "monthly" ? "month" : "year" },
     };
-    const lineItem = configuredPrice
-      ? { price: configuredPrice, quantity: 1 }
-      : { price_data: inlinePrice, quantity: 1 };
+    const lineItem = { price_data: inlinePrice, quantity: 1 };
 
     // One free trial per customer: a returning customer who already had a subscription pays from day one.
     let hadSubscription = false;

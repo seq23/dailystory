@@ -274,7 +274,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                   <CardContent className="p-4">
                     <h3 className="font-semibold mb-2">Monthly Plan</h3>
                     <div className="text-2xl font-bold text-primary mb-4">
-                      $9.99<span className="text-sm text-gray-500">/month</span>
+                      $12.99<span className="text-sm text-gray-500">/month</span>
                     </div>
                     <Button 
                       onClick={() => startCheckout("monthly")} 
@@ -289,10 +289,10 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold">Annual Plan</h3>
-                      <Badge className="bg-green-500">Save 34%</Badge>
+                      <Badge className="bg-green-500">Save $57 (36%)</Badge>
                     </div>
                     <div className="text-2xl font-bold text-primary mb-4">
-                      $79<span className="text-sm text-gray-500">/year</span>
+                      $99<span className="text-sm text-gray-500">/year</span>
                     </div>
                     <Button 
                       onClick={() => startCheckout("annual")} 

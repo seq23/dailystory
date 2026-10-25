@@ -1,6 +1,6 @@
 // Guard: the paywall in front of the stories (Oct 2026).
 // Free accounts get 3 stories in total, then a 7-day free trial (card up front)
-// at $9.99/month or $79/year. The server enforces the limit; the UI mirrors it.
+// at $12.99/month or $99/year (docs/PRICING.md). The server enforces the limit; the UI mirrors it.
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -75,15 +75,35 @@ describe("free-story limit", () => {
   });
 });
 
-describe("checkout: 7-day trial at $9.99 / $79", () => {
+describe("checkout: 7-day trial at $12.99 / $99", () => {
   const src = read("supabase/functions/create-checkout/index.ts");
 
-  it("prices are 999 and 7900 cents, never the old $10 / $100", () => {
-    expect(src).toMatch(/plan === "monthly" \? 999 : 7900/);
-    expect(src).not.toMatch(/unit_amount:\s*1000\b/);
-    expect(src).not.toMatch(/unit_amount:\s*10000\b/);
-    expect(PLAN_PRICES.monthly.amountCents).toBe(999);
-    expect(PLAN_PRICES.annual.amountCents).toBe(7900);
+  it("prices are 1299 and 9900 cents, never the old $10 / $100 or $9.99 / $79", () => {
+    expect(src).toMatch(/plan === "monthly" \? 1299 : 9900/);
+    expect(src.match(/unit_amount:/g)).toHaveLength(1);
+    expect(src).not.toMatch(/\b(999|7900|1000|10000)\b/);
+    expect(PLAN_PRICES.monthly).toEqual({ label: "$12.99", period: "/month", amountCents: 1299 });
+    expect(PLAN_PRICES.annual).toEqual({ label: "$99", period: "/year", amountCents: 9900 });
+  });
+
+  it("always sends the inline price: no Stripe price-id env override can win", () => {
+    expect(src).not.toMatch(/Deno\.env\.get\(\s*[^)]*STRIPE_PRICE/);
+    expect(src).not.toMatch(/price:\s*configuredPrice/);
+    expect(src).toMatch(/const lineItem = \{ price_data: inlinePrice, quantity: 1 \};/);
+  });
+
+  it("legacy create-premium-subscription charges the same amounts", () => {
+    const legacy = read("supabase/functions/create-premium-subscription/index.ts");
+    expect(legacy).toMatch(/amount: 1299,/);
+    expect(legacy).toMatch(/amount: 9900,/);
+    expect(legacy).not.toMatch(/amount: (999|7900),/);
+  });
+
+  it("subscription tier is read from the billing interval, not a price amount", () => {
+    const sync = read("supabase/functions/sync-subscription-status/index.ts");
+    expect(sync).not.toMatch(/amount === \d+/);
+    expect(sync).toMatch(/interval === 'month'[\s\S]*Monthly Premium/);
+    expect(sync).toMatch(/interval === 'year'[\s\S]*Annual Premium/);
   });
 
   it("is a Stripe subscription trial of 7 days with the card taken up front", () => {
@@ -106,9 +126,10 @@ describe("checkout: 7-day trial at $9.99 / $79", () => {
     for (const f of readdirSync(dir).filter((n) => n.endsWith(".json"))) {
       const txt = readFileSync(join(dir, f), "utf8");
       expect(txt, f).not.toMatch(/"\$10"|"\$100"|\$10\/|\$100\/|"10\$|"100\$/);
+      expect(txt, f).not.toMatch(/9[.,]99|"\$79|"79\$|\$79\/|79\$\/|\$40\b|\b40\$/);
     }
     for (const f of ["src/components/PricingSection.tsx", "src/components/SubscriptionManager.tsx", "src/components/PremiumUpgrade.tsx"]) {
-      expect(read(f), f).not.toMatch(/>\$10<|\$100<|\$79\.99/);
+      expect(read(f), f).not.toMatch(/>\$10<|\$100<|\$79\.99|\$9\.99|'\$79'|\$79<|Save 3[34]%/);
     }
   });
 });

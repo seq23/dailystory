@@ -242,9 +242,12 @@ serve(async (req) => {
       const price = await stripe.prices.retrieve(priceId);
       const amount = price.unit_amount || 0;
       
-      if (amount === 1000 && price.recurring?.interval === 'month') {
+      // Tier by billing interval, never by amount: subscribers keep the price they joined at
+      // ($9.99/$79 before Oct 2026, $12.99/$99 after; docs/PRICING.md), so an amount match
+      // would mislabel every grandfathered or repriced plan as plain "Premium".
+      if (amount > 0 && price.recurring?.interval === 'month') {
         subscriptionTier = "Monthly Premium";
-      } else if (amount === 10000 && price.recurring?.interval === 'year') {
+      } else if (amount > 0 && price.recurring?.interval === 'year') {
         subscriptionTier = "Annual Premium";
       } else {
         subscriptionTier = "Premium";
