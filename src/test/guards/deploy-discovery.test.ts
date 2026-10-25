@@ -24,3 +24,15 @@ describe("deploy-functions discovery", () => {
     expect(found).toContain("create-checkout");
   });
 });
+
+describe("post-deploy payment smoke", () => {
+  // 25 Oct 2026: create-checkout came out of the deploy with BOOT_ERROR though its
+  // source boots; redeploying it alone fixed it. The smoke now does that itself.
+  const step = WORKFLOW.slice(WORKFLOW.indexOf("Payment functions load Stripe (post-deploy smoke)"));
+  it("redeploys a payment function that does not boot, once, then probes again", () => {
+    expect(step).toMatch(/for attempt in 1 2 3 4 5 6; do/);
+    expect(step).toMatch(/if \[ "\$attempt" = 4 \]; then[\s\S]{0,200}supabase functions deploy "\$func" --project-ref "\$SUPABASE_PROJECT_ID"/);
+    expect(step).toMatch(/\*"Authentication error"\*\) break/);
+    expect(step).toMatch(/did not reach its auth check/);
+  });
+});
