@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import * as accessRules from "../../../supabase/functions/_shared/accessCodeRules";
 import { FREE_STORY_LIMIT, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
+import { TTS_CONFIG, getTTSProvider } from "@/config/ttsConfig";
 
 const ROOT = join(__dirname, "../../..");
 const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
@@ -35,7 +36,7 @@ const savedPct = Math.floor(((monthly * 12 - annual) / (monthly * 12)) * 100);
 
 describe("docs/PRICING.md is internally consistent", () => {
   it("has every key, and the labels and savings follow from the cents", () => {
-    for (const k of ["monthly_cents", "annual_cents", "monthly_label", "annual_label", "annual_savings", "free_stories", "trial_days", "code_HOMESCHOOL15_days"]) {
+    for (const k of ["monthly_cents", "annual_cents", "monthly_label", "annual_label", "annual_savings", "free_stories", "trial_days", "code_HOMESCHOOL15_days", "free_voice", "premium_voice", "premium_fallback"]) {
       expect(doc[k], k).toBeTruthy();
     }
     expect(doc.monthly_label).toBe(label(monthly));
@@ -144,6 +145,34 @@ describe("the code charges and shows what PRICING.md says", () => {
       for (const c of old) expect(src, `${f} has ${c}`).not.toMatch(new RegExp(`\\b${c}\\b`));
       for (const l of oldLabels) expect(src, `${f} has ${l}`).not.toMatch(new RegExp(`\\${l}(?![0-9.])`));
     }
+  });
+});
+
+describe("the narration voices are the ones PRICING.md states", () => {
+  const md = read("docs/PRICING.md");
+
+  it("free and guest readers get the voice the doc names, and the doc says browser ($0)", () => {
+    expect(doc.free_voice).toBe("browser");
+    // Fails if GUEST_TTS_PROVIDER is ever set back to 'elevenlabs' while the doc says browser.
+    expect(TTS_CONFIG.GUEST_TTS_PROVIDER).toBe(doc.free_voice);
+    expect(getTTSProvider(false)).toBe(doc.free_voice);
+    expect(md).toContain("**Free and guest readers hear the browser voice**");
+    expect(md).toContain("**$0**");
+  });
+
+  it("premium gets ElevenLabs, with the browser voice as the one fallback", () => {
+    expect(TTS_CONFIG.PREMIUM_TTS_PROVIDER).toBe(doc.premium_voice);
+    expect(getTTSProvider(true)).toBe(doc.premium_voice);
+    expect(doc.premium_fallback).toBe("browser");
+    const router = read("src/services/narrationRouter.ts");
+    expect(router).toMatch(/await o\.browser\(\);\s*return 'browser-fallback';/);
+    expect(md).toContain("**Premium narration is capped by her ElevenLabs credit balance.**");
+    expect(md).toContain("**The real narration cost is the ElevenLabs credits she buys, not a per-story list price.**");
+  });
+
+  it("the old per-story list-price estimate is gone", () => {
+    expect(md).not.toMatch(/\$0\.46 a story/);
+    expect(md).not.toMatch(/\$168 a year/);
   });
 });
 

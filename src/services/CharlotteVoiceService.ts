@@ -9,6 +9,10 @@ import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { contextualPronunciation } from '@/services/contextualPronunciation';
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
+import { BrowserTTSService } from '@/services/BrowserTTSService';
+import { TTS_CONFIG } from '@/config/ttsConfig';
+import { currentNarrationProvider, isUserAbort, narrate } from '@/services/narrationRouter';
+import type { SupportedLanguage } from '@/types/multilingual';
 
 export type CharlotteContext = 'conversation' | 'learning' | 'story' | 'interactive' | 'buddy';
 
@@ -44,6 +48,7 @@ export class CharlotteVoiceService {
   private onWordHighlight?: (wordIndex: number) => void;
   private highlightInterval?: NodeJS.Timeout;
   private currentHash: string | null = null;
+  private narrationGeneration = 0;
 
   static getInstance() {
     if (!this.instance) {
@@ -61,6 +66,10 @@ export class CharlotteVoiceService {
    * Uses sophisticated timing system for story reading with word-by-word highlighting
    */
   async charlotteReadStory(text: string, onWordHighlight?: (wordIndex: number) => void, speed?: number): Promise<void> {
+    await this.routed('story', text, 'en', () => this.elevenLabsReadStory(text, onWordHighlight, speed), speed);
+  }
+
+  private async elevenLabsReadStory(text: string, onWordHighlight?: (wordIndex: number) => void, speed?: number): Promise<void> {
     const requestId = `story-${++CharlotteVoiceService.requestCounter}`;
     DebugLogger.log('audio', `🎙️ Charlotte Reading Story: "${text.substring(0, 50)}..." [Request: ${requestId}]`);
 
@@ -101,6 +110,10 @@ export class CharlotteVoiceService {
    * Replaces browser TTS with Charlotte's voice for consistent experience
    */
   async charlotteMultilingualExplain(text: string, language: string = 'en'): Promise<void> {
+    await this.routed('multilingual', text, language, () => this.elevenLabsMultilingualExplain(text, language));
+  }
+
+  private async elevenLabsMultilingualExplain(text: string, language: string = 'en'): Promise<void> {
     const requestId = `multilingual-${++CharlotteVoiceService.requestCounter}`;
     DebugLogger.log('audio', `🌍 Charlotte Multilingual Explain: "${text}" in ${language} [Request: ${requestId}]`);
 
@@ -135,6 +148,10 @@ export class CharlotteVoiceService {
    * Uses fast direct TTS for 2-3 second response times
    */
   async charlotteInteractiveAudio(request: CharlotteVoiceRequest): Promise<void> {
+    await this.routed(`interactive-${request.context}`, request.text, 'en', () => this.elevenLabsInteractiveAudio(request));
+  }
+
+  private async elevenLabsInteractiveAudio(request: CharlotteVoiceRequest): Promise<void> {
     const { text, context } = request;
     const requestId = `interactive-${context}-${++CharlotteVoiceService.requestCounter}`;
     
@@ -270,6 +287,13 @@ export class CharlotteVoiceService {
   
   // Charlotte provides accuracy feedback with proper interpolation
   async charlotteAccuracyFeedback(accuracy: number, isSuccess: boolean, pace: string): Promise<void> {
+    const message = isSuccess
+      ? `Excellent reading! ${pace} That was a perfect score of ${accuracy} percent!`
+      : `Good effort! You got ${accuracy} percent correct. ${pace}`;
+    await this.routed('accuracy', message, 'en', () => this.elevenLabsAccuracyFeedback(accuracy, isSuccess, pace));
+  }
+
+  private async elevenLabsAccuracyFeedback(accuracy: number, isSuccess: boolean, pace: string): Promise<void> {
     const requestId = `accuracy-${++CharlotteVoiceService.requestCounter}`;
     DebugLogger.log('audio', `🎯 Charlotte Accuracy Feedback: ${accuracy}% success=${isSuccess} [Request: ${requestId}]`);
 
@@ -307,6 +331,11 @@ export class CharlotteVoiceService {
 
   // Charlotte provides practice words coaching
   async charlottePracticeWords(words: string[]): Promise<void> {
+    const message = `Let's practice these words: ${words.join(', ')}. I'll demonstrate each one for you.`;
+    await this.routed('practice', message, 'en', () => this.elevenLabsPracticeWords(words));
+  }
+
+  private async elevenLabsPracticeWords(words: string[]): Promise<void> {
     const requestId = `practice-${++CharlotteVoiceService.requestCounter}`;
     DebugLogger.log('audio', `📚 Charlotte Practice Words: ${words.join(', ')} [Request: ${requestId}]`);
 
@@ -417,6 +446,41 @@ export class CharlotteVoiceService {
   /**
    * PRIVATE METHODS - Internal functionality
    */
+
+  /**
+   * Every ElevenLabs entry point goes through here (src/services/narrationRouter.ts):
+   * free and guest readers get the browser voice; premium gets Charlotte, and an
+   * ElevenLabs refusal is read once in the browser voice after Charlotte is silenced.
+   */
+  private async routed(label: string, text: string, language: string, elevenLabs: () => Promise<void>, speed?: number): Promise<void> {
+    const startedAt = ++this.narrationGeneration;
+    await narrate({
+      label,
+      provider: currentNarrationProvider(),
+      premium: elevenLabs,
+      browser: () => this.speakBrowser(text, language, speed),
+      stopPremium: () => this.stop(),
+      // A stop() or a newer request after this one began means the reader moved on.
+      isCancelled: () => this.narrationGeneration !== startedAt,
+    });
+  }
+
+  private async speakBrowser(text: string, language: string, speed?: number): Promise<void> {
+    if (!text || !text.trim()) return;
+    try {
+      await BrowserTTSService.getInstance().speak({
+        text,
+        language: (language || 'en') as SupportedLanguage,
+        rate: TTS_CONFIG.BROWSER_TTS_DEFAULTS.rate * (speed || 1),
+        pitch: TTS_CONFIG.BROWSER_TTS_DEFAULTS.pitch,
+        volume: TTS_CONFIG.BROWSER_TTS_DEFAULTS.volume,
+      });
+    } catch (error) {
+      // The reader pressed stop (speechSynthesis.cancel): finished, not failed.
+      if (isUserAbort(error)) return;
+      throw error;
+    }
+  }
 
   private condenseToMax4(syllables: string[]): string[] {
     if (syllables.length <= 4) return syllables;
@@ -663,6 +727,7 @@ export class CharlotteVoiceService {
   }
   
   stop(): void {
+    this.narrationGeneration++;
     if (this.audio) {
       try {
         this.audio.pause();

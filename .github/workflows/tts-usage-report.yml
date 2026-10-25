@@ -1,0 +1,76 @@
+name: TTS usage report
+
+# Read-only numbers behind docs/PRICING.md "What narration costs us":
+# ElevenLabs characters the deployed functions generated (cost_tracking), the
+# refusals that sent a child to the browser voice, and what the ElevenLabs
+# account behind ELEVENLABS_API_KEY says about its own credits. Aggregates
+# only: no row, no key, no user id is printed.
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/tts-usage-report.yml"
+      - "supabase/functions/elevenlabs-tts-smart/**"
+      - "docs/PRICING.md"
+  workflow_run:
+    workflows: ["Deploy Edge Functions"]
+    types: [completed]
+  schedule:
+    - cron: "0 14 * * 1" # Mondays
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+    steps:
+      - name: ElevenLabs usage from cost_tracking (aggregates only)
+        run: |
+          set -euo pipefail
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_PROJECT_ID" ]; then
+            echo "::error::NAMED STOP: SUPABASE_ACCESS_TOKEN / SUPABASE_PROJECT_ID repo secrets missing"; exit 1
+          fi
+          read -r -d '' SQL <<'EOF' || true
+          select
+            count(*) filter (where provider='elevenlabs' and operation_type='audio_generation' and timestamp >= date_trunc('month', now())) as el_requests_this_month,
+            coalesce(sum(quantity_used) filter (where provider='elevenlabs' and operation_type='audio_generation' and timestamp >= date_trunc('month', now())),0) as el_chars_this_month,
+            coalesce(sum(quantity_used) filter (where provider='elevenlabs' and operation_type='audio_generation' and timestamp >= now() - interval '30 days'),0) as el_chars_last_30d,
+            coalesce(sum(quantity_used) filter (where provider='elevenlabs' and operation_type='audio_generation'),0) as el_chars_all_time,
+            count(*) filter (where provider='elevenlabs' and operation_type='audio_generation') as el_requests_all_time,
+            count(distinct session_id) filter (where provider='elevenlabs' and operation_type='audio_generation') as el_sessions_all_time,
+            round(coalesce(sum(cost) filter (where provider='elevenlabs' and operation_type='audio_generation'),0)::numeric, 4) as el_list_cost_all_time,
+            max(timestamp) filter (where provider='elevenlabs' and operation_type='audio_generation') as el_last_generation,
+            count(*) filter (where provider='elevenlabs' and operation_type='tts_refused') as el_refusals_all_time,
+            count(*) filter (where provider='elevenlabs' and operation_type='tts_refused' and timestamp >= date_trunc('month', now())) as el_refusals_this_month,
+            count(*) filter (where operation_type='story_generation') as stories_all_time,
+            round(coalesce(sum(cost),0)::numeric, 4) as all_providers_cost_all_time
+          from public.cost_tracking
+          EOF
+          body=$(jq -n --arg q "$SQL" '{query: $q}')
+          out=$(curl -sS --max-time 60 -X POST "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_ID/database/query" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" -d "$body")
+          if ! echo "$out" | jq -e '.[0]' >/dev/null 2>&1; then
+            echo "::error::cost_tracking query failed: $(echo "$out" | head -c 200)"; exit 1
+          fi
+          echo "$out" | jq -r '.[0] | to_entries[] | "\(.key): \(.value)"'
+          echo "$out" | jq -r '.[0] | "per narrated session: \(if .el_sessions_all_time > 0 then (.el_chars_all_time / .el_sessions_all_time | floor) else 0 end) chars"'
+
+      - name: ElevenLabs account credits behind the deployed key
+        run: |
+          set -euo pipefail
+          # The service-role key is fetched for this one call and masked; the
+          # function answers /usage only to it, and returns counts, never the key.
+          srk=$(curl -sS --max-time 30 "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_ID/api-keys?reveal=true" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" | jq -r '.[] | select(.name=="service_role") | .api_key // empty' | head -1)
+          if [ -z "$srk" ]; then echo "::error::could not read the service_role key from the management API"; exit 1; fi
+          echo "::add-mask::$srk"
+          res=$(curl -sS --max-time 30 "https://$SUPABASE_PROJECT_ID.supabase.co/functions/v1/elevenlabs-tts-smart/usage" \
+            -H "Authorization: Bearer $srk" -H "apikey: $srk" || true)
+          if echo "$res" | jq -e '.usage' >/dev/null 2>&1; then
+            echo "$res" | jq -r '.usage | to_entries[] | "\(.key): \(.value)"'
+          else
+            echo "::notice::usage endpoint not answering yet (deployed on merge): $(echo "$res" | head -c 160)"
+          fi

@@ -9,6 +9,7 @@ import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { safeBase64Decode } from '@/utils/base64Decoder';
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
+import { currentNarrationProvider } from '@/services/narrationRouter';
 import { DebugLogger } from '@/services/DebugLogger';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
@@ -1109,8 +1110,9 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       
       DebugLogger.log('audio', 'Starting pronunciation for word', { cleanWord, userLanguage });
       
-      // For non-English speakers, use browser speech synthesis for better native pronunciation
-      if (userLanguage !== 'en') {
+      // Browser speech for non-English speakers (better native pronunciation) and for
+      // every free or guest reader (src/services/narrationRouter.ts: browser voice, $0).
+      if (userLanguage !== 'en' || currentNarrationProvider() === 'browser') {
         DebugLogger.log('audio', 'Using browser speech for non-English user');
         
         if ('speechSynthesis' in window) {

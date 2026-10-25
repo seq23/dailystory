@@ -1,10 +1,13 @@
 /**
  * TTS CONFIGURATION
- * 
- * Central config to control which TTS provider is used per user tier.
- * When ready to cut ElevenLabs for guests, just flip GUEST_TTS_PROVIDER to 'browser'.
- * 
- * No other code changes needed — useAudioControls reads this config.
+ *
+ * Which voice each tier gets. Read by src/services/narrationRouter.ts, which every
+ * ElevenLabs entry point in CharlotteVoiceService goes through.
+ *
+ * Free and guest readers: the browser voice ($0). Premium: Charlotte (ElevenLabs),
+ * falling back once to the browser voice when ElevenLabs refuses.
+ * docs/PRICING.md states this; src/test/guards/pricing-doc.test.ts fails if the
+ * doc and this file disagree.
  */
 
 export type TTSProvider = 'elevenlabs' | 'browser';
@@ -13,12 +16,10 @@ export const TTS_CONFIG = {
   /**
    * TTS provider for guest (free) users.
    * 
-   * 'elevenlabs' = Full Charlotte voice via ElevenLabs (current, expensive)
-   * 'browser'    = Free browser speechSynthesis API (zero cost)
-   * 
-   * ⚡ FLIP THIS TO 'browser' TO SAVE ON GUEST TTS COSTS ⚡
+   * 'browser'    = Free browser speechSynthesis API (zero cost) — the setting since 25 Oct 2026
+   * 'elevenlabs' = Charlotte via ElevenLabs (spends her ElevenLabs credits)
    */
-  GUEST_TTS_PROVIDER: 'elevenlabs' as TTSProvider,
+  GUEST_TTS_PROVIDER: 'browser' as TTSProvider,
 
   /**
    * TTS provider for premium users. Should always be 'elevenlabs'.
@@ -26,7 +27,7 @@ export const TTS_CONFIG = {
   PREMIUM_TTS_PROVIDER: 'elevenlabs' as TTSProvider,
 
   /**
-   * Browser TTS settings for guest users (when GUEST_TTS_PROVIDER = 'browser')
+   * Browser TTS settings (free and guest readers, and the premium fallback)
    */
   BROWSER_TTS_DEFAULTS: {
     rate: 0.8,
@@ -38,7 +39,8 @@ export const TTS_CONFIG = {
 } as const;
 
 /**
- * Determine which TTS provider to use for the current user.
+ * Which TTS provider a reader gets. `isPremium` is the PAID status
+ * (narrationRouter's setNarrationPremium), not the UI's "signed in" premium.
  */
 export function getTTSProvider(isPremium: boolean): TTSProvider {
   return isPremium 
