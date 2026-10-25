@@ -9,6 +9,7 @@ import homeReading from "@/assets/carousel-2-home-reading.jpg";
 import heroDiverse from "@/assets/hero-image-diverse-clear.jpg";
 import { FREE_STORY_LIMIT, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
 import type { LandingPageConfig } from "./landingPages";
+import { blueOceanGuides } from "./blueOceanGuides";
 
 const pricingAnswer = `Your first ${FREE_STORY_LIMIT} stories are free. After that, Premium starts with a ${TRIAL_DAYS}-day free trial, then costs ${PLAN_PRICES.monthly.label}${PLAN_PRICES.monthly.period} or ${PLAN_PRICES.annual.label}${PLAN_PRICES.annual.period}.`;
 
@@ -36,7 +37,7 @@ const SOURCES = {
   },
 };
 
-export const guidePages: LandingPageConfig[] = [
+const firstGuides: LandingPageConfig[] = [
   {
     slug: "20-minute-reading-log",
     kind: "guide",
@@ -269,3 +270,5 @@ export const guidePages: LandingPageConfig[] = [
     ],
   },
 ];
+
+export const guidePages: LandingPageConfig[] = [...firstGuides, ...blueOceanGuides];

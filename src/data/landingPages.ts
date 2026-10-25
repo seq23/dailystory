@@ -82,25 +82,25 @@ const collectionPages: LandingPageConfig[] = [
     slug: "kindergarten-sight-words",
     title: "Kindergarten Sight Words List + Practice | Time2Read",
     metaDescription:
-      "Free kindergarten sight words list to practice at home. Plus: add your child's sight words to Time2Read and our AI weaves them into personalized illustrated stories.",
+      "Free kindergarten sight words list to practice at home. Plus: Time2Read's beginner stories are built on Dolch sight words, with your child as the main character.",
     h1: "Kindergarten Sight Words",
     navLabel: "Kindergarten sight words",
     heroSubtitle:
-      "Master the must-know kindergarten sight words — then watch them come to life inside personalized, AI-generated stories.",
+      "Master the must-know kindergarten sight words, then meet them again and again inside personalized, illustrated stories.",
     heroImage: homeReading,
     heroImageAlt: "Child practicing sight words while reading at home",
     intro: [
       "Sight words are the high-frequency words kids learn to recognize instantly, without sounding them out. Mastering them is one of the biggest early wins in learning to read.",
-      "Below is a free kindergarten sight words list you can practice anywhere. The best part: with Time2Read you can drop your child's sight words right into the story generator, and our AI weaves those exact words into a personalized, illustrated adventure — turning flashcard practice into a story they actually want to read.",
+      "Below is a free kindergarten sight words list you can practice anywhere. Then put the words to work: Time2Read's beginner reading levels are written mostly with Dolch sight words, so your child keeps meeting them inside a personalized, illustrated story they actually want to read.",
     ],
     benefits: [
       { title: "Practice in context", body: "Seeing sight words inside a fun story helps them stick far better than flashcards alone." },
-      { title: "Add your own words", body: "Type in the words your child is working on and the AI builds the story around them." },
-      { title: "Repetition that's fun", body: "Each target word naturally repeats across the story for confident recognition." },
+      { title: "Built on Dolch words", body: "Beginner levels lean on the Dolch pre-primer, primer and grade 1 sight word lists." },
+      { title: "Repetition that's fun", body: "Common sight words come up again and again across every beginner story." },
     ],
     faqs: [
       { q: "What are kindergarten sight words?", a: "Sight words are common words like 'the', 'and', 'is', and 'you' that kids should recognize instantly. They make up a huge share of everyday reading." },
-      { q: "How do I add sight words to a Time2Read story?", a: "When you create a story, you can enter custom words your child is learning. The AI then weaves those exact words throughout the personalized story." },
+      { q: "Can I type my child's own sight words into a Time2Read story?", a: "Not at the moment. Choose a beginner reading level: those stories are written mostly with Dolch sight words. Keep practicing your class list with the printable list on this page." },
       freeFaq,
     ],
     variant: "sightWords",
