@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { DebugLogger } from "@/services/DebugLogger";
+import { AccessCodeField } from "@/components/AccessCodeField";
+import { checkoutBody, checkoutErrorMessage } from "@/lib/accessCode";
 import { FREE_STORY_LIMIT, HEYGETONMYLEVEL_URL, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
 
 type Plan = "monthly" | "annual";
@@ -12,18 +14,28 @@ type Plan = "monthly" | "annual";
 export function StoryPaywall() {
   const [pending, setPending] = useState<Plan | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [accessCode, setAccessCode] = useState("");
+  const [codeError, setCodeError] = useState<string | null>(null);
 
   const startTrial = async (plan: Plan) => {
     setPending(plan);
     setError(null);
+    setCodeError(null);
     try {
       const { data: session } = await supabase.auth.getSession();
       const { data, error: fnError } = await supabase.functions.invoke("create-checkout", {
-        body: { plan },
+        body: checkoutBody(plan, accessCode),
         headers: session.session ? { Authorization: `Bearer ${session.session.access_token}` } : undefined,
       });
-      if (fnError) throw fnError;
-      if (data?.error) throw new Error(data.error);
+      if (fnError || data?.error) {
+        const refused = await checkoutErrorMessage(fnError, data);
+        if (refused && accessCode.trim()) {
+          setCodeError(refused);
+          setPending(null);
+          return;
+        }
+        throw fnError ?? new Error(data.error);
+      }
       if (!data?.url) throw new Error("Checkout did not return a link");
       window.location.href = data.url;
     } catch (err) {
@@ -79,6 +91,15 @@ export function StoryPaywall() {
             </Card>
           );
         })}
+      </div>
+
+      <div className="flex justify-center mt-6">
+        <AccessCodeField
+          value={accessCode}
+          onChange={(v) => { setAccessCode(v); setCodeError(null); }}
+          error={codeError}
+          disabled={pending !== null}
+        />
       </div>
 
       {error && <p className="text-sm text-destructive text-center mt-4">{error}</p>}

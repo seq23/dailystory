@@ -2,6 +2,7 @@
 // Anti-enumeration is enforced via IP-based rate limiting (no auth required)
 // Direct Supabase REST API calls only
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { normalizeAccessCode } from "../_shared/accessCodeRules.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -137,6 +138,28 @@ serve(async (req) => {
     const discountCode = data[0];
 
     if (!discountCode) {
+      // Not a free-access discount code: it may be an access code that lengthens the
+      // card-up-front trial (public.access_codes). create-checkout re-validates it.
+      const accessCode = normalizeAccessCode(code);
+      if (accessCode) {
+        const accessResp = await fetch(
+          `${supabaseUrl}/rest/v1/access_codes?code=eq.${encodeURIComponent(accessCode)}&active=eq.true&select=trial_days`,
+          { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' } }
+        );
+        const accessRows = accessResp.ok ? await accessResp.json() : [];
+        const trialDays = Array.isArray(accessRows) ? Number(accessRows[0]?.trial_days) : NaN;
+        if (Number.isInteger(trialDays) && trialDays > 0) {
+          return new Response(JSON.stringify({
+            valid: true,
+            kind: 'trial',
+            trialDays,
+            message: `✅ Code accepted: your free trial is ${trialDays} days. Card needed; cancel before it ends and you pay nothing.`
+          }), {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+      }
       return new Response(JSON.stringify({ 
         valid: false, 
         message: 'Invalid or expired discount code' 
@@ -160,6 +183,7 @@ serve(async (req) => {
     // Minimal response - don't expose code details to prevent enumeration
     return new Response(JSON.stringify({
       valid: true,
+      kind: 'discount',
       message: '✅ Code validated!'
     }), {
       status: 200,

@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Crown, Check, Sparkles, BookOpen, TrendingUp, Award, Heart, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AccessCodeField } from "@/components/AccessCodeField";
+import { checkoutBody, checkoutErrorMessage } from "@/lib/accessCode";
 
 interface PremiumUpgradeProps {
   onBack: () => void;
@@ -19,6 +21,8 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<string>('monthly');
   const [isLoading, setIsLoading] = useState(false);
+  const [accessCode, setAccessCode] = useState("");
+  const [codeError, setCodeError] = useState<string | null>(null);
 
   const plans = [
     {
@@ -63,6 +67,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
     try {
       setIsLoading(true);
       setSelectedPlan(planId);
+      setCodeError(null);
       
       // Checkout needs an account (the subscription is tied to it). Guests sign up first.
       const { data: sessionData } = await supabase.auth.getSession();
@@ -71,13 +76,20 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
         return;
       }
 
-      // 7-day free trial, card up front — create-checkout owns prices and trial.
+      // 7-day free trial (or an access code's days), card up front — create-checkout owns prices and trial.
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { plan: planId === 'yearly' ? 'annual' : 'monthly' },
+        body: checkoutBody(planId === 'yearly' ? 'annual' : 'monthly', accessCode),
         headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
       });
 
-      if (error) throw error;
+      if (error || data?.error) {
+        const refused = await checkoutErrorMessage(error, data);
+        if (refused && accessCode.trim()) {
+          setCodeError(refused);
+          return;
+        }
+        throw error ?? new Error(data.error);
+      }
 
       if (data.url) {
         // Redirect to Stripe Checkout
@@ -219,6 +231,14 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
           ))}
         </div>
 
+        <div className="flex justify-center mb-8">
+          <AccessCodeField
+            value={accessCode}
+            onChange={(v) => { setAccessCode(v); setCodeError(null); }}
+            error={codeError}
+            disabled={isLoading}
+          />
+        </div>
 
         {/* Back Button */}
         <div className="text-center">

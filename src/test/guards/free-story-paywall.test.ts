@@ -5,6 +5,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import * as rules from "../../../supabase/functions/_shared/freeStoryRules";
+import * as accessRules from "../../../supabase/functions/_shared/accessCodeRules";
 import {
   FREE_LIMIT_CODE,
   FREE_STORY_LIMIT,
@@ -86,9 +87,17 @@ describe("checkout: 7-day trial at $9.99 / $79", () => {
   });
 
   it("is a Stripe subscription trial of 7 days with the card taken up front", () => {
-    expect(src).toMatch(/const TRIAL_DAYS = 7;/);
-    expect(TRIAL_DAYS).toBe(7);
-    expect(src).toMatch(/subscription_data:\s*\{[\s\S]*trial_period_days: TRIAL_DAYS/);
+    // The trial length now comes from decideTrial (default 7, or an access code's days).
+    expect(accessRules.DEFAULT_TRIAL_DAYS).toBe(7);
+    expect(TRIAL_DAYS).toBe(accessRules.DEFAULT_TRIAL_DAYS);
+    expect(accessRules.decideTrial({ rawCode: undefined, row: null, hadSubscription: false })).toEqual({
+      ok: true,
+      trialDays: 7,
+      code: null,
+    });
+    expect(src).toMatch(/decideTrial\(\{ rawCode: accessCode, row: codeRow, hadSubscription \}\)/);
+    expect(src).toMatch(/subscription_data:\s*\{[\s\S]*trial_period_days: trial\.trialDays/);
+    expect(src).not.toMatch(/trial_period_days:\s*\d/);
     expect(src).toMatch(/payment_method_collection: "always"/);
   });
 

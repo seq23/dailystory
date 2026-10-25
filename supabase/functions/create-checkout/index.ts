@@ -6,6 +6,7 @@ import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { createImportFailureResponse } from "../_shared/resilientLoader.ts";
 import { createPaymentServiceClient } from "../_shared/paymentSupabase.ts";
 import Stripe from "../_shared/stripe.ts";
+import { ACCESS_CODE_UNAVAILABLE, ACCESS_CODE_MESSAGES, decideTrial, normalizeAccessCode } from "../_shared/accessCodeRules.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +20,13 @@ const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
+
+// A refused access code is a plain message the parent can act on, never a 500.
+const codeRefusal = (code: string, message: string, status: number) =>
+  new Response(JSON.stringify({ error: message, code }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status,
+  });
 
 serve(async (req) => {
   // Handle CORS and health checks
@@ -76,8 +84,9 @@ serve(async (req) => {
     }
 
     // Parse the request body to get the selected plan
-    const { plan } = await req.json();
-    logStep("Plan selected", { plan });
+    const { plan, accessCode } = await req.json();
+    const normalizedCode = normalizeAccessCode(accessCode);
+    logStep("Plan selected", { plan, accessCode: normalizedCode || null });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     
@@ -91,7 +100,7 @@ serve(async (req) => {
       logStep("Creating new customer");
     }
 
-    // Pricing: $9.99/month or $79/year, 7-day free trial, card taken up front.
+    // Pricing: $9.99/month or $79/year, 7-day free trial (or an access code's days), card taken up front.
     // STRIPE_PRICE_MONTHLY / STRIPE_PRICE_ANNUAL (Stripe price ids) win when set;
     // otherwise the amounts below are sent inline. Pinned by
     // src/test/guards/free-story-paywall.test.ts.
@@ -116,7 +125,33 @@ serve(async (req) => {
       const previous = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 1 });
       hadSubscription = previous.data.length > 0;
     }
-    const TRIAL_DAYS = 7;
+
+    // Access code (optional): validated here on the server against public.access_codes.
+    // No code = the default 7-day trial. Rules in _shared/accessCodeRules.ts.
+    let codeRow = null;
+    if (normalizedCode) {
+      const { data: found, error: lookupError } = await supabaseService
+        .from("access_codes")
+        .select("id, code, trial_days, label, active")
+        .eq("code", normalizedCode)
+        .eq("active", true)
+        .maybeSingle();
+      if (lookupError) {
+        logStep("Access code lookup failed", { message: lookupError.message });
+        return codeRefusal(ACCESS_CODE_UNAVAILABLE, ACCESS_CODE_MESSAGES[ACCESS_CODE_UNAVAILABLE], 503);
+      }
+      codeRow = found;
+    }
+    const trial = decideTrial({ rawCode: accessCode, row: codeRow, hadSubscription });
+    if (!trial.ok) {
+      logStep("Access code refused", { accessCode: normalizedCode, reason: trial.error });
+      return codeRefusal(trial.error, trial.message, 400);
+    }
+    const sessionMetadata: Record<string, string> = {
+      user_id: user.id,
+      plan,
+      ...(trial.code ? { access_code: trial.code.code } : {}),
+    };
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const session = await stripe.checkout.sessions.create({
@@ -126,18 +161,29 @@ serve(async (req) => {
       mode: "subscription",
       payment_method_collection: "always",
       subscription_data: {
-        ...(hadSubscription ? {} : { trial_period_days: TRIAL_DAYS }),
-        metadata: { user_id: user.id, plan },
+        ...(trial.trialDays > 0 ? { trial_period_days: trial.trialDays } : {}),
+        metadata: sessionMetadata,
       },
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cancel`,
-      metadata: {
-        user_id: user.id,
-        plan: plan,
-      },
+      metadata: sessionMetadata,
     });
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    logStep("Checkout session created", { sessionId: session.id, trialDays: trial.trialDays, accessCode: trial.code?.code ?? null });
+
+    // Record the code use so signups per code can be counted (access_code_signups view).
+    // The webhook marks the row completed. A failed insert never blocks the parent's checkout.
+    if (trial.code) {
+      const { error: redemptionError } = await supabaseService.from("access_code_redemptions").insert({
+        access_code_id: trial.code.id,
+        code: trial.code.code,
+        trial_days: trial.trialDays,
+        user_id: user.id,
+        stripe_session_id: session.id,
+        stripe_customer_id: customerId ?? null,
+      });
+      if (redemptionError) logStep("ERROR recording access code use", { message: redemptionError.message });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

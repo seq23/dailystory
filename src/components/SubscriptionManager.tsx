@@ -9,6 +9,8 @@ import { RefreshCw, CreditCard, Calendar, CheckCircle, XCircle, Tag } from "luci
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { AccessCodeField } from "@/components/AccessCodeField";
+import { checkoutBody, checkoutErrorMessage } from "@/lib/accessCode";
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -23,6 +25,8 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [discountCode, setDiscountCode] = useState("");
+  const [accessCode, setAccessCode] = useState("");
+  const [accessCodeError, setAccessCodeError] = useState<string | null>(null);
   const [redeeming, setRedeeming] = useState(false);
 
   const checkSubscription = async () => {
@@ -104,15 +108,21 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
         return;
       }
 
+      setAccessCodeError(null);
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { plan },
+        body: checkoutBody(plan, accessCode),
         headers: {
           Authorization: `Bearer ${session.session.access_token}`,
         },
       });
 
       if (error) {
-        if (error.message?.includes("STRIPE_SECRET_KEY")) {
+        const refused = await checkoutErrorMessage(error, data);
+        if (refused && accessCode.trim()) {
+          setAccessCodeError(refused);
+        } else if (refused) {
+          toast.error(refused);
+        } else if (error.message?.includes("STRIPE_SECRET_KEY")) {
           toast.error("Payment system not configured yet");
         } else {
           toast.error(error.message || "Failed to start checkout");
@@ -252,6 +262,13 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
               </div>
             ) : (
               <div className="space-y-4">
+              <AccessCodeField
+                label="Have a free-trial code?"
+                value={accessCode}
+                onChange={(v) => { setAccessCode(v); setAccessCodeError(null); }}
+                error={accessCodeError}
+                disabled={loading}
+              />
               <div className="grid md:grid-cols-2 gap-4">
                 <Card className="border-primary/20">
                   <CardContent className="p-4">
@@ -272,7 +289,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold">Annual Plan</h3>
-                      <Badge className="bg-green-500">Save $20</Badge>
+                      <Badge className="bg-green-500">Save 34%</Badge>
                     </div>
                     <div className="text-2xl font-bold text-primary mb-4">
                       $79<span className="text-sm text-gray-500">/year</span>
