@@ -13,6 +13,7 @@ import type { UserInfo } from "@/types";
 import { DebugLogger } from "@/services/DebugLogger";
 import { PasswordReset } from "@/components/PasswordReset";
 import { AgeGate } from "@/components/AgeGate";
+import { checkoutBody, checkoutErrorMessage } from "@/lib/accessCode";
 
 interface LoginScreenProps {
   userInfo?: UserInfo | null;
@@ -54,11 +55,15 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
     isValid: boolean;
     message: string;
     isValidating: boolean;
+    kind?: "discount" | "trial";
   }>({
     isValid: false,
     message: "",
     isValidating: false
   });
+  // A valid discount code means a free account; a valid access code (kind "trial")
+  // only lengthens the card-up-front trial, so the parent stays on the pay path.
+  const isFreeDiscount = discountValidation.isValid && discountValidation.kind !== "trial";
 
   // Validate Step 1 (details) before advancing to Step 2
   const validateStep1 = (): boolean => {
@@ -80,7 +85,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         ...prev, 
         isValid: false, 
         message: "", 
-        isValidating: false 
+        isValidating: false, kind: undefined 
       }));
       return;
     }
@@ -92,20 +97,29 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         body: { code: code.trim() }
       });
 
-      if (error) throw error;
+      if (error) {
+        const refused = await checkoutErrorMessage(error, data);
+        if (refused) {
+          setDiscountValidation(prev => ({ ...prev, isValid: false, message: refused, isValidating: false, kind: undefined }));
+          return;
+        }
+        throw error;
+      }
 
       setDiscountValidation(prev => ({
         ...prev,
         isValid: data.valid,
         message: data.message,
-        isValidating: false
+        isValidating: false,
+        kind: data.kind === "trial" ? "trial" : "discount"
       }));
     } catch (error: any) {
       setDiscountValidation(prev => ({
         ...prev,
         isValid: false,
         message: "Error validating code",
-        isValidating: false
+        isValidating: false,
+        kind: undefined
       }));
     }
   };
@@ -156,7 +170,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       // freshly authenticated session. The client cannot persist the pending
       // code (RLS blocks it), so the edge function activates it via service role.
       let discountActivated = false;
-      if (discountValidation.isValid && signUpData.discountCode.trim() && authData.user) {
+      if (isFreeDiscount && signUpData.discountCode.trim() && authData.user) {
         const code = signUpData.discountCode.trim().toUpperCase();
         try {
           const { data: session } = await supabase.auth.getSession();
@@ -181,7 +195,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
 
       toast.success(discountActivated
         ? "Your free premium access is now active. Enjoy!"
-        : discountValidation.isValid 
+        : isFreeDiscount 
           ? "Account created! Your discount code will be activated when you first log in."
           : t("loginScreen.form.success.accountCreated"));
       return true;
@@ -245,14 +259,20 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       }
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { plan: signUpData.selectedPlan },
+        body: checkoutBody(
+          signUpData.selectedPlan,
+          discountValidation.kind === "trial" ? signUpData.discountCode : undefined,
+        ),
         headers: {
           Authorization: `Bearer ${session.session.access_token}`,
         },
       });
 
       if (error) {
-        if (error.message?.includes("STRIPE_SECRET_KEY")) {
+        const refused = await checkoutErrorMessage(error, data);
+        if (refused) {
+          toast.error(refused);
+        } else if (error.message?.includes("STRIPE_SECRET_KEY")) {
           toast.error(t("loginScreen.form.errors.paymentNotConfigured"));
         } else {
           toast.error(error.message || t("loginScreen.form.errors.paymentFailed"));
@@ -514,7 +534,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   </div>
 
                   {/* Discount Success Message */}
-                  {discountValidation.isValid && (
+                  {isFreeDiscount && (
                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                       <h3 className="font-semibold text-green-800 mb-1">🎉 No Payment Required!</h3>
                       <p className="text-sm text-green-700">
@@ -524,7 +544,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   )}
 
                   {/* Pricing Plans — Hidden when valid discount code */}
-                  {!discountValidation.isValid && (
+                  {!isFreeDiscount && (
                     <div className="grid md:grid-cols-2 gap-4">
                       <Card
                         className={`cursor-pointer transition-all ${
@@ -610,7 +630,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   )}
 
                   {/* Single context-aware primary CTA */}
-                  {discountValidation.isValid ? (
+                  {isFreeDiscount ? (
                     <Button
                       type="button"
                       className="w-full"

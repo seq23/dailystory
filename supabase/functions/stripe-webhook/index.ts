@@ -117,6 +117,21 @@ serve(async (req) => {
       }
 
       log("Subscriber activated successfully", { userId, plan, subscriptionEnd: subscriptionEnd.toISOString() });
+
+      // Access-code trials: mark the code use as a completed signup (see access_code_signups).
+      if (session.metadata?.access_code) {
+        const { error: redemptionError } = await supabaseAdmin
+          .from("access_code_redemptions")
+          .update({
+            status: "completed",
+            completed_at: new Date().toISOString(),
+            stripe_customer_id: stripeCustomerId ?? null,
+            stripe_subscription_id: session.subscription ?? null,
+          })
+          .eq("stripe_session_id", session.id);
+        if (redemptionError) log("ERROR: Failed to mark access code signup", { error: redemptionError.message });
+        else log("Access code signup recorded", { accessCode: session.metadata.access_code });
+      }
     }
 
     // Handle subscription cancelled/deleted

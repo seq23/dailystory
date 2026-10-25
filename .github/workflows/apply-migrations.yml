@@ -1,0 +1,68 @@
+name: Apply DB migrations
+
+# Edge functions ship from deploy-functions.yml on every push to main, but nothing
+# applied SQL migrations committed to the repo (Lovable applies only the ones it
+# writes itself). This applies each migration file ADDED by a push to main, through
+# the Supabase Management API, with the repo's SUPABASE_ACCESS_TOKEN.
+# Migrations applied here must be idempotent (create ... if not exists,
+# on conflict do nothing) so a re-run or a Lovable re-apply is harmless.
+# Pinned by src/test/guards/access-code-trial.test.ts.
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'supabase/migrations/**' ]
+  workflow_dispatch:
+    inputs:
+      file:
+        description: 'Migration file to (re)apply, e.g. supabase/migrations/20261025120000_access_codes.sql'
+        required: true
+
+concurrency:
+  group: apply-migrations
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply added migrations
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          INPUT_FILE: ${{ github.event.inputs.file }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_PROJECT_ID" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN / SUPABASE_PROJECT_ID secrets are missing"; exit 1
+          fi
+          if [ -n "${INPUT_FILE:-}" ]; then
+            files="$INPUT_FILE"
+          else
+            files=$(git diff --name-only --diff-filter=A "$BEFORE" "$AFTER" -- 'supabase/migrations/*.sql' | sort)
+          fi
+          if [ -z "$files" ]; then
+            echo "No migration files added in this push: nothing to apply."
+            exit 0
+          fi
+          for f in $files; do
+            [ -f "$f" ] || { echo "::error::$f not found"; exit 1; }
+            echo "Applying $f"
+            body=$(jq -Rs '{query: .}' < "$f")
+            code=$(curl -sS -o /tmp/resp.json -w '%{http_code}' -X POST \
+              "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_ID/database/query" \
+              -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data "$body")
+            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+              echo "::error::$f failed with HTTP $code: $(head -c 500 /tmp/resp.json)"; exit 1
+            fi
+            echo "Applied $f (HTTP $code)"
+          done
