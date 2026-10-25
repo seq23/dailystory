@@ -101,8 +101,8 @@ const subprocessors: Subprocessor[] = [
 
 const Subprocessors = () => {
   useEffect(() => {
-    const title = "Subprocessors | Spry VSL LLC";
-    const desc = "List of subprocessors used by Time-2-Read to provide its services.";
+    const title = "Subprocessors We Use to Run Time2Read | Spry VSL LLC";
+    const desc = "The subprocessors Spry VSL LLC uses to run Time2Read: each company, the service it provides for us, and the kind of data it handles.";
     document.title = title;
 
     let meta = document.querySelector('meta[name="description"]');

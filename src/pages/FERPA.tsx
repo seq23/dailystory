@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function FERPA() {
   useEffect(() => {
-    document.title = "FERPA Compliance - Time2Read";
+    document.title = "FERPA Compliance for Schools and Teachers | Time2Read";
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {

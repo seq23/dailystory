@@ -8,7 +8,7 @@ import { SITE_URL } from "@/config/site";
 
 export default function GDPR() {
   useEffect(() => {
-    document.title = "GDPR Rights - Time2Read";
+    document.title = "Your GDPR Data Protection Rights | Time2Read";
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {

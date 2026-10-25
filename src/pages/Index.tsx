@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { AuthWrapper } from "@/components/AuthWrapper";
 import { ReadingCollectionsLinks } from "@/components/ReadingCollectionsLinks";
 import { HomeIntro } from "@/components/HomeIntro";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
+import { ORGANIZATION, WEBSITE } from "@/seo/schema";
 
 import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,18 +42,8 @@ const Index = () => {
     script.text = JSON.stringify({
       "@context": "https://schema.org",
       "@graph": [
-        {
-          "@type": "Organization",
-          name: "Time2Read",
-          url,
-          logo: "https://storage.googleapis.com/gpt-engineer-file-uploads/dVPwHmSLKid0GwEoF6n0FXqKtvA2/uploads/1757466743772-time2read-logo.png"
-        },
-        {
-          "@type": "WebSite",
-          name: "Time2Read",
-          url,
-          description: desc
-        }
+        ORGANIZATION,
+        { ...WEBSITE, description: desc }
       ]
     });
     document.head.appendChild(script);
@@ -77,6 +69,7 @@ const Index = () => {
       <AuthWrapper />
       <HomeIntro />
       <ReadingCollectionsLinks />
+      <SiteFooterNav />
     </div>
   );
 };

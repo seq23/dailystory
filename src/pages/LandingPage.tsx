@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -309,6 +310,7 @@ const LandingPage = ({ slug }: { slug: string }) => {
           </div>
         </nav>
       </footer>
+      <SiteFooterNav />
     </main>
   );
 };

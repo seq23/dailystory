@@ -117,7 +117,7 @@ const firstGuides: LandingPageConfig[] = [
     kind: "guide",
     title: "My Child Hates Reading: What Actually Helps | Time2Read",
     metaDescription:
-      "If your child hates reading, start by finding out why. Practical steps from literacy research: follow their interests, set a real goal, pick the right difficulty, and when to ask for help.",
+      "If your child hates reading, find out why first. Practical steps from literacy research: follow their interests, pick the right level, know when to ask.",
     h1: "My Child Hates Reading: What Actually Helps",
     navLabel: "My child hates reading",
     heroSubtitle:
@@ -203,7 +203,7 @@ const firstGuides: LandingPageConfig[] = [
     kind: "guide",
     title: "Stories Where Your Child Is the Main Character | Time2Read",
     metaDescription:
-      "Personalized stories where your child is the hero: their name, their interests, their reading level, a new illustrated story every time, with read-aloud and phonics help. Ages 3 to 15.",
+      "Personalized stories where your child is the hero: their name, interests and reading level, a new illustrated story every time, with read-aloud help.",
     h1: "Stories Where Your Child Is the Main Character",
     navLabel: "Stories starring your child",
     heroSubtitle:
