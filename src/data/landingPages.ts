@@ -1,6 +1,7 @@
 import heroDiverse from "@/assets/hero-image-diverse-clear.jpg";
 import homeReading from "@/assets/carousel-2-home-reading.jpg";
 import outdoorReading from "@/assets/carousel-3-outdoor-reading.jpg";
+import { guidePages } from "./guidePages";
 import libraryReading from "@/assets/carousel-4-library-reading.jpg";
 
 export interface LandingFaq {
@@ -25,7 +26,23 @@ export interface LandingPageConfig {
   intro: string[];
   benefits: LandingBenefit[];
   faqs: LandingFaq[];
-  variant?: "sightWords";
+  variant?: "sightWords" | "readingLog";
+  /** "guide" pages carry article sections and cited sources; collections do not. */
+  kind?: "collection" | "guide";
+  sections?: LandingSection[];
+  /** Every figure on a guide page comes from one of these, fetched when written. */
+  sources?: LandingSource[];
+}
+
+export interface LandingSection {
+  heading: string;
+  paragraphs?: string[];
+  bullets?: string[];
+}
+
+export interface LandingSource {
+  label: string;
+  url: string;
 }
 
 const ageFaq = (age: string): LandingFaq => ({
@@ -38,7 +55,7 @@ const freeFaq: LandingFaq = {
   a: "Yes. You can start reading instantly as a guest — no credit card required. Premium unlocks unlimited stories, saving to your library, and longer adventures.",
 };
 
-export const landingPages: LandingPageConfig[] = [
+const collectionPages: LandingPageConfig[] = [
   {
     slug: "free-books-for-kindergarteners",
     title: "Free Books for Kindergarteners | Time2Read",
@@ -324,6 +341,8 @@ export const landingPages: LandingPageConfig[] = [
     faqs: [ageFaq("bedtime story time"), freeFaq, { q: "Can I get a new story every night?", a: "Yes — stories are generated on demand, so bedtime never gets repetitive." }],
   },
 ];
+
+export const landingPages: LandingPageConfig[] = [...guidePages, ...collectionPages];
 
 export const landingPagesBySlug: Record<string, LandingPageConfig> = Object.fromEntries(
   landingPages.map((p) => [p.slug, p]),

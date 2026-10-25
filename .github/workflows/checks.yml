@@ -18,3 +18,6 @@ jobs:
       - run: npm ci --no-audit --no-fund
       # Fast merge gate: the edge-function import guard and the public-URL guard.
       - run: npx vitest run src/test/guards
+      # Build-time prerender: real HTML for every public page (crawlers see text).
+      - run: npm run build
+      - run: node scripts/check-prerender.mjs

@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { hmrGroupingPlugin } from "./vite-plugins/hmrGroupingPlugin";
+import { prerenderPlugin } from "./vite-plugins/prerenderPlugin";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -19,6 +20,8 @@ export default defineConfig(({ mode }) => ({
       debounceMs: 200,
       showDetails: false
     }),
+    // Real HTML for public pages at build time (survives Lovable's publish build).
+    mode !== 'development' && !process.env.VITEST && prerenderPlugin(),
   ].filter(Boolean),
   resolve: {
     alias: {

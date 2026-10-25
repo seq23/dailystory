@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AuthWrapper } from "@/components/AuthWrapper";
 import { ReadingCollectionsLinks } from "@/components/ReadingCollectionsLinks";
+import { HomeIntro } from "@/components/HomeIntro";
 
 import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,6 +75,7 @@ const Index = () => {
   return (
     <div className="homepage">
       <AuthWrapper />
+      <HomeIntro />
       <ReadingCollectionsLinks />
     </div>
   );

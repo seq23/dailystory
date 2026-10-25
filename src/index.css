@@ -1314,3 +1314,11 @@ All colors MUST be HSL.
     transition: var(--transition-smooth);
   }
 }
+
+/* Printable reading log (/20-minute-reading-log): print only the log sheet. */
+@media print {
+  body:has(.printable-log) * { visibility: hidden; }
+  body:has(.printable-log) .printable-log,
+  body:has(.printable-log) .printable-log * { visibility: visible; }
+  body:has(.printable-log) .printable-log { position: absolute; inset: 0 auto auto 0; width: 100%; border: 0; }
+}
