@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { ChildForm } from "./ChildForm";
 
@@ -13,13 +14,16 @@ export function openChildDialog(childId?: string) {
 
 /** The one add/edit-child form, as a focused dialog (never a long dashboard). */
 export function ChildDialog() {
-  const { children } = useChildProfiles();
+  const { children, deleteChild } = useChildProfiles();
   const [open, setOpen] = useState(false);
   const [childId, setChildId] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [removing, setRemoving] = useState(false);
 
   useEffect(() => {
     const onOpen = (e: Event) => {
       setChildId((e as CustomEvent<{ childId: string | null }>).detail?.childId ?? null);
+      setConfirmRemove(false);
       setOpen(true);
     };
     window.addEventListener(OPEN_CHILD_DIALOG, onOpen);
@@ -46,6 +50,47 @@ export function ChildDialog() {
             toast.success(child ? `Saved: ${saved.display_name}'s profile` : `Saved: ${saved.display_name}. ${saved.display_name} is reading now.`);
           }}
         />
+        {/* Remove a child: only when editing, only with another child left, and only after a second tap. */}
+        {child && children.length > 1 && (
+          <div className="border-t pt-4" data-testid="child-remove-area">
+            {!confirmRemove ? (
+              <Button type="button" variant="ghost" className="min-h-11 text-destructive" onClick={() => setConfirmRemove(true)} data-testid="child-remove">
+                Remove {child.display_name}
+              </Button>
+            ) : (
+              <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+                <p className="text-sm">Remove {child.display_name}? Their profile goes away. You can add them again any time.</p>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="min-h-11"
+                    disabled={removing}
+                    data-testid="child-remove-confirm"
+                    onClick={async () => {
+                      setRemoving(true);
+                      try {
+                        const name = child.display_name;
+                        await deleteChild(child.id);
+                        setOpen(false);
+                        toast.success(`Removed: ${name}`);
+                      } catch (e: any) {
+                        toast.error(e?.message ?? "We couldn't remove that child just now. Please try again.");
+                      } finally {
+                        setRemoving(false);
+                      }
+                    }}
+                  >
+                    Yes, remove
+                  </Button>
+                  <Button type="button" variant="outline" className="min-h-11" onClick={() => setConfirmRemove(false)}>
+                    Keep {child.display_name}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

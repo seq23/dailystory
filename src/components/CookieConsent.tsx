@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -25,6 +25,28 @@ export const CookieConsent = () => {
     analytics: false,
     marketing: false,
   });
+
+  // While the banner is up it must never sit on top of the page's last buttons (on a
+  // phone it covered "Create Your First Story", so a tap did nothing). Its height goes
+  // into --cookie-banner-h; body and the app's scroll area pad by it (index.css,
+  // AuthenticatedApp <main>), so everything can scroll above it.
+  const bannerRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const root = document.documentElement;
+    const el = bannerRef.current;
+    if (!isVisible || !el) {
+      root.style.removeProperty("--cookie-banner-h");
+      return;
+    }
+    const apply = () => root.style.setProperty("--cookie-banner-h", `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    apply();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(apply) : null;
+    ro?.observe(el);
+    return () => {
+      ro?.disconnect();
+      root.style.removeProperty("--cookie-banner-h");
+    };
+  }, [isVisible, showCustomize]);
 
   useEffect(() => {
     // Check if user has already made a choice
@@ -66,7 +88,7 @@ export const CookieConsent = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] p-2 sm:p-4 animate-in slide-in-from-bottom duration-300" data-testid="cookie-banner">
+    <div ref={bannerRef} className="fixed bottom-0 left-0 right-0 z-[100] p-2 sm:p-4 animate-in slide-in-from-bottom duration-300" data-testid="cookie-banner">
       <Card className="max-w-4xl mx-auto bg-background/95 backdrop-blur-md border-border shadow-2xl">
         <CardContent className={showCustomize ? "p-4 sm:p-6" : "p-3 sm:p-4"}>
           {!showCustomize ? (

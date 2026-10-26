@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { premiumUntilLabel } from "@/lib/accessCode";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -48,6 +49,10 @@ interface PremiumSidebarProps {
   isPremium: boolean;
   /** Real Premium (paid or code), for the badge. isPremium only gates the menu. */
   hasPremium?: boolean;
+  /** When Premium ends (paid period or code), for the quiet "Premium active until …" line. */
+  premiumUntil?: string | null;
+  /** The plan has loaded without error. The Premium upsell shows only when we KNOW the account is free. */
+  planKnown?: boolean;
 }
 
 // Two calm groups: what the child uses, and what the grown-up manages.
@@ -66,7 +71,7 @@ const sidebarItems = [
   { title: "Help", url: "home", icon: Home, description: "How it works and questions", premium: false, group: "grownup" },
 ];
 
-export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium, hasPremium }: PremiumSidebarProps) => {
+export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium, hasPremium, premiumUntil, planKnown = false }: PremiumSidebarProps) => {
   const { activeChild } = useChildProfiles();
   const { state, toggleSidebar, openMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
@@ -437,9 +442,15 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
           )}
 
 
-        {/* Premium Features Highlight */}
-        {!effectiveCollapsed && !hasPremium && (
-          <div className="mt-auto p-3">
+        {/* Premium: a quiet line for a Premium account; the upsell only for a free one
+            (never while the plan is loading or could not be read). */}
+        {!effectiveCollapsed && hasPremium && (
+          <p className="mt-auto px-4 py-3 text-xs text-muted-foreground" data-testid="sidebar-premium-until">
+            {premiumUntilLabel(premiumUntil) ?? "Premium is on"}
+          </p>
+        )}
+        {!effectiveCollapsed && planKnown && !hasPremium && (
+          <div className="mt-auto p-3" data-testid="sidebar-premium-upsell">
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Crown className="w-4 h-4 text-yellow-600" />

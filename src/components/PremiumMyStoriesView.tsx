@@ -31,13 +31,15 @@ interface PremiumMyStoriesViewProps {
   isPremium: boolean;
   isSubscriptionActive: boolean;
   onSessionEnded: (stats: SessionStats) => void;
+  /** Open the new-story form on arrival (e.g. "Create Your First Story" on the Story Library page). */
+  openNewStoryOnArrival?: boolean;
 }
 
-export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive, onSessionEnded }: PremiumMyStoriesViewProps) => {
+export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive, onSessionEnded, openNewStoryOnArrival = false }: PremiumMyStoriesViewProps) => {
   const [currentView, setCurrentView] = useState<'library' | 'reading'>('library');
   const [currentStory, setCurrentStory] = useState<Story | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(openNewStoryOnArrival);
   const [specialRequest, setSpecialRequest] = useState("");
   const { activeChild } = useChildProfiles();
 
@@ -48,6 +50,9 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive
         ...userInfo,
         name: activeChild.display_name || userInfo.name,
         grade: normalizeGrade(activeChild.grade_level) || userInfo.grade,
+        // Both grade fields follow the child: difficultyManager and the voice picker read
+        // gradeLevel, which otherwise stayed on the account default ("K").
+        gradeLevel: normalizeGrade(activeChild.grade_level) || userInfo.gradeLevel,
         expertGradeLevel: expertGradeForGrade(activeChild.grade_level) ?? userInfo.expertGradeLevel,
         storyLanguagePreference: userInfo.storyLanguagePreference, // Use parent's language preference
         avatar: (activeChild.avatar as any) || userInfo.avatar,
@@ -164,10 +169,7 @@ useEffect(() => {
           <div className="p-2 bg-gradient-primary/20 rounded-full">
             <BookOpen className="w-6 h-6 text-primary" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">My Stories</h1>
-            <p className="text-muted-foreground">Your personal story collection</p>
-          </div>
+          <h1 className="text-2xl font-bold text-foreground">My Stories</h1>
         </div>
         
         <div className="flex items-center gap-2 -ml-11 sm:-ml-2">

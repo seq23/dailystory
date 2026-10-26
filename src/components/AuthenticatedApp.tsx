@@ -100,8 +100,12 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [isPremium, setIsPremium] = useState(true); // All authenticated users are premium
   
   // Authoritative billing status from database for gating premium features
-  const { isPremium: isSubscriptionActive, loading: subLoading, premiumUntil } = useCachedSubscriptionStatus(user.id);
+  const { isPremium: isSubscriptionActive, loading: subLoading, premiumUntil, error: subError } = useCachedSubscriptionStatus(user.id);
   const showDevTools = devToolsAllowed(user);
+  // "Create Your First Story" on the Story Library page goes to My Stories with the
+  // new-story form already open (before, it only switched pages and looked dead).
+  const [openNewStoryOnArrival, setOpenNewStoryOnArrival] = useState(false);
+  useEffect(() => { if (currentView !== "stories") setOpenNewStoryOnArrival(false); }, [currentView]);
   // The grown-up owns the account; children are the readers.
   const { children: childProfiles, loading: childrenLoading, error: childrenError } = useChildProfiles();
   const parentName = (user.user_metadata?.display_name as string | undefined) ?? null;
@@ -480,9 +484,13 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         reading_preferences: { difficultyLevel: 'beginner' } // Include default difficulty
       };
 
+      // Upsert, never a bare insert: the profile load can run twice at sign-in, and the
+      // child switcher may already have written this row (active_child_id). A second
+      // insert hit user_preferences_user_id_key (23505) and logged "Error creating
+      // default premium preferences". ignoreDuplicates keeps an existing row untouched.
       const { error } = await supabase
         .from('user_preferences')
-        .insert([payload]);
+        .upsert([payload], { onConflict: 'user_id', ignoreDuplicates: true });
 
       if (error) {
         DebugLogger.error('auth', 'Error creating default premium preferences', error);
@@ -788,6 +796,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             userInfo={userInfo}
             isPremium={effectiveSubscriptionActive}
             hasPremium={!subLoading && !!isSubscriptionActive}
+            premiumUntil={premiumUntil}
+            planKnown={!subLoading && !subError}
           />
           
           <div className="flex-1 flex flex-col min-w-0 min-h-0">
@@ -804,7 +814,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               onGrownUpSettings={() => { setIsEditingProfile(false); setCurrentView("account"); }}
             />
 
-            <main className="flex-1 min-h-0 overflow-y-auto overscroll-auto mobile-scroll h-[calc(100dvh-var(--app-header-height))] p-2 sm:p-4 md:p-6">
+            <main className="flex-1 min-h-0 overflow-y-auto overscroll-auto mobile-scroll h-[calc(100dvh-var(--app-header-height))] p-2 sm:p-4 md:p-6" style={{ paddingBottom: "calc(var(--cookie-banner-h, 0px) + 1rem)" }}>
               {/* Developer widget: dev builds and admins only, never families */}
               {showDevTools && <DismissibleSystemStatus />}
 
@@ -862,6 +872,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             isPremium={isPremium}
             isSubscriptionActive={effectiveSubscriptionActive}
             onSessionEnded={handleSessionEnded}
+            openNewStoryOnArrival={openNewStoryOnArrival}
           />
                   )}
 
@@ -934,7 +945,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                              setCurrentView("reading");
                            }
                          }}
-                         onStartNewStory={() => setCurrentView("stories")}
+                         onStartNewStory={() => { setOpenNewStoryOnArrival(true); setCurrentView("stories"); }}
                          currentStory={currentStory}
                          pageImages={currentPageImages}
                        />
