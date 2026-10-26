@@ -7,19 +7,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { User, Save, CheckCircle, BookOpen, Sparkles } from "lucide-react";
-import { ChildrenList } from "@/components/children/ChildrenList";
+import { User, Save, CheckCircle, BookOpen } from "lucide-react";
 import { useLanguageSync } from "@/hooks/useLanguageSync";
-import type { UserInfo, Grade, LanguageCode, DifficultyLevel } from "@/types";
-import { DifficultyManager } from "@/services/difficultyManager";
+import type { UserInfo, Grade, LanguageCode } from "@/types";
 
 interface PremiumProfileEditorProps {
   userInfo: UserInfo;
   onSave: (updatedUserInfo: UserInfo) => void;
   onCancel: () => void;
+  /** Opens the one place children are listed and edited (My account). */
+  onManageChildren: () => void;
 }
 
-export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProfileEditorProps) => {
+export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChildren }: PremiumProfileEditorProps) => {
   const { toast } = useToast();
   // Ensure default values to prevent persistence issues
   const [formData, setFormData] = useState<UserInfo>({
@@ -33,9 +33,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
   const [isSaving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const { syncLanguagesForPremium } = useLanguageSync();
-  
-  // Get difficulty suggestions
-  const difficultyProfile = DifficultyManager.suggestDifficulty(formData);
+
 
   useEffect(() => {
     const changed = JSON.stringify(formData) !== JSON.stringify(userInfo);
@@ -148,55 +146,12 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="difficulty">Reading Ability</Label>
-              <Select
-                value={formData.difficultyLevel || difficultyProfile.suggestedDifficulty}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, difficultyLevel: value as DifficultyLevel }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select reading ability" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">Pre‑Reader</span>
-                      <span className="text-xs text-muted-foreground">Just starting out with sounds and letters</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="easy">
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">Beginner</span>
-                      <span className="text-xs text-muted-foreground">Simple words and short sentences</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="medium">
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">Developing</span>
-                      <span className="text-xs text-muted-foreground">Growing vocabulary with more detail</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="hard">
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">Independent</span>
-                      <span className="text-xs text-muted-foreground">Reads comfortably with rich language</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="expert">
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">Advanced</span>
-                      <span className="text-xs text-muted-foreground">Sophisticated stories and complex ideas</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              {!formData.difficultyLevel && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Sparkles className="w-4 h-4" />
-                  Suggested: {difficultyProfile.suggestedDifficulty.charAt(0).toUpperCase() + difficultyProfile.suggestedDifficulty.slice(1)} 
-                  (Confidence: {Math.round(difficultyProfile.confidence * 100)}%)
-                </div>
-              )}
+            <div className="space-y-1 rounded-md border border-muted/60 p-3">
+              <p className="font-medium">Reading level: set for each child</p>
+              <p className="text-sm text-muted-foreground">
+                Each child starts at their school grade. While reading, tap "Make it easier" or "Make it harder" on the story page;
+                the next page changes and that child's level is remembered for their next story.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -219,8 +174,12 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
 
         {/* Children: name, grade, age and picture live on each child */}
         <Card className="border-muted/60 lg:col-span-2">
-          <CardContent className="pt-6">
-            <ChildrenList />
+          <CardContent className="pt-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-medium">Your children</p>
+              <p className="text-sm text-muted-foreground">Names, grades and pictures are kept on each child.</p>
+            </div>
+            <Button variant="outline" onClick={onManageChildren}>Manage your children →</Button>
           </CardContent>
         </Card>
       </div>

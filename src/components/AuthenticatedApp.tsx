@@ -856,6 +856,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                     await handleProfileUpdate(updatedUserInfo);
                   }}
                   onCancel={() => setIsEditingProfile(false)}
+                  onManageChildren={() => { setIsEditingProfile(false); setCurrentView("account"); }}
                 />
               ) : (
                 <>
@@ -964,6 +965,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                         await handleProfileUpdate(updatedUserInfo);
                       }}
                       onCancel={() => setCurrentView("stories")}
+                      onManageChildren={() => setCurrentView("account")}
                     />
                   )}
 

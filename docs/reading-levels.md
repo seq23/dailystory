@@ -93,7 +93,7 @@ The guard checks that each line below still holds the named symbol.
 | src/services/LiveGenerationService.ts:53 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
 | supabase/functions/generate-adaptive-story/streamlined-handler.ts:149 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
 | supabase/functions/template-service/index.ts:164 | DifficultyLevelMapper.fromBackendValue(difficulty) | `difficulty` read backend-first |
-| src/components/ParentDashboard.tsx:889 | readingLevelForDifficulty(guardrails.minDifficulty) | stored minimum → picker value |
+| src/components/ParentDashboard.tsx:890 | readingLevelForDifficulty(guardrails.minDifficulty) | stored minimum → picker value |
 | src/components/CleanStoryDisplay.tsx:1297 | minimumGradeForGuardrail | lock clamp compares grades |
 | src/lib/readingLevelMap.ts:100 | normalizeStoredLevel | any stored column value → grade |
 <!-- converters:end -->

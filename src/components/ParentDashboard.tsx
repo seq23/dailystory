@@ -204,7 +204,8 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
       </CardHeader>
       
       <CardContent>
-        <div className="w-full flex justify-end mb-4">
+        <div className="w-full flex flex-wrap items-center justify-end gap-2 mb-4">
+          <Label className="text-sm text-muted-foreground">Show section (tap to choose):</Label>
           <Select value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Select section" />
@@ -213,7 +214,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
               <SelectItem value="overview">Overview</SelectItem>
               <SelectItem value="progress">Progress</SelectItem>
               <SelectItem value="goals">Goals</SelectItem>
-              <SelectItem value="insights">Insights</SelectItem>
+              <SelectItem value="insights">Reports</SelectItem>
               <SelectItem value="controls">Controls</SelectItem>
               <SelectItem value="quizzes">Quizzes</SelectItem>
             </SelectContent>

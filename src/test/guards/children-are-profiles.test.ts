@@ -49,9 +49,14 @@ describe("children are listed, added and switched in obvious places", () => {
     const list = read("src/components/children/ChildrenList.tsx");
     expect(list).toMatch(/Add another child/);
     expect(list).toMatch(/✓ Reading now/);
-    for (const f of ["src/components/MyAccount.tsx", "src/components/ParentDashboard.tsx", "src/components/PremiumProfileEditor.tsx"]) {
+    for (const f of ["src/components/MyAccount.tsx", "src/components/ParentDashboard.tsx"]) {
       expect(read(f), f).toMatch(/<ChildrenList \/>/);
     }
+    // 26 Oct 2026: Reading settings repeated all 29 children. It links to the list instead.
+    const editor = read("src/components/PremiumProfileEditor.tsx");
+    expect(editor).not.toMatch(/<ChildrenList/);
+    expect(editor).toMatch(/onClick=\{onManageChildren\}>Manage your children →/);
+    expect(read("src/components/AuthenticatedApp.tsx")).toMatch(/onManageChildren=\{\(\) => setCurrentView\("account"\)\}/);
   });
   it("the story form says who the story is for", () => {
     const d = read("src/components/SpecialRequestDialog.tsx");
