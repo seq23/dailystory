@@ -48,11 +48,11 @@
   "loginScreen": {
     "title": {
       "upgrade": "Upgrade to Premium",
-      "join": "Join Time2Read Premium"
+      "join": "Join Time-2-Read"
     },
     "subtitle": {
       "upgrade": "Continue with your saved information and unlock unlimited stories",
-      "join": "Unlock unlimited personalized stories and advanced features"
+      "join": "Make your grown-up account, then add each child who reads."
     },
     "trialInfoSaved": "✨ Your information from the free trial has been pre-filled below!",
     "tabs": {

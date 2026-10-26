@@ -7,11 +7,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { LeanCache } from '@/utils/LeanCache';
 import { LeanErrorService } from '@/utils/LeanErrorService';
+import { SUBSCRIPTION_CHANGED_EVENT } from '@/lib/accessCode';
 
 interface SubscriptionStatus {
   isSubscribed: boolean;
   isPremium: boolean;
   subscriptionEnd?: string;
+  /** When Premium ends: the code/override end date, else the paid period end. */
+  premiumUntil?: string | null;
   loading: boolean;
   error?: string;
 }
@@ -22,6 +25,16 @@ export function useCachedSubscriptionStatus(userId?: string) {
     isPremium: false,
     loading: true
   });
+  // A redeemed code or a finished checkout fires SUBSCRIPTION_CHANGED_EVENT: re-read at once.
+  const [reloadKey, setReloadKey] = useState(0);
+  useEffect(() => {
+    const onChange = () => {
+      LeanCache.clear();
+      setReloadKey((k) => k + 1);
+    };
+    window.addEventListener(SUBSCRIPTION_CHANGED_EVENT, onChange);
+    return () => window.removeEventListener(SUBSCRIPTION_CHANGED_EVENT, onChange);
+  }, []);
 
   useEffect(() => {
     if (!userId) {
@@ -46,6 +59,7 @@ export function useCachedSubscriptionStatus(userId?: string) {
         
         // Use deduplicated cache to prevent multiple simultaneous requests
         const result = await LeanCache.dedupe(cacheKey, async () => {
+          const now = new Date();
           const { data, error } = await supabase
             .from('subscribers')
             .select('subscribed, subscription_end, override_premium, override_end, subscription_tier')
@@ -54,16 +68,19 @@ export function useCachedSubscriptionStatus(userId?: string) {
 
           if (error) throw error;
 
-          const now = new Date();
-          const isSubscribed = data?.subscribed || false;
-          const isPremium = isSubscribed || 
-            (data?.override_premium && 
-             (!data?.override_end || new Date(data.override_end) > now));
+          // A paid period that has ended is not Premium (an expired code mirrored by
+          // sync-subscription-status left subscribed=true with a past end date).
+          const isSubscribed = !!data?.subscribed &&
+            (!data?.subscription_end || new Date(data.subscription_end) > now);
+          const overrideActive = !!data?.override_premium &&
+            (!data?.override_end || new Date(data.override_end) > now);
+          const isPremium = isSubscribed || overrideActive;
 
           return {
             isSubscribed,
             isPremium,
             subscriptionEnd: data?.subscription_end,
+            premiumUntil: overrideActive ? (data?.override_end ?? null) : (isSubscribed ? data?.subscription_end ?? null : null),
             subscriptionTier: data?.subscription_tier
           };
         });
@@ -100,7 +117,7 @@ export function useCachedSubscriptionStatus(userId?: string) {
       cancelled = true;
       retryTimeouts.forEach(clearTimeout);
     };
-  }, [userId]);
+  }, [userId, reloadKey]);
 
   return status;
 }

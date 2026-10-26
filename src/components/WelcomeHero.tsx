@@ -120,10 +120,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                     variant="outline" 
                     size="sm"
                     onClick={onSignIn}
-                    className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs font-semibold shadow-lg px-2 py-1 h-8"
+                    className="bg-white text-purple-900 border-white hover:bg-white/90 text-sm font-semibold shadow-lg px-3 h-10"
                   >
-                    <Crown className="w-3 h-3 text-yellow-300 flex-shrink-0" />
-                    <span className="ml-1">Sign In</span>
+                    <span>Sign in</span>
                   </MobileOptimizedButton>
                 </MobileTooltip>
               )}
@@ -162,10 +161,10 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                       <div>
                         <div className="flex items-center gap-2 p-2">
                           <Crown className="w-4 h-4 text-purple-600" />
-                          <span className="font-medium">Premium Users Only</span>
+                          <span className="font-medium">Your grown-up account</span>
                         </div>
                         <p className="text-xs text-gray-600 mt-1">
-                          Access unlimited stories, AI images, advanced features & more!
+                          Sign in, or make an account and add your children.
                         </p>
                       </div>
                     }
@@ -175,11 +174,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                       variant="outline" 
                       size="sm"
                       onClick={onSignIn}
-                      className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs sm:text-sm font-semibold shadow-lg px-2 sm:px-3 py-1 sm:py-2"
+                      className="bg-white text-purple-900 border-white hover:bg-white/90 text-sm font-semibold shadow-lg px-4 h-10"
                     >
-                      <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
-                      <span className="hidden sm:inline">{t("welcomeHero.signIn")} - Premium</span>
-                      <span className="sm:hidden">Sign In</span>
+                      <span>Sign in or create account</span>
                     </MobileOptimizedButton>
                   </MobileTooltip>
                 )}

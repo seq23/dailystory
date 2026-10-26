@@ -38,6 +38,7 @@ import { AudioFallbackNotification } from "./components/AudioFallbackNotificatio
 import { VoiceCommands } from "./components/VoiceCommands";
 import { VoiceHoverController } from "./components/VoiceHoverController";
 import { UnifiedDebugMonitor } from "./components/UnifiedDebugMonitor";
+import { devToolsAllowed } from "./lib/devTools";
 import { CookieConsent } from "./components/CookieConsent";
 // Import debug services conditionally for performance
 import { DebugLogger } from "./services/DebugLogger";
@@ -129,7 +130,8 @@ const App = () => {
             <VoiceHUD />
             <FloatingFeedback />
             <AudioFallbackNotification />
-            <UnifiedDebugMonitor />
+            {/* Developer panel: dev builds and admins only (src/lib/devTools.ts) */}
+            {devToolsAllowed() && <UnifiedDebugMonitor />}
             <CookieConsent />
           </BrowserRouter>
         </MobileWrapper>

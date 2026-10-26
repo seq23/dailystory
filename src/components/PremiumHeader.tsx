@@ -33,6 +33,10 @@ interface PremiumHeaderProps {
   userInfo: UserInfo;
   isPremium: boolean;
   devTestMode: boolean;
+  /** Developer menu items (Test Mode): dev builds and admins only. */
+  showDevTools?: boolean;
+  /** Real paid/code Premium, for the crown. */
+  hasPremium?: boolean;
   subscriptionTier?: string;
   onSignOut: () => void;
   onToggleDevMode: () => void;
@@ -43,6 +47,8 @@ export const PremiumHeader = ({
   userInfo, 
   isPremium, 
   devTestMode, 
+  showDevTools = false,
+  hasPremium,
   subscriptionTier, 
   onSignOut, 
   onToggleDevMode,
@@ -168,7 +174,7 @@ export const PremiumHeader = ({
               </button>
               <div className="flex items-center gap-2">
                 <p className="hidden sm:block text-sm text-gray-600">Welcome back!</p>
-                {devTestMode && (
+                {showDevTools && devTestMode && (
                   <Badge variant="outline" className="border-orange-500 text-orange-600 text-xs">
                     <Bug className="w-3 h-3 mr-1" />
                     Test Mode
@@ -223,7 +229,7 @@ export const PremiumHeader = ({
                           {getDisplayAge} years old • {getDisplayGrade === 'PreK' ? 'Pre-K' : `Grade ${getDisplayGrade}`}
                         </p>
                       </div>
-                      {isPremium && (
+                      {(hasPremium ?? isPremium) && (
                         <div className="flex items-center text-primary" aria-label="Premium">
                           <Crown className="w-4 h-4" />
                         </div>
@@ -238,10 +244,12 @@ export const PremiumHeader = ({
                     Edit Profile
                   </DropdownMenuItem>
                   
-                  <DropdownMenuItem onClick={onToggleDevMode} className="cursor-pointer">
-                    <Bug className="w-4 h-4 mr-2" />
-                    {devTestMode ? 'Disable' : 'Enable'} Test Mode
-                  </DropdownMenuItem>
+                  {showDevTools && (
+                    <DropdownMenuItem onClick={onToggleDevMode} className="cursor-pointer">
+                      <Bug className="w-4 h-4 mr-2" />
+                      {devTestMode ? 'Disable' : 'Enable'} Test Mode
+                    </DropdownMenuItem>
+                  )}
                   
                   <DropdownMenuSeparator />
                   
