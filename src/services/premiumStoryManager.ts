@@ -75,11 +75,33 @@ export class PremiumStoryManager {
       image_cache_metadata: imageCacheMetadata || {}
     };
 
-    const { data, error } = await supabase
-      .from('saved_stories')
-      .insert(savedStoryData)
-      .select()
-      .single();
+    // Re-saving a story opened from the library updates that entry instead of adding a copy
+    // (26 Oct 2026: a re-opened story saved again as a second entry, retitled with the parent's
+    // name). The library entry keeps its own title.
+    const storyKey = (story as any)?.id ? String((story as any).id) : null;
+    const existing = storyKey
+      ? (await supabase
+          .from('saved_stories')
+          .select('id, title')
+          .eq('user_id', user.id)
+          .eq('content->>id', storyKey)
+          .limit(1)
+          .maybeSingle()).data
+      : null;
+
+    const { data, error } = existing
+      ? await supabase
+          .from('saved_stories')
+          .update({ ...savedStoryData, title: existing.title, updated_at: new Date().toISOString() } as any)
+          .eq('id', existing.id)
+          .eq('user_id', user.id)
+          .select()
+          .single()
+      : await supabase
+          .from('saved_stories')
+          .insert(savedStoryData)
+          .select()
+          .single();
 
     if (error) {
       DebugLogger.error('auth', `Error saving story: ${error.message}`);
