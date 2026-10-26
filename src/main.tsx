@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
@@ -20,8 +20,20 @@ if (typeof window !== 'undefined') {
   (window as any).SmartElevenLabsTTS = SmartElevenLabsTTS;
 }
 
+// Tells the start-up watchdog in index.html that the app is running, so it never shows
+// "Something stopped Time-2-Read from loading" over a working page.
+function Booted() {
+  useEffect(() => {
+    (window as any).__t2rBooted = true;
+    const banner = document.getElementById('t2r-boot-banner');
+    if (banner) banner.hidden = true;
+  }, []);
+  return null;
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
+    <Booted />
     <App />
   </StrictMode>
 );
