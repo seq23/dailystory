@@ -18,7 +18,7 @@ export function difficultyToEducationalLevel(difficulty: DifficultyLevel): Educa
     case 'easy': return 1;      // 1st-2nd Grade (Ages 5-7) 
     case 'medium': return 2;    // 2nd-3rd Grade (Ages 7-9)
     case 'hard': return 3;      // 4th Grade+ (Ages 9-11)
-    case 'expert': return 4;    // Advanced/Adaptive (Ages 11+)
+    case 'expert': return 4;    // Advanced/Adaptive (Ages 11-15)
     default: return 0;
   }
 }
@@ -66,7 +66,7 @@ export const EDUCATIONAL_STANDARDS = {
     complianceThreshold: 80 // 80% compliance required
   },
   4: { 
-    ages: '11+', 
+    ages: '11-15', 
     description: 'Advanced/Adaptive Learning',
     targetWords: 'unlimited',
     complianceThreshold: 0 // No vocabulary restrictions - adaptive system

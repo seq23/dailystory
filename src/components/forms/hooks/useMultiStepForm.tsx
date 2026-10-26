@@ -4,6 +4,7 @@ import { DebugLogger } from "@/services/DebugLogger";
 import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 import type { UserInfo, DifficultyLevel } from "@/types";
+import { expertGradeForGrade, isValidAge, readingLevelForAge, readingLevelForGrade } from "@/lib/grades";
 
 export const useMultiStepForm = () => {
   const { t, i18n } = useTranslation();
@@ -34,7 +35,17 @@ export const useMultiStepForm = () => {
 
   // Update form data
   const updateFormData = useCallback((updates: Partial<UserInfo>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
+    setFormData(prev => {
+      const next = { ...prev, ...updates };
+      // Picking a grade sets the matching starting reading level (the parent can
+      // still change it on step 2). Grades 6–10 start at their own expert level.
+      if (updates.grade && !updates.difficultyLevel) {
+        const level = readingLevelForGrade(updates.grade);
+        if (level) next.difficultyLevel = level as UserInfo["difficultyLevel"];
+        next.expertGradeLevel = expertGradeForGrade(updates.grade) ?? undefined;
+      }
+      return next;
+    });
     // Clear validation errors when data is updated
     setShowValidationErrors(false);
     setValidationErrors([]);
@@ -48,7 +59,7 @@ export const useMultiStepForm = () => {
       errors.push(t("userInfoForm.validation.nameRequired", "Please enter a name"));
     }
     
-    if (!formData.age || formData.age < 3 || formData.age > 11) {
+    if (!isValidAge(formData.age)) {
       errors.push(t("userInfoForm.validation.ageRequired", "Please select an age"));
     }
     
@@ -122,12 +133,9 @@ export const useMultiStepForm = () => {
     }
 
     // Determine difficulty level - KEEP frontend difficulty in userInfo
-    const frontendDifficultyLevel = formData.difficultyLevel || 
-      (formData.age <= 5 ? "pre-reader" : 
-       formData.age <= 8 ? "beginner" : 
-       formData.age <= 11 ? "developing" : 
-       formData.age <= 13 ? "independent" : "advanced");
-    
+    const frontendDifficultyLevel = formData.difficultyLevel ||
+      readingLevelForGrade(formData.grade) || readingLevelForAge(formData.age);
+
     // For analytics/logging only, derive backend difficulty
     const backendDifficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficultyLevel);
     
@@ -139,7 +147,12 @@ export const useMultiStepForm = () => {
     });
     
     // Return userInfo with FRONTEND difficulty value
-    return { ...formData, specialRequest: combinedSpecialRequest, difficultyLevel: frontendDifficultyLevel };
+    return {
+      ...formData,
+      specialRequest: combinedSpecialRequest,
+      difficultyLevel: frontendDifficultyLevel,
+      expertGradeLevel: formData.expertGradeLevel ?? expertGradeForGrade(formData.grade) ?? undefined,
+    };
   }, [formData, validateStep1, t]);
 
   return {

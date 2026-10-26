@@ -6,6 +6,7 @@
 
 import type { ProcessedVoice } from './types';
 import { DifficultyLevel } from './VoiceCatalogService';
+import { voiceTierForAge, type VoiceTier } from '@/lib/grades';
 
 export interface LevelConstraints {
   maxComplexity: number;        // 1-10 scale
@@ -254,8 +255,18 @@ export class LevelClampingService {
         allowedNarrativeStyles: ['descriptive', 'engaging', 'sophisticated', 'complex'],
         maxSentenceLength: 18,
         requiresSimplification: false
+      },
+      teen: { // 13-15 (8th-10th grade): early high-school texts, not clamped to middle
+        maxComplexity: 10,
+        maxVocabularyLevel: 10,
+        maxPsychologicalDepth: 5,
+        maxTwistCount: 4,
+        maxPerilLevel: 4,
+        allowedNarrativeStyles: ['descriptive', 'engaging', 'sophisticated', 'complex', 'layered', 'nuanced', 'mature'],
+        maxSentenceLength: 25,
+        requiresSimplification: false
       }
-    };
+    } satisfies Record<VoiceTier, LevelConstraints>;
 
     return ageConstraintMap[ageGroup] || ageConstraintMap.elementary;
   }
@@ -263,11 +274,8 @@ export class LevelClampingService {
   /**
    * Determine age group from age
    */
-  private static getAgeGroup(age: number): string {
-    if (age <= 4) return 'preschool';
-    if (age <= 7) return 'early_elementary';
-    if (age <= 10) return 'elementary';
-    return 'middle';
+  private static getAgeGroup(age: number): VoiceTier {
+    return voiceTierForAge(age); // one table: src/lib/grades.ts
   }
 
   /**

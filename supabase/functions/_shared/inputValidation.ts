@@ -4,6 +4,13 @@
  */
 
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { childFieldErrors } from "./grades.ts";
+
+// A child's age (3–15) and grade (Pre-K … 10th), from the one list in ./grades.ts.
+// deno-lint-ignore no-explicit-any
+const childFields = (u: any, ctx: z.RefinementCtx) => {
+  for (const message of childFieldErrors(u)) ctx.addIssue({ code: z.ZodIssueCode.custom, message });
+};
 
 // ── generate-adaptive-story request schema ──
 export const StoryRequestSchema = z.object({
@@ -18,7 +25,7 @@ export const StoryRequestSchema = z.object({
     favoriteColor: z.string().max(30).optional(),
     favoriteFood: z.string().max(50).optional(),
     hobbies: z.string().max(300).optional(),
-  }).passthrough().optional(),
+  }).passthrough().superRefine(childFields).optional(),
   config: z.object({
     userInfo: z.any().optional(),
     pageNumber: z.number().int().min(1).max(100).optional(),
@@ -44,7 +51,7 @@ export const TemplateRequestSchema = z.object({
     gradeLevel: z.string().max(20).optional(),
     interests: z.array(z.string().max(50)).max(20).optional(),
     nativeLanguage: z.string().max(10).optional(),
-  }).passthrough().optional(),
+  }).passthrough().superRefine(childFields).optional(),
   pageCount: z.number().int().min(1).max(100).optional(),
   templateIndex: z.number().int().min(0).max(1000).optional(),
   explore: z.boolean().optional(),

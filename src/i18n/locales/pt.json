@@ -693,7 +693,7 @@
       "easy": "Pré-K - 1ª série",
       "medium": "2ª - 3ª série",
       "hard": "4ª - 5ª série",
-      "expert": "6ª série+"
+      "expert": "6ª - 10ª série"
     },
     "header": "Aventura de Leitura",
     "endSession": "Terminar Sessão",
@@ -1027,7 +1027,7 @@
       "label": "Série Escolar", "placeholder": "Selecionar série",
       "preK": "Pré-escola", "k": "Jardim de Infância",
       "1st": "1ª Série", "2nd": "2ª Série", "3rd": "3ª Série",
-      "4th": "4ª Série", "5th": "5ª Série", "6thPlus": "6ª Série e acima"
+      "4th": "4ª Série", "5th": "5ª Série", "6th": "6ª Série", "7th": "7ª Série", "8th": "8ª Série", "9th": "9ª Série", "10th": "10ª Série"
     },
     "language": {
       "label": "Língua Materna", "placeholder": "Selecionar idioma",

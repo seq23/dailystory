@@ -3,6 +3,7 @@
 
 import { DebugLogger } from '@/services/DebugLogger';
 import type { ExpertGradeLevel, UserInfo } from '@/types';
+import { EXPERT_GRADES, expertGradeForGrade, isExpertGrade } from '@/lib/grades';
 
 interface ExpertProgressData {
   currentGradeLevel: ExpertGradeLevel;
@@ -19,6 +20,8 @@ export class ExpertDifficultyManager {
    * Get the appropriate expert grade level for a user
    */
   static async getExpertGradeLevel(userInfo: UserInfo): Promise<ExpertGradeLevel> {
+    // A child in 6th–10th grade (or with a chosen expert level) starts at that level.
+    const ownGrade = this.startingGradeFor(userInfo);
     // Check premium status server-side
     const { EnhancedSubscriptionManager } = await import('@/services/enhancedSubscriptionManager');
     const isPremium = await EnhancedSubscriptionManager.isPremiumUser().catch(() => false);
@@ -26,8 +29,14 @@ export class ExpertDifficultyManager {
     if (isPremium) {
       return this.getAdaptiveGradeLevel(userInfo);
     } else {
-      return this.getRandomGradeLevel();
+      return ownGrade ?? this.getRandomGradeLevel();
     }
+  }
+
+  /** The child's own expert level: the chosen one, else the one for their school grade. */
+  static startingGradeFor(userInfo: UserInfo): ExpertGradeLevel | null {
+    if (isExpertGrade(userInfo?.expertGradeLevel)) return userInfo.expertGradeLevel;
+    return expertGradeForGrade(userInfo?.grade ?? userInfo?.gradeLevel);
   }
 
   /**
@@ -38,9 +47,10 @@ export class ExpertDifficultyManager {
     let progressData = this.getStoredProgress(userId);
     
     if (!progressData) {
-      // Initialize new user at 6th grade
+      // Initialize a new user at their own grade's level (7th–10th are not clamped to 6th)
+      const start = this.startingGradeFor(userInfo) ?? EXPERT_GRADES[0];
       progressData = {
-        currentGradeLevel: '6th',
+        currentGradeLevel: start,
         sessionsCompleted: 0,
         successfulSessions: 0,
         comprehensionScores: [],
@@ -50,8 +60,8 @@ export class ExpertDifficultyManager {
       };
       this.storeProgress(userId, progressData);
       
-      DebugLogger.log('ui', `Starting ${userId} at 6th grade level`);
-      return '6th';
+      DebugLogger.log('ui', `Starting ${userId} at ${start} grade level`);
+      return start;
     }
     
     return progressData.currentGradeLevel;
@@ -71,22 +81,15 @@ export class ExpertDifficultyManager {
    * Get the next grade level in sequence
    */
   private static getNextGradeLevel(currentGrade: ExpertGradeLevel): ExpertGradeLevel | null {
-    const progression: Record<ExpertGradeLevel, ExpertGradeLevel | null> = {
-      '6th': '7th',
-      '7th': '8th', 
-      '8th': '9th',
-      '9th': '10th',
-      '10th': null // Already at highest level
-    };
-    
-    return progression[currentGrade];
+    const i = EXPERT_GRADES.indexOf(currentGrade);
+    return i >= 0 && i < EXPERT_GRADES.length - 1 ? EXPERT_GRADES[i + 1] : null; // null at 10th
   }
 
   /**
    * Free users get random grade level selection
    */
   static getRandomGradeLevel(): ExpertGradeLevel {
-    const gradeLevels: ExpertGradeLevel[] = ['6th', '7th', '8th', '9th', '10th'];
+    const gradeLevels: readonly ExpertGradeLevel[] = EXPERT_GRADES;
     const randomIndex = Math.floor(Math.random() * gradeLevels.length);
     const selectedGrade = gradeLevels[randomIndex];
     

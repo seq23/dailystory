@@ -16,6 +16,7 @@ import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import type { UserInfo } from "@/types";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 import { domBatchingService } from "@/utils/domBatchingService";
+import { voiceTierForAge } from '@/lib/grades';
 
 interface InteractiveWordProps {
   word: string;
@@ -180,7 +181,7 @@ export const InteractiveWord = ({
         const baseTooltipHeight = 120; // Base height for content
         const buttonHeight = 40; // Height per button row
         const extraButtons = (isESLLearner ? 1 : 0) + (isPremium ? 1 : 0) + 
-                            (isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 ? 1 : 0);
+                            (isNativeEnglishSpeaker && userInfo?.age && voiceTierForAge(userInfo.age) === 'teen' ? 1 : 0);
         const estimatedTooltipHeight = baseTooltipHeight + (Math.ceil(extraButtons / 2) * buttonHeight);
         const estimatedTooltipWidth = Math.min(340, viewportWidth * 0.9); // Responsive width
         const margin = 20; // Increased safety margin

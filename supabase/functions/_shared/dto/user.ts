@@ -4,6 +4,7 @@
  */
 
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { isValidGrade } from "../grades.ts";
 
 // User info validation schema
 export const UserInfoDto = z.object({
@@ -13,7 +14,7 @@ export const UserInfoDto = z.object({
   displayName: z.string().optional(),
   guardianEmail: z.string().email().nullable().optional(),
   readingLevel: z.number().optional(),
-  gradeLevel: z.string().optional(),
+  gradeLevel: z.string().optional().refine((g) => !g || isValidGrade(g), { message: "gradeLevel must be Pre-K, K or 1st–10th" }),
   interests: z.array(z.string()).optional(),
   nativeLanguage: z.string().optional(),
 });

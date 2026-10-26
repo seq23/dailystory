@@ -13,6 +13,10 @@ import { DebugLogger } from '@/services/DebugLogger';
 import { FormProgressIndicator } from "../shared/FormProgressIndicator";
 import { useLanguageSync } from "@/hooks/useLanguageSync";
 import type { UserInfo, Grade, LanguageCode } from "@/types";
+import { AGES, GRADES, gradeLabel } from "@/lib/grades";
+
+// i18n keys under formStep1.grade: preK, k, 1st … 10th
+const gradeI18nKey = (g: Grade) => (g === "PreK" ? "preK" : g === "K" ? "k" : gradeLabel(g, "short"));
 
 interface FormStep1EssentialProps {
   formData: UserInfo;
@@ -203,9 +207,9 @@ export const FormStep1Essential = ({
               <SelectValue placeholder={t("formStep1.age.placeholder", "Select age")} />
             </SelectTrigger>
             <SelectContent>
-              {[3, 4, 5, 6, 7, 8, 9, 10, 11].map((age) => (
+              {AGES.map((age) => (
                 <SelectItem key={age} value={age.toString()}>
-                  {age === 11 ? `11+ ${t("formStep1.age.years", "years old")}` : `${age} ${t("formStep1.age.years", "years old")}`}
+                  {`${age} ${t("formStep1.age.years", "years old")}`}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -225,14 +229,11 @@ export const FormStep1Essential = ({
               <SelectValue placeholder={t("formStep1.grade.placeholder", "Select grade")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="PreK">{t("formStep1.grade.preK", "Pre-K")}</SelectItem>
-              <SelectItem value="K">{t("formStep1.grade.k", "Kindergarten")}</SelectItem>
-              <SelectItem value="1">{t("formStep1.grade.1st", "1st Grade")}</SelectItem>
-              <SelectItem value="2">{t("formStep1.grade.2nd", "2nd Grade")}</SelectItem>
-              <SelectItem value="3">{t("formStep1.grade.3rd", "3rd Grade")}</SelectItem>
-              <SelectItem value="4">{t("formStep1.grade.4th", "4th Grade")}</SelectItem>
-              <SelectItem value="5">{t("formStep1.grade.5th", "5th Grade")}</SelectItem>
-              <SelectItem value="6">{t("formStep1.grade.6thPlus", "6th Grade & Up")}</SelectItem>
+              {GRADES.map((g) => (
+                <SelectItem key={g} value={g}>
+                  {t(`formStep1.grade.${gradeI18nKey(g)}`, gradeLabel(g))}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

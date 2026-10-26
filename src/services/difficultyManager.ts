@@ -3,6 +3,7 @@ import { DifficultyLevel, UserInfo } from '@/types';
 import { MobileSessionManager } from './mobileSessionManager';
 import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 import { DebugLogger } from '@/services/DebugLogger';
+import { GRADE_PROFILES, difficultyForAge, difficultyForGrade, gradeLabel, normalizeGrade, typicalGradeForAge } from '@/lib/grades';
 
 interface DifficultyProfile {
   suggestedDifficulty: DifficultyLevel;
@@ -22,45 +23,23 @@ export class DifficultyManager {
     let suggestedDifficulty: DifficultyLevel = 'easy'; // Default with author voice
     let confidence = 0.5;
 
-    // Age-based suggestions
+    // Age- and grade-based suggestions, from the one grade table (src/lib/grades.ts)
+    const order: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
     if (userInfo.age) {
       const age = parseInt(userInfo.age.toString());
-      
-      if (age <= 5) {
-        suggestedDifficulty = 'beginner';
-        confidence += 0.3;
-        reasoning.push(`Age ${age}: Pre-reader level recommended`);
-      } else if (age <= 7) {
-        suggestedDifficulty = 'easy';
-        confidence += 0.3;
-        reasoning.push(`Age ${age}: Early reader with author voice`);
-      } else if (age <= 9) {
-        suggestedDifficulty = 'medium';
-        confidence += 0.3;
-        reasoning.push(`Age ${age}: Developing reader with rich storytelling`);
-      } else if (age <= 12) {
-        suggestedDifficulty = 'hard';
-        confidence += 0.3;
-        reasoning.push(`Age ${age}: Advanced reader ready for complex narratives`);
-      } else {
-        suggestedDifficulty = 'expert';
-        confidence += 0.3;
-        reasoning.push(`Age ${age}: Expert level for sophisticated content`);
-      }
+      suggestedDifficulty = difficultyForAge(age);
+      confidence += 0.3;
+      reasoning.push(`Age ${age}: ${GRADE_PROFILES[typicalGradeForAge(age)].promptReadingLevel}`);
     }
 
-    // Grade level adjustments
-    if (userInfo.gradeLevel) {
-      const grade = parseInt(userInfo.gradeLevel.toString());
-      
-      if (grade >= 3 && suggestedDifficulty === 'beginner') {
-        suggestedDifficulty = 'easy';
+    // Grade level adjustments: a child's school grade can raise the suggestion
+    const grade = normalizeGrade(userInfo.grade ?? userInfo.gradeLevel);
+    if (grade) {
+      const byGrade = difficultyForGrade(grade);
+      if (byGrade && (!userInfo.age || order.indexOf(byGrade) > order.indexOf(suggestedDifficulty))) {
+        suggestedDifficulty = byGrade;
         confidence += 0.2;
-        reasoning.push(`Grade ${grade}: Upgraded to include author voice patterns`);
-      } else if (grade >= 5 && ['beginner', 'easy'].includes(suggestedDifficulty)) {
-        suggestedDifficulty = 'medium';
-        confidence += 0.2;
-        reasoning.push(`Grade ${grade}: Enhanced storytelling recommended`);
+        reasoning.push(`Grade ${gradeLabel(grade, 'short')}: ${GRADE_PROFILES[grade].promptReadingLevel}`);
       }
     }
 

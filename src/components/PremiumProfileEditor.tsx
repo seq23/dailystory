@@ -14,6 +14,7 @@ import { useLanguageSync } from "@/hooks/useLanguageSync";
 import type { UserInfo, Grade, LanguageCode, DifficultyLevel } from "@/types";
 import { DifficultyManager } from "@/services/difficultyManager";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
+import { AGES, GRADES, MAX_AGE, MIN_AGE, gradeLabel, isValidAge } from "@/lib/grades";
 
 interface PremiumProfileEditorProps {
   userInfo: UserInfo;
@@ -57,10 +58,10 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
         return;
       }
 
-      if (!formData.age || formData.age < 3 || formData.age > 11) {
+      if (!isValidAge(formData.age)) {
         toast({
           title: "Invalid Age",
-          description: "Please select a valid age between 3-11.",
+          description: `Please select a valid age between ${MIN_AGE} and ${MAX_AGE}.`,
           variant: "destructive",
         });
         return;
@@ -164,9 +165,9 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
                     <SelectValue placeholder="Select age" />
                   </SelectTrigger>
                   <SelectContent>
-                    {[3,4,5,6,7,8,9,10,11].map(age => (
+                    {AGES.map(age => (
                       <SelectItem key={age} value={age.toString()}>
-                        {age === 11 ? '11+' : `${age} years old`}
+                        {`${age} years old`}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -183,14 +184,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
                     <SelectValue placeholder="Select grade" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PreK">Pre-K</SelectItem>
-                    <SelectItem value="K">Kindergarten</SelectItem>
-                    <SelectItem value="1">Grade 1</SelectItem>
-                    <SelectItem value="2">Grade 2</SelectItem>
-                    <SelectItem value="3">Grade 3</SelectItem>
-                    <SelectItem value="4">Grade 4</SelectItem>
-                    <SelectItem value="5">Grade 5</SelectItem>
-                    <SelectItem value="6">Grade 6</SelectItem>
+                    {GRADES.map(g => <SelectItem key={g} value={g}>{gradeLabel(g)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

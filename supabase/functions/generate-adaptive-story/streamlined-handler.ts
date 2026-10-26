@@ -3,6 +3,7 @@
 // Uses shared validation utilities for consistent page generation
 
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, normalizeGradeFormat, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
+import { expertGradeForGrade } from "../_shared/grades.ts";
 import { 
   parseIntoPages as sharedParseIntoPages, 
   mapDifficultyToLevel,
@@ -847,13 +848,13 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   let maxAttempts: number;
   
   try {
-    isExpertLevel = gradeLevel >= 6 && gradeLevel <= 10;
+    isExpertLevel = expertGradeForGrade(gradeLevel) !== null; // 6th–10th, ../_shared/grades.ts
     modelProgression = getModelChainOptimized(isExpertLevel);
     systemSettings = getSystemSettings();
     maxAttempts = safePropertyAccess(systemSettings, 'maxAttempts', { expert: 6, regular: 3 })[isExpertLevel ? 'expert' : 'regular'];
   } catch (initError) {
     console.warn('⚠️ Model chain initialization failed, using defaults:', safeErrorMessage(initError));
-    isExpertLevel = gradeLevel >= 6 && gradeLevel <= 10;
+    isExpertLevel = expertGradeForGrade(gradeLevel) !== null; // 6th–10th, ../_shared/grades.ts
     modelProgression = [{ name: 'gpt-5-2025-08-07', description: 'Primary Model', paramName: 'max_completion_tokens', supportsTemperature: false }];
     systemSettings = { baseInstructions: '\n\nGenerate high-quality, age-appropriate story content.' };
     maxAttempts = isExpertLevel ? 6 : 3;

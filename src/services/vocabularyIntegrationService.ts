@@ -13,6 +13,7 @@ import {
   getVocabularySet,
   type GradeLevel
 } from '@/constants/gradeBased';
+import { normalizeExpertGrade, vocabularyTierForGrade } from '@/lib/grades';
 import type { DifficultyLevel, ExpertGradeLevel } from '@/types';
 
 export interface VocabularyComplianceConfig {
@@ -258,16 +259,11 @@ export class VocabularyIntegrationService {
    * Map difficulty to grade level
    */
   private static mapDifficultyToGradeLevel(difficulty: DifficultyLevel | ExpertGradeLevel): GradeLevel {
-    // Handle expert grade levels
-    if (typeof difficulty === 'string' && difficulty.includes('th')) {
-      const gradeNum = parseInt(difficulty.replace(/\D/g, ''));
-      if (gradeNum >= 6) return 4; // Map Grade 6+ to Level 4
-    }
-
-    // Handle grade6, grade7, etc.
-    if (typeof difficulty === 'string' && difficulty.startsWith('grade')) {
-      const gradeNum = parseInt(difficulty.replace('grade', ''));
-      if (gradeNum >= 6) return 4; // Map Grade 6+ to Level 4
+    // Expert grade levels ("6th"…"10th", "grade6"…"grade10") → that grade's vocabulary tier
+    const expert = typeof difficulty === 'string' ? normalizeExpertGrade(difficulty) : null;
+    if (expert) {
+      const tier = vocabularyTierForGrade(expert);
+      if (tier !== null) return tier as GradeLevel;
     }
 
     // Use existing mapping function for standard difficulties

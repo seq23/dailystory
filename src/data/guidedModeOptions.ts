@@ -1,3 +1,4 @@
+import { GRADES, GRADE_PROFILES } from "@/lib/grades";
 // Guided Mode preset options for young/ESL learners.
 // Chips populate `specialRequest` and `targetVocabulary` in the same free-text
 // format the story generator already expects — no backend changes required.
@@ -83,4 +84,5 @@ export const GUIDED_VOCAB_PACKS: VocabPack[] = [
 ];
 
 // Grades where Guided Mode is on by default.
-export const GUIDED_DEFAULT_GRADES = new Set(["PreK", "K", "1"]);
+// Derived from src/lib/grades.ts: the grades a 6-year-old or younger is usually in (Pre-K, K, 1st).
+export const GUIDED_DEFAULT_GRADES = new Set<string>(GRADES.filter((g) => GRADE_PROFILES[g].typicalAge <= 6));

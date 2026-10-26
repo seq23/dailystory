@@ -1,15 +1,16 @@
 import { useState, useCallback } from 'react';
 import type { UserInfo } from '@/types';
 import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
+import { EXPERT_GRADES, type ExpertGrade, expertGradeForGrade, isExpertGrade } from '@/lib/grades';
 
 export interface DifficultyManagementState {
   currentDifficulty: string;
   isChangingDifficulty: boolean;
   changeDirection: 'increase' | 'decrease' | 'badge' | undefined;
-  expertGradeLevel: "6th" | "7th" | "8th" | "9th" | "10th";
+  expertGradeLevel: ExpertGrade;
   lockDifficulty: boolean;
   minDifficulty: string;
-  minExpertGrade: "6th" | "7th" | "8th" | "9th" | "10th";
+  minExpertGrade: ExpertGrade;
   allowDecreaseBelowMin: boolean;
 }
 
@@ -17,10 +18,10 @@ export interface DifficultyManagementActions {
   setCurrentDifficulty: React.Dispatch<React.SetStateAction<string>>;
   setIsChangingDifficulty: React.Dispatch<React.SetStateAction<boolean>>;
   setChangeDirection: React.Dispatch<React.SetStateAction<'increase' | 'decrease' | 'badge' | undefined>>;
-  setExpertGradeLevel: React.Dispatch<React.SetStateAction<"6th" | "7th" | "8th" | "9th" | "10th">>;
+  setExpertGradeLevel: React.Dispatch<React.SetStateAction<ExpertGrade>>;
   setLockDifficulty: React.Dispatch<React.SetStateAction<boolean>>;
   setMinDifficulty: React.Dispatch<React.SetStateAction<string>>;
-  setMinExpertGrade: React.Dispatch<React.SetStateAction<"6th" | "7th" | "8th" | "9th" | "10th">>;
+  setMinExpertGrade: React.Dispatch<React.SetStateAction<ExpertGrade>>;
   setAllowDecreaseBelowMin: React.Dispatch<React.SetStateAction<boolean>>;
   resetDifficultyToInitial: () => void;
 }
@@ -32,13 +33,12 @@ interface UseDifficultyManagementProps {
 export const useDifficultyManagement = ({ userInfo }: UseDifficultyManagementProps) => {
   // ERROR-016 FIX: Defensive initialization with comprehensive validation
   const safeUserInfo = userInfo || ({} as UserInfo);
-  const validGradeLevels: ("6th" | "7th" | "8th" | "9th" | "10th")[] = ["6th", "7th", "8th", "9th", "10th"];
-
-  // Validate and default expert grade level
-  const safeExpertGradeLevel =
-    validGradeLevels.includes(safeUserInfo.expertGradeLevel as any)
-      ? (safeUserInfo.expertGradeLevel || "6th")
-      : "6th";
+  // Validate and default expert grade level: the stored one, else the child's own
+  // grade (7th–10th start at their grade, not clamped to 6th), else the first.
+  const safeExpertGradeLevel: ExpertGrade =
+    isExpertGrade(safeUserInfo.expertGradeLevel)
+      ? safeUserInfo.expertGradeLevel
+      : (expertGradeForGrade(safeUserInfo.grade ?? safeUserInfo.gradeLevel) ?? EXPERT_GRADES[0]);
   
   // Normalize difficulty for consistent UI initialization
   const normalizedBackend = DifficultyLevelMapper.normalizeLevel((safeUserInfo.difficultyLevel as any) || "easy");
@@ -47,10 +47,10 @@ export const useDifficultyManagement = ({ userInfo }: UseDifficultyManagementPro
   const [currentDifficulty, setCurrentDifficulty] = useState<string>(initialFrontend);
   const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
   const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge' | undefined>();
-  const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">(safeExpertGradeLevel);
+  const [expertGradeLevel, setExpertGradeLevel] = useState<ExpertGrade>(safeExpertGradeLevel);
   const [lockDifficulty, setLockDifficulty] = useState(false);
   const [minDifficulty, setMinDifficulty] = useState<string>('beginner');
-  const [minExpertGrade, setMinExpertGrade] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
+  const [minExpertGrade, setMinExpertGrade] = useState<ExpertGrade>(EXPERT_GRADES[0]);
   const [allowDecreaseBelowMin, setAllowDecreaseBelowMin] = useState(false);
 
   const resetDifficultyToInitial = useCallback(() => {

@@ -5,7 +5,8 @@ import type { UserInfo, DifficultyLevel } from "@/types";
 import { mapDifficultyToLevel, getExpectedPagesForService } from '@/utils/validationHelpers';
 
 // Type definitions that match the edge function types
-export type ExpertGradeLevel = '6th' | '7th' | '8th' | '9th' | '10th';
+import { expertGradeForGrade, type ExpertGrade } from '@/lib/grades';
+export type ExpertGradeLevel = ExpertGrade; // src/lib/grades.ts
 
 export interface StoryPromptConfig {
   difficulty: DifficultyLevel;
@@ -112,9 +113,5 @@ export function formatUserPrompt(template: string, userInfo: Record<string, any>
     .replace(/\{seed\}/g, userInfo.seed?.toString() || Math.floor(Math.random() * 1000).toString());
 }
 
-export const mapGradeToExpertLevel = (gradeLevel: number): ExpertGradeLevel | null => {
-  if (gradeLevel >= 6 && gradeLevel <= 10) {
-    return `${gradeLevel}th` as ExpertGradeLevel;
-  }
-  return null;
-};
+export const mapGradeToExpertLevel = (gradeLevel: number): ExpertGradeLevel | null =>
+  expertGradeForGrade(gradeLevel);

@@ -11,6 +11,7 @@ import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/ut
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
 import type { UserInfo, ExpertGradeLevel } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
+import { EXPERT_GRADES } from '@/lib/grades';
 
 interface ValidationTestResult {
   gradeLevel: ExpertGradeLevel;
@@ -30,7 +31,7 @@ export function ValidationTestRunner() {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const expertGrades: ExpertGradeLevel[] = ['6th', '7th', '8th', '9th', '10th'];
+  const expertGrades: readonly ExpertGradeLevel[] = EXPERT_GRADES;
 
   const createTestUser = (gradeLevel: ExpertGradeLevel): UserInfo => ({
     name: 'Test User',

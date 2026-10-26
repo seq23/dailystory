@@ -440,7 +440,7 @@
       "easy": "Pré-K - 1ère année",
       "medium": "2ème - 3ème année",
       "hard": "4ème - 5ème année",
-      "expert": "6ème année+"
+      "expert": "6ème - 10ème année"
     },
     "header": "Aventure de Lecture",
     "endSession": "Terminer la Session",
@@ -887,7 +887,7 @@
       "label": "Niveau Scolaire", "placeholder": "Sélectionner le niveau",
       "preK": "Pré-maternelle", "k": "Maternelle",
       "1st": "CP", "2nd": "CE1", "3rd": "CE2",
-      "4th": "CM1", "5th": "CM2", "6thPlus": "6ème et plus"
+      "4th": "CM1", "5th": "CM2", "6th": "6ème", "7th": "5ème", "8th": "4ème", "9th": "3ème", "10th": "Seconde"
     },
     "language": {
       "label": "Langue Maternelle", "placeholder": "Sélectionner la langue",
