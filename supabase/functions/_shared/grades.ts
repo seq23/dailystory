@@ -15,10 +15,22 @@ export const AGES: readonly number[] = Object.freeze(
   Array.from({ length: MAX_AGE - MIN_AGE + 1 }, (_, i) => MIN_AGE + i),
 );
 
-/** Frontend reading levels (the in-app difficulty names). */
-export type ReadingLevel = "pre-reader" | "beginner" | "developing" | "independent" | "advanced";
-/** Backend difficulty names used by the story prompts. */
-export type BackendDifficulty = "beginner" | "easy" | "medium" | "hard" | "expert";
+// ── Reading-level vocabularies ────────────────────────────────────────────────
+// Two five-word vocabularies name the same five bands, and they share one word:
+//   frontend ReadingLevel:   pre-reader  beginner  developing  independent  advanced
+//   backend  difficulty:     beginner    easy      medium      hard         expert
+// "beginner" is Pre-K/K on the backend but 1st–2nd on the frontend. Never guess which
+// one a value is: convert with frontendLevelToDifficulty() (a ReadingLevel from the UI
+// or a profile) or backendDifficultyOf() (a value a client already converted). The
+// full map, and where each value is stored: docs/reading-levels.md.
+// Guard: src/test/guards/reading-level-map.test.ts.
+
+/** Frontend reading levels (the in-app difficulty names), easiest first. */
+export const READING_LEVELS = ["pre-reader", "beginner", "developing", "independent", "advanced"] as const;
+export type ReadingLevel = typeof READING_LEVELS[number];
+/** Backend difficulty names used by the story prompts, easiest first. */
+export const BACKEND_DIFFICULTIES = ["beginner", "easy", "medium", "hard", "expert"] as const;
+export type BackendDifficulty = typeof BACKEND_DIFFICULTIES[number];
 /** Expert sub-levels (middle school / early high school texts). */
 export const EXPERT_GRADES = ["6th", "7th", "8th", "9th", "10th"] as const;
 export type ExpertGrade = typeof EXPERT_GRADES[number];
@@ -251,4 +263,69 @@ export function childFieldErrors(info: { age?: unknown; grade?: unknown; gradeLe
     }
   }
   return errors;
+}
+
+// ── Reading level ↔ backend difficulty ────────────────────────────────────────
+
+export function isReadingLevel(v: unknown): v is ReadingLevel {
+  return typeof v === "string" && (READING_LEVELS as readonly string[]).includes(v);
+}
+
+export function isBackendDifficulty(v: unknown): v is BackendDifficulty {
+  return typeof v === "string" && (BACKEND_DIFFICULTIES as readonly string[]).includes(v);
+}
+
+/** Reading level → backend difficulty, read off GRADE_PROFILES (same band, same index). */
+export const DIFFICULTY_FOR_READING_LEVEL: Readonly<Record<ReadingLevel, BackendDifficulty>> = Object.freeze(
+  Object.fromEntries(READING_LEVELS.map((l) => [l, GRADES.map((g) => GRADE_PROFILES[g]).find((p) => p.readingLevel === l)!.difficulty])) as Record<ReadingLevel, BackendDifficulty>,
+);
+export const READING_LEVEL_FOR_DIFFICULTY: Readonly<Record<BackendDifficulty, ReadingLevel>> = Object.freeze(
+  Object.fromEntries(READING_LEVELS.map((l) => [DIFFICULTY_FOR_READING_LEVEL[l], l])) as Record<BackendDifficulty, ReadingLevel>,
+);
+
+/**
+ * A value from the UI or a profile row (a frontend ReadingLevel) → backend difficulty.
+ * "beginner" here is the frontend Beginner (1st–2nd) → "easy". A value that is only a
+ * backend name ("easy", "expert") passes through. Anything else → null.
+ */
+export function frontendLevelToDifficulty(v: unknown): BackendDifficulty | null {
+  const s = typeof v === "string" ? v.trim().toLowerCase() : v;
+  if (isReadingLevel(s)) return DIFFICULTY_FOR_READING_LEVEL[s];
+  if (isBackendDifficulty(s)) return s;
+  return null;
+}
+
+/**
+ * A value a client already converted (an edge-function config.difficulty, a stored
+ * guardrail) → backend difficulty. "beginner" here stays "beginner" (Pre-K/K). A value
+ * that is only a frontend name ("pre-reader", "advanced") is converted. Else null.
+ */
+export function backendDifficultyOf(v: unknown): BackendDifficulty | null {
+  const s = typeof v === "string" ? v.trim().toLowerCase() : v;
+  if (isBackendDifficulty(s)) return s;
+  if (isReadingLevel(s)) return DIFFICULTY_FOR_READING_LEVEL[s];
+  return null;
+}
+
+export function readingLevelForDifficulty(v: unknown): ReadingLevel | null {
+  const d = backendDifficultyOf(v);
+  return d ? READING_LEVEL_FOR_DIFFICULTY[d] : null;
+}
+
+/** The easiest grade written at this backend difficulty ("medium" → "3"). */
+export function lowestGradeForDifficulty(d: BackendDifficulty): Grade {
+  return GRADES.find((g) => GRADE_PROFILES[g].difficulty === d)!;
+}
+
+/**
+ * A parent's "Minimum level" guardrail (stored as a backend difficulty plus an
+ * expert sub-level) → the lowest grade a story may be written at.
+ */
+export function minimumGradeForGuardrail(minDifficulty: unknown, minExpertGrade?: unknown): Grade {
+  const d = backendDifficultyOf(minDifficulty) ?? "beginner";
+  if (d === "expert") {
+    const eg = normalizeExpertGrade(minExpertGrade) ?? "6th";
+    return GRADES.find((g) => GRADE_PROFILES[g].expertGrade === eg)!;
+  }
+  return lowestGradeForDifficulty(d);
 }

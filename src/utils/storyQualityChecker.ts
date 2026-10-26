@@ -1,3 +1,4 @@
+import type { DifficultyLevel } from "@/types";
 // Story quality checker to ensure consistent quality standards
 // Grammar validation removed - now handled by edge functions using sophisticated validateAndEnhanceGrammar system
 
@@ -14,7 +15,7 @@ export class StoryQualityChecker {
   /**
    * Comprehensive quality check for story pages (grammar validation moved to edge functions)
    */
-  static checkStoryQuality(pages: string[], difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): {
+  static checkStoryQuality(pages: string[], difficulty: DifficultyLevel): {
     isValid: boolean;
     issues: QualityIssue[];
     score: number;
@@ -154,7 +155,7 @@ export class StoryQualityChecker {
   /**
    * Check if content is appropriate for the reading level
    */
-  private static checkReadabilityLevel(pages: string[], difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): QualityIssue[] {
+  private static checkReadabilityLevel(pages: string[], difficulty: DifficultyLevel): QualityIssue[] {
     const issues: QualityIssue[] = [];
     
     // Upper-end target word count ranges (what we aim for)

@@ -9,6 +9,7 @@ import { VoiceCatalogService, DifficultyLevel } from './VoiceCatalogService';
 import type { UserInfo } from '@/types';
 import { safeThemeJoin } from "@/lib/utils";
 import { DebugLogger } from '../DebugLogger';
+import { BACKEND_DIFFICULTIES } from "@/lib/grades";
 
 export class VoiceSelector {
   // Novelty scoring for variety
@@ -123,7 +124,7 @@ export class VoiceSelector {
     }
     
     // Limit to adjacent levels only for safety
-    const levelOrder: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+    const levelOrder: DifficultyLevel[] = [...BACKEND_DIFFICULTIES];
     const currentIndex = levelOrder.indexOf(originalDifficulty);
     const adjacentLevels = [
       levelOrder[currentIndex - 1],

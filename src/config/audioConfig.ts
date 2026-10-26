@@ -1,3 +1,5 @@
+import type { DifficultyLevel } from "@/types";
+import { BACKEND_DIFFICULTIES } from "@/lib/grades";
 // Enhanced Audio Configuration
 // Central configuration for all audio features and settings
 
@@ -13,7 +15,7 @@ export interface AudioSettings {
   
   // Word highlighting settings
   highlighting: {
-    enabledForLevels: ('beginner' | 'easy' | 'medium' | 'hard' | 'expert')[];
+    enabledForLevels: (DifficultyLevel)[];
     highlightDuration: number; // milliseconds per word
     highlightClass: string;
   };
@@ -64,7 +66,7 @@ export const defaultAudioConfig: AudioSettings = {
   },
   
   highlighting: {
-    enabledForLevels: ['beginner', 'easy', 'medium', 'hard', 'expert'], // All levels get highlighting
+    enabledForLevels: [...BACKEND_DIFFICULTIES], // All levels get highlighting
     highlightDuration: 500, // 500ms per word
     highlightClass: 'bg-yellow-200 animate-pulse',
   },

@@ -19,6 +19,7 @@ type QuizAttemptParams = {
   userInfo?: UserInfo;
   mode?: "offline" | "ai";
   details?: Record<string, any>;
+  storyTitle?: string;
 };
 
 type GameSessionParams = {
@@ -54,6 +55,21 @@ function setLocalArray<T>(key: string, value: T[]) {
   }
 }
 
+/**
+ * The child this result belongs to (user_preferences.active_child_id), so the parent
+ * dashboard's per-child Quizzes and Games tabs see it. Those tabs filter on
+ * child_profile_id; nothing set it, so a selected child always showed 0 quizzes.
+ */
+export async function activeChildProfileId(userId: string): Promise<string | null> {
+  try {
+    const { data } = await supabase.from("user_preferences").select("active_child_id").eq("user_id", userId).maybeSingle();
+    const id = (data as any)?.active_child_id;
+    return typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id) ? id : null;
+  } catch {
+    return null;
+  }
+}
+
 function hashStorySignature(input: string): string {
   // Lightweight djb2 string hash, stable across sessions
   let hash = 5381;
@@ -73,6 +89,7 @@ export async function saveQuizAttempt({
   userInfo,
   mode = "offline",
   details = {},
+  storyTitle,
 }: QuizAttemptParams): Promise<PersistResult> {
   DebugLogger.log('performance', 'Quiz save attempt start', { score, totalQuestions, language, mode });
 
@@ -83,7 +100,7 @@ export async function saveQuizAttempt({
   const payload = {
     user_id: userId ?? undefined,
     story_signature: signature,
-    story_title: null as string | null,
+    story_title: (storyTitle && storyTitle.trim()) || null,
     language,
     mode,
     score,
@@ -105,8 +122,10 @@ export async function saveQuizAttempt({
     return { persisted: true, method: "local" };
   }
 
+  const childProfileId = await activeChildProfileId(userId);
   const { error } = await supabase.from("quiz_attempts").insert({
     user_id: userId,
+    child_profile_id: childProfileId,
     story_signature: payload.story_signature,
     story_title: payload.story_title,
     language: payload.language,
@@ -168,8 +187,10 @@ export async function saveGameSession({
     return { persisted: true, method: "local" };
   }
 
+  const childProfileId = await activeChildProfileId(userId);
   const { error } = await supabase.from("game_sessions").insert({
     user_id: userId,
+    child_profile_id: childProfileId,
     story_title: payload.story_title,
     language: payload.language,
     game_type: payload.game_type,

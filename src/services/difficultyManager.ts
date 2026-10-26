@@ -4,6 +4,7 @@ import { MobileSessionManager } from './mobileSessionManager';
 import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 import { DebugLogger } from '@/services/DebugLogger';
 import { GRADE_PROFILES, difficultyForAge, difficultyForGrade, gradeLabel, normalizeGrade, typicalGradeForAge } from '@/lib/grades';
+import { BACKEND_DIFFICULTIES } from "@/lib/grades";
 
 interface DifficultyProfile {
   suggestedDifficulty: DifficultyLevel;
@@ -24,7 +25,7 @@ export class DifficultyManager {
     let confidence = 0.5;
 
     // Age- and grade-based suggestions, from the one grade table (src/lib/grades.ts)
-    const order: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+    const order: DifficultyLevel[] = [...BACKEND_DIFFICULTIES];
     if (userInfo.age) {
       const age = parseInt(userInfo.age.toString());
       suggestedDifficulty = difficultyForAge(age);

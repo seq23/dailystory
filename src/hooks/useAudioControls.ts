@@ -6,13 +6,14 @@ import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { DebugLogger } from '@/services/DebugLogger';
 import { generateSessionId } from '@/utils/sessionId';
 import type { UserInfo } from '@/types';
+import type { DifficultyLevel } from "@/types";
 
 interface AudioControlsOptions {
   text: string;
   userInfo: UserInfo;
   currentPage: number;
   contentHash?: string;
-  difficulty?: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+  difficulty?: DifficultyLevel;
   onWordHighlight?: (wordIndex: number) => void;
   onAudioStateChange?: (isPlaying: boolean) => void;
   isPremium?: boolean;

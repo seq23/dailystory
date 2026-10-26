@@ -17,11 +17,12 @@ import type { UserInfo } from "@/types";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 import { domBatchingService } from "@/utils/domBatchingService";
 import { voiceTierForAge } from '@/lib/grades';
+import type { DifficultyLevel } from "@/types";
 
 interface InteractiveWordProps {
   word: string;
   className?: string;
-  difficulty?: "beginner" | "easy" | "medium" | "hard" | "expert";
+  difficulty?: DifficultyLevel;
   userInfo?: UserInfo;
   isPremium?: boolean;
   sentenceContext?: string;

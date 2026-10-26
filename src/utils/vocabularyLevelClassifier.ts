@@ -1,3 +1,4 @@
+import type { DifficultyLevel } from "@/types";
 /**
  * Enhanced vocabulary level classifier for better reading level progression
  */
@@ -33,7 +34,7 @@ export class VocabularyLevelClassifier {
   /**
    * Determine if a word should be highlighted based on difficulty level
    */
-  static getWordDifficulty(word: string, userLevel: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): WordDifficultyLevel {
+  static getWordDifficulty(word: string, userLevel: DifficultyLevel): WordDifficultyLevel {
     const cleanWord = word.toLowerCase().replace(/[.,!?;:'"()]/g, '');
     
     // Determine word's inherent level
@@ -111,7 +112,7 @@ export class VocabularyLevelClassifier {
    * LEAN Progressive Thresholds - Interactive Word Rules Overhaul
    * Educational progression: More interaction for beginners, selective for advanced
    */
-  private static shouldHighlightWord(wordLevel: number, userLevel: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): boolean {
+  private static shouldHighlightWord(wordLevel: number, userLevel: DifficultyLevel): boolean {
     switch (userLevel) {
       case 'beginner':
         // 100% interactive - all words are learning opportunities
@@ -161,7 +162,7 @@ export class VocabularyLevelClassifier {
    * Get recommended vocabulary complexity for reading level
    * Enhanced for progressive difficulty stepping
    */
-  static getRecommendedComplexity(userLevel: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): {
+  static getRecommendedComplexity(userLevel: DifficultyLevel): {
     primary: number[];
     secondary: number[];
     avoid: number[];
@@ -216,7 +217,7 @@ export class VocabularyLevelClassifier {
    */
   static validateVocabularyDistribution(
     words: string[], 
-    userLevel: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'
+    userLevel: DifficultyLevel
   ): {
     isValid: boolean;
     issues: string[];

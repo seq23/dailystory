@@ -13,6 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { StorySessionCache } from "@/services/storySessionCache";
 import { useGameContext } from "@/components/GameContextProvider";
 import { DebugLogger } from "@/services/DebugLogger";
+import { loadLastReadStory } from "@/lib/lastReadStory";
+import { normalizeGrade, readingLevelForGrade, gradeLabel, isReadingLevel, type ReadingLevel } from "@/lib/grades";
+import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 
 interface ReadingStats {
   wordsRead: number;
@@ -145,8 +148,24 @@ const location = useLocation();
       setVoiceQuizVisible(true);
     }
   }, [sessionStats, userIsPremium]);
+  // Last fallback: the story the reading page recorded as it was read (src/lib/lastReadStory.ts).
+  const lastRead = loadLastReadStory();
+  if (!storyText && lastRead) storyText = lastRead.text;
+  if (sessionStats && !sessionStats.wordsRead && lastRead?.wordsRead) {
+    sessionStats = { ...sessionStats, wordsRead: lastRead.wordsRead, pagesRead: Math.max(sessionStats.pagesRead || 0, lastRead.pagesRead) };
+  }
+  // The level the child ended on, as a grade and a frontend reading level (@/lib/grades).
+  const endGrade = normalizeGrade(sessionStats?.readingGrade) ?? normalizeGrade(lastRead?.grade)
+    ?? normalizeGrade((userInfoFromState as any)?.readingGrade) ?? normalizeGrade(userInfoFromState?.grade);
+  const endLevel: ReadingLevel | null = (endGrade ? readingLevelForGrade(endGrade) : null)
+    ?? (isReadingLevel(sessionStats?.currentDifficulty) ? sessionStats.currentDifficulty : null)
+    ?? (isReadingLevel(lastRead?.readingLevel) ? lastRead!.readingLevel as ReadingLevel : null)
+    ?? (isReadingLevel(userInfoFromState?.difficultyLevel) ? userInfoFromState!.difficultyLevel as ReadingLevel : null);
   const canLaunchActivities = Boolean(userIsPremium && userInfoFromState && storyText);
-  const isQuizAllowed = Boolean(userIsPremium && sessionStats && sessionStats.currentDifficulty !== 'beginner');
+  // Every reading level gets the quiz: questions are written for the child's grade, and a
+  // grown-up reads them aloud at Pre-K/K. (It used to block frontend "beginner", 1st–2nd
+  // grade, while letting Pre-K through: the backend/frontend "beginner" mix-up.)
+  const isQuizAllowed = Boolean(userIsPremium && sessionStats);
   
   // Debug data availability for quiz
   React.useEffect(() => {
@@ -223,15 +242,10 @@ const handleHome = async () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-const getDifficultyLabel = (difficulty: string) => {
-    switch (difficulty) {
-      case "beginner": return t("readingPreferences.form.labels.options.beginner", "Beginner");
-      case "easy": return t("readingPreferences.form.labels.options.preReader", "Pre‑Reader");
-      case "medium": return t("readingPreferences.form.labels.options.developing", "Developing");
-      case "hard": return t("readingPreferences.form.labels.options.independent", "Independent");
-      case "expert": return t("readingPreferences.form.labels.options.advanced", "Advanced");
-      default: return difficulty;
-    }
+const getDifficultyLabel = (level: ReadingLevel | null) => {
+    if (!level) return '';
+    const name = DifficultyLevelMapper.getDisplayName(level);
+    return endGrade ? `${name} · ${gradeLabel(endGrade, 'long')}` : name;
   };
 
   const getEncouragementMessage = () => {
@@ -325,7 +339,7 @@ const getDifficultyLabel = (difficulty: string) => {
                 <div className="bg-purple-50 rounded-lg p-4 text-center">
                   <TrendingUp className="w-6 h-6 text-purple-600 mx-auto mb-2" />
                   <div className="text-lg font-bold text-purple-700">
-                    {sessionStats.currentDifficulty ? getDifficultyLabel(sessionStats.currentDifficulty) : t("sessionEnded.readingLevel", "Reading Level")}
+                    {endLevel ? getDifficultyLabel(endLevel) : t("sessionEnded.readingLevel", "Reading Level")}
                   </div>
                   <div className="text-sm text-purple-600">{t("sessionEnded.level", "Level")}</div>
                 </div>
@@ -422,7 +436,7 @@ const getDifficultyLabel = (difficulty: string) => {
                     </div>
                   )}
                   {!isQuizAllowed && canLaunchActivities && (
-                    <div className="text-xs text-orange-600 mt-2">Quiz not available for beginner level</div>
+                    <div className="text-xs text-orange-600 mt-2">Quiz not available right now</div>
                   )}
                 </Card>
                 <Card className="p-4 text-left">
@@ -653,6 +667,8 @@ const getDifficultyLabel = (difficulty: string) => {
           <ComprehensionQuiz
             userInfo={userInfoFromState}
             storyText={storyText}
+            storyTitle={sessionStats?.storyTitle || lastRead?.title || (window as any).__storyTitle || ''}
+            storyGrade={endGrade ?? undefined}
             isVisible={quizVisible}
             onComplete={() => setQuizVisible(false)}
             onClose={() => setQuizVisible(false)}
@@ -680,7 +696,8 @@ const getDifficultyLabel = (difficulty: string) => {
             userInfo={userInfoFromState}
             storyText={storyText}
             isVisible={voiceQuizVisible}
-            storyTitle={(window as any).__storyTitle || ''}
+            storyTitle={sessionStats?.storyTitle || lastRead?.title || (window as any).__storyTitle || ''}
+            storyGrade={endGrade ?? undefined}
             onComplete={() => setVoiceQuizVisible(false)}
             onClose={() => setVoiceQuizVisible(false)}
           />

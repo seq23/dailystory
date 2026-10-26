@@ -8,16 +8,9 @@ import type { UserInfo } from '@/types';
 import { saveQuizAttempt } from '@/hooks/useActivityPersistence';
 import { useToast } from '@/components/ui/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
-import { supabase } from '@/integrations/supabase/client';
+import { loadStoryQuiz, type QuizQuestion, type QuizSource } from '@/lib/quiz';
 
-interface Question {
-  id: string;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation?: string;
-  type: 'multiple-choice' | 'true-false' | 'character-emotion';
-}
+type Question = QuizQuestion;
 
 interface ComprehensionQuizProps {
   userInfo: UserInfo;
@@ -25,6 +18,9 @@ interface ComprehensionQuizProps {
   isVisible: boolean;
   onComplete: (score: number, totalQuestions: number) => void;
   onClose: () => void;
+  storyTitle?: string;
+  /** The reading grade the story was written at, so the questions match it. */
+  storyGrade?: string;
 }
 
 // Simple hash for caching quiz per story
@@ -41,7 +37,9 @@ export const ComprehensionQuiz = ({
   storyText, 
   isVisible, 
   onComplete, 
-  onClose 
+  onClose,
+  storyTitle,
+  storyGrade,
 }: ComprehensionQuizProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -54,6 +52,8 @@ export const ComprehensionQuiz = ({
   const [quizComplete, setQuizComplete] = useState(false);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [source, setSource] = useState<QuizSource>('ai');
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (isVisible && storyText) {
@@ -86,32 +86,16 @@ export const ComprehensionQuiz = ({
     } catch {}
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-quiz', {
-        body: {
-          storyText,
-          age: userInfo.age,
-          difficulty: userInfo.difficultyLevel || 'easy',
-          language: i18n.language || 'en',
-        },
-      });
-
-      if (error) throw new Error(error.message || 'Quiz generation failed');
-      if (!data?.questions?.length) throw new Error('No questions returned');
-
-      const generated: Question[] = data.questions;
-      setQuestions(generated);
-      setAnswers(new Array(generated.length).fill(null));
-
-      // Cache for retries
-      try { sessionStorage.setItem(cacheKey, JSON.stringify(generated)); } catch {}
+      // AI first; a quiz from the story text itself when the AI is down (never empty).
+      const quiz = await loadStoryQuiz({ storyText, userInfo: userInfo as any, storyGrade });
+      if (!quiz.questions.length) throw new Error('This story is too short for a quiz');
+      setQuestions(quiz.questions);
+      setSource(quiz.source);
+      setAnswers(new Array(quiz.questions.length).fill(null));
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(quiz.questions)); } catch {}
     } catch (err: any) {
-      DebugLogger.error('ui', 'AI quiz generation failed', err);
-      setGenerationError(err?.message || 'Could not generate quiz');
-      toast({
-        title: t('comprehension.errorTitle', 'Quiz unavailable'),
-        description: t('comprehension.errorDesc', 'Could not generate quiz questions. Please try again later.'),
-        variant: 'destructive',
-      });
+      DebugLogger.error('ui', 'Quiz could not be built', err);
+      setGenerationError(err?.message || 'Could not make a quiz for this story');
     } finally {
       setIsGeneratingQuestions(false);
     }
@@ -123,29 +107,31 @@ export const ComprehensionQuiz = ({
   };
 
   const handleSubmitAnswer = () => {
-    if (selectedAnswer === null) return;
-
+    if (selectedAnswer === null || showResult) return;
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = selectedAnswer;
     setAnswers(newAnswers);
-
-    const isCorrect = selectedAnswer === questions[currentQuestion].correctAnswer;
-    if (isCorrect) {
-      setScore(score + 1);
-    }
-
+    if (selectedAnswer === questions[currentQuestion].correctAnswer) setScore((s) => s + 1);
+    // The child reads the feedback and taps Next: no 2-second auto-advance.
     setShowResult(true);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(null);
-        setShowResult(false);
-      } else {
-        setQuizComplete(true);
-      }
-    }, 2000);
   };
+
+  const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowResult(false);
+    } else {
+      setQuizComplete(true);
+    }
+  };
+
+  // Save the result as soon as the quiz is finished (closing with ✕ used to lose it).
+  useEffect(() => {
+    if (!quizComplete || saved) return;
+    setSaved(true);
+    void persistResult();
+  }, [quizComplete]);
 
   const handleRetry = () => {
     setCurrentQuestion(0);
@@ -154,13 +140,16 @@ export const ComprehensionQuiz = ({
     setScore(0);
     setAnswers(new Array(questions.length).fill(null));
     setQuizComplete(false);
+    setSaved(false);
   };
 
-  const handleComplete = async () => {
+  const persistResult = async () => {
     try {
       const details = {
         answers,
         questions: questions.map(q => ({ id: q.id, type: q.type })),
+        source,
+        grade: storyGrade,
       };
       const result = await saveQuizAttempt({
         score,
@@ -168,8 +157,9 @@ export const ComprehensionQuiz = ({
         storyText: storyText || '',
         language: i18n.language || 'en',
         userInfo,
-        mode: 'offline',
+        mode: source === 'fallback' ? 'offline' : 'ai',
         details,
+        storyTitle,
       });
 
       if (result.method === 'supabase') {
@@ -181,7 +171,9 @@ export const ComprehensionQuiz = ({
       DebugLogger.warn('ui', 'Quiz save failed', e);
       toast({ title: t('postSession.saveFailed', 'Could not save'), description: e?.message || 'Unknown error' });
     }
+  };
 
+  const handleComplete = () => {
     onComplete(score, questions.length);
     onClose();
   };
@@ -289,35 +281,29 @@ export const ComprehensionQuiz = ({
                 ))}
               </div>
 
-              {showResult && currentQ.explanation && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>💡 </strong> {currentQ.explanation}
+              {showResult && (
+                <div className={`p-3 rounded-lg border ${selectedAnswer === currentQ.correctAnswer ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+                  <p className="font-semibold mb-1">
+                    {selectedAnswer === currentQ.correctAnswer
+                      ? t('comprehension.rightAnswer', 'Yes, you got it! 🌟')
+                      : t('comprehension.goodTry', 'Good try! The answer is: {{answer}}', { answer: currentQ.options[currentQ.correctAnswer] })}
                   </p>
+                  {currentQ.explanation && <p className="text-sm text-gray-700">💡 {currentQ.explanation}</p>}
                 </div>
               )}
 
-              {!showResult && (
+              {!showResult ? (
                 <MobileOptimizedButton
                   onClick={handleSubmitAnswer}
                   disabled={selectedAnswer === null}
                   className="w-full"
                 >
-                  Submit Answer
+                  {t('comprehension.check', 'Check my answer')}
                 </MobileOptimizedButton>
-              )}
-
-              {showResult && currentQuestion < questions.length - 1 && (
-                <div className="text-center">
-                  <div className="text-sm text-gray-600 mb-2">
-                    {selectedAnswer === currentQ.correctAnswer ? (
-                      <span className="text-green-600 font-medium">✓ Correct!</span>
-                    ) : (
-                      <span className="text-red-600 font-medium">✗ Not quite right</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500">Moving to next question...</p>
-                </div>
+              ) : (
+                <MobileOptimizedButton onClick={handleNext} className="w-full">
+                  {currentQuestion < questions.length - 1 ? t('comprehension.next', 'Next question') : t('comprehension.seeScore', 'See my score')}
+                </MobileOptimizedButton>
               )}
             </div>
           ) : (

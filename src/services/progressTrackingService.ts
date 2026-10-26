@@ -3,6 +3,7 @@ import { DebugLogger } from '@/services/DebugLogger';
 import { APP_CONFIG } from "@/constants/app";
 import { ExpertDifficultyManager } from "./expertDifficultyManager";
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
+import type { DifficultyLevel } from "@/types";
 
 export interface ReadingProgress {
   userId: string;
@@ -75,7 +76,7 @@ export interface VocabularyWord {
   practiceCount: number;
   masteryLevel: number; // 0-100
   sentenceContext: string;
-  difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+  difficulty: DifficultyLevel;
 }
 
 export class ProgressTrackingService {

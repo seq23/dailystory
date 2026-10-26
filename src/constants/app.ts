@@ -1,3 +1,4 @@
+import { BACKEND_DIFFICULTIES } from "@/lib/grades";
 // Application-wide constants
 export const APP_CONFIG = {
   // Session timing
@@ -42,6 +43,4 @@ export const SUPPORTED_LANGUAGES = [
 // One list of grades for the whole app: src/lib/grades.ts (Pre-K, K, 1st–10th).
 export { GRADES as GRADE_LEVELS } from '@/lib/grades';
 
-export const DIFFICULTY_LEVELS = [
-  'beginner', 'easy', 'medium', 'hard', 'expert'
-] as const;
+export const DIFFICULTY_LEVELS = [...BACKEND_DIFFICULTIES] as const;

@@ -1,6 +1,7 @@
 import { StoryAudioControls } from "@/components/story/StoryAudioControls";
-import { EXPERT_GRADES, type ExpertGrade, type Grade } from '@/lib/grades';
+import { EXPERT_GRADES, GRADES, minimumGradeForGuardrail, type ExpertGrade, type Grade } from '@/lib/grades';
 import { readingStep, stepReadingGrade, startingReadingGrade, withReadingGrade, type ReadingStep } from '@/lib/readingLadder';
+import { readingProgress, saveLastReadStory } from '@/lib/lastReadStory';
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
 import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration";
 import { useStoryLogic } from "@/hooks/useStoryLogic";
@@ -76,6 +77,7 @@ import { SparkleAnimation } from "@/components/SparkleAnimation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FriendlyUpArrowIcon } from "@/components/icons/FriendlyUpArrowIcon";
+import type { DifficultyLevel } from "@/types";
 
 // Mobile-Optimized UI Components
 import { CollapsibleFloatingTimer } from "@/components/CollapsibleFloatingTimer";
@@ -331,7 +333,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   } = useStoryLogic({
     userInfo: safeUserInfo, // Use defensive userInfo
     isPremium,
-    initialDifficulty: (safeUserInfo.difficultyLevel || 'beginner') as 'beginner' | 'easy' | 'medium' | 'hard' | 'expert',
+    initialDifficulty: (safeUserInfo.difficultyLevel || 'beginner') as DifficultyLevel,
     expertGradeLevel: safeUserInfo.expertGradeLevel,
     onSessionEnded,
     netflixSessionId: useMemo(() => getNetflixSessionId(), []) // Pass Netflix session ID (computed once per mount to prevent re-creation)
@@ -437,6 +439,20 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // For free users, limit displayed pages to 6 maximum
   const safeStory = Array.isArray(story) ? story : [];
   const displayedStory = !isPremium ? safeStory.slice(0, 6) : safeStory;
+
+  // Record the story as it is read, so the session-ended page always has it for the
+  // quiz and games, even when the session ends while a new story is being written.
+  useEffect(() => {
+    if (!displayedStory.length) return;
+    const progress = readingProgress(displayedStory, currentPage);
+    saveLastReadStory({
+      text: displayedStory.join(' '),
+      title: storyTitle || '',
+      ...progress,
+      grade: levelRef.current.grade,
+      readingLevel: levelRef.current.readingLevel,
+    });
+  }, [safeStory, isPremium, currentPage, storyTitle, readingGrade]);
   
   // Ensure currentPage is within valid bounds
   const safeCurrentPage = Math.max(0, Math.min(currentPage, displayedStory.length - 1));
@@ -1260,9 +1276,12 @@ useEffect(() => {
     };
   }, [isLoading]);
 
-  // Difficulty management now handled by useDifficultyManagement hook
-  const difficultyLevels: string[] = ['pre-reader', 'beginner', 'developing', 'independent', 'advanced'];
-  
+  // Difficulty management now handled by useDifficultyManagement hook.
+  // Guardrails are stored as a BACKEND difficulty + expert sub-level; compare as grades
+  // (minimumGradeForGuardrail). Comparing them by index in the frontend level list
+  // found nothing for "easy"/"medium"/"hard"/"expert" (-1), so a minimum never held.
+  const gradeIndex = (g: Grade) => GRADES.indexOf(g);
+
   useEffect(() => {
     if (!isPremium) return;
     (async () => {
@@ -1275,15 +1294,18 @@ useEffect(() => {
 
         // Hard lock: clamp up immediately and persist if below min
         if (guardrails.lockDifficulty) {
-          const currentIndex = difficultyLevels.indexOf(currentDifficulty);
-          const minIndex = difficultyLevels.indexOf(guardrails.minDifficulty);
-          if (currentIndex < minIndex) {
-            const newDifficulty = guardrails.minDifficulty;
-            setCurrentDifficulty(newDifficulty);
+          const minGrade = minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade);
+          if (gradeIndex(levelRef.current.grade) < gradeIndex(minGrade)) {
+            const step = readingStep(minGrade);
+            levelRef.current = step;
+            setReadingGrade(step.grade);
+            setCurrentDifficulty(step.readingLevel);
+            if (step.expertGrade) setExpertGradeLevel(step.expertGrade);
             try {
               const { data: { user } } = await supabase.auth.getUser();
               if (user) {
-                await supabase.from('profiles').update({ difficulty_level: newDifficulty }).eq('user_id', user.id);
+                // profiles.difficulty_level holds a FRONTEND reading level.
+                await supabase.from('profiles').update({ difficulty_level: step.readingLevel }).eq('user_id', user.id);
               }
             } catch (e) {
               DebugLogger.warn('auth', 'Failed to persist clamped difficulty', e);
@@ -1426,7 +1448,7 @@ useEffect(() => {
     userInfo: safeUserInfo,
     currentPage,
     contentHash,
-    difficulty: backendDifficulty as "beginner" | "easy" | "medium" | "hard" | "expert",
+    difficulty: backendDifficulty as DifficultyLevel,
     isPremium
   });
 
@@ -3130,10 +3152,21 @@ const handleDockCoach = () => {
   };
 
   const handleEndSession = async () => {
+    // The timer ran out while a new story was still being written (no pages yet):
+    // ending now would drop that story and leave the session-ended page with nothing
+    // to quiz on. Start a fresh session for the new story instead.
+    if (displayedStory.length === 0 && isLoading) {
+      DebugLogger.log('performance', 'Session end deferred: a new story is being written');
+      setTimeRemaining(20 * 60);
+      return;
+    }
     const timeSpent = (20 * 60 - timeRemaining) * 1000; // Convert to milliseconds
-    const totalWordsRead = sessionWordsRead;
-    const wpm = Math.round((totalWordsRead / timeSpent) * 60000);
-    const pagesRead = pagesCompleted.size;
+    // Pages the child reached and the words on them. sessionWordsRead and pagesCompleted
+    // are never incremented anywhere, so the page always said "Words Read 0".
+    const progress = readingProgress(displayedStory, currentPage);
+    const totalWordsRead = Math.max(sessionWordsRead, progress.wordsRead);
+    const wpm = timeSpent > 0 ? Math.round((totalWordsRead / timeSpent) * 60000) : 0;
+    const pagesRead = Math.max(pagesCompleted.size, progress.pagesRead);
     
     // Clear character state when session ends for both free and premium users
     try {
@@ -3148,7 +3181,12 @@ const handleDockCoach = () => {
       wordsRead: totalWordsRead,
       pagesRead: pagesRead,
       startTime: sessionStartTimeValue,
-      accuracy: 100
+      accuracy: 100,
+      // The session-ended "Reading Level" card reads these; without them it showed
+      // the placeholder "Reading Level / Level".
+      currentDifficulty: levelRef.current.readingLevel,
+      readingGrade: levelRef.current.grade,
+      storyTitle: storyTitle || '',
     };
     
     // Progress, reading time and streaks read reading_sessions; nothing wrote it before 26 Oct 2026.
@@ -3207,7 +3245,10 @@ const handleDockCoach = () => {
     try { sessionStorage.removeItem('readingTimerPausedSeconds'); } catch {}
     // Persist essentials for SessionEnded fallback across reloads
     try { sessionStorage.setItem('last_user_info', JSON.stringify(userInfo)); } catch {}
-    try { sessionStorage.setItem('last_story_text', (story || []).join(' ')); } catch {} // Keep full story for upgrades
+    if (displayedStory.length) {
+      try { sessionStorage.setItem('last_story_text', displayedStory.join(' ')); } catch {} // Keep full story for upgrades
+      saveLastReadStory({ text: displayedStory.join(' '), title: storyTitle || '', pagesRead, wordsRead: totalWordsRead, grade: levelRef.current.grade, readingLevel: levelRef.current.readingLevel });
+    }
     onSessionEnded(sessionStats);
   };
 
@@ -3811,13 +3852,11 @@ const handleRestartTimer = () => {
     }
 
     if (isPremium && direction === 'down') {
-      const newIndex = difficultyLevels.indexOf(step.readingLevel);
-      const minIndex = difficultyLevels.indexOf(minDifficulty);
-      if (newIndex < minIndex) {
+      if (gradeIndex(step.grade) < gradeIndex(minimumGradeForGuardrail(minDifficulty, minExpertGrade))) {
         if (allowDecreaseBelowMin) {
           toast({ title: t('reader.toasts.minBelowAllowed', 'Going below the set minimum for this session'), duration: 3000 });
         } else {
-          toast({ title: t('reader.toasts.minLevelReached', { minDifficulty }), duration: 3000 });
+          toast({ title: t('reader.toasts.minLevelReached', { minDifficulty: readingStep(minimumGradeForGuardrail(minDifficulty, minExpertGrade)).label }), duration: 3000 });
           return;
         }
       }

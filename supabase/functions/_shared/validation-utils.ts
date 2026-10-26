@@ -5,9 +5,10 @@
 import { validationConfig } from './validation-config.ts';
 // Import dynamic extraction functions - SINGLE SOURCE OF TRUTH
 import { extractTokenLimitFromPrompt, getStoryPrompt, getExpertStoryPrompt, type DifficultyLevel as PromptDifficultyLevel, type ExpertGradeLevel as PromptExpertGradeLevel } from './storyPrompts.ts';
+import { type BackendDifficulty } from "./grades.ts";
 
 export type ValidationLevel = 'Level0' | 'Level1' | 'Level2' | 'Level3' | 'Level4' | 'Grade6' | 'Grade7' | 'Grade8' | 'Grade9' | 'Grade10';
-export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+export type DifficultyLevel = BackendDifficulty;
 export type ExpertGradeLevel = 'grade6' | 'grade7' | 'grade8' | 'grade9' | 'grade10' | '6th' | '7th' | '8th' | '9th' | '10th';
 
 /**
