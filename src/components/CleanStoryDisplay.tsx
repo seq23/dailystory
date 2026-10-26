@@ -3076,6 +3076,31 @@ const handleDockCoach = () => {
 };
 
   // Manual end session logic exists below
+  const saveReadingSessionRow = async (r: { startedAt: number | null | undefined; wordsRead: number; completed: boolean }) => {
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth?.user?.id;
+      if (!uid) return;
+      const start = typeof r.startedAt === 'number' && r.startedAt > 0 ? r.startedAt : Date.now();
+      // Wall-clock minutes, capped at 3 hours so a tab left open overnight is not a reading record.
+      const minutes = Math.min(180, Math.max(0, Math.round((Date.now() - start) / 60000)));
+      const { data: prefs } = await supabase.from('user_preferences').select('active_child_id').eq('user_id', uid).maybeSingle();
+      const childId = (prefs as any)?.active_child_id;
+      const isUuid = typeof childId === 'string' && /^[0-9a-f-]{36}$/i.test(childId);
+      const { error } = await supabase.from('reading_sessions').insert({
+        user_id: uid,
+        child_profile_id: isUuid ? childId : null,
+        started_at: new Date(start).toISOString(),
+        completed_at: r.completed ? new Date().toISOString() : null,
+        time_spent: minutes,
+        words_read: r.wordsRead || 0,
+      } as any);
+      if (error) DebugLogger.warn('performance', 'reading_sessions insert failed', error);
+    } catch (e) {
+      DebugLogger.warn('performance', 'reading_sessions insert failed', e);
+    }
+  };
+
   const handleEndSession = async () => {
     const timeSpent = (20 * 60 - timeRemaining) * 1000; // Convert to milliseconds
     const totalWordsRead = sessionWordsRead;
@@ -3098,6 +3123,13 @@ const handleDockCoach = () => {
       accuracy: 100
     };
     
+    // Progress, reading time and streaks read reading_sessions; nothing wrote it before 26 Oct 2026.
+    void saveReadingSessionRow({
+      startedAt: sessionStartTimeValue,
+      wordsRead: totalWordsRead,
+      completed: isPremium ? (currentPage === story.length - 1) : (currentPage === displayedStory.length - 1),
+    });
+
     recordReadingSession({
       timeSpent,
       wordsRead: totalWordsRead,
