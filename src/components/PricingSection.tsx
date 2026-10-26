@@ -63,7 +63,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 <Crown className="w-5 h-5 text-yellow-500" />
                 <CardTitle>Premium</CardTitle>
               </div>
-              <CardDescription>For families with early readers (ages 4–8)</CardDescription>
+              <CardDescription>For families with readers ages 3 to 15</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
