@@ -718,6 +718,32 @@ export function parseQuizJson(content: string): unknown {
   }
 }
 
+/**
+ * The chain's output check for a quiz answer (storyTextProvider `accept`): a rejected
+ * answer moves to the next model. Planning text, a cut-off answer (finish_reason
+ * length, or JSON that does not parse) and JSON that is not a quiz are rejected;
+ * reasoning blocks are stripped first, and text around valid quiz JSON is never shown.
+ */
+export function quizAnswerProblem(content: string, finishReason?: string | null): string | null {
+  if (finishReason === "length") return "truncated (finish_reason length)";
+  const text = stripReasoning(content ?? "");
+  if (!text) return "empty";
+  const parsed = parseQuizJson(text);
+  if (!parsed) return /^\s*(let me|let's|okay|ok,|alright|first,|i need|i will|i'll|here is|here's|sure|the user)/i.test(text) ? "planning text, no quiz JSON" : "no quiz JSON (cut off or not JSON)";
+  // deno-lint-ignore no-explicit-any
+  const list: any[] = Array.isArray(parsed) ? parsed : Array.isArray((parsed as any)?.questions) ? (parsed as any).questions : [];
+  if (!list.length) return "JSON has no questions";
+  const shaped = list.filter((q) => typeof q?.question === "string" && q.question.trim() && Array.isArray(q?.options) && q.options.length >= 2 &&
+    q.options.every((o: unknown) => typeof o === "string" && o.trim()) && (typeof q?.correctAnswer === "number" || typeof q?.correctAnswer === "string"));
+  if (shaped.length < Math.ceil(list.length / 2)) return `quiz JSON malformed (${shaped.length}/${list.length} questions usable)`;
+  return null;
+}
+
+/** Remove reasoning a model put in its answer (<think>…</think>). */
+function stripReasoning(text: string): string {
+  return text.replace(/<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi, "").replace(/<think(?:ing)?>[\s\S]*$/i, "").trim();
+}
+
 /** Longest story text sent to the model. */
 export const QUIZ_STORY_MAX_CHARS = 6000;
 

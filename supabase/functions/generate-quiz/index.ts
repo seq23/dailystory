@@ -1,8 +1,7 @@
 // End-of-story comprehension quiz (26 Oct 2026).
 //
-// Before: one call to the Lovable AI gateway (a Gemini model: the Gemini API terms
-// forbid services likely used by under-18s), the child's name sent as is, no check of
-// what came back, and a 500 to the child when the gateway was down.
+// Before: one call to a gateway model banned for children's services, the child's
+// name sent as is, no check of what came back, and a 500 when the gateway was down.
 // Now: the same text chain as the story pages (../_shared/storyTextProvider.ts: free
 // OpenRouter models first, Workers AI, OpenRouter paid, OpenAI last), names masked on
 // every free/third-party route, every question checked against the story
@@ -17,6 +16,7 @@ import {
   parseQuizJson,
   quizShapeForGrade,
   storySeed,
+  quizAnswerProblem,
   QUIZ_STORY_MAX_CHARS,
 } from "../_shared/quiz.ts";
 
@@ -59,7 +59,8 @@ serve(async (req) => {
         max_tokens: 1800,
         temperature: 0.4,
       },
-      { privateNames },
+      // Output check: planning, cut-off or non-quiz JSON → next model (../_shared/quiz.ts).
+      { privateNames, accept: (content, finishReason) => quizAnswerProblem(content, finishReason) },
     );
     console.log("generate-quiz provider", { provider: p, attempts: attempts.map((a) => `${a.provider} ${a.model ?? ""} ${a.status ?? "-"}`) });
     if (response.ok) {
