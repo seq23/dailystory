@@ -18,6 +18,8 @@ interface MobileTTSModalProps {
   isPlaying?: boolean;
   isLoadingWordData?: boolean;
   isSaved?: boolean;
+  /** What Explain or Break into Syllables found, shown in the panel as well as read aloud. */
+  info?: { kind: "meaning" | "syllables"; text: string } | null;
 }
 
 export const MobileTTSModal = ({
@@ -33,6 +35,7 @@ export const MobileTTSModal = ({
   isPlaying = false,
   isLoadingWordData = false,
   isSaved = false,
+  info = null,
 }: MobileTTSModalProps) => {
   const { t } = useTranslation();
   
@@ -60,6 +63,16 @@ export const MobileTTSModal = ({
         </DialogHeader>
         
         <div className="p-6 space-y-4">
+          {info && (
+            <div className="rounded-lg border bg-muted/40 p-4 text-center" aria-live="polite">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {info.kind === "meaning" ? "What it means" : "Syllables"}
+              </p>
+              <p className={info.kind === "syllables" ? "mt-1 text-2xl font-semibold tracking-wide" : "mt-1 text-base"}>
+                {info.text}
+              </p>
+            </div>
+          )}
           {/* Hear It Button */}
           <Button
             onClick={onHearIt}
@@ -105,7 +118,7 @@ export const MobileTTSModal = ({
                 variant="outline"
               >
                 <BookmarkPlus className="mr-3 h-5 w-5" />
-                Saved
+                ✓ Saved to word list
               </Button>
             ) : (
               onSave && (
