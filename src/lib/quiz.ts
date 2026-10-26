@@ -4,6 +4,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeGrade, typicalGradeForAge, quizBandForGrade } from "@/lib/grades";
 import type { UserInfo } from "@/types";
+import { cleanWords, practiceWordsFromRequest } from "../../supabase/functions/_shared/practiceWords";
 import {
   finalizeQuiz,
   quizShapeForGrade,
@@ -28,13 +29,15 @@ type Invoke = (name: string, opts: { body: unknown }) => Promise<{ data: any; er
  * from the story text on the device. Never an empty quiz for a real story.
  */
 export async function loadStoryQuiz(
-  args: { storyText: string; userInfo: Partial<UserInfo> & Record<string, unknown>; storyGrade?: unknown },
+  args: { storyText: string; userInfo: Partial<UserInfo> & Record<string, unknown>; storyGrade?: unknown; practiceWords?: string[] },
   invoke: Invoke = (n, o) => supabase.functions.invoke(n, o) as any,
 ): Promise<{ questions: QuizQuestion[]; source: QuizSource }> {
   const grade = quizGradeFor(args.userInfo, args.storyGrade);
   const story = (args.storyText || "").replace(/\s+/g, " ").trim();
   // Band by Reads-at grade, topics by real age; the same seed as the server, so both pick the same skills.
-  const shape = quizShapeForGrade(grade, args.userInfo?.age, storySeed(story.slice(0, 6000)));
+  // The parent's practice words: a word-meaning or spelling question uses one.
+  const practiceWords = cleanWords([...(args.practiceWords ?? []), ...practiceWordsFromRequest(args.userInfo?.specialRequest)]);
+  const shape = quizShapeForGrade(grade, args.userInfo?.age, storySeed(story.slice(0, 6000)), practiceWords);
   let raw: unknown = null;
   try {
     const { data, error } = await invoke("generate-quiz", {
@@ -45,6 +48,7 @@ export async function loadStoryQuiz(
         // Sent to our own function only, so it can mask the name before any model sees it.
         childName: args.userInfo?.name,
         displayName: (args.userInfo as any)?.displayName,
+        practiceWords,
       },
     });
     if (!error && Array.isArray(data?.questions)) raw = data.questions;

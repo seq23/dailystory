@@ -648,6 +648,7 @@ const getDifficultyLabel = (level: ReadingLevel | null) => {
             storyText={storyText || ''}
             storyTitle={sessionStats?.storyTitle || lastRead?.title || (window as any).__storyTitle || ''}
             storyGrade={endGrade ?? undefined}
+            practiceWords={lastRead?.practiceWords ?? []}
             isVisible={quizVisible}
             onComplete={() => setQuizVisible(false)}
             onClose={() => setQuizVisible(false)}
@@ -677,6 +678,7 @@ const getDifficultyLabel = (level: ReadingLevel | null) => {
             isVisible={voiceQuizVisible}
             storyTitle={sessionStats?.storyTitle || lastRead?.title || (window as any).__storyTitle || ''}
             storyGrade={endGrade ?? undefined}
+            practiceWords={lastRead?.practiceWords ?? []}
             onComplete={() => setVoiceQuizVisible(false)}
             onClose={() => setVoiceQuizVisible(false)}
           />

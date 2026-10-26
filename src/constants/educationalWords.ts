@@ -3,42 +3,14 @@
  * Combined Dolch and Fry word lists for comprehensive coverage
  */
 
-// Dolch Pre-Primer (40 words) - Most basic sight words
-export const DOLCH_PRE_PRIMER = [
-  'a', 'and', 'away', 'big', 'blue', 'can', 'come', 'down', 'find', 'for',
-  'funny', 'go', 'help', 'here', 'I', 'in', 'is', 'it', 'jump', 'little',
-  'look', 'make', 'me', 'my', 'not', 'one', 'play', 'red', 'run', 'said',
-  'see', 'the', 'three', 'to', 'two', 'up', 'we', 'where', 'yellow', 'you'
-];
+// Dolch lists come from the one shared copy (the old copy here lacked "then").
+import { DOLCH_PRE_PRIMER, DOLCH_PRIMER, DOLCH_FIRST_GRADE, DOLCH_SECOND_GRADE } from "../../supabase/functions/_shared/wordLists";
+export { DOLCH_PRE_PRIMER, DOLCH_PRIMER, DOLCH_FIRST_GRADE, DOLCH_SECOND_GRADE };
+export { DOLCH_THIRD_GRADE, DOLCH_NOUNS, FRY_1ST_100, FRY_2ND_100 } from "../../supabase/functions/_shared/wordLists";
 
-// Dolch Primer (52 words) - First grade sight words
-export const DOLCH_PRIMER = [
-  'all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came',
-  'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like',
-  'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran',
-  'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this',
-  'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will',
-  'with', 'yes'
-];
-
-// Dolch First Grade (41 words)
-export const DOLCH_FIRST_GRADE = [
-  'after', 'again', 'an', 'any', 'as', 'ask', 'by', 'could', 'every', 'fly',
-  'from', 'give', 'going', 'had', 'has', 'her', 'him', 'his', 'how', 'just',
-  'know', 'let', 'live', 'may', 'of', 'old', 'once', 'open', 'over', 'put',
-  'round', 'some', 'stop', 'take', 'thank', 'them', 'think', 'walk', 'were', 'when'
-];
-
-// Dolch Second Grade (46 words)
-export const DOLCH_SECOND_GRADE = [
-  'always', 'around', 'because', 'been', 'before', 'best', 'both', 'buy', 'call', 'cold',
-  'does', 'don\'t', 'fast', 'first', 'five', 'found', 'gave', 'goes', 'green', 'its',
-  'made', 'many', 'off', 'or', 'pull', 'read', 'right', 'sing', 'sit', 'sleep',
-  'tell', 'their', 'these', 'those', 'upon', 'us', 'use', 'very', 'wash', 'which',
-  'why', 'wish', 'work', 'would', 'write', 'your'
-];
-
-// Fry's First 100 Words (grades 3-4) - most common words beyond Dolch
+// NOT Fry's list (the real Fry hundreds are FRY_1ST_100 / FRY_2ND_100 in
+// supabase/functions/_shared/wordLists.ts): a curated set of grade 3–4 words kept under
+// its old name because the dictionary cache levels below are built on it.
 export const FRY_FIRST_100 = [
   'about', 'add', 'again', 'air', 'almost', 'along', 'also', 'although', 'always', 'America',
   'another', 'answer', 'any', 'appear', 'area', 'ask', 'back', 'ball', 'base', 'become',
@@ -52,7 +24,7 @@ export const FRY_FIRST_100 = [
   'face', 'fact', 'family', 'far', 'farm', 'fast', 'father', 'feel', 'few', 'field'
 ];
 
-// Fry's Second 100 Words (grades 5-6) - intermediate vocabulary
+// NOT Fry's list either: a curated set of grade 5–6 words (see above).
 export const FRY_SECOND_100 = [
   'figure', 'fill', 'final', 'find', 'fire', 'first', 'fish', 'five', 'food', 'form',
   'found', 'four', 'friend', 'from', 'front', 'full', 'game', 'gave', 'get', 'girl',

@@ -2,6 +2,7 @@ import { StoryAudioControls } from "@/components/story/StoryAudioControls";
 import { EXPERT_GRADES, GRADES, minimumGradeForGuardrail, type ExpertGrade, type Grade } from '@/lib/grades';
 import { readingStep, stepReadingGrade, startingReadingGrade, withReadingGrade, type ReadingStep } from '@/lib/readingLadder';
 import { pagesReadCount, saveLastReadStory } from '@/lib/lastReadStory';
+import { cleanWords, practiceWordsFromRequest } from '../../supabase/functions/_shared/practiceWords';
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
 import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration";
 import { useStoryLogic } from "@/hooks/useStoryLogic";
@@ -453,6 +454,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     if (displayedStory[currentPage]?.trim()) markPageCompleted(currentPage);
   }, [safeStory, isPremium, currentPage]);
   const shownPages = (): number[] => [...pagesCompleted, currentPage];
+  // The parent's practice words for this story: highlighted in the text, used by the quiz.
+  const practiceWords = cleanWords([
+    ...practiceWordsFromRequest(safeUserInfo.specialRequest),
+    ...String((safeUserInfo as any).targetVocabulary ?? '').split(/[,\s]+/),
+  ]);
   const sessionRead = pagesReadCount(displayedStory, shownPages());
 
   // Record the story as it is read, so the session-ended page always has it for the
@@ -466,6 +472,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       ...progress,
       grade: levelRef.current.grade,
       readingLevel: levelRef.current.readingLevel,
+      practiceWords,
     });
   }, [safeStory, isPremium, currentPage, storyTitle, readingGrade, pagesCompleted]);
   
@@ -4326,7 +4333,8 @@ const handleRestartTimer = () => {
                             isPremium,
                              userId: safeUserInfo.name,
                             highlightedWordIndex: currentHighlightedWord,
-                            isMobile: preferMobileModal
+                            isMobile: preferMobileModal,
+                            practiceWords,
                           })
                         ) : (
                           <div className="flex items-center justify-center h-32">
@@ -4434,7 +4442,8 @@ const handleRestartTimer = () => {
                               isPremium,
                               userId: safeUserInfo.name,
                               highlightedWordIndex: currentHighlightedWord,
-                              isMobile: preferMobileModal
+                              isMobile: preferMobileModal,
+                              practiceWords,
                             })
                            ) : (
                              <div className="flex items-center justify-center h-32">

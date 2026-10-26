@@ -21,6 +21,8 @@ interface VoiceQuizProps {
   onClose: () => void;
   storyTitle?: string;
   storyGrade?: string;
+  /** The parent's practice words for this story. */
+  practiceWords?: string[];
 }
 
 // Simple hash for caching quiz per story
@@ -40,6 +42,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
   onClose,
   storyTitle = '',
   storyGrade,
+  practiceWords,
 }) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -92,7 +95,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
 
     try {
       // AI first; a quiz from the story text itself when the AI is down (never empty).
-      const quiz = await loadStoryQuiz({ storyText, userInfo: userInfo as any, storyGrade });
+      const quiz = await loadStoryQuiz({ storyText, userInfo: userInfo as any, storyGrade, practiceWords });
       if (!quiz.questions.length) throw new Error('This story is too short for a quiz');
       setQuestions(quiz.questions);
       setAnswers(new Array(quiz.questions.length).fill(null));

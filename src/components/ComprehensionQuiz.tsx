@@ -21,6 +21,8 @@ interface ComprehensionQuizProps {
   storyTitle?: string;
   /** The reading grade the story was written at, so the questions match it. */
   storyGrade?: string;
+  /** The parent's practice words for this story. */
+  practiceWords?: string[];
 }
 
 // Simple hash for caching quiz per story
@@ -40,6 +42,7 @@ export const ComprehensionQuiz = ({
   onClose,
   storyTitle,
   storyGrade,
+  practiceWords,
 }: ComprehensionQuizProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -103,7 +106,7 @@ export const ComprehensionQuiz = ({
 
     try {
       // AI first; a quiz from the story text itself when the AI is down (never empty).
-      const quiz = await loadStoryQuiz({ storyText, userInfo: userInfo as any, storyGrade });
+      const quiz = await loadStoryQuiz({ storyText, userInfo: userInfo as any, storyGrade, practiceWords });
       if (!quiz.questions.length) throw new Error('This story is too short for a quiz');
       setQuestions(quiz.questions);
       setSource(quiz.source);

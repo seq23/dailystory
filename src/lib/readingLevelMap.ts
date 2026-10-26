@@ -149,3 +149,26 @@ export function storyGrades(readingGrade: unknown, legacyLevel?: unknown): Grade
   const d = frontendLevelToDifficulty(legacyLevel);
   return d ? GRADES.filter((x) => GRADE_PROFILES[x].difficulty === d) : [];
 }
+
+import { GRADE_SIGHT_WORDS } from "../../supabase/functions/_shared/wordLists";
+import { LEVEL_3_VOCABULARY } from "../../supabase/functions/_shared/vocabulary/level3Vocabulary";
+import { LEVEL_4_VOCABULARY } from "../../supabase/functions/_shared/vocabulary/level4Vocabulary";
+
+/**
+ * Target words per Reads-at grade, for scoring a story against its grade. Pre-K–3rd:
+ * Dolch + Fry 1st/2nd hundred (GRADE_SIGHT_WORDS); 4th–5th: the app's level-3 set;
+ * 6th–10th: the level-4 set.
+ */
+export const GRADE_WORD_LISTS: Readonly<Record<Grade, readonly string[]>> = Object.freeze(
+  Object.fromEntries(GRADES.map((g) => {
+    const list = GRADE_SIGHT_WORDS[g] ?? (["4", "5"].includes(g) ? [...LEVEL_3_VOCABULARY] : [...LEVEL_4_VOCABULARY]);
+    return [g, [...new Set(list.map((w) => w.toLowerCase()))]];
+  })) as unknown as Record<Grade, readonly string[]>,
+);
+
+/** Share of a story's distinct words that are on its grade's list (0–1). */
+export function gradeWordShare(story: string, grade: Grade): number {
+  const list = new Set(GRADE_WORD_LISTS[grade]);
+  const ws = [...new Set((story.toLowerCase().match(/[a-z']+/g) ?? []))];
+  return ws.length ? ws.filter((w) => list.has(w)).length / ws.length : 0;
+}

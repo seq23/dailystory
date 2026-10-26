@@ -64,6 +64,8 @@ export interface QuizShape {
   maxQuestionWords: number;
   /** The child's real age: sets the topics and tone, never the difficulty. */
   age: number | null;
+  /** The parent's practice words: a word-meaning or spelling question uses one when it is in the story. */
+  practiceWords: string[];
 }
 
 /** A stable number from the story text, so the same story gives the same quiz. */
@@ -74,7 +76,7 @@ export function storySeed(story: string): number {
 }
 
 /** The quiz for a Reads-at grade (band, skills, choices); `age` keeps topics right for the child. */
-export function quizShapeForGrade(grade: unknown, age?: unknown, seed = 0): QuizShape {
+export function quizShapeForGrade(grade: unknown, age?: unknown, seed = 0, practiceWords: string[] = []): QuizShape {
   const g = normalizeGrade(grade) ?? typicalGradeForAge(age ?? 7);
   const band = quizBandForGrade(g);
   const plan = quizSkillPlan(g, seed);
@@ -87,6 +89,7 @@ export function quizShapeForGrade(grade: unknown, age?: unknown, seed = 0): Quiz
     optionCount: quizChoicesForGrade(g),
     maxQuestionWords: Math.max(10, GRADE_PROFILES[g].maxSentenceWords + 4),
     age: Number.isFinite(a) ? Math.round(a) : null,
+    practiceWords: (Array.isArray(practiceWords) ? practiceWords : []).filter((w) => typeof w === "string" && /^[\p{L}'-]{2,40}$/u.test(w.trim())).map((w) => w.trim().toLowerCase()).slice(0, 10),
   };
 }
 
@@ -417,8 +420,9 @@ const BUILDERS: Record<QuizSkill, Builder> = {
   },
   spelling: ({ story, sentences, names, n, shape, used, pick }) => {
     const minLen = GRADE_PROFILES[shape.grade].difficulty === "easy" ? 4 : GRADE_PROFILES[shape.grade].difficulty === "medium" ? 5 : 7;
-    const cands = [...new Set(tokens(story))].filter((w) => w.length >= minLen && /^[a-z]+$/.test(w) && !SPELL_SKIP.has(w) && !names.includes(w) && !used.has(`sp:${w}`));
-    cands.sort((a, b) => b.length - a.length || pick() - 0.5);
+    const cands = [...new Set(tokens(story))].filter((w) => (w.length >= minLen || shape.practiceWords.includes(w)) && /^[a-z]+$/.test(w) && !SPELL_SKIP.has(w) && !names.includes(w) && !used.has(`sp:${w}`));
+    const practice = new Set(shape.practiceWords);
+    cands.sort((a, b) => Number(practice.has(b)) - Number(practice.has(a)) || b.length - a.length || pick() - 0.5);
     for (const w of cands.slice(0, 12)) {
       const wrong = misspellings(w).filter((x) => !hasWord(story, x)).slice(0, n - 1);
       if (wrong.length < n - 1) continue;
@@ -429,7 +433,25 @@ const BUILDERS: Record<QuizSkill, Builder> = {
     }
     return null;
   },
-  "word-meaning": ({ story, sentences, names, n, used, pick }) => {
+  "word-meaning": ({ story, sentences, names, n, shape, used, pick }) => {
+    // 0. a practice word the parent typed, in its sentence (meaning if known, else context clue)
+    for (const pw of shape.practiceWords) {
+      if (used.has(`wm:${pw}`)) continue;
+      const s = sentences.find((x) => hasWord(x, pw));
+      if (!s) continue;
+      if (SYNONYMS[pw]) {
+        used.add(`wm:${pw}`);
+        const { same, not } = SYNONYMS[pw];
+        return { question: `Your practice word! The story says: ${quote(shorten(s, 18))} What does “${pw}” mean here?`, options: [same, ...not.slice(0, n - 1)], correctAnswer: 0,
+          explanation: `“${pw}” means “${same}”.`, type: "multiple-choice", skill: "word-meaning", evidence: s };
+      }
+      const wrong = WORD_BANK.filter((x) => !hasWord(story, x) && x !== pw)
+        .sort((a, b) => Math.abs(a.length - pw.length) - Math.abs(b.length - pw.length) || pick() - 0.5).slice(0, n - 1);
+      if (wrong.length < n - 1) continue;
+      used.add(`wm:${pw}`);
+      return { question: `Your practice word! Which word fits? ${quote(s.replace(wordRe(pw, "u"), "____"))}`, options: [pw, ...wrong], correctAnswer: 0,
+        explanation: `The story says: ${quote(s)}`, type: "multiple-choice", skill: "word-meaning", evidence: s };
+    }
     // 1. a word with a known meaning, asked in its sentence
     for (const s of sentences) {
       const hit = tokens(s).map((t) => t.toLowerCase()).find((t) => SYNONYMS[t] && !used.has(`wm:${t}`));
@@ -622,6 +644,17 @@ export function finalizeQuiz(raw: unknown, story: string, shape: QuizShape): { q
     if (pool.length) { out.push(pool.shift()!); fromAi++; continue; }
     if (fb.length) out.push(fb.shift()!);
   }
+  // A practice word that is in the story gets a word-meaning or spelling question.
+  const inStoryPractice = shape.practiceWords.filter((w) => hasWord(story, w));
+  const touches = (q: QuizQuestion) => inStoryPractice.some((w) => hasWord(q.question, w) || q.options.some((o) => o.toLowerCase() === w));
+  if (inStoryPractice.length && !out.some(touches)) {
+    const pq = fallback.find((q) => (q.skill === "word-meaning" || q.skill === "spelling") && touches(q));
+    const slot = out.findIndex((q) => q.skill === "word-meaning" || q.skill === "spelling");
+    if (pq) {
+      if (slot >= 0) out[slot] = pq;
+      else if (out.length) out[out.length - 1] = pq;
+    }
+  }
   const questions = spreadAnswers(out.map((q, i) => ({ ...q, id: `q${i + 1}`, ...(shape.band.pictures && !q.pictures ? { pictures: q.options.map(pictureFor) } : {}) })));
   return { questions, source: fromAi === 0 ? "fallback" : fromAi === questions.length ? "ai" : "mixed" };
 }
@@ -661,7 +694,7 @@ Rules for every question:
 - "explanation": one short, kind sentence to the child about why that answer is right;
 - "say" (only when it differs from "question"): the words to read aloud.
 
-Answer with JSON only, no other text:
+${shape.practiceWords.length ? `The parent's practice words: ${shape.practiceWords.join(", ")}. Make the word-meaning or spelling question about one of them that is in the story.\n\n` : ""}Answer with JSON only, no other text:
 {"questions":[{"skill":"what-happened","question":"...","options":["...","..."],"correctAnswer":0,"evidence":"...","explanation":"..."}]}
 correctAnswer is the index (0-based) of the right option.`;
   return [

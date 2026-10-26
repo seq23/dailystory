@@ -1,4 +1,5 @@
 // Unified Story Generation Service with 4-Layer Priority System
+import { practiceWordsPromptLine } from "../../supabase/functions/_shared/practiceWords";
 import { isFreeLimitError, announceFreeLimitReached, FREE_LIMIT_CODE } from '@/lib/freeStoryAllowance';
 
 export class FreeStoryLimitError extends Error {
@@ -259,6 +260,14 @@ export class StoryGenerationService {
     if (vocabularyIntegration.userSpecified.specialRequestWords.length > 0) vocabSources.push('special request');
     if (vocabularyIntegration.userSpecified.teacherWords.length > 0) vocabSources.push('teacher words');
 
+    // The parent's practice words ("Any words to practice?"): every one must be in the
+    // story. The server reads this exact line back and checks the answer
+    // (supabase/functions/_shared/practiceWords.ts).
+    const practiceLine = practiceWordsPromptLine([
+      ...vocabularyIntegration.userSpecified.formWords,
+      ...vocabularyIntegration.userSpecified.specialRequestWords,
+    ]);
+
     // Create vocabulary compliance configuration
     const vocabularyConfig = {
       hasUserWords: allUserVocabWords.length > 0,
@@ -378,7 +387,7 @@ export class StoryGenerationService {
 ${mainCharacterPrompt}
 
 ${audienceLine}
-
+${practiceLine ? `\n${practiceLine}\n` : ''}
 ${vocabularyConfig.hasUserWords 
   ? `🎯 VOCABULARY REQUIREMENTS:
 1. CRITICAL PRIORITY - INCLUDE ALL 100%: Use ALL of these user-specified words naturally in your story: ${vocabularyConfig.userWords.join(', ')} (sources: ${vocabularyConfig.sources.join(', ')}). These words were specifically requested by the user/teacher and must be woven into the narrative.

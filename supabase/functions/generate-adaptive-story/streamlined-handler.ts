@@ -6,6 +6,7 @@ import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPl
 import { expertGradeForGrade } from "../_shared/grades.ts";
 import { chatCompletionWithFallback, lastProviderAttempts } from "../_shared/storyTextProvider.ts";
 import { logStoryFailure } from "../_shared/storyFailureLog.ts";
+import { practiceWordsFromPrompt, missingPracticeWords, practiceWordsRequired, weaveMissingWords } from "../_shared/practiceWords.ts";
 import { storyTextProblem } from "../_shared/storyOutputCheck.ts";
 import { 
   parseIntoPages as sharedParseIntoPages, 
@@ -847,6 +848,9 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   // Enhanced AI Generation with Intelligent Circuit Breaker
   let storyText = '';
   let attempt = 1;
+  // Practice words: one retry when the answer leaves some out; its text is kept as a last resort.
+  let practiceRetried = false;
+  let practiceFallbackText = '';
   let currentModelIndex = 0;
   let retriesOnCurrentModel = 0;
   const maxRetriesPerModel = 2;
@@ -1160,6 +1164,34 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       });
       
       if (storyText && storyText.trim()) {
+        // The parent's practice words: every one in the story (../_shared/practiceWords.ts).
+        // A whole story (pages split by ***) or the ending page must carry all that are
+        // still missing; a live page carries its share. Missing → one retry naming them;
+        // still missing → woven in, so no word is ever dropped.
+        const practice = practiceWordsFromPrompt(enhancedUserPrompt);
+        if (practice.length) {
+          const remaining = missingPracticeWords(config?.existingStory ?? '', practice);
+          const required = practiceWordsRequired(remaining.length, {
+            wholeStory: storyText.includes('***') && !config?.existingStory,
+            endingPage: !!config?.isEndingPage,
+            difficulty: String(difficulty ?? ''),
+          });
+          const missing = missingPracticeWords(storyText, remaining);
+          const used = remaining.length - missing.length;
+          if (used < required) {
+            if (!practiceRetried && attempt < maxAttempts) {
+              practiceRetried = true;
+              console.log(`📚 Practice words missing (${missing.join(', ')}): retrying with them named`);
+              enhancedUserPrompt += `\n\nYou left out practice words. Use EACH of these words in the story, spelled exactly: ${missing.slice(0, required - used).join(', ')}.`;
+              practiceFallbackText = storyText;
+              storyText = '';
+              attempt++;
+              continue;
+            }
+            storyText = weaveMissingWords(storyText, missing.slice(0, required - used));
+            console.log(`📚 Practice words woven in as a last resort: ${missing.slice(0, required - used).join(', ')}`);
+          }
+        }
         const vocabularyUsage = extractVocabularyUsage(storyText, enhancedUserPrompt);
         console.log(`✅ [AI-DEBUG] SUCCESS with ${currentModel.name}:`, { 
           attempt,
@@ -1265,6 +1297,12 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         throw new Error('All AI generation attempts failed');
       }
     }
+  }
+
+  if (!storyText?.trim() && practiceFallbackText) {
+    // The retry for practice words failed: keep the first answer, with the words woven in.
+    const words = practiceWordsFromPrompt(enhancedUserPrompt);
+    storyText = weaveMissingWords(practiceFallbackText, missingPracticeWords(practiceFallbackText, missingPracticeWords(config?.existingStory ?? '', words)));
   }
 
   if (!storyText?.trim()) {
