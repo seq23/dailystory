@@ -26,6 +26,10 @@ describe('boot resilience (index.html)', () => {
     expect(html).toContain('Something stopped Time-2-Read from loading.');
     expect(html).toMatch(/setTimeout\(function \(\) \{\s*if \(!window\.__t2rBooted\)/);
     expect(at('t2r-boot-banner')).toBeLessThan(at('src="/src/main.tsx"'));
+    // 26 Oct 2026: an inline display:flex overrode [hidden] and the banner showed on every page.
+    const tag = html.slice(at('id="t2r-boot-banner"'), html.indexOf('>', at('id="t2r-boot-banner"')));
+    expect(tag).toMatch(/display:none/);
+    expect(tag).not.toMatch(/display:flex/);
   });
 
   it('reports start-up failures to client_boot_errors', () => {
