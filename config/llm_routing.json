@@ -28,31 +28,46 @@
       "id": "nvidia/nemotron-3-ultra-550b-a55b:free",
       "name": "NVIDIA: Nemotron 3 Ultra (free)",
       "context_length": 1000000,
-      "pricing": { "prompt": "0", "completion": "0" }
+      "pricing": {
+        "prompt": "0",
+        "completion": "0"
+      }
     },
     {
       "id": "nvidia/nemotron-3.5-super-vl:free",
       "name": "NVIDIA: Nemotron 3.5 Super VL (free)",
       "context_length": 1000000,
-      "pricing": { "prompt": "0", "completion": "0" }
+      "pricing": {
+        "prompt": "0",
+        "completion": "0"
+      }
     },
     {
       "id": "google/gemma-4-31b-it:free",
       "name": "Google: Gemma 4 31B (free)",
       "context_length": 262144,
-      "pricing": { "prompt": "0", "completion": "0" }
+      "pricing": {
+        "prompt": "0",
+        "completion": "0"
+      }
     },
     {
       "id": "nvidia/nemotron-3-super-120b-a12b:free",
       "name": "NVIDIA: Nemotron 3 Super (free)",
       "context_length": 262144,
-      "pricing": { "prompt": "0", "completion": "0" }
+      "pricing": {
+        "prompt": "0",
+        "completion": "0"
+      }
     }
   ],
   "automation_lane": {
     "state": "no_model_calls_today",
     "detail": "No script or workflow in this repository calls a model. The Search Console collectors, the prerender check and the IndexNow submitter are all deterministic. The router exists so that the first one to need a model has a $0 door to go through instead of naming its own.",
-    "scan_roots": ["scripts", ".github/workflows"]
+    "scan_roots": [
+      "scripts",
+      ".github/workflows"
+    ]
   },
   "paid_lanes": [
     {
@@ -60,21 +75,98 @@
       "status": "out_of_scope_funded_by_subscriptions",
       "where": "supabase/functions",
       "purpose": "The Time2Read product itself: adaptive story generation, narration, speech-to-text, spelling correction, translation, dictionary lookups and illustration.",
-      "provider_endpoints": ["api.openai.com", "api.runware.ai", "ai.gateway.lovable.dev", "openrouter.ai/api", "api.dictionaryapi.dev"],
-      "provider_model_ids": ["gpt-4o-mini", "gpt-4o", "gpt-image-1", "whisper-1", "tts-1-hd", "google/gemini-3.6-flash", "google/gemini-3-flash-preview"],
+      "provider_endpoints": [
+        "api.openai.com",
+        "api.runware.ai",
+        "ai.gateway.lovable.dev",
+        "openrouter.ai/api",
+        "api.dictionaryapi.dev",
+        "api.cloudflare.com/client/v4/accounts/*/ai"
+      ],
+      "provider_model_ids": [
+        "gpt-4o-mini",
+        "gpt-4o",
+        "gpt-image-1",
+        "whisper-1",
+        "tts-1-hd",
+        "google/gemini-3.6-flash",
+        "google/gemini-3-flash-preview"
+      ],
       "why_not_free": "Subscribers pay for this inference; it is cost of goods, not an unattended probe. The owner's zero-paid rule is about automation this repo runs on a schedule, and this lane runs only when a paying reader opens a story.",
       "guard": "src/test/guards/zero-paid-llm.test.ts keeps this lane listed here, so a new paid call site cannot appear unrecorded.",
-      "text_provider_order": ["openai", "openrouter-free", "lovable-gateway", "backup content (Backup Mode stories, built-in word entries)"],
-      "openrouter_free_tier": {
+      "free_dictionary": "api.dictionaryapi.dev, no key, $0: word-dictionary's last tier before a built-in entry (supabase/functions/_shared/wordFallback.ts)",
+      "text_chain": {
         "decided": "2026-10-26",
-        "quote": "we can do $0 only",
-        "max_cost_usd": 0,
-        "secret": "OPENROUTER_API_KEY (Supabase secret, a free OpenRouter account's key; absent = tier skipped silently)",
-        "models_in_order": ["google/gemma-4-31b-it:free", "nvidia/nemotron-3-super-120b-a12b:free", "nvidia/nemotron-3-ultra-550b-a55b:free"],
-        "why": "Story text and word definitions kept working only while OpenAI had credit (26 Oct 2026: 429 credit_balance_exhausted). Free models rate-limit, so three are tried in turn; every id is :free and storyTextProvider.ts refuses any other.",
-        "read_by": "supabase/functions/_shared/storyTextProvider.ts (OPENROUTER_FREE_MODELS, kept equal to this list by src/test/guards/story-text-provider.test.ts)"
-      },
-      "free_dictionary": "api.dictionaryapi.dev, no key, $0: word-dictionary's last tier before a built-in entry (supabase/functions/_shared/wordFallback.ts)"
+        "quote": "i'd rather use the openrouter free ... i dont wanna pay anything if possible",
+        "applies_to": "story pages (generate-adaptive-story), word-dictionary, translate-universal, correct-spelling",
+        "read_by": "supabase/functions/_shared/storyTextProvider.ts (kept equal to this block by src/test/guards/story-text-provider.test.ts)",
+        "privacy_rule": "Before any request leaves on tiers 1-3, every child's name (and names found in the prompt's Character Info: name, parent, sibling, school, city) is replaced with a placeholder (Kiki, Lulu, ...) and put back in the returned text: supabase/functions/_shared/deidentify.ts. No email or ids are ever in a prompt. OpenAI (tier 4, paid, no training on API data) receives the request as written.",
+        "order": [
+          {
+            "tier": "openrouter-free",
+            "secret": "OPENROUTER_API_KEY",
+            "max_cost_usd": 0,
+            "models": [
+              "nvidia/nemotron-3-ultra-550b-a55b:free",
+              "google/gemma-4-31b-it:free",
+              "google/gemma-4-26b-a4b-it:free",
+              "nvidia/nemotron-3-super-120b-a12b:free"
+            ],
+            "rotation": "next model on 429, 5xx, a 20 s timeout or an empty answer; a 401 ends the tier",
+            "tested_2026_10_26": "nemotron-3-ultra: 200, good 2nd-grade prose and valid JSON (~4-5 s). gemma-4-31b and gemma-4-26b: 429 upstream rate limit at test time (kept: free capacity varies by hour). nemotron-3-super: 404 at test time (kept last). Rejected: thinkingmachines/inkling:free (403, agentic harnesses only), nvidia/nemotron-3.5-lightning:free (200 with empty text: reasoning eats the budget).",
+            "terms_check": "OpenRouter terms (openrouter.ai/terms, read 26 Oct 2026): the account holder must be 18+ (the owner is); no clause forbids a service used by children. Model licences: Gemma Terms of Use and NVIDIA Open Model License carry no age restriction on the downstream service. Free endpoints may log prompts, hence the privacy rule."
+          },
+          {
+            "tier": "cloudflare-free",
+            "secret": "CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_WORKERS_AI_TOKEN (absent = skipped)",
+            "max_cost_usd": 0,
+            "models": [
+              "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+            ],
+            "terms_check": "Cloudflare terms (cloudflare.com/website-terms, read 26 Oct 2026): no under-18 prohibition, only a note that the services are not COPPA/CIPA compliance tools. Meta Llama 3.3 Acceptable Use Policy has no age restriction on the service. The vault's CLOUDFLARE_API_TOKEN answered 401 on Workers AI, so this tier needs a token with the Workers AI permission."
+          },
+          {
+            "tier": "openrouter-paid",
+            "secret": "OPENROUTER_API_KEY",
+            "models": [
+              "meta-llama/llama-3.3-70b-instruct"
+            ],
+            "price_usd_per_million_tokens": {
+              "prompt": 0.1,
+              "completion": 0.32
+            },
+            "spend_rule": "prepaid credit only (owner added $10, auto top-up off); a 402 skips this tier for 10 minutes; provider.data_collection = deny",
+            "terms_check": "OpenRouter terms as above; Meta Llama 3.3 licence and AUP: no age restriction on the downstream service."
+          },
+          {
+            "tier": "openai",
+            "secret": "OPENAI_API_KEY",
+            "models": [
+              "as the caller names them (gpt-5 chain for stories, gpt-4o-mini for words)"
+            ],
+            "spend_rule": "last paid resort; a no-credit or bad-key refusal skips it for 10 minutes",
+            "terms_check": "OpenAI services agreement allows business API use for a children's product with the operator responsible for COPPA consent (time-2-read collects parental consent); API data is not used for training."
+          },
+          {
+            "tier": "backup-content",
+            "what": "Backup Mode pre-written stories; word-dictionary: free dictionary (api.dictionaryapi.dev) then a kind built-in entry"
+          }
+        ],
+        "excluded": [
+          {
+            "provider": "Google Gemini API",
+            "why": "Gemini API Additional Terms (ai.google.dev/gemini-api/terms): not for services directed towards or likely to be accessed by individuals under 18."
+          },
+          {
+            "provider": "Lovable AI gateway",
+            "why": "Serves Google Gemini models (google/gemini-*), so the same Gemini restriction applies. Removed from the text chain 26 Oct 2026; generate-quiz and the image-prompt helper still call it (separate follow-up)."
+          },
+          {
+            "provider": "Groq / Cerebras free tiers",
+            "why": "Not added: no key on the project. Groq terms page gave no readable age clause (needs a manual read); Cerebras terms require the account holder to be 13+ with no child-service clause found. Each needs an owner signup (console.groq.com/keys, cloud.cerebras.ai) before it can be a tier."
+          }
+        ]
+      }
     }
   ],
   "provider_endpoint_markers": [

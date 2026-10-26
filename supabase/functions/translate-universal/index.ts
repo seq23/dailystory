@@ -264,9 +264,9 @@ serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   try {
-    // Any one provider will do (OpenAI, OpenRouter :free, Lovable gateway: ../_shared/storyTextProvider.ts).
+    // Any one provider of the chain will do (../_shared/storyTextProvider.ts).
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY') ?? '';
-    if (!openaiApiKey && !Deno.env.get('OPENROUTER_API_KEY') && !Deno.env.get('LOVABLE_API_KEY')) {
+    if (!openaiApiKey && !Deno.env.get('OPENROUTER_API_KEY') && !Deno.env.get('CLOUDFLARE_WORKERS_AI_TOKEN')) {
       return new Response(
         JSON.stringify({ error: 'Translation service not configured' }),
         { 

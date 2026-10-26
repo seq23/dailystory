@@ -1,7 +1,8 @@
-// 26 Oct 2026: every live story fell into Backup Mode because OpenAI answered
-// 429 "credit_balance_exhausted" and story text had no second provider. This guard
-// pins the second provider (the Lovable AI gateway), the dead-key circuit, the
-// server-side failure log, and that Backup Mode itself is unchanged.
+// 26 Oct 2026: every live story fell into Backup Mode because OpenAI answered 429
+// "credit_balance_exhausted" and story text had one provider. The owner's final
+// order: OpenRouter :free (rotated) → Workers AI free → OpenRouter paid (prepaid
+// credit only) → OpenAI → backup content. No Gemini (its API terms forbid services
+// used by under-18s). A child's name never leaves on the free/third-party routes.
 import { describe, it, expect, beforeEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -9,130 +10,146 @@ import {
   chatCompletionWithFallback,
   resetProviderCircuit,
   isDeadKeyRefusal,
-  GATEWAY_CHAT_URL,
-  GATEWAY_STORY_MODEL,
+  assertFreeOpenRouterModel,
   OPENAI_CHAT_URL,
   OPENROUTER_CHAT_URL,
   OPENROUTER_FREE_MODELS,
-  assertFreeOpenRouterModel,
+  OPENROUTER_PAID_MODEL,
+  CLOUDFLARE_FREE_MODEL,
+  cloudflareChatUrl,
 } from "../../../supabase/functions/_shared/storyTextProvider";
+import { deidentify } from "../../../supabase/functions/_shared/deidentify";
 import { parseModelJson, builtInWordEntry, freeDictionaryLookup } from "../../../supabase/functions/_shared/wordFallback";
 
 const ROOT = join(__dirname, "../../..");
 const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
 
 const NO_CREDIT = JSON.stringify({ error: { type: "insufficient_quota", code: "credit_balance_exhausted", message: "You have no credits remaining." } });
-const OK = JSON.stringify({ choices: [{ message: { content: "Max the dog looked up at the moon." } }], usage: { prompt_tokens: 1, completion_tokens: 1 } });
-const env = (n: string) => ({ OPENAI_API_KEY: "sk-test", LOVABLE_API_KEY: "lov-test" } as Record<string, string>)[n];
-const BODY = { model: "gpt-5-2025-08-07", messages: [{ role: "user", content: "story" }], max_completion_tokens: 800 };
+const answer = (text: string) => JSON.stringify({ choices: [{ message: { content: text } }], usage: { prompt_tokens: 1, completion_tokens: 1 } });
+const OK = answer("Kiki the dog looked up at the moon.");
+const ALL_KEYS: Record<string, string> = { OPENROUTER_API_KEY: "or-test", CLOUDFLARE_ACCOUNT_ID: "acc", CLOUDFLARE_WORKERS_AI_TOKEN: "cf-test", OPENAI_API_KEY: "sk-test" };
+const envOf = (keys: Record<string, string>) => (n: string) => keys[n];
+const STORY_PROMPT = 'Create a never-ending story for Aiden, age 7. Theme: space.\nCharacter Info: {"name":"Aiden","age":7}';
+const BODY = { model: "gpt-5-2025-08-07", messages: [{ role: "system", content: "You write for children." }, { role: "user", content: STORY_PROMPT }], max_completion_tokens: 800 };
+const CF_URL = cloudflareChatUrl("acc");
 
-function recorder(answers: Record<string, () => Response>) {
-  const calls: { url: string; body: any }[] = [];
+type Call = { url: string; body: any };
+function scripted(answers: (url: string, body: any, n: number) => Response) {
+  const calls: Call[] = [];
   const fetchImpl = async (url: string, init: RequestInit) => {
-    calls.push({ url, body: JSON.parse(String(init.body)) });
-    return answers[url]();
+    const body = JSON.parse(String(init.body));
+    calls.push({ url, body });
+    return answers(url, body, calls.length);
   };
   return { calls, fetchImpl };
 }
 
-describe("story text provider", () => {
+describe("the chain: free first, paid last", () => {
   beforeEach(() => resetProviderCircuit());
 
-  it("the exact 26 Oct refusal (429 credit_balance_exhausted) is a dead key, a plain 429 is not", () => {
+  it("the order is OpenRouter :free (each model) → Workers AI → OpenRouter paid → OpenAI", async () => {
+    const r = scripted(() => new Response("busy", { status: 429 }));
+    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
+    expect(out.response.ok).toBe(false);
+    expect(r.calls.map((c) => (c.url === CF_URL ? "cf" : c.url === OPENAI_CHAT_URL ? "openai" : c.body.model))).toEqual([
+      ...OPENROUTER_FREE_MODELS, "cf", OPENROUTER_PAID_MODEL, "openai",
+    ]);
+  });
+
+  it("the first free model that answers writes the story; nothing paid is called", async () => {
+    const r = scripted((url, _b, n) => (n === 1 ? new Response("rate limited", { status: 429 }) : new Response(OK, { status: 200 })));
+    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
+    expect(out.provider).toBe("openrouter-free");
+    expect(r.calls.map((c) => c.body.model)).toEqual(OPENROUTER_FREE_MODELS.slice(0, 2));
+    expect(r.calls.every((c) => c.url === OPENROUTER_CHAT_URL && /:free$/.test(c.body.model))).toBe(true);
+  });
+
+  it("a 200 with no text does not count", async () => {
+    const r = scripted((url) => (url === OPENROUTER_CHAT_URL ? new Response(answer(""), { status: 200 }) : new Response(OK, { status: 200 })));
+    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
+    expect(out.provider).toBe("cloudflare-free");
+  });
+
+  it("missing keys skip their tiers silently; OpenAI alone still works", async () => {
+    const r = scripted(() => new Response(OK, { status: 200 }));
+    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf({ OPENAI_API_KEY: "sk-test" }) });
+    expect(out.provider).toBe("openai");
+    expect(r.calls.map((c) => c.url)).toEqual([OPENAI_CHAT_URL]);
+    expect(out.attempts.map((a) => a.provider)).toEqual(["openai"]);
+  });
+
+  it("paid OpenRouter asks for no data collection and stops for 10 minutes on 402 (prepaid credit gone)", async () => {
+    const keys = { OPENROUTER_API_KEY: "or-test", OPENAI_API_KEY: "sk-test" };
+    const r = scripted((url, body) =>
+      url === OPENAI_CHAT_URL ? new Response(OK, { status: 200 })
+      : body.model === OPENROUTER_PAID_MODEL ? new Response("Insufficient credits", { status: 402 })
+      : new Response("busy", { status: 429 }));
+    await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(keys), now: () => 1000 });
+    const paid = r.calls.find((c) => c.body.model === OPENROUTER_PAID_MODEL)!;
+    expect(paid.body.provider).toEqual({ data_collection: "deny" });
+    const r2 = scripted((url) => (url === OPENAI_CHAT_URL ? new Response(OK, { status: 200 }) : new Response("busy", { status: 429 })));
+    await chatCompletionWithFallback(BODY, { fetchImpl: r2.fetchImpl, env: envOf(keys), now: () => 2000 });
+    expect(r2.calls.some((c) => c.body.model === OPENROUTER_PAID_MODEL)).toBe(false);
+  });
+
+  it("the 26 Oct refusal (429 credit_balance_exhausted) is a dead key; a plain 429 is not", () => {
     expect(isDeadKeyRefusal(429, NO_CREDIT)).toBe(true);
-    expect(isDeadKeyRefusal(401, "")).toBe(true);
+    expect(isDeadKeyRefusal(402, "")).toBe(true);
     expect(isDeadKeyRefusal(429, '{"error":{"type":"requests"}}')).toBe(false);
   });
 
-  it("OpenAI out of credit: the same request goes to the gateway and the story comes back", async () => {
-    const r = recorder({
-      [OPENAI_CHAT_URL]: () => new Response(NO_CREDIT, { status: 429 }),
-      [GATEWAY_CHAT_URL]: () => new Response(OK, { status: 200 }),
-    });
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env, now: () => 1000 });
-    expect(out.response.ok).toBe(true);
-    expect(out.provider).toBe("lovable-gateway");
-    expect(r.calls.map((c) => c.url)).toEqual([OPENAI_CHAT_URL, GATEWAY_CHAT_URL]);
-    expect(r.calls[1].body.model).toBe(GATEWAY_STORY_MODEL);
-    expect(r.calls[1].body.max_tokens).toBe(800);
-    expect(r.calls[1].body.max_completion_tokens).toBeUndefined();
-    expect(r.calls[1].body.messages).toEqual(BODY.messages);
-    const data = await out.response.json();
-    expect(data.choices[0].message.content).toContain("moon");
-
-    // Next reader within 10 minutes skips the dead provider entirely.
-    const r2 = recorder({ [GATEWAY_CHAT_URL]: () => new Response(OK, { status: 200 }) });
-    const out2 = await chatCompletionWithFallback(BODY, { fetchImpl: r2.fetchImpl, env, now: () => 2000 });
-    expect(out2.response.ok).toBe(true);
-    expect(r2.calls.map((c) => c.url)).toEqual([GATEWAY_CHAT_URL]);
-  });
-
-  it("OpenAI healthy: the gateway is never called", async () => {
-    const r = recorder({ [OPENAI_CHAT_URL]: () => new Response(OK, { status: 200 }), [GATEWAY_CHAT_URL]: () => { throw new Error("must not be called"); } });
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env });
-    expect(out.provider).toBe("openai");
-    expect(r.calls).toHaveLength(1);
-  });
-
-  it("both refuse: a real non-OK response and both attempts recorded for the failure log", async () => {
-    const r = recorder({
-      [OPENAI_CHAT_URL]: () => new Response(NO_CREDIT, { status: 429 }),
-      [GATEWAY_CHAT_URL]: () => new Response("payment required", { status: 402 }),
-    });
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env });
-    expect(out.response.ok).toBe(false);
-    expect(out.attempts.map((a) => [a.provider, a.status])).toEqual([["openai", 429], ["lovable-gateway", 402]]);
+  it("no Gemini and no Lovable gateway in the text chain", () => {
+    const src = read("supabase/functions/_shared/storyTextProvider.ts");
+    expect(src).not.toMatch(/generativelanguage\.googleapis|ai\.gateway\.lovable|"google\/gemini/);
   });
 });
 
-describe("OpenRouter tier: $0 only", () => {
+describe("a child's name never leaves on the free or third-party routes", () => {
   beforeEach(() => resetProviderCircuit());
-  const envWithOpenRouter = (n: string) => ({ OPENAI_API_KEY: "sk-test", OPENROUTER_API_KEY: "or-test", LOVABLE_API_KEY: "lov-test" } as Record<string, string>)[n];
 
-  it("every model id is :free and equals config/llm_routing.json openrouter_free_tier", () => {
+  it("the outgoing body to every non-OpenAI tier contains no real name; the returned text has it back", async () => {
+    const r = scripted((url) => (url === OPENAI_CHAT_URL ? new Response(OK, { status: 200 }) : new Response("busy", { status: 429 })));
+    await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), privateNames: ["Aiden"] });
+    const thirdParty = r.calls.filter((c) => c.url !== OPENAI_CHAT_URL);
+    expect(thirdParty.length).toBe(OPENROUTER_FREE_MODELS.length + 2);
+    for (const c of thirdParty) {
+      expect(JSON.stringify(c.body)).not.toMatch(/aiden/i);
+      expect(JSON.stringify(c.body)).toContain("Kiki");
+    }
+    resetProviderCircuit();
+    const r2 = scripted(() => new Response(answer("Kiki and Kiki's dog flew to the moon."), { status: 200 }));
+    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r2.fetchImpl, env: envOf(ALL_KEYS) });
+    expect(JSON.stringify(r2.calls[0].body)).not.toMatch(/aiden/i); // name found in Character Info without being passed
+    expect((await out.response.json()).choices[0].message.content).toBe("Aiden and Aiden's dog flew to the moon.");
+  });
+
+  it("a placeholder already in the text is not reused, and multi-word names are hidden whole and in part", () => {
+    const d = deidentify(["Kiki met Mary Jane. Mary waved.", 'Character Info: {"name":"Mary Jane"}'], ["Mary Jane"]);
+    expect(d.texts.join(" ")).not.toMatch(/Mary|Jane/);
+    expect(d.texts[0]).toMatch(/^Kiki met Lulu\. Lulu waved\.$/);
+    expect(d.restore("Lulu smiled.")).toBe("Mary Jane smiled.");
+  });
+
+  it("word parts are not touched: 'Max' is hidden, 'maximum' is not", () => {
+    const d = deidentify(["Max saw the maximum number."], ["Max"]);
+    expect(d.texts[0]).toBe("Kiki saw the maximum number.");
+  });
+});
+
+describe("free models: $0 only, recorded in config", () => {
+  it("every free id is :free, equals config/llm_routing.json, and the chain is recorded with a terms check per provider", () => {
     const cfg = JSON.parse(read("config/llm_routing.json"));
     const lane = cfg.paid_lanes.find((l: { id: string }) => l.id === "product-inference");
-    expect(lane.openrouter_free_tier.max_cost_usd).toBe(0);
-    expect([...OPENROUTER_FREE_MODELS]).toEqual(lane.openrouter_free_tier.models_in_order);
-    expect(OPENROUTER_FREE_MODELS.length).toBeGreaterThanOrEqual(2);
+    const chain = lane.text_chain;
+    expect(chain.order.map((t: { tier: string }) => t.tier)).toEqual(["openrouter-free", "cloudflare-free", "openrouter-paid", "openai", "backup-content"]);
+    expect(chain.order[0].models).toEqual([...OPENROUTER_FREE_MODELS]);
+    expect(chain.order[0].max_cost_usd).toBe(0);
+    expect(chain.order[1].models).toEqual([CLOUDFLARE_FREE_MODEL]);
+    expect(chain.order[2].models).toEqual([OPENROUTER_PAID_MODEL]);
+    for (const t of chain.order.slice(0, 4)) expect(String(t.terms_check ?? "").length, t.tier).toBeGreaterThan(60);
+    expect(chain.excluded.map((e: { provider: string }) => e.provider)).toEqual(expect.arrayContaining(["Google Gemini API", "Lovable AI gateway"]));
     for (const m of OPENROUTER_FREE_MODELS) expect(m).toMatch(/:free$/);
     expect(() => assertFreeOpenRouterModel("openai/gpt-4o-mini")).toThrow(/not a :free model/);
-  });
-
-  it("OpenAI out of credit, first free model rate-limited: the next free model writes it; the gateway is not needed", async () => {
-    let orCalls = 0;
-    const calls: { url: string; body: any }[] = [];
-    const fetchImpl = async (url: string, init: RequestInit) => {
-      calls.push({ url, body: JSON.parse(String(init.body)) });
-      if (url === OPENAI_CHAT_URL) return new Response(NO_CREDIT, { status: 429 });
-      if (url === OPENROUTER_CHAT_URL) return ++orCalls === 1 ? new Response("rate limited", { status: 429 }) : new Response(OK, { status: 200 });
-      throw new Error("gateway must not be called");
-    };
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl, env: envWithOpenRouter });
-    expect(out.provider).toBe("openrouter-free");
-    expect((await out.response.json()).choices[0].message.content).toContain("moon");
-    expect(calls.filter((c) => c.url === OPENROUTER_CHAT_URL).map((c) => c.body.model)).toEqual(OPENROUTER_FREE_MODELS.slice(0, 2));
-    for (const c of calls.filter((c) => c.url === OPENROUTER_CHAT_URL)) expect(c.body.model).toMatch(/:free$/);
-  });
-
-  it("a 200 with no text from a free model does not count as a story", async () => {
-    const fetchImpl = async (url: string) => {
-      if (url === OPENAI_CHAT_URL) return new Response(NO_CREDIT, { status: 429 });
-      if (url === OPENROUTER_CHAT_URL) return new Response(JSON.stringify({ choices: [{ message: { content: "" } }] }), { status: 200 });
-      return new Response(OK, { status: 200 });
-    };
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl, env: envWithOpenRouter });
-    expect(out.provider).toBe("lovable-gateway");
-  });
-
-  it("no OPENROUTER_API_KEY: the tier is skipped silently (no call, no error attempt)", async () => {
-    const r = recorder({
-      [OPENAI_CHAT_URL]: () => new Response(NO_CREDIT, { status: 429 }),
-      [GATEWAY_CHAT_URL]: () => new Response(OK, { status: 200 }),
-    });
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env });
-    expect(r.calls.some((c) => c.url === OPENROUTER_CHAT_URL)).toBe(false);
-    expect(out.attempts.some((a) => a.provider === "openrouter-free")).toBe(false);
   });
 });
 
@@ -178,8 +195,9 @@ describe("generate-adaptive-story wiring", () => {
     expect((handler.match(/chatCompletionWithFallback\(/g) || []).length).toBeGreaterThanOrEqual(2);
   });
 
-  it("does not refuse to start when only the gateway key is set", () => {
-    expect(handler).toMatch(/if \(!apiKey && !gatewayKey\)/);
+  it("starts when any one provider of the chain has a key, and passes the child's name for masking", () => {
+    expect(handler).toMatch(/\['OPENROUTER_API_KEY', 'CLOUDFLARE_WORKERS_AI_TOKEN', 'OPENAI_API_KEY'\]\.some/);
+    expect(handler).toMatch(/chatCompletionWithFallback\(apiBody, \{ privateNames: \[userInfo\?\.name/);
   });
 
   it("writes every failed story to story_generation_failures", () => {
