@@ -51,6 +51,27 @@ Each carries the `userInfo` fields the page writes the story from
 (`{ difficulty }`, plus `expertGradeLevel` for 6th–10th), the bundle grade (what tells
 Pre-K from K and 1st from 2nd), and the guardrail minimums that land on it.
 
+## Quiz bands (owner-approved quiz plan, 26 Oct 2026)
+
+The end-of-story quiz is banded by the child's **Reads-at grade**; its topics and
+tone follow the child's real age. Source: `QUIZ_BANDS` in
+`supabase/functions/_shared/grades.ts` (re-exported by `src/lib/readingLevelMap.ts`);
+rules in `supabase/functions/_shared/quiz.ts`. A "sometimes" skill rotates in for
+about half of quizzes (chosen by the story, so a story always gets the same quiz) and
+takes one slot from the skill with the most slots. Every answer is saved with its
+skill; Parent dashboard → Reports shows strengths by skill.
+
+<!-- quiz-bands:start -->
+| Band | Grades | Questions | Choices | Pictures | Read aloud | Fixed skills | Sometimes |
+|---|---|---|---|---|---|---|---|
+| prek-k | PreK, K | 3 | 2 | yes | always | phonics 1, sight-words 1, what-happened 1 | between-the-lines |
+| 1st | 1 | 4 | 3 | no | always | phonics 1, sight-words 1, word-meaning 1, what-happened 1 | spelling, between-the-lines |
+| 2nd-3rd | 2, 3 | 5 | 3–4 | no | tap | spelling 1, word-meaning 1, what-happened 1, between-the-lines 1, big-picture 1 | phonics, sight-words, sentence-sense |
+| 4th-5th | 4, 5 | 6 | 4 | no | tap | spelling 1, word-meaning 2, what-happened 1, between-the-lines 1, big-picture 1 | sentence-sense |
+| 6th-8th | 6, 7, 8 | 7 | 4 | no | tap | spelling 1, word-meaning 2, what-happened 1, between-the-lines 1, big-picture 1, sentence-sense 1 | — |
+| 9th-10th | 9, 10 | 8 | 4 | no | tap | spelling 1, word-meaning 2, between-the-lines 2, big-picture 2, sentence-sense 1 | — |
+<!-- quiz-bands:end -->
+
 ## Where each value is stored
 
 | Column | Holds | Read by |
@@ -93,9 +114,9 @@ The guard checks that each line below still holds the named symbol.
 | src/services/LiveGenerationService.ts:53 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
 | supabase/functions/generate-adaptive-story/streamlined-handler.ts:150 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
 | supabase/functions/template-service/index.ts:164 | DifficultyLevelMapper.fromBackendValue(difficulty) | `difficulty` read backend-first |
-| src/components/ParentDashboard.tsx:890 | readingLevelForDifficulty(guardrails.minDifficulty) | stored minimum → picker value |
-| src/components/CleanStoryDisplay.tsx:1297 | minimumGradeForGuardrail | lock clamp compares grades |
-| src/lib/readingLevelMap.ts:100 | normalizeStoredLevel | any stored column value → grade |
+| src/components/ParentDashboard.tsx:909 | readingLevelForDifficulty(guardrails.minDifficulty) | stored minimum → picker value |
+| src/components/CleanStoryDisplay.tsx:1312 | minimumGradeForGuardrail | lock clamp compares grades |
+| src/lib/readingLevelMap.ts:101 | normalizeStoredLevel | any stored column value → grade |
 <!-- converters:end -->
 
 ## Mismatches fixed 26 Oct 2026

@@ -51,3 +51,19 @@ export function loadLastReadStory(storage: Storage | undefined = globalThis.sess
     return null;
   }
 }
+
+/**
+ * THE reading counter (26 Oct 2026): a page counts once it has been shown, each page
+ * once, the last page included; words = the words on the counted pages. The towers,
+ * the session-ended stats, reading_sessions.words_read and Progress all read this.
+ * (Before, the towers only moved on Next, and the session counters were never
+ * incremented, so a 1-page story read "0 words".)
+ */
+export function pagesReadCount(pages: readonly string[], shown: Iterable<number>): { pagesRead: number; wordsRead: number } {
+  const list = Array.isArray(pages) ? pages : [];
+  const seen = new Set<number>();
+  for (const i of shown) if (Number.isInteger(i) && i >= 0 && i < list.length && list[i]?.trim()) seen.add(i);
+  let wordsRead = 0;
+  for (const i of seen) wordsRead += countWords(list[i]);
+  return { pagesRead: seen.size, wordsRead };
+}

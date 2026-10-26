@@ -329,3 +329,94 @@ export function minimumGradeForGuardrail(minDifficulty: unknown, minExpertGrade?
   }
   return lowestGradeForDifficulty(d);
 }
+
+// ── End-of-story quiz bands (owner-approved quiz plan, 26 Oct 2026) ─────────────
+// Band by the child's Reads-at grade; topics by real age. Shown in
+// docs/reading-levels.md ("Quiz bands"); src/test/guards/reading-level-map.test.ts
+// fails if the doc and this table differ.
+
+export const QUIZ_SKILLS = [
+  "phonics", "sight-words", "spelling", "word-meaning",
+  "what-happened", "between-the-lines", "big-picture", "sentence-sense",
+] as const;
+export type QuizSkill = typeof QUIZ_SKILLS[number];
+
+export const QUIZ_SKILL_LABELS: Readonly<Record<QuizSkill, string>> = Object.freeze({
+  phonics: "Sounds & phonics",
+  "sight-words": "Sight words",
+  spelling: "Spelling",
+  "word-meaning": "Word meaning",
+  "what-happened": "What happened",
+  "between-the-lines": "Reading between the lines",
+  "big-picture": "Big picture",
+  "sentence-sense": "Sentence sense",
+});
+
+export interface QuizBand {
+  id: string;
+  label: string;
+  grades: readonly Grade[];
+  /** Questions per quiz. */
+  questions: number;
+  /** Answer choices: the band's first grade gets min, the rest max. */
+  choices: { min: number; max: number };
+  /** Pre-K–K answers carry a picture. */
+  pictures: boolean;
+  /** "always": every question is read aloud; "tap": a Tap to hear button. */
+  readAloud: "always" | "tap";
+  /** Fixed questions per skill (they add up to `questions`). */
+  slots: Readonly<Partial<Record<QuizSkill, number>>>;
+  /** Skills that rotate in, one at a time, taking a slot. */
+  sometimes: readonly QuizSkill[];
+}
+
+const B = (b: QuizBand): QuizBand => Object.freeze(b);
+
+export const QUIZ_BANDS: readonly QuizBand[] = Object.freeze([
+  B({ id: "prek-k", label: "Pre-K–K", grades: ["PreK", "K"], questions: 3, choices: { min: 2, max: 2 }, pictures: true, readAloud: "always",
+    slots: { phonics: 1, "sight-words": 1, "what-happened": 1 }, sometimes: ["between-the-lines"] }),
+  B({ id: "1st", label: "1st", grades: ["1"], questions: 4, choices: { min: 3, max: 3 }, pictures: false, readAloud: "always",
+    slots: { phonics: 1, "sight-words": 1, "word-meaning": 1, "what-happened": 1 }, sometimes: ["spelling", "between-the-lines"] }),
+  B({ id: "2nd-3rd", label: "2nd–3rd", grades: ["2", "3"], questions: 5, choices: { min: 3, max: 4 }, pictures: false, readAloud: "tap",
+    slots: { spelling: 1, "word-meaning": 1, "what-happened": 1, "between-the-lines": 1, "big-picture": 1 }, sometimes: ["phonics", "sight-words", "sentence-sense"] }),
+  B({ id: "4th-5th", label: "4th–5th", grades: ["4", "5"], questions: 6, choices: { min: 4, max: 4 }, pictures: false, readAloud: "tap",
+    slots: { spelling: 1, "word-meaning": 2, "what-happened": 1, "between-the-lines": 1, "big-picture": 1 }, sometimes: ["sentence-sense"] }),
+  B({ id: "6th-8th", label: "6th–8th", grades: ["6", "7", "8"], questions: 7, choices: { min: 4, max: 4 }, pictures: false, readAloud: "tap",
+    slots: { spelling: 1, "word-meaning": 2, "what-happened": 1, "between-the-lines": 1, "big-picture": 1, "sentence-sense": 1 }, sometimes: [] }),
+  B({ id: "9th-10th", label: "9th–10th", grades: ["9", "10"], questions: 8, choices: { min: 4, max: 4 }, pictures: false, readAloud: "tap",
+    slots: { spelling: 1, "word-meaning": 2, "between-the-lines": 2, "big-picture": 2, "sentence-sense": 1 }, sometimes: [] }),
+]);
+
+export function quizBandForGrade(grade: unknown): QuizBand {
+  const g = normalizeGrade(grade) ?? "2";
+  return QUIZ_BANDS.find((b) => b.grades.includes(g))!;
+}
+
+export function quizChoicesForGrade(grade: unknown): number {
+  const g = normalizeGrade(grade) ?? "2";
+  const band = quizBandForGrade(g);
+  return band.grades[0] === g ? band.choices.min : band.choices.max;
+}
+
+/**
+ * The skill of each question, in order. A "sometimes" skill rotates in (about half of
+ * quizzes, chosen by `seed` so the same story gives the same quiz) and takes the slot
+ * of the skill with the most slots (never the only What happened).
+ */
+export function quizSkillPlan(grade: unknown, seed = 0): QuizSkill[] {
+  const band = quizBandForGrade(grade);
+  const counts = new Map<QuizSkill, number>(QUIZ_SKILLS.filter((s) => band.slots[s]).map((s) => [s, band.slots[s]!]));
+  const r = Math.abs(Math.floor(seed)) % (band.sometimes.length * 2 || 1);
+  if (band.sometimes.length && r < band.sometimes.length) {
+    const incoming = band.sometimes[r];
+    const donors = [...counts.entries()]
+      .filter(([s, n]) => s !== incoming && n > 0)
+      .sort((a, b) => b[1] - a[1] || QUIZ_SKILLS.indexOf(b[0]) - QUIZ_SKILLS.indexOf(a[0]));
+    const donor = donors.find(([s]) => s !== "what-happened") ?? donors[0];
+    if (donor) {
+      counts.set(donor[0], donor[1] - 1);
+      counts.set(incoming, (counts.get(incoming) ?? 0) + 1);
+    }
+  }
+  return QUIZ_SKILLS.flatMap((s) => Array.from({ length: counts.get(s) ?? 0 }, () => s));
+}

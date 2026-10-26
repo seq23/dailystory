@@ -16,6 +16,9 @@ import {
   normalizeStoredLevel,
   READING_LEVELS,
   BACKEND_DIFFICULTIES,
+  QUIZ_BANDS,
+  QUIZ_SKILLS,
+  quizSkillPlan,
 } from "@/lib/readingLevelMap";
 import {
   backendDifficultyOf,
@@ -48,6 +51,32 @@ describe("the doc table is the module", () => {
   it("the doc states the combination count the module exports", () => {
     expect(ALL_LEVEL_COMBOS).toHaveLength(GRADES.length);
     expect(doc).toContain(`**${ALL_LEVEL_COMBOS.length} combinations**`);
+  });
+});
+
+describe("the quiz band table in the doc is the module", () => {
+  it("one row per band, every cell equal, every grade in exactly one band, slots add up", () => {
+    const rows = section("quiz-bands");
+    expect(rows).toEqual(QUIZ_BANDS.map((b) => [
+      b.id, b.grades.join(", "), String(b.questions),
+      b.choices.min === b.choices.max ? String(b.choices.min) : `${b.choices.min}–${b.choices.max}`,
+      b.pictures ? "yes" : "no", b.readAloud,
+      QUIZ_SKILLS.filter((s) => b.slots[s]).map((s) => `${s} ${b.slots[s]}`).join(", "),
+      b.sometimes.join(", ") || "—",
+    ]));
+    expect(QUIZ_BANDS.flatMap((b) => b.grades)).toEqual([...GRADES]);
+    for (const b of QUIZ_BANDS) {
+      expect(Object.values(b.slots).reduce((x, y) => x + (y ?? 0), 0)).toBe(b.questions);
+      for (const g of b.grades) for (let seed = 0; seed < 12; seed++) expect(quizSkillPlan(g, seed)).toHaveLength(b.questions);
+    }
+  });
+  it("the owner's plan: 3 · 4 · 5 · 6 · 7 · 8 questions; Pre-K–K 2 picture choices read aloud", () => {
+    expect(QUIZ_BANDS.map((b) => b.questions)).toEqual([3, 4, 5, 6, 7, 8]);
+    expect(QUIZ_BANDS[0]).toMatchObject({ choices: { min: 2, max: 2 }, pictures: true, readAloud: "always" });
+    expect(QUIZ_BANDS[1].readAloud).toBe("always");
+    // sometimes-skills really rotate in for some stories
+    const seen = new Set(Array.from({ length: 12 }, (_, seed) => quizSkillPlan("2", seed).join()));
+    expect(seen.size).toBeGreaterThan(1);
   });
 });
 

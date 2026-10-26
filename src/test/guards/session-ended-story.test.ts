@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
-import { loadLastReadStory, readingProgress, saveLastReadStory, LAST_READ_STORY_KEY } from "@/lib/lastReadStory";
+import { loadLastReadStory, readingProgress, pagesReadCount, saveLastReadStory, LAST_READ_STORY_KEY } from "@/lib/lastReadStory";
 
 const ROOT = join(__dirname, "../../..");
 const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
@@ -30,7 +30,7 @@ describe("the story read is kept for the session-ended page", () => {
   });
 
   it("the reading page records the story as it is read and on End Session", () => {
-    expect(page).toMatch(/useEffect\(\(\) => \{\s*if \(!displayedStory\.length\) return;\s*const progress = readingProgress\(displayedStory, currentPage\);\s*saveLastReadStory\(/);
+    expect(page).toMatch(/useEffect\(\(\) => \{\s*if \(!displayedStory\.length\) return;\s*const progress = pagesReadCount\(displayedStory, shownPages\(\)\);\s*saveLastReadStory\(/);
     const end = page.indexOf("const handleEndSession = async () => {");
     expect(page.indexOf("saveLastReadStory(", end)).toBeGreaterThan(end);
   });
@@ -41,10 +41,25 @@ describe("the story read is kept for the session-ended page", () => {
 });
 
 describe("words read and the level card", () => {
-  it("End Session counts the words on the pages reached (the old counters were never incremented)", () => {
+  it("a page counts once it is shown, each page once, the last page included", () => {
+    expect(pagesReadCount(["one two three"], [0])).toEqual({ pagesRead: 1, wordsRead: 3 }); // a 1-page story
+    expect(pagesReadCount(["a b", "c d e", "f"], [0, 1, 1, 2, 2])).toEqual({ pagesRead: 3, wordsRead: 6 });
+    expect(pagesReadCount(["a b", ""], [0, 1, 9])).toEqual({ pagesRead: 1, wordsRead: 2 });
+    expect(page).toMatch(/if \(displayedStory\[currentPage\]\?\.trim\(\)\) markPageCompleted\(currentPage\);/);
+    expect(page).toMatch(/const shownPages = \(\): number\[\] => \[\.\.\.pagesCompleted, currentPage\];/);
+  });
+  it("towers, End Session (session-ended + reading_sessions + Progress) read the SAME counter", () => {
     const end = page.slice(page.indexOf("const handleEndSession = async () => {"));
-    expect(end).toMatch(/const progress = readingProgress\(displayedStory, currentPage\);/);
-    expect(end).toMatch(/const totalWordsRead = Math\.max\(sessionWordsRead, progress\.wordsRead\);/);
+    expect(end).toMatch(/const progress = pagesReadCount\(displayedStory, shownPages\(\)\);\s*const totalWordsRead = progress\.wordsRead;/);
+    expect(end).toMatch(/const pagesRead = progress\.pagesRead;/);
+    expect(end).toMatch(/void saveReadingSessionRow\(\{[\s\S]{0,120}wordsRead: totalWordsRead/);
+    expect(end).toMatch(/recordReadingSession\(\{\s*timeSpent,\s*wordsRead: totalWordsRead,/);
+    expect(page).toMatch(/currentWordsRead=\{sessionRead\.wordsRead\}\s*currentPagesRead=\{sessionRead\.pagesRead\}/);
+    // Vocabulary and Minutes towers keep their own sources (PR #96), named here so a change is seen.
+    expect(page).toMatch(/vocabularyLearned=\{userStats\.vocabularyWordsLearned \|\| 0\}/);
+    expect(page).toMatch(/timeSpent=\{Date\.now\(\) - sessionStartTimeValue\}/);
+    // the never-incremented counters are not read anywhere for words/pages
+    expect(page).not.toMatch(/currentWordsRead=\{sessionWordsRead\}|pagesCompleted\.size;\s*\n\s*\/\/ Clear character/);
   });
   it("the stats carry the level and grade the child ended on", () => {
     expect(page).toMatch(/currentDifficulty: levelRef\.current\.readingLevel,\s*readingGrade: levelRef\.current\.grade,/);

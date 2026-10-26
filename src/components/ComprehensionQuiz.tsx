@@ -8,7 +8,7 @@ import type { UserInfo } from '@/types';
 import { saveQuizAttempt } from '@/hooks/useActivityPersistence';
 import { useToast } from '@/components/ui/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
-import { loadStoryQuiz, type QuizQuestion, type QuizSource } from '@/lib/quiz';
+import { loadStoryQuiz, quizBandFor, type QuizQuestion, type QuizSource } from '@/lib/quiz';
 
 type Question = QuizQuestion;
 
@@ -54,6 +54,22 @@ export const ComprehensionQuiz = ({
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [source, setSource] = useState<QuizSource>('ai');
   const [saved, setSaved] = useState(false);
+  // Band by Reads-at grade: Pre-K–1st hear every question; older readers can tap to hear.
+  const band = quizBandFor(userInfo as any, storyGrade);
+  const speak = (text: string) => {
+    try {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = band.readAloud === 'always' ? 0.85 : 0.95;
+      window.speechSynthesis.speak(u);
+    } catch { /* no speech on this device */ }
+  };
+  const speakQuestion = (q?: Question) => {
+    if (!q) return;
+    speak([q.say || q.question, ...(q.skill === 'sight-words' ? [] : q.options)].join('. '));
+  };
 
   useEffect(() => {
     if (isVisible && storyText) {
@@ -126,6 +142,10 @@ export const ComprehensionQuiz = ({
     }
   };
 
+  useEffect(() => {
+    if (band.readAloud === 'always' && questions[currentQuestion] && !quizComplete && isVisible) speakQuestion(questions[currentQuestion]);
+  }, [currentQuestion, questions, quizComplete, isVisible]);
+
   // Save the result as soon as the quiz is finished (closing with ✕ used to lose it).
   useEffect(() => {
     if (!quizComplete || saved) return;
@@ -145,9 +165,12 @@ export const ComprehensionQuiz = ({
 
   const persistResult = async () => {
     try {
+      // Each answer is saved with its skill, for Reports → strengths by skill.
+      const skillAnswers = questions.map((q, i) => ({ skill: q.skill, correct: answers[i] === q.correctAnswer }));
       const details = {
         answers,
-        questions: questions.map(q => ({ id: q.id, type: q.type })),
+        skillAnswers,
+        questions: questions.map(q => ({ id: q.id, type: q.type, skill: q.skill })),
         source,
         grade: storyGrade,
       };
@@ -243,6 +266,14 @@ export const ComprehensionQuiz = ({
               <h3 className="text-lg font-semibold text-gray-800">
                 {currentQ.question}
               </h3>
+              <button
+                type="button"
+                onClick={() => speakQuestion(currentQ)}
+                className="text-sm text-blue-700 underline underline-offset-2"
+                aria-label={t('comprehension.hear', 'Tap to hear')}
+              >
+                🔊 {t('comprehension.hear', 'Tap to hear')}
+              </button>
 
               <div className="space-y-2">
                 {currentQ.options.map((option, index) => (
@@ -263,7 +294,10 @@ export const ComprehensionQuiz = ({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span>{option}</span>
+                      <span className={band.pictures ? 'text-xl' : undefined}>
+                        {currentQ.pictures?.[index] && <span className="mr-2 text-3xl" aria-hidden="true">{currentQ.pictures[index]}</span>}
+                        {option}
+                      </span>
                       {showResult && selectedAnswer === index && (
                         <div className="ml-2">
                           {index === currentQ.correctAnswer ? (
@@ -289,6 +323,9 @@ export const ComprehensionQuiz = ({
                       : t('comprehension.goodTry', 'Good try! The answer is: {{answer}}', { answer: currentQ.options[currentQ.correctAnswer] })}
                   </p>
                   {currentQ.explanation && <p className="text-sm text-gray-700">💡 {currentQ.explanation}</p>}
+                  {currentQ.evidence && !currentQ.explanation.includes(currentQ.evidence.slice(0, 20)) && (
+                    <p className="text-sm text-gray-600 italic mt-1">📖 “{currentQ.evidence}”</p>
+                  )}
                 </div>
               )}
 

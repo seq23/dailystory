@@ -22,6 +22,7 @@ import {
 import { withReadingGrade } from "@/lib/readingLadder";
 
 export { GRADES, READING_LEVELS, BACKEND_DIFFICULTIES, EXPERT_GRADES };
+export { QUIZ_BANDS, QUIZ_SKILLS, QUIZ_SKILL_LABELS, quizBandForGrade, quizSkillPlan, type QuizBand, type QuizSkill } from "@/lib/grades";
 
 export interface LevelMapRow {
   grade: Grade;
