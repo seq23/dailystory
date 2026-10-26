@@ -8,7 +8,13 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "llm:check": "node scripts/llm/free_router.mjs --check",
+    "gsc:truth": "node scripts/search_intelligence/collect_gsc_truth.mjs",
+    "gsc:coverage": "node scripts/search_intelligence/collect_index_coverage.mjs",
+    "gsc:sitemaps": "node scripts/search_intelligence/collect_gsc_sitemaps.mjs",
+    "gsc:all": "npm run gsc:truth && npm run gsc:coverage && npm run gsc:sitemaps",
+    "test:guards": "vitest run src/test/guards"
   },
   "dependencies": {
     "@11labs/react": "^0.1.4",

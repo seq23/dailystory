@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "repo": "dailystory",
+  "site": "time-2-read.com",
+  "owner_policy": {
+    "decided": "2026-10-11",
+    "quote": "nothing should be paid … cut the probes and make them free.",
+    "doc": "docs/cost/zero-paid-llm.md",
+    "scope": "This repo's own automation: anything a workflow, a script or an agent in this repository runs. The Time2Read product's own inference is a separate named lane below, funded by subscriptions, and is not governed by max_cost_usd."
+  },
+  "policy": {
+    "max_cost_usd": 0,
+    "paid_fallback": false,
+    "on_no_free_model": "NAMED_STOP (exit 0, receipt, nothing generated)",
+    "on_reported_cost": "throw PaidCostError and fail the run",
+    "read_by": "scripts/llm/free_router.mjs"
+  },
+  "pricing_snapshot": {
+    "date": "2026-10-26",
+    "source": "https://openrouter.ai/api/v1/models (no key)",
+    "filter": "pricing.prompt == \"0\" && pricing.completion == \"0\" && context_length >= 32000",
+    "models_listed": 467,
+    "free_models_listed": 20,
+    "selection": "strongest general instruct models among the $0 list, largest context first. Excluded: google/lyria-3-* (music, and not :free so it can turn paid silently), nvidia/nemotron-3.5-content-safety:free (safety classifier), poolside/laguna-* and cohere/north-mini-code:free (code-only), liquid/lfm-2.5-2.6b:free (sub-10B), openrouter/free (non-deterministic meta-router), and thinkingmachines/inkling*:free (403 \"only available on agentic harnesses\" on a sibling repo's first live dispatch, 11 Oct 2026)."
+  },
+  "models": [
+    {
+      "id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "name": "NVIDIA: Nemotron 3 Ultra (free)",
+      "context_length": 1000000,
+      "pricing": { "prompt": "0", "completion": "0" }
+    },
+    {
+      "id": "nvidia/nemotron-3.5-super-vl:free",
+      "name": "NVIDIA: Nemotron 3.5 Super VL (free)",
+      "context_length": 1000000,
+      "pricing": { "prompt": "0", "completion": "0" }
+    },
+    {
+      "id": "google/gemma-4-31b-it:free",
+      "name": "Google: Gemma 4 31B (free)",
+      "context_length": 262144,
+      "pricing": { "prompt": "0", "completion": "0" }
+    },
+    {
+      "id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "name": "NVIDIA: Nemotron 3 Super (free)",
+      "context_length": 262144,
+      "pricing": { "prompt": "0", "completion": "0" }
+    }
+  ],
+  "automation_lane": {
+    "state": "no_model_calls_today",
+    "detail": "No script or workflow in this repository calls a model. The Search Console collectors, the prerender check and the IndexNow submitter are all deterministic. The router exists so that the first one to need a model has a $0 door to go through instead of naming its own.",
+    "scan_roots": ["scripts", ".github/workflows"]
+  },
+  "paid_lanes": [
+    {
+      "id": "product-inference",
+      "status": "out_of_scope_funded_by_subscriptions",
+      "where": "supabase/functions",
+      "purpose": "The Time2Read product itself: adaptive story generation, narration, speech-to-text, spelling correction, translation, dictionary lookups and illustration.",
+      "provider_endpoints": ["api.openai.com", "api.runware.ai"],
+      "provider_model_ids": ["gpt-4o-mini", "gpt-4o", "gpt-image-1", "whisper-1", "tts-1-hd", "google/gemini-3.6-flash", "google/gemini-3-flash-preview"],
+      "why_not_free": "Subscribers pay for this inference; it is cost of goods, not an unattended probe. The owner's zero-paid rule is about automation this repo runs on a schedule, and this lane runs only when a paying reader opens a story.",
+      "guard": "src/test/guards/zero-paid-llm.test.ts keeps this lane listed here, so a new paid call site cannot appear unrecorded."
+    }
+  ],
+  "provider_endpoint_markers": [
+    "openrouter\\.ai/api",
+    "generativelanguage\\.googleapis\\.com",
+    "api\\.openai\\.com",
+    "api\\.anthropic\\.com",
+    "api\\.perplexity\\.ai",
+    "api\\.runware\\.ai",
+    "serpapi\\.com",
+    "api\\.semrush\\.com",
+    "api\\.ahrefs\\.com",
+    "api\\.groq\\.com",
+    "api\\.together\\.xyz",
+    "api\\.mistral\\.ai"
+  ]
+}
