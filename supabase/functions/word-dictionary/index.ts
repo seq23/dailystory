@@ -5,6 +5,7 @@ import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
 import { parseModelJson, freeDictionaryLookup, builtInWordEntry } from "../_shared/wordFallback.ts";
+import { jsonAnswerProblem } from "../_shared/storyOutputCheck.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -347,7 +348,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
         ],
         temperature: 0.3,
         max_tokens: 300,
-    });
+    }, { accept: jsonAnswerProblem('definition') });
 
     if (!response.ok) {
       const errorText = await response.text();

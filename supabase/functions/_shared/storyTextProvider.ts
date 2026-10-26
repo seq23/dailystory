@@ -20,6 +20,7 @@
 // The order, models and the per-provider terms check: config/llm_routing.json
 // paid_lanes[product-inference].text_chain. Guard: src/test/guards/story-text-provider.test.ts.
 import { deidentify, namesFromCharacterInfo } from "./deidentify.ts";
+import { stripReasoning } from "./storyOutputCheck.ts";
 
 export const OPENROUTER_CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
 export const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions";
@@ -43,6 +44,10 @@ export const DEAD_KEY_SKIP_MS = 10 * 60 * 1000;
 /** Kept for callers and tests that still name it. */
 export const OPENAI_DEAD_KEY_SKIP_MS = DEAD_KEY_SKIP_MS;
 const FREE_TIMEOUT_MS = 20_000;
+/** Free and third-party models get at least this budget, so an answer is never cut off mid-sentence. */
+export const MIN_THIRD_PARTY_TOKENS = 800;
+/** Sent with every OpenRouter request: no thinking, and none of it in the answer (26 Oct 2026). */
+export const OPENROUTER_NO_REASONING = { enabled: false, exclude: true } as const;
 const PAID_TIMEOUT_MS = 30_000;
 const OPENAI_TIMEOUT_MS = 50_000;
 
@@ -113,26 +118,38 @@ export function maskBody(apiBody: Record<string, unknown>, extraNames: string[] 
 
 const clip = (s: string) => (s.length > 300 ? s.slice(0, 300) + "…" : s);
 
-/** A chat response's text, or "" (free models can answer 200 with an error or nothing). */
-function contentOf(text: string): string {
+/** A chat answer's text (reasoning stripped) and finish reason; "" when there is none. */
+function answerOf(text: string): { content: string; finishReason: string | null } {
   try {
-    return JSON.parse(text)?.choices?.[0]?.message?.content ?? "";
+    const c = JSON.parse(text)?.choices?.[0];
+    return { content: stripReasoning(String(c?.message?.content ?? "")), finishReason: c?.finish_reason ?? null };
   } catch {
-    return "";
+    return { content: "", finishReason: null };
   }
 }
 
-/** Put the names back into every choice and hand back a fresh Response. */
-function restored(text: string, restore: (s: string) => string): Response {
+/** The answer the caller sees: reasoning stripped, names put back, reasoning fields dropped. */
+function cleaned(text: string, restore: (s: string) => string): Response {
   let body = text;
   try {
     const data = JSON.parse(text);
     for (const c of data?.choices ?? []) {
-      if (typeof c?.message?.content === "string") c.message.content = restore(c.message.content);
+      if (c?.message) {
+        if (typeof c.message.content === "string") c.message.content = restore(stripReasoning(c.message.content));
+        delete c.message.reasoning;
+        delete c.message.reasoning_details;
+        delete c.message.reasoning_content;
+      }
     }
     body = JSON.stringify(data);
   } catch { /* leave as is */ }
   return new Response(body, { status: 200, headers: { "Content-Type": "application/json" } });
+}
+
+/** At least MIN_THIRD_PARTY_TOKENS, so thinking-capable models never stop mid-sentence. */
+function withFloor(body: Record<string, unknown>): Record<string, unknown> {
+  const n = typeof body.max_tokens === "number" ? body.max_tokens : 0;
+  return { ...body, max_tokens: Math.max(n, MIN_THIRD_PARTY_TOKENS) };
 }
 
 /**
@@ -142,7 +159,14 @@ function restored(text: string, restore: (s: string) => string): Response {
  */
 export async function chatCompletionWithFallback(
   apiBody: Record<string, unknown>,
-  opts: { fetchImpl?: FetchLike; env?: EnvLike; now?: () => number; privateNames?: string[] } = {},
+  opts: {
+    fetchImpl?: FetchLike;
+    env?: EnvLike;
+    now?: () => number;
+    privateNames?: string[];
+    /** Why an answer must not be used (null = use it). A rejected answer moves to the next model. See ./storyOutputCheck.ts. */
+    accept?: (content: string, finishReason: string | null) => string | null;
+  } = {},
 ): Promise<ProviderResult> {
   const fetchImpl: FetchLike = opts.fetchImpl ?? ((u, i) => fetch(u, i));
   // deno-lint-ignore no-explicit-any
@@ -151,11 +175,12 @@ export async function chatCompletionWithFallback(
   const attempts: ProviderAttempt[] = [];
   let lastRefusal: Response | null = null;
   const { masked, restore } = maskBody(apiBody, opts.privateNames ?? []);
+  const accept = opts.accept ?? ((c: string) => (c.trim() ? null : "empty answer"));
 
   const done = (provider: Provider, model: string | undefined, res: Response, text: string, unmask: boolean): ProviderResult => {
     attempts.push({ provider, model, status: res.status });
     lastAttempts = attempts;
-    return { response: unmask ? restored(text, restore) : new Response(text, { status: 200, headers: { "Content-Type": "application/json" } }), provider, attempts: attempts.slice() };
+    return { response: cleaned(text, unmask ? restore : (x) => x), provider, attempts: attempts.slice() };
   };
 
   const tryOnce = async (
@@ -169,9 +194,17 @@ export async function chatCompletionWithFallback(
         signal: AbortSignal.timeout(timeoutMs),
       });
       const text = await res.text();
-      if (res.ok && contentOf(text).trim()) return { ok: true, res, status: res.status, text };
-      attempts.push({ provider, model, status: res.status, error: clip(res.ok ? "empty answer: " + text : text) });
-      if (!res.ok) lastRefusal = new Response(text, { status: res.status, statusText: res.statusText });
+      if (res.ok) {
+        const { content, finishReason } = answerOf(text);
+        const problem = accept(content, finishReason);
+        if (!problem) return { ok: true, res, status: res.status, text };
+        // Logged with the model, so a model that keeps failing is visible.
+        console.warn("🚫 Model answer rejected", { provider, model, problem });
+        attempts.push({ provider, model, status: res.status, error: clip(`rejected: ${problem}`) });
+        return { ok: false, status: res.status, text };
+      }
+      attempts.push({ provider, model, status: res.status, error: clip(text) });
+      lastRefusal = new Response(text, { status: res.status, statusText: res.statusText });
       return { ok: false, status: res.status, text };
     } catch (err) {
       attempts.push({ provider, model, status: null, error: clip(String(err)) });
@@ -185,7 +218,7 @@ export async function chatCompletionWithFallback(
     const orHeaders = { Authorization: `Bearer ${openrouterKey}`, "HTTP-Referer": "https://time-2-read.com", "X-Title": "Time-2-Read" };
     for (const model of OPENROUTER_FREE_MODELS) {
       assertFreeOpenRouterModel(model);
-      const r = await tryOnce("openrouter-free", model, OPENROUTER_CHAT_URL, orHeaders, toCompatibleBody(masked, model), FREE_TIMEOUT_MS);
+      const r = await tryOnce("openrouter-free", model, OPENROUTER_CHAT_URL, orHeaders, { ...withFloor(toCompatibleBody(masked, model)), reasoning: OPENROUTER_NO_REASONING }, FREE_TIMEOUT_MS);
       if (r.ok && r.res) return done("openrouter-free", model, r.res, r.text, true);
       if (!r.ok && r.status === 401) break; // bad key: no other model will help
     }
@@ -195,13 +228,13 @@ export async function chatCompletionWithFallback(
   const cfAccount = env("CLOUDFLARE_ACCOUNT_ID");
   const cfToken = env("CLOUDFLARE_WORKERS_AI_TOKEN");
   if (cfAccount && cfToken) {
-    const r = await tryOnce("cloudflare-free", CLOUDFLARE_FREE_MODEL, cloudflareChatUrl(cfAccount), { Authorization: `Bearer ${cfToken}` }, toCompatibleBody(masked, CLOUDFLARE_FREE_MODEL), FREE_TIMEOUT_MS);
+    const r = await tryOnce("cloudflare-free", CLOUDFLARE_FREE_MODEL, cloudflareChatUrl(cfAccount), { Authorization: `Bearer ${cfToken}` }, withFloor(toCompatibleBody(masked, CLOUDFLARE_FREE_MODEL)), FREE_TIMEOUT_MS);
     if (r.ok && r.res) return done("cloudflare-free", CLOUDFLARE_FREE_MODEL, r.res, r.text, true);
   }
 
   // ── Tier 3: OpenRouter paid, prepaid credit only, no training. Names masked.
   if (openrouterKey && now() >= (skippedUntil["openrouter-paid"] ?? 0)) {
-    const body = { ...toCompatibleBody(masked, OPENROUTER_PAID_MODEL), provider: { data_collection: "deny" } };
+    const body = { ...withFloor(toCompatibleBody(masked, OPENROUTER_PAID_MODEL)), reasoning: OPENROUTER_NO_REASONING, provider: { data_collection: "deny" } };
     const r = await tryOnce("openrouter-paid", OPENROUTER_PAID_MODEL, OPENROUTER_CHAT_URL, { Authorization: `Bearer ${openrouterKey}`, "HTTP-Referer": "https://time-2-read.com", "X-Title": "Time-2-Read" }, body, PAID_TIMEOUT_MS);
     if (r.ok && r.res) return done("openrouter-paid", OPENROUTER_PAID_MODEL, r.res, r.text, true);
     if (!r.ok && r.status !== null && isDeadKeyRefusal(r.status, r.text)) skippedUntil["openrouter-paid"] = now() + DEAD_KEY_SKIP_MS;

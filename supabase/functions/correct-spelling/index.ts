@@ -1,6 +1,7 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
+import { plainAnswerProblem } from "../_shared/storyOutputCheck.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
         ],
         max_tokens: 200,
         temperature: 0.1, // Low temperature for consistent corrections
-      })).response;
+      }, { accept: plainAnswerProblem })).response;
 
     if (!openAiResponse.ok) {
       console.error('OpenAI API error:', await openAiResponse.text());
