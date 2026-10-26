@@ -8,7 +8,7 @@ import type { UserInfo } from '@/types';
 import { saveQuizAttempt } from '@/hooks/useActivityPersistence';
 import { useToast } from '@/components/ui/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
-import { loadStoryQuiz, quizBandFor, type QuizQuestion, type QuizSource } from '@/lib/quiz';
+import { loadStoryQuiz, quizBandFor, quizCacheKey, readCachedQuiz, type QuizQuestion, type QuizSource } from '@/lib/quiz';
 
 type Question = QuizQuestion;
 
@@ -25,14 +25,6 @@ interface ComprehensionQuizProps {
   practiceWords?: string[];
 }
 
-// Simple hash for caching quiz per story
-const hashStory = (text: string): string => {
-  let hash = 0;
-  for (let i = 0; i < Math.min(text.length, 500); i++) {
-    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
-  }
-  return `quiz_${hash}`;
-};
 
 export const ComprehensionQuiz = ({ 
   userInfo, 
@@ -89,18 +81,16 @@ export const ComprehensionQuiz = ({
     setGenerationError(null);
 
     // Check sessionStorage cache first
-    const cacheKey = hashStory(storyText);
+    const cacheKey = quizCacheKey({ storyText, userInfo: userInfo as any, storyGrade, practiceWords });
     try {
-      const cached = sessionStorage.getItem(cacheKey);
+      const cached = readCachedQuiz(sessionStorage.getItem(cacheKey));
       if (cached) {
-        const parsed = JSON.parse(cached) as Question[];
-        if (parsed.length > 0) {
-          DebugLogger.log('ui', 'Using cached quiz questions');
-          setQuestions(parsed);
-          setAnswers(new Array(parsed.length).fill(null));
-          setIsGeneratingQuestions(false);
-          return;
-        }
+        setSource(cached.source);
+        DebugLogger.log('ui', 'Using cached quiz questions');
+        setQuestions(cached.questions as Question[]);
+        setAnswers(new Array(cached.questions.length).fill(null));
+        setIsGeneratingQuestions(false);
+        return;
       }
     } catch {}
 
@@ -111,7 +101,7 @@ export const ComprehensionQuiz = ({
       setQuestions(quiz.questions);
       setSource(quiz.source);
       setAnswers(new Array(quiz.questions.length).fill(null));
-      try { sessionStorage.setItem(cacheKey, JSON.stringify(quiz.questions)); } catch {}
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ questions: quiz.questions, source: quiz.source })); } catch {}
     } catch (err: any) {
       DebugLogger.error('ui', 'Quiz could not be built', err);
       setGenerationError(err?.message || 'Could not make a quiz for this story');

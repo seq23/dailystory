@@ -444,3 +444,17 @@ export function guardrailForGrade(grade: unknown): { minReadingGrade: Grade; min
   const g = normalizeGrade(grade) ?? "PreK";
   return { minReadingGrade: g, minDifficulty: GRADE_PROFILES[g].difficulty, minExpertGrade: GRADE_PROFILES[g].expertGrade ?? "6th" };
 }
+
+/**
+ * The THEMES half of storyAudienceLine, lifted from the user prompt into the SYSTEM
+ * prompt. The 6th–10th system prompts ask for "mature themes"; a younger child who reads
+ * at that level (a 5-year-old at 10th grade) must still get themes for their real age,
+ * and a system prompt outranks the user prompt. Empty when the prompt has no THEMES line.
+ * Called by generate-adaptive-story/streamlined-handler.ts. Guard: src/test/guards/reads-at.test.ts.
+ */
+export function audienceThemesForSystemPrompt(storyContent: unknown): string {
+  if (typeof storyContent !== "string") return "";
+  const m = storyContent.match(/THEMES: the reader is [^\n]*/);
+  if (!m) return "";
+  return `\n\nAUDIENCE (this overrides any theme guidance above): the reading level sets only the words and sentences. ${m[0]} When the reader is younger than the reading level, never use mature, frightening, romantic or violent themes, whatever the level above says.`;
+}

@@ -63,3 +63,30 @@ export async function loadStoryQuiz(
 export function quizBandFor(userInfo: Partial<UserInfo> & Record<string, unknown>, storyGrade?: unknown) {
   return quizBandForGrade(quizGradeFor(userInfo, storyGrade));
 }
+
+/**
+ * The session cache key for a story's quiz. It covers the WHOLE story text (a never-ending
+ * story keeps its first pages, so a key from the opening alone served an older session's
+ * quiz), the Reads-at grade (a level change must change the quiz band) and the practice
+ * words. Guard: src/test/guards/story-quiz.test.ts.
+ */
+export function quizCacheKey(args: { storyText: string; userInfo: Partial<UserInfo> & Record<string, unknown>; storyGrade?: unknown; practiceWords?: string[] }): string {
+  const story = (args.storyText || "").replace(/\s+/g, " ").trim();
+  let h = 2166136261;
+  for (let i = 0; i < story.length; i++) h = Math.imul(h ^ story.charCodeAt(i), 16777619);
+  const words = cleanWords([...(args.practiceWords ?? []), ...practiceWordsFromRequest(args.userInfo?.specialRequest)]);
+  return `quiz2_${quizGradeFor(args.userInfo, args.storyGrade)}_${story.length}_${(h >>> 0).toString(36)}_${words.join(",")}`;
+}
+
+/** A cached quiz, only when it is one this version wrote (questions with skills, and its source). */
+export function readCachedQuiz(raw: string | null): { questions: QuizQuestion[]; source: QuizSource } | null {
+  if (!raw) return null;
+  try {
+    const v = JSON.parse(raw) as { questions?: QuizQuestion[]; source?: QuizSource };
+    const ok = Array.isArray(v?.questions) && v.questions.length > 0 && v.questions.every((q) =>
+      typeof q?.skill === "string" && Array.isArray(q?.options) && Number.isInteger(q?.correctAnswer) && q.correctAnswer >= 0 && q.correctAnswer < q.options.length);
+    return ok ? { questions: v.questions!, source: v.source === "ai" || v.source === "mixed" ? v.source : "fallback" } : null;
+  } catch {
+    return null;
+  }
+}

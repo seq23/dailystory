@@ -624,6 +624,21 @@ export function buildFallbackQuiz(story: string, shape: QuizShape): QuizQuestion
   return spreadAnswers(out);
 }
 
+/** True when this question tests one of the practice words (in the question, or as the right answer). */
+export function quizzesPracticeWord(q: QuizQuestion, practiceWords: readonly string[]): boolean {
+  const answer = (q.options[q.correctAnswer] ?? "").toLowerCase();
+  return practiceWords.some((w) => hasWord(q.question, w) || answer === w);
+}
+
+/** A word-meaning question about a practice word in the story, at the band's choices (null if none fits). */
+function practiceWordQuestion(story: string, shape: QuizShape, i: number): QuizQuestion | null {
+  const ctx: BuildCtx = { story, sentences: storySentences(story), names: namesIn(story), n: shape.optionCount, shape, pick: rng(story.slice(0, 400)), used: new Set() };
+  const built = BUILDERS["word-meaning"](ctx, 0);
+  if (!built) return null;
+  const q = finishQuestion(built, shape, i);
+  return quizzesPracticeWord(q, shape.practiceWords) ? q : null;
+}
+
 /**
  * The model's questions placed on the band's skill plan; any slot the model left
  * empty is filled from the story text. Always the band's number of questions when the
@@ -645,14 +660,20 @@ export function finalizeQuiz(raw: unknown, story: string, shape: QuizShape): { q
     if (fb.length) out.push(fb.shift()!);
   }
   // A practice word that is in the story gets a word-meaning or spelling question.
+  // "Quizzed" means the question is ABOUT the word (asked in the question, or the right
+  // answer); a practice word that is only a wrong choice does not count. Every band gets
+  // one, Pre-K–K included (their plan has no word-meaning or spelling slot).
   const inStoryPractice = shape.practiceWords.filter((w) => hasWord(story, w));
-  const touches = (q: QuizQuestion) => inStoryPractice.some((w) => hasWord(q.question, w) || q.options.some((o) => o.toLowerCase() === w));
-  if (inStoryPractice.length && !out.some(touches)) {
-    const pq = fallback.find((q) => (q.skill === "word-meaning" || q.skill === "spelling") && touches(q));
-    const slot = out.findIndex((q) => q.skill === "word-meaning" || q.skill === "spelling");
+  if (inStoryPractice.length && !out.some((q) => quizzesPracticeWord(q, inStoryPractice))) {
+    const pq = fallback.find((q) => (q.skill === "word-meaning" || q.skill === "spelling") && quizzesPracticeWord(q, inStoryPractice))
+      ?? practiceWordQuestion(story, shape, out.length);
     if (pq) {
+      // Its slot: a word-meaning or spelling question, else the last one that is not the only What happened.
+      let slot = out.findIndex((q) => q.skill === "word-meaning" || q.skill === "spelling");
+      if (slot < 0) slot = out.reduce((last, q, k) => (q.skill !== "what-happened" ? k : last), -1);
+      if (slot < 0) slot = out.length - 1;
       if (slot >= 0) out[slot] = pq;
-      else if (out.length) out[out.length - 1] = pq;
+      else out.push(pq);
     }
   }
   const questions = spreadAnswers(out.map((q, i) => ({ ...q, id: `q${i + 1}`, ...(shape.band.pictures && !q.pictures ? { pictures: q.options.map(pictureFor) } : {}) })));
