@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-10-26T05:10:01.209Z",
+  "collected_at": "2026-10-26T07:13:53.230Z",
   "state": "OK",
   "named_stop": null,
   "window": {
