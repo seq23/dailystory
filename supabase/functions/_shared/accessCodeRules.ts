@@ -71,3 +71,77 @@ export function decideTrial(input: {
   if (input.hadSubscription) return refuse(ACCESS_CODE_TRIAL_USED);
   return { ok: true, trialDays: days, code: row };
 }
+
+// ---------------------------------------------------------------------------
+// Code at sign-up (Oct 2026): a code typed when the account is made gives Premium
+// at once, with no card, for the code's trial_days. Used by redeem-access-code.
+// One code grant per account; redeeming the same code again is a no-op that
+// reports the same end date, so a retry never fails and never stacks days.
+
+export const ACCESS_CODE_ALREADY_REDEEMED = "ACCESS_CODE_ALREADY_REDEEMED";
+
+export interface ExistingGrant {
+  code: string;
+  expires_at: string | null;
+}
+
+export type GrantDecision =
+  | { ok: true; alreadyActive: boolean; trialDays: number; premiumUntil: string; code: string }
+  | { ok: false; error: string; message: string };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Decide what a code does for an account.
+ * - a bad or inactive code is refused with the plain INVALID message;
+ * - an account that already redeemed a code keeps that grant (same code → ok, same end date;
+ *   a different code → refused, one free period per account);
+ * - otherwise Premium runs from now for the code's days.
+ */
+export function decideGrant(input: {
+  rawCode: unknown;
+  row: AccessCodeRow | null | undefined;
+  existing: ExistingGrant | null | undefined;
+  now: Date;
+}): GrantDecision {
+  const code = normalizeAccessCode(input.rawCode);
+  const row = input.row;
+  const days = Number(row?.trial_days);
+  if (
+    !code ||
+    !row ||
+    row.active !== true ||
+    normalizeAccessCode(row.code) !== code ||
+    !Number.isInteger(days) ||
+    days < 1 ||
+    days > MAX_TRIAL_DAYS
+  ) {
+    return { ok: false, error: INVALID_ACCESS_CODE, message: "That code didn't work. Check the spelling and try again." };
+  }
+  const existing = input.existing;
+  if (existing) {
+    if (normalizeAccessCode(existing.code) === code && existing.expires_at) {
+      return { ok: true, alreadyActive: true, trialDays: days, premiumUntil: existing.expires_at, code };
+    }
+    return {
+      ok: false,
+      error: ACCESS_CODE_ALREADY_REDEEMED,
+      message: "This account has already used a code. Premium from that code stays until its end date.",
+    };
+  }
+  return {
+    ok: true,
+    alreadyActive: false,
+    trialDays: days,
+    premiumUntil: new Date(input.now.getTime() + days * DAY_MS).toISOString(),
+    code,
+  };
+}
+
+/** "Premium active until 9 November 2026": the one wording used on every screen. */
+export function premiumUntilLabel(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return `Premium active until ${d.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}`;
+}

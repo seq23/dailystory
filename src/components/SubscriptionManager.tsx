@@ -5,17 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { RefreshCw, CreditCard, Calendar, CheckCircle, XCircle, Tag } from "lucide-react";
+import { RefreshCw, CreditCard, Calendar, CheckCircle, XCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { AccessCodeField } from "@/components/AccessCodeField";
-import { checkoutBody, checkoutErrorMessage } from "@/lib/accessCode";
+import { RedeemCodeCard } from "@/components/RedeemCodeCard";
+import { PAYMENT_TROUBLE, checkoutBody, checkoutErrorMessage, premiumUntilLabel } from "@/lib/accessCode";
 
 interface SubscriptionData {
   subscribed: boolean;
   subscription_tier?: string;
   subscription_end?: string;
+  premium_until?: string | null;
+  via_code?: boolean;
 }
 
 export const SubscriptionManager = ({ showComparison = true }: { showComparison?: boolean }) => {
@@ -24,10 +25,6 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
   const [refreshing, setRefreshing] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  const [discountCode, setDiscountCode] = useState("");
-  const [accessCode, setAccessCode] = useState("");
-  const [accessCodeError, setAccessCodeError] = useState<string | null>(null);
-  const [redeeming, setRedeeming] = useState(false);
 
   const checkSubscription = async () => {
     try {
@@ -47,7 +44,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
       if (error) {
         DebugLogger.error('error', 'Subscription check API error', { error });
         if (error.message?.includes("STRIPE_SECRET_KEY")) {
-          toast.info("Payment system not configured yet");
+          toast.info(PAYMENT_TROUBLE);
         } else {
           toast.error("Failed to check subscription status");
         }
@@ -80,16 +77,17 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
 
       if (error) {
         if (error.message?.includes("STRIPE_SECRET_KEY")) {
-          toast.error("Payment system not configured yet");
+          toast.error(PAYMENT_TROUBLE);
         } else {
-          toast.error(error.message || "Failed to open customer portal");
+          toast.error(PAYMENT_TROUBLE);
         }
         return;
       }
 
       if (data?.url) {
-        // Open customer portal in a new tab
-        window.open(data.url, '_blank');
+        window.location.href = data.url;
+      } else {
+        toast.error("Billing page didn't open. Please try again.");
       }
     } catch (error) {
       toast.error("Failed to open customer portal");
@@ -108,9 +106,8 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
         return;
       }
 
-      setAccessCodeError(null);
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: checkoutBody(plan, accessCode),
+        body: checkoutBody(plan),
         headers: {
           Authorization: `Bearer ${session.session.access_token}`,
         },
@@ -118,71 +115,27 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
 
       if (error) {
         const refused = await checkoutErrorMessage(error, data);
-        if (refused && accessCode.trim()) {
-          setAccessCodeError(refused);
-        } else if (refused) {
+        if (refused) {
           toast.error(refused);
         } else if (error.message?.includes("STRIPE_SECRET_KEY")) {
-          toast.error("Payment system not configured yet");
+          toast.error(PAYMENT_TROUBLE);
         } else {
-          toast.error(error.message || "Failed to start checkout");
+          toast.error(PAYMENT_TROUBLE);
         }
         return;
       }
 
       if (data?.url) {
-        // Open Stripe checkout in a new tab
-        window.open(data.url, '_blank');
+        // Same tab: a new tab opened after an await is blocked on iPhone and iPad.
+        window.location.href = data.url;
+      } else {
+        toast.error("Checkout didn't open. Please try again.");
       }
     } catch (error) {
-      toast.error("Failed to start checkout process");
+      toast.error("Checkout didn't open. Please try again.");
       DebugLogger.error('error', 'Stripe checkout operation failed', { error });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const redeemDiscountCode = async () => {
-    const code = discountCode.trim().toUpperCase();
-    if (!code) {
-      toast.error("Please enter a discount code");
-      return;
-    }
-    try {
-      setRedeeming(true);
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        toast.error("Please sign in to redeem a discount code");
-        return;
-      }
-
-      // Validate first for a clear message, then activate via the service-role function.
-      const { data: validation } = await supabase.functions.invoke('validate-discount-code', {
-        body: { code },
-      });
-      if (validation && validation.valid === false) {
-        toast.error(validation.message || "Invalid discount code");
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke('apply-discount-code', {
-        headers: { Authorization: `Bearer ${session.session.access_token}` },
-        body: { discountCode: code },
-      });
-
-      if (error || !data?.activated) {
-        toast.error(data?.message || error?.message || "Could not apply discount code");
-        return;
-      }
-
-      toast.success(data.message || "Discount applied! Your premium access is now active.");
-      setDiscountCode("");
-      await checkSubscription();
-    } catch (err) {
-      DebugLogger.error('error', 'Discount redemption failed', { error: err });
-      toast.error("Could not apply discount code");
-    } finally {
-      setRedeeming(false);
     }
   };
 
@@ -217,12 +170,12 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                 {subscriptionData.subscribed ? (
                   <>
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    Active Subscription
+                    Premium is on
                   </>
                 ) : (
                   <>
-                    <XCircle className="w-5 h-5 text-red-500" />
-                    No Active Subscription
+                    <XCircle className="w-5 h-5 text-muted-foreground" />
+                    Free account
                   </>
                 )}
               </CardTitle>
@@ -234,20 +187,25 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
             </div>
             <CardDescription>
               {subscriptionData.subscribed
-                ? "You have access to all premium features"
-                : "Subscribe to unlock unlimited stories and advanced features"}
+                ? "Every Premium feature is on for all your children."
+                : "Use a code, or pick a plan, for unlimited stories."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {subscriptionData.subscribed ? (
               <div className="space-y-4">
-                {subscriptionData.subscription_end && (
+                {subscriptionData.via_code && subscriptionData.premium_until ? (
+                  <div className="flex items-center gap-2 text-sm text-green-800" data-testid="premium-until">
+                    <Calendar className="w-4 h-4" />
+                    <span>{premiumUntilLabel(subscriptionData.premium_until)} (from your code). No card on file.</span>
+                  </div>
+                ) : subscriptionData.subscription_end && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Calendar className="w-4 h-4" />
-                    <span>Renewal Date: {formatDate(subscriptionData.subscription_end)}</span>
+                    <span>Renews on {formatDate(subscriptionData.subscription_end)}</span>
                   </div>
                 )}
-                <div className="flex gap-3 flex-wrap">
+                {!subscriptionData.via_code && <div className="flex gap-3 flex-wrap">
                   <Button onClick={openCustomerPortal} disabled={loading}>
                     <CreditCard className="w-4 h-4 mr-2" />
                     {loading ? "Opening..." : "Manage Subscription"}
@@ -255,20 +213,14 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                   <Button variant="outline" onClick={() => setCancelOpen(true)}>
                     Cancel Subscription
                   </Button>
-                  <Button variant="secondary" onClick={() => window.open('mailto:sales@time2read.example?subject=Enterprise%20Inquiry','_blank')}>
-                    Upgrade to Enterprise
+                  <Button variant="secondary" onClick={() => window.open('mailto:hello@time-2-read.com?subject=School%20or%20family%20plan','_blank')}>
+                    Ask about school plans
                   </Button>
-                </div>
+                </div>}
               </div>
             ) : (
               <div className="space-y-4">
-              <AccessCodeField
-                label="Have a free-trial code?"
-                value={accessCode}
-                onChange={(v) => { setAccessCode(v); setAccessCodeError(null); }}
-                error={accessCodeError}
-                disabled={loading}
-              />
+              <RedeemCodeCard onRedeemed={() => checkSubscription()} />
               <div className="grid md:grid-cols-2 gap-4">
                 <Card className="border-primary/20">
                   <CardContent className="p-4">
@@ -304,30 +256,6 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                   </CardContent>
                 </Card>
               </div>
-                <Card className="border-dashed">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Tag className="w-4 h-4 text-primary" />
-                      <h3 className="font-semibold">Have a discount code?</h3>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-3">
-                      Redeem a code for free premium access — no credit card required.
-                    </p>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Enter discount code"
-                        value={discountCode}
-                        onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                        onKeyDown={(e) => { if (e.key === 'Enter') redeemDiscountCode(); }}
-                        disabled={redeeming}
-                        className="uppercase"
-                      />
-                      <Button onClick={redeemDiscountCode} disabled={redeeming || !discountCode.trim()}>
-                        {redeeming ? "Applying..." : "Apply"}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             )}
           </CardContent>

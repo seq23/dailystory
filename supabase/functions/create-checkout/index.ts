@@ -124,6 +124,17 @@ serve(async (req) => {
       const previous = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 1 });
       hadSubscription = previous.data.length > 0;
     }
+    // A code already gave this account its free Premium days (redeem-access-code):
+    // that was the free trial, so checkout bills from day one.
+    if (!hadSubscription) {
+      const { data: grants } = await supabaseService
+        .from("access_code_redemptions")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("status", "granted")
+        .limit(1);
+      hadSubscription = (grants?.length ?? 0) > 0;
+    }
 
     // Access code (optional): validated here on the server against public.access_codes.
     // No code = the default 7-day trial. Rules in _shared/accessCodeRules.ts.

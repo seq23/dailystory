@@ -66,64 +66,26 @@ export const CookieConsent = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 animate-in slide-in-from-bottom duration-300">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] p-2 sm:p-4 animate-in slide-in-from-bottom duration-300" data-testid="cookie-banner">
       <Card className="max-w-4xl mx-auto bg-background/95 backdrop-blur-md border-border shadow-2xl">
-        <CardContent className="p-4 sm:p-6">
+        <CardContent className={showCustomize ? "p-4 sm:p-6" : "p-3 sm:p-4"}>
           {!showCustomize ? (
-            // Main consent banner
-            <div className="flex flex-col gap-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-primary/10 rounded-full flex-shrink-0">
-                  <Cookie className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground mb-1">
-                    We Value Your Privacy 🍪
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    We use cookies to enhance your browsing experience, provide personalized content, 
-                    and analyze our traffic. You can choose to accept all cookies or customize your preferences.
-                    Read our{" "}
-                    <Link to="/privacy" className="text-primary hover:underline">
-                      Privacy Policy
-                    </Link>{" "}
-                    for more information.
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="flex-shrink-0 -mt-1"
-                  onClick={handleEssentialOnly}
-                  aria-label="Close and use essential cookies only"
-                >
-                  <X className="w-4 h-4" />
+            // A thin bar: one line and two choices, so it never covers the form underneath.
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <p className="text-sm text-foreground flex-1">
+                <Cookie className="inline w-4 h-4 mr-1 text-primary align-[-2px]" aria-hidden />
+                We use cookies to run the site and, if you allow, to see what helps.{" "}
+                <Link to="/privacy" className="text-primary underline">Privacy</Link>
+              </p>
+              <div className="flex gap-2 shrink-0">
+                <Button size="sm" variant="outline" onClick={() => setShowCustomize(true)} className="min-h-10">
+                  Choices
                 </Button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCustomize(true)}
-                  className="order-3 sm:order-1"
-                >
-                  Customize
+                <Button size="sm" variant="outline" onClick={handleEssentialOnly} className="min-h-10">
+                  Only needed
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleEssentialOnly}
-                  className="order-2"
-                >
-                  Essential Only
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleAcceptAll}
-                  className="order-1 sm:order-3"
-                >
-                  Accept All
+                <Button size="sm" onClick={handleAcceptAll} className="min-h-10">
+                  OK, allow all
                 </Button>
               </div>
             </div>

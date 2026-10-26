@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { DebugLogger } from "@/services/DebugLogger";
-import { AccessCodeField } from "@/components/AccessCodeField";
+import { RedeemCodeCard } from "@/components/RedeemCodeCard";
 import { checkoutBody, checkoutErrorMessage } from "@/lib/accessCode";
 import { FREE_STORY_LIMIT, HEYGETONMYLEVEL_URL, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
 
@@ -14,23 +14,20 @@ type Plan = "monthly" | "annual";
 export function StoryPaywall() {
   const [pending, setPending] = useState<Plan | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [accessCode, setAccessCode] = useState("");
-  const [codeError, setCodeError] = useState<string | null>(null);
 
   const startTrial = async (plan: Plan) => {
     setPending(plan);
     setError(null);
-    setCodeError(null);
     try {
       const { data: session } = await supabase.auth.getSession();
       const { data, error: fnError } = await supabase.functions.invoke("create-checkout", {
-        body: checkoutBody(plan, accessCode),
+        body: checkoutBody(plan),
         headers: session.session ? { Authorization: `Bearer ${session.session.access_token}` } : undefined,
       });
       if (fnError || data?.error) {
         const refused = await checkoutErrorMessage(fnError, data);
-        if (refused && accessCode.trim()) {
-          setCodeError(refused);
+        if (refused) {
+          setError(refused);
           setPending(null);
           return;
         }
@@ -55,10 +52,12 @@ export function StoryPaywall() {
           You've read your {FREE_STORY_LIMIT} free stories
         </h2>
         <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
-          Keep your 4–8-year-old reading every day with new stories made for their level.
+          Keep your child (ages 3 to 15) reading every day with new stories made for their level.
           Try it free for {TRIAL_DAYS} days, then pick monthly or yearly. Cancel anytime before the trial ends and you won't be charged.
         </p>
       </div>
+
+      <RedeemCodeCard className="max-w-xl mx-auto mb-6" />
 
       <div className="grid gap-4 md:grid-cols-2">
         {(["monthly", "annual"] as Plan[]).map((plan) => {
@@ -93,16 +92,12 @@ export function StoryPaywall() {
         })}
       </div>
 
-      <div className="flex justify-center mt-6">
-        <AccessCodeField
-          value={accessCode}
-          onChange={(v) => { setAccessCode(v); setCodeError(null); }}
-          error={codeError}
-          disabled={pending !== null}
-        />
-      </div>
 
-      {error && <p className="text-sm text-destructive text-center mt-4">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm text-destructive text-center mt-4">
+          {error} Tap a plan to try again.
+        </p>
+      )}
 
       <p className="text-xs text-muted-foreground text-center mt-6">
         Card required to start the trial. Includes{" "}

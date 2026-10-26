@@ -12,12 +12,21 @@ import { useTranslation } from "react-i18next";
 import type { UserInfo } from "@/types";
 import { DebugLogger } from "@/services/DebugLogger";
 import { PasswordReset } from "@/components/PasswordReset";
-import { AgeGate } from "@/components/AgeGate";
-import { checkoutBody, checkoutErrorMessage } from "@/lib/accessCode";
+import { parentAuthMessage } from "@/lib/authMessages";
+import { PAYMENT_TROUBLE, checkoutBody, checkoutErrorMessage, codeFromUrl, normalizeAccessCode, premiumUntilLabel, redeemAccessCode } from "@/lib/accessCode";
 
 interface LoginScreenProps {
   userInfo?: UserInfo | null;
   onBack?: () => void;
+}
+
+/** On /auth nothing else swaps the screen after sign-in, so go to the app ("/"). */
+function goToAppIfOnAuthPage(keepCode = false) {
+  if (typeof window === "undefined") return;
+  if (window.location.pathname !== "/") {
+    const code = keepCode ? codeFromUrl() : "";
+    window.location.href = code ? `/?code=${encodeURIComponent(code)}` : "/";
+  }
 }
 
 export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
@@ -27,12 +36,15 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
     password: "",
     displayName: "",
     selectedPlan: "monthly" as "monthly" | "annual",
-    discountCode: ""
+    // ?code=HOMESCHOOL15 on the link pre-fills the "Have a code?" box
+    discountCode: codeFromUrl()
   });
   
-  // COPPA compliance: Age gate state
-  const [isUnder13, setIsUnder13] = useState(false);
-  const [parentEmail, setParentEmail] = useState("");
+  // COPPA: the account belongs to a grown-up; children are profiles inside it.
+  // (isUnder13/parentEmail stay false/empty: a child never makes the account.)
+  const [isUnder13] = useState(false);
+  const [parentEmail] = useState("");
+  const [isGuardian, setIsGuardian] = useState(false);
   
   // Pre-fill with userInfo if available
   useEffect(() => {
@@ -56,19 +68,32 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
     message: string;
     isValidating: boolean;
     kind?: "discount" | "trial";
+    trialDays?: number;
   }>({
     isValid: false,
     message: "",
     isValidating: false
   });
-  // A valid discount code means a free account; a valid access code (kind "trial")
-  // only lengthens the card-up-front trial, so the parent stays on the pay path.
+  // A valid discount code means a free account. A valid access code (kind "trial",
+  // e.g. HOMESCHOOL15) gives Premium at once with no card: it is saved on the account
+  // at sign-up and redeemed by the server straight after (redeem-access-code).
   const isFreeDiscount = discountValidation.isValid && discountValidation.kind !== "trial";
+  const isAccessCode = discountValidation.isValid && discountValidation.kind === "trial";
+
+  // A code that arrived on the link is checked straight away, so Step 2 already shows it.
+  useEffect(() => {
+    if (signUpData.discountCode) validateDiscountCode(signUpData.discountCode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Validate Step 1 (details) before advancing to Step 2
   const validateStep1 = (): boolean => {
     if (!signUpData.email || !signUpData.password || !signUpData.displayName) {
       toast.error(t("loginScreen.form.errors.fillAllFields"));
+      return false;
+    }
+    if (!isGuardian) {
+      toast.error("Please tick the box to confirm you're the parent or guardian.");
       return false;
     }
     if (isUnder13 && (!parentEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(parentEmail))) {
@@ -111,7 +136,8 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         isValid: data.valid,
         message: data.message,
         isValidating: false,
-        kind: data.kind === "trial" ? "trial" : "discount"
+        kind: data.kind === "trial" ? "trial" : "discount",
+        trialDays: typeof data.trialDays === "number" ? data.trialDays : undefined
       }));
     } catch (error: any) {
       setDiscountValidation(prev => ({
@@ -150,6 +176,9 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
             selected_plan: signUpData.selectedPlan,
             is_under_13: isUnder13,
             parent_email: isUnder13 ? parentEmail : null,
+            // Saved on the account so the server can still redeem it on first sign-in
+            // when the session is not ready yet (e.g. email confirmation first).
+            ...(isAccessCode && { access_code: normalizeAccessCode(signUpData.discountCode) }),
             // Include all the user info from free trial
             ...(userInfo && {
               grade_level: userInfo.gradeLevel || userInfo.grade,
@@ -162,7 +191,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       });
 
       if (error) {
-        toast.error(error.message);
+        toast.error(parentAuthMessage(error.message));
         return false;
       }
 
@@ -193,11 +222,28 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         }
       }
 
+      // Access code: Premium on now, on the server, before the parent sees the app.
+      if (isAccessCode && authData.session) {
+        const redeemed = await redeemAccessCode(signUpData.discountCode);
+        if (redeemed.ok) {
+          toast.success(`Account made. ${premiumUntilLabel(redeemed.premiumUntil) ?? "Premium is on"}.`);
+        } else {
+          toast.error(`Account made, but the code didn't go through: ${redeemed.message} You can try it again in My Account.`);
+        }
+        goToAppIfOnAuthPage();
+        return true;
+      }
+      if (isAccessCode) {
+        toast.success("Account made. Your code turns Premium on the first time you sign in.");
+        return true;
+      }
+
       toast.success(discountActivated
         ? "Your free premium access is now active. Enjoy!"
         : isFreeDiscount 
           ? "Account created! Your discount code will be activated when you first log in."
           : t("loginScreen.form.success.accountCreated"));
+      if (isFreeDiscount) goToAppIfOnAuthPage();
       return true;
     } catch (error) {
       toast.error(t("loginScreen.form.errors.unexpected"));
@@ -231,10 +277,11 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       });
 
       if (error) {
-        toast.error(error.message);
+        toast.error(parentAuthMessage(error.message));
       } else {
         toast.success(t("loginScreen.form.success.signedIn"));
-        // The AuthWrapper will handle redirecting to the main app
+        // On "/" the AuthWrapper swaps to the app; on /auth we go there (a ?code= link keeps its code).
+        goToAppIfOnAuthPage(true);
       }
     } catch (error) {
       toast.error(t("loginScreen.form.errors.unexpected"));
@@ -258,11 +305,9 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         return;
       }
 
+      // Codes never go to checkout from here: an access code is redeemed at sign-up.
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: checkoutBody(
-          signUpData.selectedPlan,
-          discountValidation.kind === "trial" ? signUpData.discountCode : undefined,
-        ),
+        body: checkoutBody(signUpData.selectedPlan),
         headers: {
           Authorization: `Bearer ${session.session.access_token}`,
         },
@@ -270,22 +315,20 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
 
       if (error) {
         const refused = await checkoutErrorMessage(error, data);
-        if (refused) {
-          toast.error(refused);
-        } else if (error.message?.includes("STRIPE_SECRET_KEY")) {
-          toast.error(t("loginScreen.form.errors.paymentNotConfigured"));
-        } else {
-          toast.error(error.message || t("loginScreen.form.errors.paymentFailed"));
-        }
+        // Plain words only: never a server's raw text or a setting name.
+        toast.error(refused ?? PAYMENT_TROUBLE);
         return;
       }
 
       if (data?.url) {
-        // Open Stripe checkout in a new tab
-        window.open(data.url, '_blank');
+        // Same tab: a tab opened after an await is blocked on iPhone and iPad,
+        // which left the parent on a free account with nothing on screen.
+        window.location.href = data.url;
+      } else {
+        toast.error("Checkout didn't open. Please try again.");
       }
     } catch (error) {
-      toast.error(t("loginScreen.form.errors.paymentProcessFailed"));
+      toast.error(PAYMENT_TROUBLE);
       DebugLogger.error('auth', 'Payment process failed', error);
     } finally {
       setLoading(false);
@@ -297,7 +340,9 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
+    // Scrolls as one page (no inner trap): the form starts at the top on short screens,
+    // so "Continue" is always reachable by scrolling, on a phone or a laptop.
+    <div className="min-h-[100dvh] bg-gradient-hero flex items-start md:items-center justify-center px-4 pt-16 pb-10">
       {/* Back button - always show one */}
       <Button
         variant="ghost"
@@ -323,7 +368,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         className="absolute top-4 left-4 z-50 text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm bg-black/20 rounded-lg px-3 py-2 shadow-lg transition-all duration-200 hover:scale-105"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          {onBack ? t("loginScreen.navigation.backToTrial") : t("loginScreen.navigation.back")}
+          Back
         </Button>
 
       {/* Close button (X) in top-right corner */}
@@ -355,10 +400,10 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       </Button>
       
       <Card className="w-full max-w-2xl mx-auto bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
-        <h1 className="sr-only">Sign in or sign up for Time2Read</h1>
+        <h1 className="sr-only">Sign in or sign up for Time-2-Read</h1>
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            {userInfo ? t("loginScreen.title.upgrade") : t("loginScreen.title.join")}
+          <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900">
+            {userInfo ? "Keep reading with Time-2-Read" : "Join Time-2-Read"}
           </CardTitle>
           <CardDescription className="text-lg">
             {userInfo 
@@ -415,13 +460,13 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   </p>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">{t("loginScreen.form.labels.displayName")}</Label>
+                    <Label htmlFor="signup-name">Your name (parent or guardian)</Label>
                     <Input
                       id="signup-name"
                       type="text"
                       value={signUpData.displayName}
                       onChange={(e) => setSignUpData(prev => ({ ...prev, displayName: e.target.value }))}
-                      placeholder={t("loginScreen.form.placeholders.displayName")}
+                      placeholder="For example, Sam"
                       required
                     />
                   </div>
@@ -448,14 +493,73 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                     />
                   </div>
 
-                  {/* COPPA Age Gate - Children's Privacy Protection */}
-                  <AgeGate
-                    isUnder13={isUnder13}
-                    parentEmail={parentEmail}
-                    onUnder13Change={setIsUnder13}
-                    onParentEmailChange={setParentEmail}
-                    showValidationError={false}
-                  />
+                  {/* "Have a code?" — always visible on Step 1, pre-filled from ?code= */}
+                  <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-4">
+                    <Label htmlFor="discount-code" className="font-medium">
+                      Have a code? <span className="font-normal text-muted-foreground">(optional)</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="discount-code"
+                        data-testid="signup-code-input"
+                        type="text"
+                        autoCapitalize="characters"
+                        autoComplete="off"
+                        placeholder="For example, from a school or group"
+                        value={signUpData.discountCode}
+                        onChange={(e) => {
+                          const code = e.target.value;
+                          setSignUpData(prev => ({ ...prev, discountCode: code }));
+                          clearTimeout((window as any).discountTimeout);
+                          (window as any).discountTimeout = setTimeout(() => {
+                            validateDiscountCode(code);
+                          }, 500);
+                        }}
+                        className={`pr-8 ${
+                          discountValidation.isValid
+                            ? 'border-green-500 focus:border-green-500'
+                            : discountValidation.message && !discountValidation.isValidating
+                            ? 'border-red-500 focus:border-red-500'
+                            : ''
+                        }`}
+                      />
+                      {discountValidation.isValidating && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2" aria-label="Checking code">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                        </div>
+                      )}
+                      {discountValidation.isValid && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-green-600" aria-hidden>
+                          ✓
+                        </div>
+                      )}
+                    </div>
+                    {discountValidation.isValidating && (
+                      <p className="text-xs text-muted-foreground">Checking your code…</p>
+                    )}
+                    {discountValidation.message && !discountValidation.isValidating && (
+                      <p role={discountValidation.isValid ? "status" : "alert"} className={`text-sm ${discountValidation.isValid ? 'text-green-700' : 'text-red-600'}`} data-testid="signup-code-message">
+                        {isAccessCode
+                          ? `✓ Code accepted: ${discountValidation.trialDays ? `${discountValidation.trialDays} days of Premium` : "Premium"}, free. No card needed.`
+                          : discountValidation.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* The grown-up owns the account; children are profiles inside it (COPPA). */}
+                  <label className="flex items-start gap-3 rounded-lg border p-3 text-sm cursor-pointer" data-testid="signup-guardian-consent">
+                    <input
+                      type="checkbox"
+                      className="mt-1 h-5 w-5 shrink-0 accent-primary"
+                      checked={isGuardian}
+                      onChange={(e) => setIsGuardian(e.target.checked)}
+                    />
+                    <span>
+                      I'm the parent or guardian (18 or older). My children read under this account, and I agree to the{" "}
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">privacy policy</a>.
+                      We never ask children for an email address.
+                    </span>
+                  </label>
 
                   <Button
                     type="button"
@@ -484,54 +588,23 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                       {t("loginScreen.steps.chooseTitle", "Choose how to start")}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {t("loginScreen.steps.chooseSubtitle", "Have a discount code? Enter it below. Otherwise pick a plan.")}
+                      {isAccessCode || isFreeDiscount
+                        ? "Your code is ready. Create your account to start."
+                        : "Pick a plan. Have a code? Go back one step and type it in."}
                     </p>
                   </div>
 
-                  {/* Discount Code Section — always visible */}
-                  <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-4">
-                    <Label htmlFor="discount-code" className="font-medium">
-                      {t("loginScreen.discount.label", "Have a discount code?")}
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="discount-code"
-                        type="text"
-                        placeholder={t("loginScreen.discount.placeholder", "Enter discount code")}
-                        value={signUpData.discountCode}
-                        onChange={(e) => {
-                          const code = e.target.value;
-                          setSignUpData(prev => ({ ...prev, discountCode: code }));
-                          clearTimeout((window as any).discountTimeout);
-                          (window as any).discountTimeout = setTimeout(() => {
-                            validateDiscountCode(code);
-                          }, 500);
-                        }}
-                        className={`pr-8 ${
-                          discountValidation.isValid
-                            ? 'border-green-500 focus:border-green-500'
-                            : discountValidation.message && !discountValidation.isValidating
-                            ? 'border-red-500 focus:border-red-500'
-                            : ''
-                        }`}
-                      />
-                      {discountValidation.isValidating && (
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                        </div>
-                      )}
-                      {discountValidation.isValid && (
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500">
-                          ✓
-                        </div>
-                      )}
-                    </div>
-                    {discountValidation.message && (
-                      <p className={`text-xs ${discountValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
-                        {discountValidation.message}
+                  {/* The code typed in Step 1, in plain words */}
+                  {isAccessCode && (
+                    <div className="p-4 bg-green-50 border border-green-300 rounded-lg" data-testid="signup-code-accepted">
+                      <h3 className="font-semibold text-green-900 mb-1">
+                        ✓ Code {normalizeAccessCode(signUpData.discountCode)} accepted
+                      </h3>
+                      <p className="text-sm text-green-900">
+                        {discountValidation.trialDays ? `${discountValidation.trialDays} days` : "Your free days"} of Premium start as soon as you create your account. No card needed.
                       </p>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Discount Success Message */}
                   {isFreeDiscount && (
@@ -543,8 +616,8 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                     </div>
                   )}
 
-                  {/* Pricing Plans — Hidden when valid discount code */}
-                  {!isFreeDiscount && (
+                  {/* Pricing Plans — hidden when a code covers it */}
+                  {!isFreeDiscount && !isAccessCode && (
                     <div className="grid md:grid-cols-2 gap-4">
                       <Card
                         className={`cursor-pointer transition-all ${
@@ -630,14 +703,17 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   )}
 
                   {/* Single context-aware primary CTA */}
-                  {isFreeDiscount ? (
+                  {isFreeDiscount || isAccessCode ? (
                     <Button
                       type="button"
-                      className="w-full"
+                      className="w-full min-h-11"
                       disabled={loading}
                       onClick={() => handleSignUp()}
+                      data-testid="signup-create-with-code"
                     >
-                      {loading ? t("loginScreen.form.buttons.creating") : t("loginScreen.steps.createFree", "Create Free Account")}
+                      {loading ? (
+                        <><span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden />Creating your account…</>
+                      ) : isAccessCode ? "Create my account and start Premium" : t("loginScreen.steps.createFree", "Create Free Account")}
                     </Button>
                   ) : (
                     <div>

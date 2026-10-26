@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Crown, Check, Sparkles, BookOpen, TrendingUp, Award, Heart, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AccessCodeField } from "@/components/AccessCodeField";
+import { RedeemCodeCard } from "@/components/RedeemCodeCard";
 import { checkoutBody, checkoutErrorMessage } from "@/lib/accessCode";
 
 interface PremiumUpgradeProps {
@@ -21,8 +21,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<string>('monthly');
   const [isLoading, setIsLoading] = useState(false);
-  const [accessCode, setAccessCode] = useState("");
-  const [codeError, setCodeError] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const plans = [
     {
@@ -67,7 +66,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
     try {
       setIsLoading(true);
       setSelectedPlan(planId);
-      setCodeError(null);
+      setCheckoutError(null);
       
       // Checkout needs an account (the subscription is tied to it). Guests sign up first.
       const { data: sessionData } = await supabase.auth.getSession();
@@ -78,14 +77,14 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
 
       // 7-day free trial (or an access code's days), card up front — create-checkout owns prices and trial.
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: checkoutBody(planId === 'yearly' ? 'annual' : 'monthly', accessCode),
+        body: checkoutBody(planId === 'yearly' ? 'annual' : 'monthly'),
         headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
       });
 
       if (error || data?.error) {
         const refused = await checkoutErrorMessage(error, data);
-        if (refused && accessCode.trim()) {
-          setCodeError(refused);
+        if (refused) {
+          setCheckoutError(refused);
           return;
         }
         throw error ?? new Error(data.error);
@@ -99,7 +98,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
       }
     } catch (error) {
       DebugLogger.error('auth', 'Subscription error', error);
-      // No toast for payment errors
+      setCheckoutError("Checkout didn't open. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -231,14 +230,10 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
           ))}
         </div>
 
-        <div className="flex justify-center mb-8">
-          <AccessCodeField
-            value={accessCode}
-            onChange={(v) => { setAccessCode(v); setCodeError(null); }}
-            error={codeError}
-            disabled={isLoading}
-          />
-        </div>
+        {checkoutError && (
+          <p role="alert" className="text-center text-sm text-destructive mb-4">{checkoutError}</p>
+        )}
+        <RedeemCodeCard className="max-w-xl mx-auto mb-8" />
 
         {/* Back Button */}
         <div className="text-center">

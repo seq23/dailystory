@@ -114,6 +114,11 @@ serve(async (req) => {
       subscribed: isActive,
       subscription_tier: subscriber?.subscription_tier ?? null,
       subscription_end: subscriber?.subscription_end ?? null,
+      // When Premium came from a code (override), say so and when it ends: no card, no renewal.
+      // (sync-subscription-status mirrors an override into subscribed/subscription_end,
+      // so the override reason, not `subscribed`, says whether a code is behind it.)
+      via_code: hasValidOverride && /code/i.test(String(subscriber?.override_reason ?? "")),
+      premium_until: hasValidOverride ? (subscriber?.override_end ?? null) : hasValidSubscription ? (subscriber?.subscription_end ?? null) : null,
       cached: true,
       last_synced: subscriber?.updated_at ?? null,
       source: "database_cache"

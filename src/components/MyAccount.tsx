@@ -9,9 +9,15 @@ import { AccountRestriction } from "@/components/AccountRestriction";
 import { ConsentWithdrawal } from "@/components/ConsentWithdrawal";
 import { freeFeatures, premiumFeatures as topPremiumFeatures, additionalOfferings } from "@/constants/featureLists";
 import { Badge } from "@/components/ui/badge";
+import { premiumUntilLabel } from "@/lib/accessCode";
+import { FREE_STORY_LIMIT } from "@/lib/freeStoryAllowance";
 
 interface MyAccountProps {
   isPremium: boolean;
+  /** When Premium ends (code or paid period). */
+  premiumUntil?: string;
+  /** Free account: stories left before the paywall. */
+  freeStoriesLeft?: number;
   subscriptionTier?: string;
   subscriptionEnd?: string;
   devTestMode: boolean;
@@ -20,7 +26,7 @@ interface MyAccountProps {
 }
 
 
-export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTestMode, userEmail, accountStatus: initialStatus }: MyAccountProps) {
+export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMode, userEmail, accountStatus: initialStatus }: MyAccountProps) {
   const [accountStatus, setAccountStatus] = useState(initialStatus || 'active');
   
   return (
@@ -34,18 +40,27 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-foreground">My Account</h1>
             <Badge variant={isPremium ? 'premium' : 'guest'} className="text-xs">
-              {isPremium ? 'Premium' : 'Guest'}
+              {isPremium ? 'Premium' : 'Free'}
             </Badge>
           </div>
-          <p className="text-muted-foreground">Manage your subscription and account settings</p>
+          <p className="text-muted-foreground">
+            Your plan, codes and sign-in. {userEmail ? <>Signed in as <strong>{userEmail}</strong>.</> : null}
+          </p>
+          <p className="text-sm mt-1" data-testid="account-plan-line">
+            {isPremium
+              ? (premiumUntilLabel(premiumUntil) ?? "Premium is on")
+              : typeof freeStoriesLeft === "number"
+                ? `Free account: ${freeStoriesLeft} of ${FREE_STORY_LIMIT} free stories left.`
+                : "Free account."}
+          </p>
         </div>
       </div>
 
-      {/* Password Change - Only for Premium Users */}
-      {isPremium && <PasswordChangeForm />}
-
-      {/* Subscription Manager */}
+      {/* Plan, code and billing first: the things a parent comes here for */}
       <SubscriptionManager showComparison={false} />
+
+      <PasswordChangeForm />
+
 
       {/* Data Privacy Section */}
       <Card className="border-muted/40">
@@ -80,18 +95,8 @@ export function MyAccount({ isPremium, subscriptionTier, subscriptionEnd, devTes
         </CardHeader>
         <CardContent className="text-sm">
           <p>
-            <strong>Status:</strong> {isPremium ? "Active" : "Inactive"}
+            <strong>Plan:</strong> {isPremium ? (premiumUntilLabel(premiumUntil) ?? "Premium") : "Free"}
           </p>
-          {subscriptionTier && (
-            <p>
-              <strong>Plan:</strong> {subscriptionTier}
-            </p>
-          )}
-          {subscriptionEnd && (
-            <p>
-              <strong>Next Billing:</strong> {new Date(subscriptionEnd).toLocaleDateString()}
-            </p>
-          )}
           {devTestMode && (
             <p className="text-orange-600 font-medium mt-2">Developer Test Mode Active</p>
           )}

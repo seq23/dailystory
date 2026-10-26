@@ -1,7 +1,8 @@
-// Guard: access-code trials (Oct 2026). A parent types a code such as HOMESCHOOL15
-// where they start the trial; create-checkout validates it on the server against
-// public.access_codes and sets the Stripe trial to the code's days. Card up front
-// and one trial per customer still hold. No code = the regular 7-day trial.
+// Guard: access-code trials (Oct 2026). A code such as HOMESCHOOL15 is typed in the
+// one "Have a code?" box (sign-up Step 1, paywall, My Account) and redeemed by
+// redeem-access-code for Premium at once, no card (access-code-grant.test.ts).
+// create-checkout still validates a code it is sent against public.access_codes and
+// keeps card up front and one trial per customer. No code = the regular 7-day trial.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -127,19 +128,33 @@ describe("access_codes table", () => {
   });
 });
 
-describe("the parent can enter a code wherever the trial starts", () => {
-  it("every create-checkout caller sends the typed code and shows the code box", () => {
+describe("the parent can enter a code wherever Premium is offered", () => {
+  it("every paywall surface shows the one \"Have a code?\" box, and checkout never carries a code", () => {
     for (const f of ["src/components/PremiumUpgrade.tsx", "src/components/StoryPaywall.tsx", "src/components/SubscriptionManager.tsx"]) {
       const src = read(f);
-      expect(src, f).toMatch(/body: checkoutBody\(/);
-      expect(src, f).toMatch(/<AccessCodeField/);
+      expect(src, f).toMatch(/<RedeemCodeCard\b/);
+      expect(src, f).toMatch(/body: checkoutBody\([^,)]+\)/); // plan only: a code is redeemed, never sent to Stripe
       expect(src, f).toMatch(/checkoutErrorMessage\(/);
+      expect(src, f).not.toMatch(/AccessCodeField|apply-discount-code/); // one code box, one path
     }
+    const card = read("src/components/RedeemCodeCard.tsx");
+    expect(card).toMatch(/Have a code\?/);
+    expect(card).toMatch(/redeemAccessCode\(code\)/);
+    expect(card).toMatch(/Try again/);
+    expect(read("src/lib/accessCode.ts")).toMatch(/functions\.invoke\("redeem-access-code"/);
+  });
+  it("sign-up shows the code on Step 1, saves it on the account and redeems it at once", () => {
     const login = read("src/components/LoginScreen.tsx");
-    expect(login).toMatch(/body: checkoutBody\(\s*signUpData\.selectedPlan,\s*discountValidation\.kind === "trial" \? signUpData\.discountCode : undefined/);
-    expect(login).toMatch(/const isFreeDiscount = discountValidation\.isValid && discountValidation\.kind !== "trial"/);
+    expect(login).toMatch(/discountCode: codeFromUrl\(\)/); // ?code= pre-fills
+    const step1 = login.slice(login.indexOf("{/* STEP 1"), login.indexOf("{/* STEP 2"));
+    expect(step1).toMatch(/id="discount-code"/);
+    expect(step1).toMatch(/Have a code\?/);
+    expect(login).toMatch(/access_code: normalizeAccessCode\(signUpData\.discountCode\)/);
+    expect(login).toMatch(/if \(isAccessCode && authData\.session\) \{\s*const redeemed = await redeemAccessCode\(signUpData\.discountCode\)/);
+    expect(login).toMatch(/body: checkoutBody\(signUpData\.selectedPlan\)/);
+    expect(login).toMatch(/!isFreeDiscount && !isAccessCode/); // no plans or pay button under a code
+    expect(login).not.toMatch(/window\.open\(data\.url/); // a tab opened after await is blocked on iPad
     expect(read("supabase/functions/validate-discount-code/index.ts")).toMatch(/kind: 'trial'/);
-    expect(read("src/components/AccessCodeField.tsx")).toMatch(/label = "Have a code\?"/);
   });
   it("sends a code only when one was typed", () => {
     expect(checkoutBody("monthly", "")).toEqual({ plan: "monthly" });

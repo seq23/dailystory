@@ -23,6 +23,9 @@ import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { PremiumHomeTutorial } from "@/components/PremiumHomeTutorial";
 
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
+import { devToolsAllowed } from "@/lib/devTools";
+import { codeFromUrl, premiumUntilLabel, redeemAccessCode } from "@/lib/accessCode";
+import { toast } from "sonner";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { DiscountActivationBanner } from "@/components/DiscountActivationBanner";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
@@ -94,7 +97,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [isPremium, setIsPremium] = useState(true); // All authenticated users are premium
   
   // Authoritative billing status from database for gating premium features
-  const { isPremium: isSubscriptionActive, loading: subLoading } = useCachedSubscriptionStatus(user.id);
+  const { isPremium: isSubscriptionActive, loading: subLoading, premiumUntil } = useCachedSubscriptionStatus(user.id);
+  const showDevTools = devToolsAllowed(user);
   // While subscription status is loading, assume active to prevent a flash of the paywall
   const hasPaidAccess = subLoading ? true : isSubscriptionActive;
   // Narration voice follows the PAID status only: free accounts get the browser voice,
@@ -120,6 +124,25 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   
   // Initialize security monitoring
   useSecurityMonitoring();
+
+  // A code saved at sign-up (user_metadata.access_code) or arriving on a ?code= link
+  // is redeemed on the server once, so Premium is on before the parent goes looking.
+  useEffect(() => {
+    if (subLoading || isSubscriptionActive) return;
+    const fromLink = codeFromUrl();
+    const saved = typeof user.user_metadata?.access_code === "string" ? user.user_metadata.access_code : "";
+    const code = fromLink || saved;
+    if (!code) return;
+    const onceKey = `t2r-code-tried:${user.id}:${code}`;
+    try {
+      if (sessionStorage.getItem(onceKey)) return;
+      sessionStorage.setItem(onceKey, "1");
+    } catch { /* storage blocked: may retry next load, which is harmless (idempotent) */ }
+    redeemAccessCode(fromLink || undefined).then((r) => {
+      if (r.ok) toast.success(premiumUntilLabel(r.premiumUntil) ?? "Premium is on");
+      else if (fromLink) toast.error(`That code didn't go through: ${r.message}`);
+    });
+  }, [subLoading, isSubscriptionActive, user.id, user.user_metadata?.access_code]);
 
   // Check for query parameters on component mount
   useEffect(() => {
@@ -755,6 +778,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               userInfo={userInfo}
               isPremium={isPremium}
               devTestMode={devTestMode}
+              showDevTools={showDevTools}
+              hasPremium={!subLoading && !!isSubscriptionActive}
               subscriptionTier={subscriptionTier || undefined}
               onSignOut={handleSignOut}
               onToggleDevMode={toggleDevTestMode}
@@ -762,8 +787,15 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             />
 
             <main className="flex-1 min-h-0 overflow-y-auto overscroll-auto mobile-scroll h-[calc(100dvh-var(--app-header-height))] p-2 sm:p-4 md:p-6">
-              {/* System status banner */}
-              <DismissibleSystemStatus />
+              {/* Developer widget: dev builds and admins only, never families */}
+              {showDevTools && <DismissibleSystemStatus />}
+
+              {/* Premium badge: what the parent has, and until when */}
+              {!subLoading && isSubscriptionActive && (
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-green-300 bg-green-50 px-3 py-1 text-sm font-medium text-green-900" data-testid="premium-badge">
+                  <span aria-hidden>✓</span> {premiumUntilLabel(premiumUntil) ?? "Premium is on"}
+                </div>
+              )}
               
               {/* Discount activation success banner */}
               <DiscountActivationBanner />
@@ -774,7 +806,10 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                   <span>
                     {freeStories.remaining} of {freeStories.limit} free stories left. Then try Premium free for {TRIAL_DAYS} days.
                   </span>
-                  <a href="/pricing" className="font-medium text-primary underline">See plans</a>
+                  <span className="flex gap-3">
+                    <button type="button" className="font-medium text-primary underline" onClick={() => setCurrentView("account")}>Have a code?</button>
+                    <a href="/pricing" className="font-medium text-primary underline">See plans</a>
+                  </span>
                 </div>
               )}
               
@@ -913,9 +948,10 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
                   {currentView === "account" && (
                     <MyAccount
-                      isPremium={isPremium}
-                      subscriptionTier={subscriptionTier || undefined}
-                      subscriptionEnd={subscriptionEnd || undefined}
+                      isPremium={!subLoading && !!isSubscriptionActive}
+                      premiumUntil={premiumUntil ?? undefined}
+                      freeStoriesLeft={hasPaidAccess ? undefined : freeStories.remaining}
+                      userEmail={user.email}
                       devTestMode={devTestMode}
                     />
                   )}
