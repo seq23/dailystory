@@ -209,7 +209,16 @@ useEffect(() => {
         open={requestDialogOpen}
         onOpenChange={setRequestDialogOpen}
         initialValue={specialRequest}
-        onSubmit={(composed) => {
+        onSubmit={async (composed) => {
+          // A new story request starts a new story. Resume-on-refresh restored the last live
+          // story instead, so a child asking for a new story got the old one (26 Oct 2026).
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const ids = [user?.id, userInfo.name, 'premium'].filter(Boolean) as string[];
+            for (const id of ids) await StorySessionCache.clearOnNextStory(id);
+          } catch (e) {
+            DebugLogger.warn('story', 'Clearing the last story before a new one failed', e);
+          }
           setSpecialRequest(composed);
           setRequestDialogOpen(false);
           setCurrentStory(null);
