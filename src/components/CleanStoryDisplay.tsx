@@ -196,6 +196,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     // Optional fields remain undefined to maintain honesty
   }, [userInfo?.name, userInfo?.age, userInfo?.specialRequest, userInfo?.difficultyLevel, userInfo?.expertGradeLevel]);
 
+  // A story opened from the library keeps its own title; only a new live story is named for the
+  // reader (26 Oct 2026: a re-opened story was retitled with the parent's name).
+  const liveTitle = () =>
+    currentStory?.isFromSavedStory && currentStory?.title ? currentStory.title : `${safeUserInfo.name}'s Live Adventure`;
+
   const { t } = useTranslation();
   const { toast } = useToast();
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
@@ -594,7 +599,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   
   // CRITICAL FIX: Auto-generate image when currentPage changes (for premium page-by-page)
   useEffect(() => {
-    if (imagesEnabled && isStoryStable && !pageImages[currentPage] && displayedStory[safeCurrentPage]) {
+    // A library story already has its pictures: never draw (and pay for) a new one on re-open.
+    const savedPicture = currentStory?.isFromSavedStory
+      ? convertImagesToRecord(currentStory.cachedImages, 'Saved story')?.[currentPage]
+      : null;
+    if (imagesEnabled && isStoryStable && !pageImages[currentPage] && !savedPicture && displayedStory[safeCurrentPage]) {
       DebugLogger.log('image', '🖼️ Auto-triggering image generation for page', currentPage);
       generateImageForCurrentPage();
     }
@@ -1930,7 +1939,7 @@ const initializeStory = async () => {
             });
             setCurrentPage(restoredPage);
             setIsStoryComplete(!!cached.isComplete);
-            setStoryTitle(`${safeUserInfo.name}'s Live Adventure`);
+            setStoryTitle(liveTitle());
             const ctx: LiveGenerationContext = {
               userInfo: { ...effectiveUser, difficultyLevel: currentDifficulty },
               difficulty: currentDifficulty,
@@ -2025,7 +2034,7 @@ const initializeStory = async () => {
         setExpertGradeLevel(result.nextContext.expertGradeLevel);
       }
       setIsStoryComplete(result.isComplete);
-      setStoryTitle(`${safeUserInfo.name}'s Live Adventure`);
+      setStoryTitle(liveTitle());
       
       // Show current grade level toast for premium users
       if (currentDifficulty === 'expert' || currentDifficulty === 'advanced') {
@@ -3495,7 +3504,7 @@ const handleRestartTimer = () => {
           setExpertGradeLevel(first.nextContext.expertGradeLevel);
         }
         setIsStoryComplete(first.isComplete);
-        setStoryTitle(`${safeUserInfo.name}'s Live Adventure`);
+        setStoryTitle(liveTitle());
       } else {
         const originalPageCount = story.length;
         // ✅ CRITICAL FIX: Debug userInfo for story refresh
