@@ -9,7 +9,7 @@
 
 export interface CostEntry {
   sessionId: string;
-  provider: 'openai' | 'runware' | 'elevenlabs' | 'resend';
+  provider: 'openai' | 'runware' | 'elevenlabs' | 'resend' | 'openrouter-free' | 'lovable-gateway';
   operationType: string;
   modelUsed: string;
   cost: number;

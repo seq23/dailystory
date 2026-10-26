@@ -26,6 +26,8 @@ export class ExpertDifficultyManager {
     const { EnhancedSubscriptionManager } = await import('@/services/enhancedSubscriptionManager');
     const isPremium = await EnhancedSubscriptionManager.isPremiumUser().catch(() => false);
     
+    // A level chosen on the story page ("Make harder/easier") wins over the adaptive guess.
+    if (isExpertGrade(userInfo?.expertGradeLevel)) return userInfo.expertGradeLevel;
     if (isPremium) {
       return this.getAdaptiveGradeLevel(userInfo);
     } else {

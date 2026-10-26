@@ -5,6 +5,8 @@
 //    loading or could not be read.
 //  - The chosen skin tone lost its name ("Medium" became "Selected").
 //  - My Stories had two headings (My Stories + Your Story Library).
+import { startingReadingGrade, withReadingGrade } from "@/lib/readingLadder";
+const activeGradeSample = "2nd";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -92,8 +94,15 @@ describe("children can be edited and removed", () => {
     expect(d).toMatch(/data-testid="child-remove-confirm"/);
   });
   it("the story follows the reading child's grade in both grade fields", () => {
+    // 26 Oct 2026: the child's reading level (reading_grade, set on the story page),
+    // else their school grade, sets BOTH grade fields via withReadingGrade.
     const v = read("src/components/PremiumMyStoriesView.tsx");
-    expect(v).toMatch(/grade: normalizeGrade\(activeChild\.grade_level\) \|\| userInfo\.grade,/);
-    expect(v).toMatch(/gradeLevel: normalizeGrade\(activeChild\.grade_level\) \|\| userInfo\.gradeLevel,/);
+    expect(v).toMatch(/readingGrade: \(activeChild as \{ reading_grade\?: string \| null \}\)\.reading_grade,\s*\n\s*grade: activeChild\.grade_level,/);
+    expect(v).toMatch(/return withReadingGrade\(\{[\s\S]*?\}, readingGrade\);/);
+    const fromGrade = withReadingGrade({ name: "Aiden" }, startingReadingGrade({ grade: activeGradeSample }));
+    expect(fromGrade.grade).toBe("2");
+    expect(fromGrade.gradeLevel).toBe("2");
+    const fromReading = withReadingGrade({ name: "Aiden" }, startingReadingGrade({ readingGrade: "4", grade: activeGradeSample }));
+    expect([fromReading.grade, fromReading.gradeLevel]).toEqual(["4", "4"]);
   });
 });

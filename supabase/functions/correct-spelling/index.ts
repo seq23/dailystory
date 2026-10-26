@@ -1,5 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 
+import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -25,8 +26,9 @@ Deno.serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   try {
-    const openAiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAiApiKey) {
+    // Any one provider will do (OpenAI, OpenRouter :free, Lovable gateway: ../_shared/storyTextProvider.ts).
+    const openAiApiKey = Deno.env.get('OPENAI_API_KEY') ?? '';
+    if (!openAiApiKey && !Deno.env.get('OPENROUTER_API_KEY') && !Deno.env.get('LOVABLE_API_KEY')) {
       console.error('OpenAI API key not found');
       return new Response(
         JSON.stringify({ error: 'OpenAI API key not configured' }),
@@ -58,13 +60,7 @@ Deno.serve(async (req) => {
     prompt += `If the text is already correctly spelled, return it unchanged.`;
     prompt += `\n\nText to correct: "${text}"\n\nCorrected text:`;
 
-    const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAiApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const openAiResponse = (await chatCompletionWithFallback({
         model: 'gpt-4o-mini',
         messages: [
           {
@@ -78,8 +74,7 @@ Deno.serve(async (req) => {
         ],
         max_tokens: 200,
         temperature: 0.1, // Low temperature for consistent corrections
-      }),
-    });
+      })).response;
 
     if (!openAiResponse.ok) {
       console.error('OpenAI API error:', await openAiResponse.text());
