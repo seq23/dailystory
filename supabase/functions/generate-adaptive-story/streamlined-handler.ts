@@ -111,14 +111,13 @@ export async function handleStreamlinedGeneration(requestBody: any) {
   
   console.log(`💰 Daily cost check: $${currentCost.toFixed(4)} / $5.00 (Remaining: $${remaining.toFixed(4)})`);
   
-  // PHASE 2: Provider key check. Story text needs ONE working provider: OpenAI,
-  // or the Lovable AI gateway behind it (../_shared/storyTextProvider.ts).
-  const apiKey = Deno.env.get('OPENAI_API_KEY');
-  const gatewayKey = Deno.env.get('LOVABLE_API_KEY');
+  // PHASE 2: Provider key check. Story text needs ONE provider of the chain in
+  // ../_shared/storyTextProvider.ts (OpenRouter free/paid, Workers AI, OpenAI).
+  const hasTextProvider = ['OPENROUTER_API_KEY', 'CLOUDFLARE_WORKERS_AI_TOKEN', 'OPENAI_API_KEY'].some((k) => !!Deno.env.get(k));
 
-  if (!apiKey && !gatewayKey) {
-    console.error('❌ CRITICAL: neither OPENAI_API_KEY nor LOVABLE_API_KEY is set');
-    await logStoryFailure({ stage: 'edge', errorType: 'api_key_missing', message: 'neither OPENAI_API_KEY nor LOVABLE_API_KEY is set', providerAttempts: [], sessionId: bundle?.sessionId ?? null, pageNumber: config?.pageNumber ?? null });
+  if (!hasTextProvider) {
+    console.error('❌ CRITICAL: no text provider key is set');
+    await logStoryFailure({ stage: 'edge', errorType: 'api_key_missing', message: 'no text provider key is set (OPENROUTER_API_KEY, CLOUDFLARE_WORKERS_AI_TOKEN, OPENAI_API_KEY)', providerAttempts: [], sessionId: bundle?.sessionId ?? null, pageNumber: config?.pageNumber ?? null });
     return new Response(JSON.stringify({
       success: false,
       error: 'No story text provider key is configured. Please check Supabase secrets.',
@@ -952,11 +951,10 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       const response = await RequestDeduplicator.deduplicate(
         dedupKey,
         async () => {
-          // OpenAI first, the Lovable AI gateway when OpenAI refuses (../_shared/storyTextProvider.ts).
-          const sent = await chatCompletionWithFallback(apiBody);
-          if (sent.provider !== 'openai') {
-            console.warn('🔁 Story text came from the second provider', { attempts: sent.attempts });
-          }
+          // Free first, paid last (../_shared/storyTextProvider.ts); the child's name is
+          // masked on every free/third-party route and put back in the returned text.
+          const sent = await chatCompletionWithFallback(apiBody, { privateNames: [userInfo?.name, userInfo?.displayName] });
+          console.log('📡 Story text provider', { provider: sent.provider, attempts: sent.attempts.map((a) => `${a.provider} ${a.model ?? ''} ${a.status ?? '-'}`) });
           return sent.response;
         },
         50000 // 50s timeout (aligned with backend orchestrator budget)
@@ -1076,7 +1074,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           
           if (executedContent !== storyText) {
             // Re-inject the executed content back to AI for final processing
-            storyText = await reInjectExecutedContent(executedContent, enhancedSystemPrompt, apiKey!, currentModel || 'gpt-4o-mini');
+            storyText = await reInjectExecutedContent(executedContent, enhancedSystemPrompt, [userInfo?.name, userInfo?.displayName], currentModel || 'gpt-4o-mini');
             console.log('✅ Function calls executed and content re-injected successfully');
           }
         } catch (functionError) {
@@ -1421,7 +1419,7 @@ INTEGRATION GUIDANCE: Select elements that authentically enhance your story. Qua
 /**
  * Phase 4: Re-inject executed content back to AI for final processing
  */
-async function reInjectExecutedContent(executedContent: string, systemPrompt: string, apiKey: string, currentModel: any): Promise<string> {
+async function reInjectExecutedContent(executedContent: string, systemPrompt: string, privateNames: Array<string | undefined>, currentModel: any): Promise<string> {
   console.log('🔄 Re-injecting executed content back to AI for final processing');
   
   const reInjectionPrompt = `${systemPrompt}
@@ -1451,7 +1449,7 @@ Please generate the final story version with natural narrative flow.`;
       apiBody.temperature = 0.7;
     }
     
-    const { response } = await chatCompletionWithFallback(apiBody);
+    const { response } = await chatCompletionWithFallback(apiBody, { privateNames: privateNames.filter((n): n is string => !!n) });
     
     if (!response.ok) {
       console.warn('⚠️ Re-injection API call failed, using executed content as-is');

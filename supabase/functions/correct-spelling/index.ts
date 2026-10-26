@@ -26,9 +26,9 @@ Deno.serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   try {
-    // Any one provider will do (OpenAI, OpenRouter :free, Lovable gateway: ../_shared/storyTextProvider.ts).
+    // Any one provider of the chain will do (../_shared/storyTextProvider.ts).
     const openAiApiKey = Deno.env.get('OPENAI_API_KEY') ?? '';
-    if (!openAiApiKey && !Deno.env.get('OPENROUTER_API_KEY') && !Deno.env.get('LOVABLE_API_KEY')) {
+    if (!openAiApiKey && !Deno.env.get('OPENROUTER_API_KEY') && !Deno.env.get('CLOUDFLARE_WORKERS_AI_TOKEN')) {
       console.error('OpenAI API key not found');
       return new Response(
         JSON.stringify({ error: 'OpenAI API key not configured' }),

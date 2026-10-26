@@ -6,7 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { GRADES } from "@/lib/grades";
+import { GRADES, type Grade } from "@/lib/grades";
 import { readingStep, stepReadingGrade, startingReadingGrade, withReadingGrade } from "@/lib/readingLadder";
 
 const ROOT = join(__dirname, "../../..");
@@ -14,8 +14,8 @@ const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
 
 describe("the ladder: one grade per tap, Pre-K to 10th", () => {
   it("walks every grade up from Pre-K and down from 10th, and stops (atEdge) at both ends", () => {
-    let g = GRADES[0];
-    const up = [g];
+    let g: Grade = GRADES[0];
+    const up: Grade[] = [g];
     for (;;) { const r = stepReadingGrade(g, "up"); if (r.atEdge) break; g = r.step.grade; up.push(g); }
     expect(up).toEqual([...GRADES]);
     expect(stepReadingGrade("10", "up")).toMatchObject({ atEdge: true, step: { grade: "10" } });
