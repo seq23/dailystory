@@ -60,7 +60,7 @@
       "status": "out_of_scope_funded_by_subscriptions",
       "where": "supabase/functions",
       "purpose": "The Time2Read product itself: adaptive story generation, narration, speech-to-text, spelling correction, translation, dictionary lookups and illustration.",
-      "provider_endpoints": ["api.openai.com", "api.runware.ai"],
+      "provider_endpoints": ["api.openai.com", "api.runware.ai", "ai.gateway.lovable.dev"],
       "provider_model_ids": ["gpt-4o-mini", "gpt-4o", "gpt-image-1", "whisper-1", "tts-1-hd", "google/gemini-3.6-flash", "google/gemini-3-flash-preview"],
       "why_not_free": "Subscribers pay for this inference; it is cost of goods, not an unattended probe. The owner's zero-paid rule is about automation this repo runs on a schedule, and this lane runs only when a paying reader opens a story.",
       "guard": "src/test/guards/zero-paid-llm.test.ts keeps this lane listed here, so a new paid call site cannot appear unrecorded."
@@ -78,6 +78,7 @@
     "api\\.ahrefs\\.com",
     "api\\.groq\\.com",
     "api\\.together\\.xyz",
-    "api\\.mistral\\.ai"
+    "api\\.mistral\\.ai",
+    "ai\\.gateway\\.lovable\\.dev"
   ]
 }

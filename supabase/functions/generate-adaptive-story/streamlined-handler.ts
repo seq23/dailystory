@@ -4,6 +4,8 @@
 
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, normalizeGradeFormat, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
 import { expertGradeForGrade } from "../_shared/grades.ts";
+import { chatCompletionWithFallback, lastProviderAttempts } from "../_shared/storyTextProvider.ts";
+import { logStoryFailure } from "../_shared/storyFailureLog.ts";
 import { 
   parseIntoPages as sharedParseIntoPages, 
   mapDifficultyToLevel,
@@ -109,27 +111,18 @@ export async function handleStreamlinedGeneration(requestBody: any) {
   
   console.log(`💰 Daily cost check: $${currentCost.toFixed(4)} / $5.00 (Remaining: $${remaining.toFixed(4)})`);
   
-  // PHASE 2: API Key Validation
+  // PHASE 2: Provider key check. Story text needs ONE working provider: OpenAI,
+  // or the Lovable AI gateway behind it (../_shared/storyTextProvider.ts).
   const apiKey = Deno.env.get('OPENAI_API_KEY');
-  
-  if (!apiKey) {
-    console.error('❌ CRITICAL: OpenAI API key not found in environment');
+  const gatewayKey = Deno.env.get('LOVABLE_API_KEY');
+
+  if (!apiKey && !gatewayKey) {
+    console.error('❌ CRITICAL: neither OPENAI_API_KEY nor LOVABLE_API_KEY is set');
+    await logStoryFailure({ stage: 'edge', errorType: 'api_key_missing', message: 'neither OPENAI_API_KEY nor LOVABLE_API_KEY is set', providerAttempts: [], sessionId: bundle?.sessionId ?? null, pageNumber: config?.pageNumber ?? null });
     return new Response(JSON.stringify({
       success: false,
-      error: 'OpenAI API key not configured. Please check Supabase secrets.',
+      error: 'No story text provider key is configured. Please check Supabase secrets.',
       errorType: 'api_key_missing'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-  }
-  
-  if (!apiKey.startsWith('sk-')) {
-    console.error('❌ CRITICAL: Invalid OpenAI API key format');
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'Invalid OpenAI API key format. Please check Supabase secrets.',
-      errorType: 'api_key_invalid'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -626,11 +619,24 @@ Generate a corrected version that addresses these issues while keeping the story
       }
     }
     
+    // Every failed story is written down server-side (story_generation_failures),
+    // so Backup Mode in a family's browser is never invisible to us.
+    const providerAttempts = lastProviderAttempts();
+    await logStoryFailure({
+      stage: 'edge',
+      errorType,
+      message: safeErrorMessage(error),
+      providerAttempts,
+      sessionId: requestBody?.bundle?.sessionId ?? requestBody?.config?.sessionId ?? null,
+      pageNumber: requestBody?.config?.pageNumber ?? null,
+    });
+
     return new Response(JSON.stringify({
       success: false,
       error: userMessage,
       errorType,
-      technicalError: safeErrorMessage(error)
+      technicalError: safeErrorMessage(error),
+      providerAttempts: providerAttempts.map((a) => ({ provider: a.provider, status: a.status }))
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -946,14 +952,12 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       const response = await RequestDeduplicator.deduplicate(
         dedupKey,
         async () => {
-          return await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(apiBody),
-          });
+          // OpenAI first, the Lovable AI gateway when OpenAI refuses (../_shared/storyTextProvider.ts).
+          const sent = await chatCompletionWithFallback(apiBody);
+          if (sent.provider !== 'openai') {
+            console.warn('🔁 Story text came from the second provider', { attempts: sent.attempts });
+          }
+          return sent.response;
         },
         50000 // 50s timeout (aligned with backend orchestrator budget)
       );
@@ -1447,14 +1451,7 @@ Please generate the final story version with natural narrative flow.`;
       apiBody.temperature = 0.7;
     }
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(apiBody),
-    });
+    const { response } = await chatCompletionWithFallback(apiBody);
     
     if (!response.ok) {
       console.warn('⚠️ Re-injection API call failed, using executed content as-is');

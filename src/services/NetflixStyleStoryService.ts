@@ -31,6 +31,7 @@
  * ============================================================================
  */
 
+import { reportBackupModeUsed } from '@/lib/reportStoryFailure';
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
 import { isExpertGrade, normalizeExpertGrade } from '@/lib/grades';
@@ -244,6 +245,7 @@ export class NetflixStyleStoryService {
   private static async generateFallbackStory(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): Promise<NetflixStoryResult> {
     const fallbackId = `fallback-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     DebugLogger.log('story', `Netflix: Using fallback story generation (reason: ${reason})`, { fallbackId });
+    reportBackupModeUsed(reason, null);
     DebugLogger.log('story', `Netflix FALLBACK DEBUG: UserInfo`, {
       fallbackId,
       name: userInfo.name,

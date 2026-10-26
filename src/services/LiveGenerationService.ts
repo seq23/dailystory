@@ -14,6 +14,7 @@ import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 import { RepairService } from './repairService';
 import { DebugLogger } from '@/services/DebugLogger';
+import { reportBackupModeUsed } from '@/lib/reportStoryFailure';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
@@ -498,6 +499,7 @@ export class LiveGenerationService {
 
   private static async generateFallbackFirstPage(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): Promise<LivePageResult> {
     DebugLogger.log('story', `Live Generation: Using fallback first page (reason: ${reason})`, { reason });
+    reportBackupModeUsed(reason, 1);
     
     // Show toast notification for template usage
     toast({
@@ -610,6 +612,7 @@ export class LiveGenerationService {
     userRequestedEnding?: boolean
   ): Promise<LivePageResult> {
     DebugLogger.log('story', `Live Generation: Using fallback page ${pageNumber} (reason: ${reason})`, { pageNumber, reason });
+    reportBackupModeUsed(reason, pageNumber);
     
     const isLastPage = !!userRequestedEnding;
     
