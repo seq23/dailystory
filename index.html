@@ -2,6 +2,38 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Storage guard (26 Oct 2026). Some browsers throw on any localStorage/sessionStorage access
+         (cookies blocked for the site, managed family/school PCs, some antivirus). The app touches
+         storage at boot, so the throw killed every button. Runs before any other script; when real
+         storage is unusable it swaps in an in-memory store, so the app works (it just forgets on reload). -->
+    <script>
+      (function () {
+        function memoryStore() {
+          var d = {};
+          return {
+            getItem: function (k) { return Object.prototype.hasOwnProperty.call(d, k) ? d[k] : null; },
+            setItem: function (k, v) { d[k] = String(v); },
+            removeItem: function (k) { delete d[k]; },
+            clear: function () { d = {}; },
+            key: function (i) { return Object.keys(d)[i] || null; },
+            get length() { return Object.keys(d).length; }
+          };
+        }
+        ['localStorage', 'sessionStorage'].forEach(function (name) {
+          try {
+            var s = window[name];
+            var probe = '__t2r_probe__';
+            s.setItem(probe, '1');
+            s.removeItem(probe);
+          } catch (e) {
+            try {
+              Object.defineProperty(window, name, { value: memoryStore(), configurable: true });
+              window.__t2rStorageFallback = (window.__t2rStorageFallback || []).concat(name);
+            } catch (e2) {}
+          }
+        });
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="google-site-verification" content="QHP03dGAszxY9hQEdM1Un7rmMMTcCylNDlNLk9RGvLI" />
     <meta name="msvalidate.01" content="306F2E6DD99A91CBBA16C94091284F00" />
@@ -116,6 +148,63 @@
 
   <body>
     <div id="root"></div>
+    <!-- Start-up watchdog (26 Oct 2026). If the app has not started within 8 seconds, or an
+         uncaught error stops it, the family sees a plain "tap to reload" banner instead of dead
+         buttons, and the failure is reported to client_boot_errors (no personal data). -->
+    <div id="t2r-boot-banner" hidden style="position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#1d2a5c;color:#fff;font:16px/1.4 system-ui,sans-serif;padding:14px 16px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap">
+      <span>Something stopped Time-2-Read from loading.</span>
+      <button type="button" id="t2r-boot-reload" style="background:#ffd166;color:#1d2a5c;border:0;border-radius:999px;padding:10px 18px;font:600 16px system-ui,sans-serif;cursor:pointer">Tap to reload</button>
+    </div>
+    <script>
+      (function () {
+        var URL_ = 'https://cpzeuogomaixamrtnnmj.supabase.co/rest/v1/client_boot_errors';
+        var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino';
+        var sent = 0;
+        function report(kind, message, source) {
+          if (sent >= 5) return;
+          sent++;
+          try {
+            fetch(URL_, {
+              method: 'POST', keepalive: true,
+              headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+              body: JSON.stringify({
+                kind: kind,
+                message: String(message || '').slice(0, 500),
+                source: String(source || '').slice(0, 300),
+                path: location.pathname.slice(0, 200),
+                user_agent: navigator.userAgent.slice(0, 300),
+                build: (document.querySelector('script[type="module"][src]') || {}).src ? String(document.querySelector('script[type="module"][src]').src).split('/').pop().slice(0, 60) : ''
+              })
+            }).catch(function () {});
+          } catch (e) {}
+        }
+        window.__t2rReport = report;
+        function showBanner() {
+          var b = document.getElementById('t2r-boot-banner');
+          if (b) b.hidden = false;
+        }
+        window.addEventListener('error', function (e) {
+          report('error', e.message, (e.filename || '') + ':' + (e.lineno || ''));
+          // Only our own code failing before start-up shows the banner; a third-party script error never does.
+          if (!window.__t2rBooted && (!e.filename || e.filename.indexOf(location.origin) === 0)) showBanner();
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+          var r = e.reason;
+          report('rejection', r && (r.message || r), r && r.stack ? String(r.stack).split('\n')[1] : '');
+        });
+        if (window.__t2rStorageFallback) report('storage_fallback', window.__t2rStorageFallback.join(','), '');
+        setTimeout(function () {
+          if (!window.__t2rBooted) { report('boot_timeout', 'app did not start within 8s', ''); showBanner(); }
+        }, 8000);
+        document.getElementById('t2r-boot-reload').addEventListener('click', function () {
+          try {
+            if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); });
+            if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); });
+          } catch (e) {}
+          setTimeout(function () { location.reload(); }, 300);
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
