@@ -214,6 +214,9 @@ export async function mockSupabase(page: Page, init: Partial<MockState> = {}): P
             return json(route, { code: "23505", message: `duplicate key value violates unique constraint "${name}_${uniq}_key"` }, 409);
           }
           const hit = key ? rows.find((r) => item[key] != null && r[key] === item[key]) : null;
+          if (hit && prefer.includes("ignore-duplicates")) {
+            continue; // ON CONFLICT DO NOTHING: the existing row is left as it is
+          }
           if (hit) {
             Object.assign(hit, item, { updated_at: new Date().toISOString() });
             out.push(hit);

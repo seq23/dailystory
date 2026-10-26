@@ -13,7 +13,7 @@ export class EnhancedSubscriptionManager {
   private static cache: SubscriptionCache | null = null;
   private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
   private static readonly CACHE_JITTER = 0.1; // ±10% jitter to prevent cache stampede
-  private static isChecking = false;
+  private static inflight: Promise<boolean> | null = null;
 
   /**
    * Check if current user has premium subscription with caching
@@ -28,15 +28,15 @@ export class EnhancedSubscriptionManager {
       }
     }
 
-    // Prevent multiple concurrent checks
-    if (this.isChecking) {
-      // Wait a bit and return cached result or false
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return this.cache?.isPremium ?? false;
-    }
+    // A second caller while a check is running shares that check. Before, it waited
+    // 100 ms and got `false`, so a Premium parent's dashboard said "Premium feature —
+    // upgrade to enable" and locked the word list.
+    if (this.inflight) return this.inflight;
+    this.inflight = this.check().finally(() => { this.inflight = null; });
+    return this.inflight;
+  }
 
-    this.isChecking = true;
-
+  private static async check(): Promise<boolean> {
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
@@ -45,8 +45,8 @@ export class EnhancedSubscriptionManager {
       }
 
       // Check subscription status with strict timeout (local-first, no external network deps)
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Subscription check timeout')), 2000)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Subscription check timeout')), 4000)
       );
 
       const subscriptionPromise = supabase
@@ -60,25 +60,29 @@ export class EnhancedSubscriptionManager {
         timeoutPromise
       ]) as any;
 
+      // A failed read is not an answer: never cache it as "free".
       if (error) {
-        DebugLogger.log('auth', 'No subscription found, user is free tier');
+        DebugLogger.warn('auth', 'Subscription read failed; not caching', { error });
+        return this.cache?.isPremium ?? false;
+      }
+      if (!subscription) {
         this.updateCache(false);
         return false;
       }
 
       // Check if subscription is active and not expired OR if override premium is active
       const isSubscribed = subscription.subscribed;
-      const isNotExpired = !subscription.subscription_end || 
+      const isNotExpired = !subscription.subscription_end ||
                            new Date(subscription.subscription_end) > new Date();
-      
+
       const hasOverridePremium = subscription.override_premium;
-      const overrideNotExpired = !subscription.override_end || 
+      const overrideNotExpired = !subscription.override_end ||
                                 new Date(subscription.override_end) > new Date();
 
-      const isPremium = (isSubscribed && isNotExpired) || (hasOverridePremium && overrideNotExpired);
-      
+      const isPremium = !!((isSubscribed && isNotExpired) || (hasOverridePremium && overrideNotExpired));
+
       this.updateCache(
-        isPremium, 
+        isPremium,
         subscription.subscription_tier,
         subscription.subscription_end ? new Date(subscription.subscription_end) : undefined
       );
@@ -86,14 +90,8 @@ export class EnhancedSubscriptionManager {
       return isPremium;
     } catch (error) {
       DebugLogger.error('auth', 'Error checking premium status', { error });
-      // Return cached result on error if available
-      if (this.cache) {
-        return this.cache.isPremium;
-      }
-      this.updateCache(false);
-      return false;
-    } finally {
-      this.isChecking = false;
+      // Return cached result on error if available; a timeout is not cached as "free".
+      return this.cache?.isPremium ?? false;
     }
   }
 
@@ -146,3 +144,8 @@ export class EnhancedSubscriptionManager {
 // Export as default and named for compatibility
 export default EnhancedSubscriptionManager;
 export { EnhancedSubscriptionManager as SubscriptionManager };
+
+// A redeemed code or a finished checkout changes the plan at once: drop the cached answer.
+if (typeof window !== 'undefined') {
+  window.addEventListener('subscription-changed', () => EnhancedSubscriptionManager.clearCache());
+}

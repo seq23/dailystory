@@ -72,10 +72,23 @@ describe("logo, maker line and US dollars", () => {
 describe("marketing text stays out of the signed-in app", () => {
   it("Index renders the SEO block (intro, collections, footer) only when signed out", () => {
     const idx = read("src/pages/Index.tsx");
-    expect(idx).toMatch(/\{!isAuthenticated && \(\s*<>\s*<HomeIntro \/>\s*<ReadingCollectionsLinks \/>\s*<SiteFooterNav \/>\s*<\/>\s*\)\}/);
+    // Signed out AND on the plain homepage: the sign-in/sign-up screen and a guest story
+    // are full screens of their own, with no marketing text to scroll into.
+    expect(idx).toMatch(/\{!isAuthenticated && onPlainHomepage && \(\s*<>\s*<HomeIntro \/>\s*<ReadingCollectionsLinks \/>\s*<SiteFooterNav \/>\s*<\/>\s*\)\}/);
+    expect(idx).toMatch(/const onPlainHomepage = useOnPlainHomepage\(\);/);
+    const gs = read("src/lib/guestScreen.ts");
+    expect(gs).toMatch(/return screen === "welcome";/);
+    expect(gs).toMatch(/\(\) => "welcome" as GuestScreen/); // server/prerender snapshot: the block renders
+    const g = read("src/components/GuestExperience.tsx");
+    expect(g).toMatch(/setGuestScreen\(currentState\);/);
+    expect(g).toMatch(/useEffect\(\(\) => \(\) => setGuestScreen\("welcome"\), \[\]\);/);
     expect(idx).toMatch(/useState\(false\)/); // prerender runs signed out, so crawlers keep the block
     expect(read("src/components/HomeIntro.tsx")).toMatch(/Guides for parents and teachers/);
     expect(read("src/prerender/entry.tsx")).toMatch(/HomeIntro/);
+  });
+  it("every sign-up step and guest screen starts at the top", () => {
+    expect(read("src/components/LoginScreen.tsx")).toMatch(/useEffect\(\(\) => \{\s*window\.scrollTo\(\{ top: 0, left: 0 \}\);[\s\S]{0,200}requestAnimationFrame\(\(\) => window\.scrollTo\(\{ top: 0, left: 0 \}\)\);[\s\S]{0,80}\}, \[signupStep\]\);/);
+    expect(read("src/components/GuestExperience.tsx")).toMatch(/if \(currentState !== "welcome"\) window\.scrollTo\(\{ top: 0, left: 0 \}\);/);
   });
   it("each signed-out screen fills the viewport, so the block never peeks under the sign-in card", () => {
     const g = read("src/components/GuestExperience.tsx");

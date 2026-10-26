@@ -133,9 +133,11 @@ export const AvatarPicker = React.forwardRef<
                 >
                   {selected && <SelectedMark />}
                 </span>
-                <span className={cn("text-xs capitalize", selected ? "font-semibold text-primary" : "text-muted-foreground")}>
-                  {selected ? "Selected" : t(`userInfoForm.fields.skinTone.options.${tone}`, tone)}
+                {/* The name always stays; the chosen one also says "Selected". */}
+                <span className={cn("text-xs capitalize", selected ? "font-semibold text-primary" : "text-muted-foreground")} data-testid={`avatar-tone-name-${tone}`}>
+                  {t(`userInfoForm.fields.skinTone.options.${tone}`, tone)}
                 </span>
+                <span className={cn("text-xs font-semibold", selected ? "text-primary" : "invisible")}>✓ Selected</span>
               </button>
             )
           })}

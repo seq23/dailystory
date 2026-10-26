@@ -47,6 +47,7 @@ import { FreeReadingSession } from "@/components/FreeReadingSession";
 import { PremiumUpgrade } from "@/components/PremiumUpgrade";
 
 import { LoginScreen } from "@/components/LoginScreen";
+import { setGuestScreen } from "@/lib/guestScreen";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import type { UserInfo } from "@/types";
 import { guestSession } from "@/utils/guestSession";
@@ -62,6 +63,14 @@ export const GuestExperience = () => {
   
   // Initialize security monitoring for guests
   useSecurityMonitoring();
+
+  // Every screen change starts at the top, and the homepage's marketing text shows
+  // only on the plain welcome screen (sign-in/sign-up is a full screen of its own).
+  useEffect(() => {
+    setGuestScreen(currentState);
+    if (currentState !== "welcome") window.scrollTo({ top: 0, left: 0 });
+  }, [currentState]);
+  useEffect(() => () => setGuestScreen("welcome"), []);
 
 // Check for query parameters on component mount and attempt auto-resume
 useEffect(() => {

@@ -3,6 +3,7 @@ import { AuthWrapper } from "@/components/AuthWrapper";
 import { ReadingCollectionsLinks } from "@/components/ReadingCollectionsLinks";
 import { HomeIntro } from "@/components/HomeIntro";
 import { SiteFooterNav } from "@/components/SiteFooterNav";
+import { useOnPlainHomepage } from "@/lib/guestScreen";
 import { ORGANIZATION, WEBSITE } from "@/seo/schema";
 
 import { Link, useLocation } from "react-router-dom";
@@ -13,6 +14,7 @@ const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const location = useLocation();
   const isStoryAction = new URLSearchParams(location.search).get('action') === 'new-story';
+  const onPlainHomepage = useOnPlainHomepage();
 
   useEffect(() => {
     const url = `${SITE_URL}/`;
@@ -68,8 +70,9 @@ const Index = () => {
     <div className="homepage">
       <AuthWrapper />
       {/* Marketing text is for visitors and crawlers (prerendered signed out);
-          a signed-in family reading a story never scrolls into it. */}
-      {!isAuthenticated && (
+          a signed-in family reading a story never scrolls into it, and neither does a
+          visitor on the sign-in/sign-up screen or a guest story (onPlainHomepage). */}
+      {!isAuthenticated && onPlainHomepage && (
         <>
           <HomeIntro />
           <ReadingCollectionsLinks />

@@ -63,6 +63,14 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   // Two-step signup wizard: 1 = your details, 2 = choose how to start
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
+  // Each step starts at the top: after "Continue" the parent sees step 2, not the
+  // bottom of the page.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
+    // Again after the new step has laid out (the shorter step 2 can leave the page part-way down).
+    const raf = requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0 }));
+    return () => cancelAnimationFrame(raf);
+  }, [signupStep]);
   const [discountValidation, setDiscountValidation] = useState<{
     isValid: boolean;
     message: string;

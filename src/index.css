@@ -308,6 +308,8 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-body;
+    /* Room for the cookie banner while it is up (set by CookieConsent), so it never hides the last button. */
+    padding-bottom: var(--cookie-banner-h, 0px);
   }
   
   /* Typography Hierarchy */

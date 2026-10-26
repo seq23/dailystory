@@ -51,21 +51,13 @@ export function effectiveActiveChild(children: ChildProfile[], activeChildId: st
 }
 
 async function persistActive(userId: string, childId: string | null) {
-  const { data: existing, error: fetchErr } = await supabase
+  // One atomic upsert on user_id (the table's unique key): a select-then-insert raced
+  // the default-preferences insert at sign-in and hit user_preferences_user_id_key.
+  // Only active_child_id is sent, so the rest of an existing row is kept.
+  const { error } = await supabase
     .from("user_preferences")
-    .select("id")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (fetchErr) throw fetchErr;
-  if (existing?.id) {
-    const { error } = await supabase.from("user_preferences").update({ active_child_id: childId }).eq("id", existing.id);
-    if (error) throw error;
-  } else {
-    const { error } = await supabase
-      .from("user_preferences")
-      .insert({ user_id: userId, active_child_id: childId } as TablesInsert<"user_preferences">);
-    if (error) throw error;
-  }
+    .upsert({ user_id: userId, active_child_id: childId } as TablesInsert<"user_preferences">, { onConflict: "user_id" });
+  if (error) throw error;
 }
 
 async function load(force = false): Promise<void> {
