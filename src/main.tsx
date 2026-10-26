@@ -26,7 +26,7 @@ function Booted() {
   useEffect(() => {
     (window as any).__t2rBooted = true;
     const banner = document.getElementById('t2r-boot-banner');
-    if (banner) banner.hidden = true;
+    if (banner) { banner.hidden = true; banner.style.display = 'none'; }
   }, []);
   return null;
 }

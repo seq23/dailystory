@@ -151,7 +151,7 @@
     <!-- Start-up watchdog (26 Oct 2026). If the app has not started within 8 seconds, or an
          uncaught error stops it, the family sees a plain "tap to reload" banner instead of dead
          buttons, and the failure is reported to client_boot_errors (no personal data). -->
-    <div id="t2r-boot-banner" hidden style="position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#1d2a5c;color:#fff;font:16px/1.4 system-ui,sans-serif;padding:14px 16px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap">
+    <div id="t2r-boot-banner" hidden style="position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#1d2a5c;color:#fff;font:16px/1.4 system-ui,sans-serif;padding:14px 16px;display:none;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap">
       <span>Something stopped Time-2-Read from loading.</span>
       <button type="button" id="t2r-boot-reload" style="background:#ffd166;color:#1d2a5c;border:0;border-radius:999px;padding:10px 18px;font:600 16px system-ui,sans-serif;cursor:pointer">Tap to reload</button>
     </div>
@@ -180,8 +180,9 @@
         }
         window.__t2rReport = report;
         function showBanner() {
+          // Shown and hidden through style.display: an inline display would override [hidden].
           var b = document.getElementById('t2r-boot-banner');
-          if (b) b.hidden = false;
+          if (b) { b.hidden = false; b.style.display = 'flex'; }
         }
         window.addEventListener('error', function (e) {
           report('error', e.message, (e.filename || '') + ':' + (e.lineno || ''));
