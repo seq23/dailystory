@@ -15,6 +15,7 @@ import type { DifficultyLevel, UserInfo } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import NewStoryCTA from "@/components/NewStoryCTA";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
+import { readsAtLabel } from "@/lib/readingLevelMap";
 import { AvatarUtils } from "@/utils/avatarUtils";
 interface ResponsiveStoryHeaderProps {
   storyTitle?: string;
@@ -328,7 +329,7 @@ export const ResponsiveStoryHeader = ({
                       buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
                     )}
                   >
-                    {levelLabel ?? DifficultyLevelMapper.getDisplayName(currentDifficulty)}
+                    {levelLabel ?? readsAtLabel(null, currentDifficulty)}
                   </Badge>
 
                   {onIncreaseDifficulty && (
@@ -464,7 +465,7 @@ export const ResponsiveStoryHeader = ({
                     buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
                   )}
                 >
-                  {levelLabel ?? DifficultyLevelMapper.getDisplayName(currentDifficulty)}
+                  {levelLabel ?? readsAtLabel(null, currentDifficulty)}
                 </Badge>
 
                 {onIncreaseDifficulty && (
@@ -702,7 +703,7 @@ export const ResponsiveStoryHeader = ({
                       : ''
                   )}
                   >
-                    {levelLabel ?? DifficultyLevelMapper.getDisplayName(currentDifficulty)}
+                    {levelLabel ?? readsAtLabel(null, currentDifficulty)}
                   </Badge>
 
                 {onIncreaseDifficulty && (
@@ -887,7 +888,7 @@ export const ResponsiveStoryHeader = ({
                         : ''
                     )}
                   >
-                    {levelLabel ?? DifficultyLevelMapper.getDisplayName(currentDifficulty)}
+                    {levelLabel ?? readsAtLabel(null, currentDifficulty)}
                   </Badge>
 
                   {onIncreaseDifficulty && (

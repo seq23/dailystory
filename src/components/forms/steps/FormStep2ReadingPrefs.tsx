@@ -7,7 +7,7 @@ import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { MobileTooltip } from "@/components/MobileTooltip";
 import { FormProgressIndicator } from "../shared/FormProgressIndicator";
 import { ChevronLeft, ArrowRight, BookOpen, Info, ChevronDown } from "lucide-react";
-import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
+import { GRADES, gradeLabel, normalizeGrade, readingLevelForGrade } from "@/lib/grades";
 import type { UserInfo, LearningGoal } from "@/types";
 
 interface FormStep2ReadingPrefsProps {
@@ -31,63 +31,14 @@ export const FormStep2ReadingPrefs = ({
 }: FormStep2ReadingPrefsProps) => {
   const { t } = useTranslation();
 
-  // Customer-facing reading level mappings - Using FRONTEND difficulty terms
-  const readingLevels = [
-    {
-      value: "pre-reader",
-      label: t("readingLevels.preReader.title", "Pre-Reader"),
-      description: t("readingLevels.preReader.desc", "Getting ready to read with picture support"),
-      educational: t("readingLevels.preReader.educational", "Based on pre-literacy skills and Dolch Pre-Primer words"),
-      suggestedAge: "3-4"
-    },
-    {
-      value: "beginner",
-      label: t("readingLevels.beginner.title", "Beginner"),
-      description: t("readingLevels.beginner.desc", "Learning basic words and simple sentences"),
-      educational: t("readingLevels.beginner.educational", "Uses Dolch Primer and Grade 1 sight words (220 most common words)"),
-      suggestedAge: "4-6"
-    },
-    {
-      value: "developing",
-      label: t("readingLevels.developing.title", "Developing"),
-      description: t("readingLevels.developing.desc", "Building reading confidence and fluency"),
-      educational: t("readingLevels.developing.educational", "Incorporates Grade 2-3 vocabulary with reading comprehension focus"),
-      suggestedAge: "6-8"
-    },
-    {
-      value: "independent",
-      label: t("readingLevels.independent.title", "Independent"),
-      description: t("readingLevels.independent.desc", "Reading chapter books independently"),
-      educational: t("readingLevels.independent.educational", "Grade 4-5 level with advanced sentence structures"),
-      suggestedAge: "8-10"
-    },
-    {
-      value: "advanced",
-      label: t("readingLevels.advanced.title", "Advanced"),
-      description: t("readingLevels.advanced.desc", "Mastering complex stories and vocabulary"),
-      educational: t("readingLevels.advanced.educational", "Grade 6-10 with sophisticated vocabulary and themes"),
-      suggestedAge: "10+"
-    }
-  ];
-
-  // Get age-sensitive suggestion
-  const getAgeSuggestion = () => {
-    const age = formData.age;
-    const suggestedLevel = readingLevels.find(level => {
-      const [min, max] = level.suggestedAge.split('-').map(a => parseInt(a.replace('+', '')));
-      if (level.suggestedAge.includes('+')) {
-        return age >= min;
-      }
-      return age >= min && age <= max;
-    });
-
-    if (suggestedLevel) {
-      return t("readingLevels.gentleGuidance", "Many {age} year olds enjoy {level} stories", {
-        age: age.toString(),
-        level: suggestedLevel.label
-      });
-    }
-    return null;
+  // "Reads at" (owner, 26 Oct 2026): one grade for how hard the words are, starting at the
+  // school grade. The old five level names stay internal (docs/reading-levels.md).
+  const schoolGrade = normalizeGrade(formData.grade ?? formData.gradeLevel);
+  const readsAt = normalizeGrade((formData as UserInfo & { readingGrade?: string }).readingGrade) ?? schoolGrade ?? "";
+  const chooseReadsAt = (g: string) => {
+    const grade = normalizeGrade(g);
+    if (!grade) return;
+    onUpdate({ readingGrade: grade, difficultyLevel: readingLevelForGrade(grade) ?? undefined } as Partial<UserInfo>);
   };
 
   const handleInputChange = (field: keyof UserInfo, value: string | LearningGoal) => {
@@ -112,50 +63,30 @@ export const FormStep2ReadingPrefs = ({
       </div>
 
       <div className="space-y-6">
-        {/* Reading Level Selection */}
+        {/* Reads at */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Label htmlFor="readingLevel" className="text-sm font-medium text-foreground">
-              {t("formStep2.readingLevel.label", "Reading Level")}
+            <Label htmlFor="readsAt" className="text-sm font-medium text-foreground">
+              {t("formStep2.readsAt.label", "Reads at")}
             </Label>
-            <MobileTooltip content={t("formStep2.readingLevel.tooltip", "Choose what feels most comfortable and fun")}>
+            <MobileTooltip content={t("formStep2.readsAt.tooltip", "How hard the words are. It starts at their school grade; you can change it any time.")}>
               <Info className="h-4 w-4 text-muted-foreground" />
             </MobileTooltip>
           </div>
-
-          {/* Age-sensitive guidance */}
-          {getAgeSuggestion() && (
-            <p className="text-xs text-primary bg-primary/10 px-3 py-2 rounded-lg">
-              💡 {getAgeSuggestion()}
-            </p>
-          )}
-
-          <Select
-            value={formData.difficultyLevel || "pre-reader"}
-            onValueChange={(value) => handleInputChange('difficultyLevel', value)}
-          >
-            <SelectTrigger id="readingLevel" className="h-auto">
-              <SelectValue placeholder={t("formStep2.readingLevel.placeholder", "Choose reading level")} />
+          <Select value={readsAt} onValueChange={chooseReadsAt}>
+            <SelectTrigger id="readsAt" data-testid="form-reads-at">
+              <SelectValue placeholder={t("formStep2.readsAt.placeholder", "Choose a grade")} />
             </SelectTrigger>
             <SelectContent>
-              {readingLevels.map((level) => (
-                <SelectItem key={level.value} value={level.value} className="py-3">
-                  <div className="flex flex-col items-start">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 text-primary" />
-                      <span className="font-medium">{level.label}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{level.description}</p>
-                    <p className="text-xs text-primary/70 mt-1">{level.educational}</p>
-                  </div>
+              {GRADES.map((g) => (
+                <SelectItem key={g} value={g}>
+                  <span className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" />{gradeLabel(g, "long")}</span>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-
-          {/* Gentle choice emphasis */}
-          <p className="text-xs text-muted-foreground text-center">
-            {t("readingLevels.choiceEmphasis", "Choose what sounds most fun and comfortable")} • {t("readingLevels.noWrongChoice", "There's no wrong choice - we'll make it perfect for you")}
+          <p className="text-xs text-muted-foreground">
+            {t("formStep2.readsAt.help", "Story topics stay right for their age; this only sets how hard the words are.")}
           </p>
         </div>
 

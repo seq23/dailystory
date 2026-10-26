@@ -1296,6 +1296,7 @@ useEffect(() => {
   // (minimumGradeForGuardrail). Comparing them by index in the frontend level list
   // found nothing for "easy"/"medium"/"hard"/"expert" (-1), so a minimum never held.
   const gradeIndex = (g: Grade) => GRADES.indexOf(g);
+  const minReadingGradeRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isPremium) return;
@@ -1305,11 +1306,12 @@ useEffect(() => {
         setLockDifficulty(guardrails.lockDifficulty);
         setMinDifficulty(guardrails.minDifficulty);
         setMinExpertGrade(guardrails.minExpertGrade);
+        minReadingGradeRef.current = guardrails.minReadingGrade ?? null;
         setAllowDecreaseBelowMin(!!guardrails.allowDecreaseBelowMin);
 
         // Hard lock: clamp up immediately and persist if below min
         if (guardrails.lockDifficulty) {
-          const minGrade = minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade);
+          const minGrade = minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade, guardrails.minReadingGrade);
           if (gradeIndex(levelRef.current.grade) < gradeIndex(minGrade)) {
             const step = readingStep(minGrade);
             levelRef.current = step;
@@ -3306,6 +3308,8 @@ const handleSaveStoryNow = async () => {
         title: storyTitle || `${safeUserInfo.name}'s Adventure`,
         segments,
         difficulty: currentDifficulty,
+        // Saved stories show the grade they were written at ("Reads at 3rd grade").
+        readingGrade: levelRef.current.grade,
         estimatedReadingTime,
         wordCount,
       };
@@ -3866,11 +3870,11 @@ const handleRestartTimer = () => {
     }
 
     if (isPremium && direction === 'down') {
-      if (gradeIndex(step.grade) < gradeIndex(minimumGradeForGuardrail(minDifficulty, minExpertGrade))) {
+      if (gradeIndex(step.grade) < gradeIndex(minimumGradeForGuardrail(minDifficulty, minExpertGrade, minReadingGradeRef.current))) {
         if (allowDecreaseBelowMin) {
           toast({ title: t('reader.toasts.minBelowAllowed', 'Going below the set minimum for this session'), duration: 3000 });
         } else {
-          toast({ title: t('reader.toasts.minLevelReached', { minDifficulty: readingStep(minimumGradeForGuardrail(minDifficulty, minExpertGrade)).label }), duration: 3000 });
+          toast({ title: t('reader.toasts.minLevelReached', { minDifficulty: readingStep(minimumGradeForGuardrail(minDifficulty, minExpertGrade, minReadingGradeRef.current)).label }), duration: 3000 });
           return;
         }
       }

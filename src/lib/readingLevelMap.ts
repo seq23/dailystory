@@ -120,3 +120,32 @@ export function normalizeStoredLevel(column: StoredLevelColumn, value: unknown):
 }
 
 export { readingLevelForDifficulty, frontendLevelToDifficulty, backendDifficultyOf, minimumGradeForGuardrail };
+
+/** Pre-K / Kindergarten / "3rd" grade words for a grade. */
+function gradeWords(g: Grade): string {
+  return g === "PreK" ? "Pre-K" : g === "K" ? "Kindergarten" : `${GRADE_PROFILES[g].shortLabel} grade`;
+}
+
+/**
+ * What a story card says about its level, as a grade: "Reads at 3rd grade". Older saves
+ * stored only a level name, so they show that level's grade band ("Reads at 3rd–4th grade").
+ */
+export function readsAtLabel(readingGrade: unknown, legacyLevel?: unknown): string {
+  const g = normalizeGrade(readingGrade);
+  if (g) return `Reads at ${gradeWords(g)}`;
+  const d = frontendLevelToDifficulty(legacyLevel);
+  if (!d) return "";
+  const band = GRADES.filter((x) => GRADE_PROFILES[x].difficulty === d);
+  const lo = band[0], hi = band[band.length - 1];
+  if (lo === hi) return `Reads at ${gradeWords(lo)}`;
+  const short = (x: Grade) => (x === "PreK" ? "Pre-K" : x === "K" ? "K" : GRADE_PROFILES[x].shortLabel);
+  return `Reads at ${short(lo)}–${short(hi)}${hi === "K" ? "" : " grade"}`;
+}
+
+/** The grades a saved story counts as, for the library's "Reads at" filter. */
+export function storyGrades(readingGrade: unknown, legacyLevel?: unknown): Grade[] {
+  const g = normalizeGrade(readingGrade);
+  if (g) return [g];
+  const d = frontendLevelToDifficulty(legacyLevel);
+  return d ? GRADES.filter((x) => GRADE_PROFILES[x].difficulty === d) : [];
+}

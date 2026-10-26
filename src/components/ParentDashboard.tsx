@@ -18,7 +18,7 @@ import { TagInput } from "@/components/ui/tag-input";
 import EnhancedSubscriptionManager from "@/services/enhancedSubscriptionManager";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
-import { READING_LEVELS, EXPERT_GRADES, readingLevelForDifficulty, frontendLevelToDifficulty, backendDifficultyOf, QUIZ_SKILLS, QUIZ_SKILL_LABELS } from "@/lib/grades";
+import { GRADES, gradeLabel, minimumGradeForGuardrail, guardrailForGrade, QUIZ_SKILLS, QUIZ_SKILL_LABELS } from "@/lib/grades";
 import { useChildProgressData } from "@/hooks/useChildProgressData";
 
 interface ParentDashboardProps {
@@ -31,7 +31,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
   const { t } = useTranslation();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
-  const [guardrails, setGuardrails] = useState<{ lockDifficulty: boolean; minDifficulty: string; minExpertGrade: ExpertGradeLevel; allowDecreaseBelowMin: boolean }>({
+  const [guardrails, setGuardrails] = useState<{ lockDifficulty: boolean; minDifficulty: string; minExpertGrade: ExpertGradeLevel; minReadingGrade?: string | null; allowDecreaseBelowMin: boolean }>({
     lockDifficulty: false,
     minDifficulty: 'beginner',
     minExpertGrade: '6th',
@@ -76,6 +76,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
           lockDifficulty: g.lockDifficulty,
           minDifficulty: g.minDifficulty,
           minExpertGrade: g.minExpertGrade,
+          minReadingGrade: g.minReadingGrade ?? null,
           allowDecreaseBelowMin: !!g.allowDecreaseBelowMin,
         });
       } catch (e) {
@@ -899,36 +900,22 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Minimum level</Label>
+                  <Label htmlFor="never-easier" className="text-sm font-medium">Never easier than</Label>
                   <p className="text-xs text-muted-foreground">
-                    Stories will never go below this difficulty level.
+                    Stories will never be written below this grade.
                   </p>
                   {(() => {
-                    // Stored as a BACKEND difficulty (+ expert sub-level); shown as the
-                    // frontend reading levels. Both directions go through @/lib/grades.
-                    const fe = readingLevelForDifficulty(guardrails.minDifficulty) ?? 'pre-reader';
-                    const selected = fe === 'advanced' ? `advanced:${guardrails.minExpertGrade}` : fe;
+                    // Shown and saved as a grade; the older stored fields are kept in step
+                    // (guardrailForGrade). Map: docs/reading-levels.md.
+                    const selected = minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade, guardrails.minReadingGrade);
                     return (
-                      <Select
-                        value={selected}
-                        onValueChange={(v) => {
-                          if (v.startsWith('advanced:')) {
-                            const grade = v.split(':')[1] as ExpertGradeLevel;
-                            setGuardrails({ ...guardrails, minDifficulty: 'expert', minExpertGrade: grade });
-                          } else {
-                            setGuardrails({ ...guardrails, minDifficulty: frontendLevelToDifficulty(v) ?? 'beginner', minExpertGrade: '6th' });
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select minimum" />
+                      <Select value={selected} onValueChange={(v) => setGuardrails({ ...guardrails, ...guardrailForGrade(v) })}>
+                        <SelectTrigger id="never-easier" data-testid="never-easier-than">
+                          <SelectValue placeholder="Choose a grade" />
                         </SelectTrigger>
                         <SelectContent>
-                          {READING_LEVELS.filter((l) => l !== 'advanced').map((l) => (
-                            <SelectItem key={l} value={l}>{DifficultyLevelMapper.getDisplayName(l)}</SelectItem>
-                          ))}
-                          {EXPERT_GRADES.map((g) => (
-                            <SelectItem key={g} value={`advanced:${g}`}>Advanced — {g}</SelectItem>
+                          {GRADES.map((g) => (
+                            <SelectItem key={g} value={g}>{gradeLabel(g, 'long')}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -950,11 +937,10 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                   <Button disabled={saving} onClick={async () => {
                     try {
                       setSaving(true);
-                      // minDifficulty is already a backend value. Re-reading it as a frontend
-                      // one turned a saved Pre-Reader ("beginner") into 1st–2nd ("easy").
+                      // Saved as the grade plus the older fields kept in step (guardrailForGrade).
                       const backendGuardrails = {
                         ...guardrails,
-                        minDifficulty: backendDifficultyOf(guardrails.minDifficulty) ?? 'beginner',
+                        ...guardrailForGrade(minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade, guardrails.minReadingGrade)),
                       };
                       await ParentGuardrailsService.saveGuardrails(backendGuardrails);
                       toast({ title: 'Settings saved' });

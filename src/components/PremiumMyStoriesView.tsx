@@ -25,6 +25,8 @@ import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { APP_CONFIG } from "@/config/appConfig";
 import { startingReadingGrade, withReadingGrade } from "@/lib/readingLadder";
+import { normalizeGrade } from "@/lib/grades";
+import { childAge } from "@/components/children/childInfo";
 
 interface PremiumMyStoriesViewProps {
   userInfo: UserInfo;
@@ -55,8 +57,13 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive
         gradeLevel: userInfo.gradeLevel,
         age: userInfo.age,
       });
+      // Topics follow the CHILD's real age and school grade (not the grown-up's profile).
+      const age = childAge(activeChild) ?? userInfo.age;
       return withReadingGrade({
         ...userInfo,
+        age,
+        grade: normalizeGrade(activeChild.grade_level) ?? userInfo.grade,
+        schoolGrade: normalizeGrade(activeChild.grade_level) ?? undefined,
         name: activeChild.display_name || userInfo.name,
         storyLanguagePreference: userInfo.storyLanguagePreference, // Use parent's language preference
         avatar: (activeChild.avatar as any) || userInfo.avatar,

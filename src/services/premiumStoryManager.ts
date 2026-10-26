@@ -8,6 +8,8 @@ export interface SavedStory {
   title: string;
   content: Story;
   difficulty: DifficultyLevel;
+  /** The grade it was written at; older saves have none (their card shows the grade band). */
+  readingGrade?: string | null;
   wordCount: number;
   estimatedReadingTime: number;
   userPreferences: Record<string, any>;
@@ -63,6 +65,8 @@ export class PremiumStoryManager {
       title: story.title,
       content: story as any, // JSON serializable
       difficulty: story.difficulty,
+      // The grade the story was written at, shown on its card as "Reads at …".
+      reading_grade: (story as { readingGrade?: string }).readingGrade ?? null,
       word_count: story.wordCount,
       estimated_reading_time: story.estimatedReadingTime,
       user_preferences: {
@@ -365,6 +369,7 @@ export class PremiumStoryManager {
       title: data.title,
       content: data.content,
       difficulty: data.difficulty,
+      readingGrade: data.reading_grade ?? data.content?.readingGrade ?? null,
       wordCount: data.word_count,
       estimatedReadingTime: data.estimated_reading_time,
       userPreferences: data.user_preferences,

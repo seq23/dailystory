@@ -321,7 +321,10 @@ export function lowestGradeForDifficulty(d: BackendDifficulty): Grade {
  * A parent's "Minimum level" guardrail (stored as a backend difficulty plus an
  * expert sub-level) → the lowest grade a story may be written at.
  */
-export function minimumGradeForGuardrail(minDifficulty: unknown, minExpertGrade?: unknown): Grade {
+export function minimumGradeForGuardrail(minDifficulty: unknown, minExpertGrade?: unknown, minReadingGrade?: unknown): Grade {
+  // "Never easier than: ___ grade" (26 Oct 2026) stores the grade itself; older rows only the difficulty.
+  const g = normalizeGrade(minReadingGrade);
+  if (g) return g;
   const d = backendDifficultyOf(minDifficulty) ?? "beginner";
   if (d === "expert") {
     const eg = normalizeExpertGrade(minExpertGrade) ?? "6th";
@@ -419,4 +422,25 @@ export function quizSkillPlan(grade: unknown, seed = 0): QuizSkill[] {
     }
   }
   return QUIZ_SKILLS.flatMap((s) => Array.from({ length: counts.get(s) ?? 0 }, () => s));
+}
+
+/**
+ * The prompt line that splits WORDS from THEMES (owner, 26 Oct 2026): word difficulty
+ * comes from Reads at; topics, themes and situations come from the child's real age and
+ * school grade. A 5-year-old reading at 10th grade gets 10th-grade words, kid-safe themes.
+ */
+export function storyAudienceLine(info: { age?: unknown; readsAt?: unknown; schoolGrade?: unknown }): string {
+  const readsAt = normalizeGrade(info.readsAt) ?? normalizeGrade(info.schoolGrade) ?? typicalGradeForAge(info.age ?? 7);
+  const school = normalizeGrade(info.schoolGrade);
+  const ageNum = typeof info.age === "number" ? info.age : Number(info.age);
+  const age = Number.isFinite(ageNum) && ageNum > 0 ? clampAge(ageNum) : GRADE_PROFILES[school ?? readsAt].typicalAge;
+  const words = `WORDS: write the sentences and vocabulary at ${GRADE_PROFILES[readsAt].promptReadingLevel}.`;
+  const themes = `THEMES: the reader is ${age} years old${school ? ` (${GRADE_PROFILES[school].longLabel} at school)` : ""}; every topic, theme, situation and feeling must be right for a ${age}-year-old, even when the words are harder.`;
+  return `${words} ${themes}`;
+}
+
+/** A "Never easier than" grade → the stored guardrail fields (the grade, plus the older fields kept in step). */
+export function guardrailForGrade(grade: unknown): { minReadingGrade: Grade; minDifficulty: BackendDifficulty; minExpertGrade: ExpertGrade } {
+  const g = normalizeGrade(grade) ?? "PreK";
+  return { minReadingGrade: g, minDifficulty: GRADE_PROFILES[g].difficulty, minExpertGrade: GRADE_PROFILES[g].expertGrade ?? "6th" };
 }

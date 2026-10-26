@@ -83,14 +83,21 @@ export function startingReadingGrade(info: {
 
 /** The user info a story is written from, at this reading grade. */
 export function withReadingGrade<T extends object>(info: T, grade: Grade): T & {
+  schoolGrade?: Grade;
+  readingGrade: Grade;
   grade: Grade;
   gradeLevel: Grade;
   difficultyLevel: ReadingLevel;
   expertGradeLevel: ExpertGrade | undefined;
 } {
   const step = readingStep(grade);
+  const anyInfo = info as Record<string, unknown>;
+  // The school grade sets topics; keep it before grade/gradeLevel become the Reads-at grade.
+  const schoolGrade = normalizeGrade(anyInfo.schoolGrade) ?? normalizeGrade(anyInfo.grade) ?? normalizeGrade(anyInfo.gradeLevel) ?? undefined;
   return {
     ...info,
+    ...(schoolGrade ? { schoolGrade } : {}),
+    readingGrade: step.grade,
     grade: step.grade,
     gradeLevel: step.grade,
     difficultyLevel: step.readingLevel,
