@@ -4057,6 +4057,7 @@ const handleRestartTimer = () => {
       userId={safeUserInfo.name} 
       userType={isPremium ? 'premium' : 'free'}
       userInfo={userInfo}
+      onVocabularyWord={addVocabularyWord}
     >
       <ErrorBoundary>
         <div className="min-h-screen bg-gradient-primary mobile-optimized flex flex-col">

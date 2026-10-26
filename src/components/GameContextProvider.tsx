@@ -23,13 +23,20 @@ interface GameContextProviderProps {
   userId?: string;
   userType?: 'free' | 'premium';
   userInfo?: UserInfo;
+  /**
+   * The counter the reading page shows in its progress towers. When given, a saved word counts
+   * there; the provider's own copy of the stats is not what the towers read (26 Oct 2026: saved
+   * words never moved the Vocabulary tower).
+   */
+  onVocabularyWord?: () => void;
 }
 
 export const GameContextProvider: React.FC<GameContextProviderProps> = ({
   children,
   userId,
   userType = 'premium',
-  userInfo
+  userInfo,
+  onVocabularyWord
 }) => {
   const gamificationHook = useGamification({
     userId,
@@ -38,9 +45,9 @@ export const GameContextProvider: React.FC<GameContextProviderProps> = ({
   });
 
   useEffect(() => {
-    setupGamificationGlobals(gamificationHook.addVocabularyWord, userType === 'premium');
+    setupGamificationGlobals(onVocabularyWord ?? gamificationHook.addVocabularyWord, userType === 'premium');
     return () => cleanupGamificationGlobals();
-  }, [gamificationHook.addVocabularyWord, userType]);
+  }, [onVocabularyWord, gamificationHook.addVocabularyWord, userType]);
 
   // Store session start stats when component mounts
   useEffect(() => {
