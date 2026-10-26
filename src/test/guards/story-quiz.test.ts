@@ -15,6 +15,9 @@ import {
   quizShapeForGrade,
   buildQuizMessages,
   parseQuizJson,
+  skillStats,
+  skillSummary,
+  QUIZ_SKILLS,
 } from "../../../supabase/functions/_shared/quiz";
 import { loadStoryQuiz } from "@/lib/quiz";
 
@@ -26,6 +29,8 @@ Her brother Theo said it might be a robin egg. They made a soft nest from a shoe
 That night a storm shook the windows. Mia kept the shoebox next to the warm stove.
 In the morning the egg cracked open. A small wet bird blinked at them and chirped.
 Mia laughed and named the bird Pip. When Pip could fly, they let him go in the garden.`;
+
+const PLAN_STORY = `Maya found a huge footprint in the mud by the creek. "That's not a dog," she whispered. She ran home, grabbed her notebook and drew it carefully, toe by toe. The next morning a museum scientist looked at her drawing and smiled. "You've found something special," she said.`;
 
 const words = (s: string) => s.toLowerCase().match(/[a-z']+/g) ?? [];
 
@@ -53,11 +58,43 @@ describe("the quiz written from the story text (AI down)", () => {
     });
   }
 
-  it("question count and option count follow the grade", () => {
-    expect(quizShapeForGrade("PreK")).toMatchObject({ count: 3, optionCount: 3 });
-    expect(quizShapeForGrade("1")).toMatchObject({ count: 3, optionCount: 4 });
-    expect(quizShapeForGrade("3")).toMatchObject({ count: 4 });
-    expect(quizShapeForGrade("10")).toMatchObject({ count: 5 });
+  it("question count and choices follow the owner's quiz plan bands", () => {
+    expect(quizShapeForGrade("PreK")).toMatchObject({ count: 3, optionCount: 2 });
+    expect(quizShapeForGrade("1")).toMatchObject({ count: 4, optionCount: 3 });
+    expect(quizShapeForGrade("2")).toMatchObject({ count: 5, optionCount: 3 });
+    expect(quizShapeForGrade("3")).toMatchObject({ count: 5, optionCount: 4 });
+    expect(quizShapeForGrade("5")).toMatchObject({ count: 6, optionCount: 4 });
+    expect(quizShapeForGrade("7")).toMatchObject({ count: 7, optionCount: 4 });
+    expect(quizShapeForGrade("10")).toMatchObject({ count: 8, optionCount: 4 });
+  });
+
+  for (const grade of ["PreK", "1", "3", "5", "7", "10"]) {
+    it(`grade ${grade}: the backup quiz follows the skill plan, tags every question, and includes word meaning and inference where the plan has them`, () => {
+      for (const seed of [0, 1, 2, 3]) {
+        const shape = quizShapeForGrade(grade, undefined, seed);
+        const qs = buildFallbackQuiz(PLAN_STORY, shape);
+        expect(qs).toHaveLength(shape.count);
+        for (const q of qs) {
+          expect(QUIZ_SKILLS).toContain(q.skill);
+          expect(q.options).toHaveLength(shape.optionCount);
+          expect(new Set(q.options.map((o) => o.toLowerCase())).size).toBe(q.options.length);
+        }
+        for (const skill of ["word-meaning", "between-the-lines"] as const) {
+          if (shape.plan.includes(skill)) expect(qs.some((q) => q.skill === skill)).toBe(true);
+        }
+        if (shape.band.pictures) expect(qs.some((q) => q.pictures?.some(Boolean))).toBe(true);
+      }
+    });
+  }
+
+  it("each skill's builder keeps exactly one right answer", () => {
+    const qs = buildFallbackQuiz(PLAN_STORY, quizShapeForGrade("9", undefined, 0));
+    const spelling = qs.find((q) => q.skill === "spelling")!;
+    expect(PLAN_STORY).toContain(spelling.options[spelling.correctAnswer]);
+    for (const [i, o] of spelling.options.entries()) if (i !== spelling.correctAnswer) expect(PLAN_STORY.toLowerCase()).not.toMatch(new RegExp(`\\b${o}\\b`));
+    const feeling = qs.find((q) => q.skill === "between-the-lines")!;
+    expect(feeling.options[feeling.correctAnswer]).toMatch(/scared|nervous|happy|surprised/);
+    expect(feeling.evidence && PLAN_STORY.includes(feeling.evidence.replace(/^["“]|["”]$/g, "").slice(0, 20))).toBeTruthy();
   });
 });
 
@@ -98,12 +135,21 @@ describe("a model's quiz is checked before a child sees it", () => {
     expect(mixed.questions.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("the prompt names the grade, the count, one right answer and the evidence quote", () => {
-    const [sys] = buildQuizMessages(STORY, quizShapeForGrade("2"));
+  it("the prompt names the grade, the count, each skill slot, one right answer and the evidence quote", () => {
+    const shape = quizShapeForGrade("2");
+    const [sys] = buildQuizMessages(STORY, shape);
     expect(sys.content).toMatch(/2nd grade/);
-    expect(sys.content).toMatch(/exactly 3 questions/i);
-    expect(sys.content).toMatch(/Exactly ONE option is right/);
+    expect(sys.content).toMatch(/exactly 5 questions/i);
+    expect(sys.content).toMatch(/exactly 3 answer options/);
+    for (const skill of shape.plan) expect(sys.content).toContain(`skill "${skill}"`);
+    expect(sys.content).toMatch(/exactly ONE option is right/);
     expect(sys.content).toMatch(/"evidence"/);
+  });
+
+  it("a 5-year-old reading at 10th grade: 10th-grade questions, topics right for a 5-year-old", () => {
+    const [sys] = buildQuizMessages(STORY, quizShapeForGrade("10", 5));
+    expect(sys.content).toMatch(/10th grade/);
+    expect(sys.content).toMatch(/right for a 5-year-old/);
   });
 });
 
@@ -159,6 +205,31 @@ describe("quiz results reach Progress and the parent dashboard", () => {
       expect(src).toMatch(/loadStoryQuiz\(/);
       expect(src).not.toMatch(/functions\.invoke\('generate-quiz'/);
     }
+  });
+  it("every answer is saved with its skill, and Reports shows strengths by skill", () => {
+    for (const f of ["src/components/ComprehensionQuiz.tsx", "src/components/VoiceQuiz.tsx"]) {
+      expect(read(f)).toMatch(/skillAnswers(?: =|:) questions\.map\(\(q, i\) => \(\{ skill: q\.skill, correct: /);
+    }
+    const hook = read("src/hooks/useChildProgressData.ts");
+    expect(hook).toMatch(/select\('created_at, score, total_questions, story_title, mode, details'\)/);
+    expect(hook).toMatch(/skillStats\(answers\)/);
+    expect(read("src/components/ParentDashboard.tsx")).toMatch(/progress\.skillsSummary/);
+    const st = skillStats([
+      ...Array(4).fill({ skill: "word-meaning", correct: true }),
+      ...Array(3).fill({ skill: "between-the-lines", correct: false }),
+    ]);
+    expect(skillSummary(st).text).toBe("Strong at word meaning · practising reading between the lines");
+  });
+  it("Pre-K–1st hear every question; older readers can tap to hear", () => {
+    const src = read("src/components/ComprehensionQuiz.tsx");
+    expect(src).toMatch(/band\.readAloud === 'always' && questions\[currentQuestion\]/);
+    expect(src).toMatch(/onClick=\{\(\) => speakQuestion\(currentQ\)\}/);
+    expect(src).toMatch(/currentQ\.pictures\?\.\[index\]/);
+  });
+  it("the quiz is never greyed out on the session-ended page", () => {
+    const ended = read("src/pages/SessionEnded.tsx");
+    expect(ended).not.toMatch(/disabled=\{!canLaunchActivities \|\| !isQuizAllowed\}/);
+    expect(ended).toMatch(/\{quizVisible && \(\s*<ComprehensionQuiz/);
   });
   it("the written quiz waits for the child: no auto-advance timer after an answer", () => {
     const src = read("src/components/ComprehensionQuiz.tsx");

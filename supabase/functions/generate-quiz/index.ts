@@ -16,6 +16,7 @@ import {
   finalizeQuiz,
   parseQuizJson,
   quizShapeForGrade,
+  storySeed,
   QUIZ_STORY_MAX_CHARS,
 } from "../_shared/quiz.ts";
 
@@ -42,7 +43,7 @@ serve(async (req) => {
   if (storyText.length < 20) return json({ error: "Invalid story text" }, 400);
 
   const story = storyText.slice(0, QUIZ_STORY_MAX_CHARS);
-  const shape = quizShapeForGrade(body.grade, body.age);
+  const shape = quizShapeForGrade(body.grade, body.age, storySeed(story));
   const privateNames = [body.childName, body.displayName]
     .filter((n): n is string => typeof n === "string" && n.trim().length >= 2)
     .slice(0, 4);

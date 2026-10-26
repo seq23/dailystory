@@ -263,7 +263,7 @@ export const useAudioControls = ({
   }, []);
 
   const markPageCompleted = useCallback((pageNumber: number) => {
-    setPagesCompleted(prev => new Set([...prev, pageNumber]));
+    setPagesCompleted(prev => (prev.has(pageNumber) ? prev : new Set([...prev, pageNumber])));
   }, []);
 
   const resetSessionCounters = useCallback(() => {

@@ -1,7 +1,7 @@
 import { StoryAudioControls } from "@/components/story/StoryAudioControls";
 import { EXPERT_GRADES, GRADES, minimumGradeForGuardrail, type ExpertGrade, type Grade } from '@/lib/grades';
 import { readingStep, stepReadingGrade, startingReadingGrade, withReadingGrade, type ReadingStep } from '@/lib/readingLadder';
-import { readingProgress, saveLastReadStory } from '@/lib/lastReadStory';
+import { pagesReadCount, saveLastReadStory } from '@/lib/lastReadStory';
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
 import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration";
 import { useStoryLogic } from "@/hooks/useStoryLogic";
@@ -440,11 +440,26 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const safeStory = Array.isArray(story) ? story : [];
   const displayedStory = !isPremium ? safeStory.slice(0, 6) : safeStory;
 
+  // THE reading counter (src/lib/lastReadStory.ts pagesReadCount): a page counts once it
+  // has been shown. Towers, session-ended, reading_sessions and Progress all read it.
+  const firstPageRef = useRef<string>('');
+  useEffect(() => {
+    const first = displayedStory[0] ?? '';
+    if (first !== firstPageRef.current) {
+      // a new story: start counting again
+      firstPageRef.current = first;
+      setPagesCompleted(new Set());
+    }
+    if (displayedStory[currentPage]?.trim()) markPageCompleted(currentPage);
+  }, [safeStory, isPremium, currentPage]);
+  const shownPages = (): number[] => [...pagesCompleted, currentPage];
+  const sessionRead = pagesReadCount(displayedStory, shownPages());
+
   // Record the story as it is read, so the session-ended page always has it for the
   // quiz and games, even when the session ends while a new story is being written.
   useEffect(() => {
     if (!displayedStory.length) return;
-    const progress = readingProgress(displayedStory, currentPage);
+    const progress = pagesReadCount(displayedStory, shownPages());
     saveLastReadStory({
       text: displayedStory.join(' '),
       title: storyTitle || '',
@@ -452,7 +467,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       grade: levelRef.current.grade,
       readingLevel: levelRef.current.readingLevel,
     });
-  }, [safeStory, isPremium, currentPage, storyTitle, readingGrade]);
+  }, [safeStory, isPremium, currentPage, storyTitle, readingGrade, pagesCompleted]);
   
   // Ensure currentPage is within valid bounds
   const safeCurrentPage = Math.max(0, Math.min(currentPage, displayedStory.length - 1));
@@ -3161,12 +3176,11 @@ const handleDockCoach = () => {
       return;
     }
     const timeSpent = (20 * 60 - timeRemaining) * 1000; // Convert to milliseconds
-    // Pages the child reached and the words on them. sessionWordsRead and pagesCompleted
-    // are never incremented anywhere, so the page always said "Words Read 0".
-    const progress = readingProgress(displayedStory, currentPage);
-    const totalWordsRead = Math.max(sessionWordsRead, progress.wordsRead);
+    // The one reading counter: every page shown, the current (last) one included.
+    const progress = pagesReadCount(displayedStory, shownPages());
+    const totalWordsRead = progress.wordsRead;
     const wpm = timeSpent > 0 ? Math.round((totalWordsRead / timeSpent) * 60000) : 0;
-    const pagesRead = Math.max(pagesCompleted.size, progress.pagesRead);
+    const pagesRead = progress.pagesRead;
     
     // Clear character state when session ends for both free and premium users
     try {
@@ -4930,8 +4944,8 @@ const handleRestartTimer = () => {
       <ModernProgressTowers
         userId={userInfo?.name}
         userType={isPremium ? 'premium' : 'free'}
-        currentWordsRead={sessionWordsRead}
-        currentPagesRead={pagesCompleted.size}
+        currentWordsRead={sessionRead.wordsRead}
+        currentPagesRead={sessionRead.pagesRead}
         vocabularyLearned={userStats.vocabularyWordsLearned || 0}
         timeSpent={Date.now() - sessionStartTimeValue}
         onProgressUpdate={(type, value) => {

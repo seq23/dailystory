@@ -60,6 +60,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
   // The score as of the last answer (a timeout's closure would read a stale state value).
   const scoreRef = useRef(0);
   const savedRef = useRef(false);
+  const answersRef = useRef<(number | null)[]>([]);
 
   const voiceEventListenerRef = useRef<((event: CustomEvent) => void) | null>(null);
 
@@ -215,6 +216,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
   const submitAnswer = (answerIndex: number) => {
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = answerIndex;
+    answersRef.current = newAnswers;
     setAnswers(newAnswers);
 
     const isCorrect = answerIndex === questions[currentQuestion].correctAnswer;
@@ -277,7 +279,14 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
           userInfo,
           mode: 'ai',
           storyTitle,
-          details: { answers, questions: questions.map((q) => ({ id: q.id, type: q.type })), voice: true, grade: storyGrade },
+          details: {
+            answers: answersRef.current,
+            // Each answer with its skill, for Reports → strengths by skill.
+            skillAnswers: questions.map((q, i) => ({ skill: q.skill, correct: answersRef.current[i] === q.correctAnswer })),
+            questions: questions.map((q) => ({ id: q.id, type: q.type, skill: q.skill })),
+            voice: true,
+            grade: storyGrade,
+          },
         }).catch((e) => DebugLogger.warn('ui', 'Voice quiz save failed', e));
       }
     }
@@ -295,6 +304,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
     setScore(0);
     scoreRef.current = 0;
     savedRef.current = false;
+    answersRef.current = [];
     setAnswers(new Array(questions.length).fill(null));
     setQuizComplete(false);
     setQuizStarted(false);

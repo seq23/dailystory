@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { skillStats, skillSummary, type SkillStats, type SkillAnswer } from '@/lib/quiz';
 
 export interface ChildProgressData {
   storiesRead: number;
@@ -22,6 +23,10 @@ export interface ChildProgressData {
   recentQuizzes: { date: string; score: number; total: number; title: string; mode: string }[];
   // Recent game results
   recentGames: { date: string; score: number; maxScore: number; type: string }[];
+  /** Right / total per quiz skill (from each saved answer's skill). */
+  skills: SkillStats;
+  /** "Strong at word meaning · practising reading between the lines" (empty until 3+ answers in a skill). */
+  skillsSummary: string;
   loading: boolean;
   error?: string;
 }
@@ -40,6 +45,8 @@ const EMPTY: ChildProgressData = {
   weeklyMinutes: [0, 0, 0, 0, 0, 0, 0],
   recentQuizzes: [],
   recentGames: [],
+  skills: {},
+  skillsSummary: '',
   loading: true,
 };
 
@@ -70,7 +77,7 @@ export function useChildProgressData(childProfileId: string | null): ChildProgre
 
         const quizQuery = supabase
           .from('quiz_attempts')
-          .select('created_at, score, total_questions, story_title, mode')
+          .select('created_at, score, total_questions, story_title, mode, details')
           .eq('user_id', userId)
           .order('created_at', { ascending: false });
         if (childProfileId) quizQuery.eq('child_profile_id', childProfileId);
@@ -144,7 +151,14 @@ export function useChildProgressData(childProfileId: string | null): ChildProgre
           type: g.game_type,
         }));
 
+        // Strengths by skill: every saved answer carries its skill (ComprehensionQuiz, VoiceQuiz).
+        const answers: SkillAnswer[] = quizzes.flatMap((q: any) => (Array.isArray(q?.details?.skillAnswers) ? q.details.skillAnswers : []));
+        const skills = skillStats(answers);
+        const skillsSummary = skillSummary(skills).text;
+
         setData({
+          skills,
+          skillsSummary,
           storiesRead,
           totalReadingTimeMinutes,
           wordsLearned,

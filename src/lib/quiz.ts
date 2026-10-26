@@ -2,11 +2,12 @@
 // supabase/functions/_shared/quiz.ts so generate-quiz runs the same checks.
 // Guard: src/test/guards/story-quiz.test.ts.
 import { supabase } from "@/integrations/supabase/client";
-import { normalizeGrade, typicalGradeForAge } from "@/lib/grades";
+import { normalizeGrade, typicalGradeForAge, quizBandForGrade } from "@/lib/grades";
 import type { UserInfo } from "@/types";
 import {
   finalizeQuiz,
   quizShapeForGrade,
+  storySeed,
   type QuizQuestion,
   type QuizSource,
 } from "../../supabase/functions/_shared/quiz";
@@ -31,8 +32,9 @@ export async function loadStoryQuiz(
   invoke: Invoke = (n, o) => supabase.functions.invoke(n, o) as any,
 ): Promise<{ questions: QuizQuestion[]; source: QuizSource }> {
   const grade = quizGradeFor(args.userInfo, args.storyGrade);
-  const shape = quizShapeForGrade(grade);
   const story = (args.storyText || "").replace(/\s+/g, " ").trim();
+  // Band by Reads-at grade, topics by real age; the same seed as the server, so both pick the same skills.
+  const shape = quizShapeForGrade(grade, args.userInfo?.age, storySeed(story.slice(0, 6000)));
   let raw: unknown = null;
   try {
     const { data, error } = await invoke("generate-quiz", {
@@ -51,4 +53,9 @@ export async function loadStoryQuiz(
   }
   const out = finalizeQuiz(raw, story, shape);
   return out;
+}
+
+/** The quiz band for a child and story (Reads-at grade), for the quiz screens. */
+export function quizBandFor(userInfo: Partial<UserInfo> & Record<string, unknown>, storyGrade?: unknown) {
+  return quizBandForGrade(quizGradeFor(userInfo, storyGrade));
 }

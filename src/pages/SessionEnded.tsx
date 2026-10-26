@@ -407,37 +407,17 @@ const getDifficultyLabel = (level: ReadingLevel | null) => {
               <div className="grid md:grid-cols-3 gap-3">
                 <Card className="p-4 text-left">
                   <div className="font-semibold mb-1">{t('postSession.quizTitle', 'Comprehension Quiz')}</div>
-                  <p className="text-sm text-gray-600 mb-2">{t('postSession.quizDesc', 'Quick 3–5 questions based on your story.')}</p>
+                  <p className="text-sm text-gray-600 mb-2">{t('postSession.quizDesc', 'A few questions about your story.')}</p>
                   <Button 
-                    disabled={!canLaunchActivities || !isQuizAllowed} 
                     onClick={() => {
                       DebugLogger.log('ui', 'Quiz button clicked', { canLaunchActivities, isQuizAllowed, userInfoFromState, storyText });
-                      if (canLaunchActivities && isQuizAllowed) {
-                        setQuizVisible(true);
-                      } else {
-                        DebugLogger.warn('ui', 'Quiz launch blocked - missing data', { 
-                          hasUserInfo: !!userInfoFromState, 
-                          hasStoryText: !!storyText,
-                          canLaunch: canLaunchActivities,
-                          quizAllowed: isQuizAllowed
-                        });
-                      }
+                      // The quiz always opens (owner's quiz plan): never greyed out.
+                      setQuizVisible(true);
                     }} 
                     className="w-full"
                   >
                     {t('postSession.startQuiz', 'Start Quiz')}
                   </Button>
-                  {!canLaunchActivities && (
-                    <div className="text-xs text-orange-600 mt-2">
-                      {!userInfoFromState && !storyText ? 'Missing user info and story data' : 
-                       !userInfoFromState ? 'Missing user info' :
-                       !storyText ? 'Missing story data' : 
-                       t('postSession.unavailable', 'Unavailable: missing story data')}
-                    </div>
-                  )}
-                  {!isQuizAllowed && canLaunchActivities && (
-                    <div className="text-xs text-orange-600 mt-2">Quiz not available right now</div>
-                  )}
                 </Card>
                 <Card className="p-4 text-left">
                   <div className="font-semibold mb-1">{t('postSession.vocabTitle', 'Review Vocabulary')}</div>
@@ -663,10 +643,10 @@ const getDifficultyLabel = (level: ReadingLevel | null) => {
               </Button>
           </div>
         {/* Modals */}
-        {quizVisible && userInfoFromState && storyText && (
+        {quizVisible && (
           <ComprehensionQuiz
-            userInfo={userInfoFromState}
-            storyText={storyText}
+            userInfo={userInfoFromState ?? ({ age: 7 } as UserInfo)}
+            storyText={storyText || ''}
             storyTitle={sessionStats?.storyTitle || lastRead?.title || (window as any).__storyTitle || ''}
             storyGrade={endGrade ?? undefined}
             isVisible={quizVisible}

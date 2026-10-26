@@ -18,7 +18,7 @@ import { TagInput } from "@/components/ui/tag-input";
 import EnhancedSubscriptionManager from "@/services/enhancedSubscriptionManager";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
-import { READING_LEVELS, EXPERT_GRADES, readingLevelForDifficulty, frontendLevelToDifficulty, backendDifficultyOf } from "@/lib/grades";
+import { READING_LEVELS, EXPERT_GRADES, readingLevelForDifficulty, frontendLevelToDifficulty, backendDifficultyOf, QUIZ_SKILLS, QUIZ_SKILL_LABELS } from "@/lib/grades";
 import { useChildProgressData } from "@/hooks/useChildProgressData";
 
 interface ParentDashboardProps {
@@ -681,6 +681,25 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                                   ? `Developing well. ${childLabel} grasps main ideas but may miss details. Discussing stories together can help.`
                                   : `${childLabel} is building comprehension skills. Consider lowering difficulty or reading stories together.`}
                               </p>
+                            </div>
+                            {/* Strengths by skill: each quiz answer is saved with its skill. */}
+                            <div className="p-4 bg-muted/50 rounded-lg space-y-2" data-testid="quiz-skills">
+                              <h4 className="font-semibold text-foreground text-sm">Reading skills</h4>
+                              <p className="text-sm text-foreground">
+                                {progress.skillsSummary || `Skills show here after a few more quizzes (3 answers per skill).`}
+                              </p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                                {QUIZ_SKILLS.filter((sk) => progress.skills[sk]?.total).map((sk) => {
+                                  const st = progress.skills[sk]!;
+                                  const pct = Math.round((st.right / st.total) * 100);
+                                  return (
+                                    <div key={sk} className="text-xs text-muted-foreground flex justify-between gap-2">
+                                      <span>{QUIZ_SKILL_LABELS[sk]}</span>
+                                      <span className="tabular-nums">{st.right}/{st.total} ({pct}%)</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
                             {progress.recentQuizzes.length >= 3 && (() => {
                               const recent3 = progress.recentQuizzes.slice(0, 3);
