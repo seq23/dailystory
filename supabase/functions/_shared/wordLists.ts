@@ -60,3 +60,31 @@ export const DOLCH_NOUNS = [
 export const DOLCH_SERVICE_WORDS: readonly string[] = [
   ...DOLCH_PRE_PRIMER, ...DOLCH_PRIMER, ...DOLCH_FIRST_GRADE, ...DOLCH_SECOND_GRADE, ...DOLCH_THIRD_GRADE,
 ];
+
+/** Fry Instant Words, 1st hundred (E. Fry, 1000 Instant Words), in frequency order. */
+export const FRY_1ST_100 = ("the of and a to in is you that it he was for on are as with his they I at be this have from " +
+  "or one had by words but not what all were we when your can said there use an each which she do how their if will up " +
+  "other about out many then them these so some her would make like him into time has look two more write go see number " +
+  "no way could people my than first water been call who oil its now find long down day did get come made may part").split(" ");
+
+/** Fry Instant Words, 2nd hundred. */
+export const FRY_2ND_100 = ("over new sound take only little work know place years live me back give most very after things " +
+  "our just name good sentence man think say great where help through much before line right too means old any same tell " +
+  "boy follow came want show also around form three small set put end does another well large must big even such because " +
+  "turn here why ask went men read need land different home us move try kind hand picture again change off play spell air " +
+  "away animals house point page letters mother answer found study still learn should America world").split(" ");
+
+/**
+ * The target words for each Reads-at grade, for prompts and for scoring a story
+ * against its grade (re-exported by src/lib/readingLevelMap.ts as GRADE_WORD_LISTS).
+ * Pre-K–3rd: Dolch by list (+ nouns) and Fry 1st/2nd hundred. 4th–10th draw on the
+ * app's curated level-3/level-4 sets in ./vocabulary (Fry 300–1000 and the Academic
+ * Word List are not transcribed yet: no verified copy in the repo).
+ */
+export const GRADE_SIGHT_WORDS: Readonly<Record<string, readonly string[]>> = Object.freeze({
+  PreK: DOLCH_PRE_PRIMER,
+  K: [...DOLCH_PRE_PRIMER, ...DOLCH_PRIMER],
+  "1": [...DOLCH_FIRST_GRADE, ...FRY_1ST_100.slice(0, 50)],
+  "2": [...DOLCH_SECOND_GRADE, ...FRY_1ST_100.slice(50)],
+  "3": [...DOLCH_THIRD_GRADE, ...DOLCH_NOUNS, ...FRY_2ND_100],
+});

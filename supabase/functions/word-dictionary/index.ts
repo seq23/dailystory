@@ -1,3 +1,4 @@
+import * as W from "../_shared/wordLists.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
@@ -28,14 +29,14 @@ interface WordData {
 // Enhanced cache with educational word pre-population
 const wordCache = new Map<string, WordData>();
 
-// Educational word lists for pre-caching (379 core words)
-const DOLCH_PRE_PRIMER = ['a', 'and', 'away', 'big', 'blue', 'can', 'come', 'down', 'find', 'for', 'funny', 'go', 'help', 'here', 'I', 'in', 'is', 'it', 'jump', 'little', 'look', 'make', 'me', 'my', 'not', 'one', 'play', 'red', 'run', 'said', 'see', 'the', 'three', 'to', 'two', 'up', 'we', 'where', 'yellow', 'you'];
+// Educational word lists for pre-caching. Dolch comes from the one shared copy (../_shared/wordLists.ts).
+const DOLCH_PRE_PRIMER: string[] = [...W.DOLCH_PRE_PRIMER];
+const DOLCH_PRIMER: string[] = [...W.DOLCH_PRIMER];
+const DOLCH_FIRST_GRADE: string[] = [...W.DOLCH_FIRST_GRADE];
+const DOLCH_SECOND_GRADE: string[] = [...W.DOLCH_SECOND_GRADE];
 
-const DOLCH_PRIMER = ['all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came', 'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like', 'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran', 'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this', 'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will', 'with', 'yes'];
 
-const DOLCH_FIRST_GRADE = ['after', 'again', 'an', 'any', 'as', 'ask', 'by', 'could', 'every', 'fly', 'from', 'give', 'going', 'had', 'has', 'her', 'him', 'his', 'how', 'just', 'know', 'let', 'live', 'may', 'of', 'old', 'once', 'open', 'over', 'put', 'round', 'some', 'stop', 'take', 'thank', 'them', 'think', 'walk', 'were', 'when'];
 
-const DOLCH_SECOND_GRADE = ['always', 'around', 'because', 'been', 'before', 'best', 'both', 'buy', 'call', 'cold', 'does', 'don\'t', 'fast', 'first', 'five', 'found', 'gave', 'goes', 'green', 'its', 'made', 'many', 'off', 'or', 'pull', 'read', 'right', 'sing', 'sit', 'sleep', 'tell', 'their', 'these', 'those', 'upon', 'us', 'use', 'very', 'wash', 'which', 'why', 'wish', 'work', 'would', 'write', 'your'];
 
 const FRY_FIRST_100 = ['about', 'add', 'air', 'almost', 'along', 'also', 'although', 'America', 'another', 'answer', 'appear', 'area', 'back', 'ball', 'base', 'become', 'bed', 'began', 'begin', 'being', 'below', 'between', 'boat', 'book', 'box', 'boy', 'bring', 'build', 'building', 'business', 'carry', 'case', 'cat', 'catch', 'cause', 'change', 'check', 'child', 'children', 'city', 'class', 'close', 'color', 'company', 'complete', 'country', 'course', 'cover', 'create', 'cut', 'day', 'deep', 'difference', 'different', 'door', 'draw', 'during', 'each', 'early', 'earth', 'easy', 'end', 'enough', 'even', 'ever', 'example', 'eye', 'face', 'fact', 'family', 'far', 'farm', 'father', 'feel', 'few', 'field'];
 

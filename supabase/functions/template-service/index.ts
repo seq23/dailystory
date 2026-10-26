@@ -27,6 +27,20 @@ import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-u
 // Import sophisticated placeholder resolution  
 import { resolveAllPlaceholders, MicroContext, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.ts';
 import type { UserInfo } from '../_shared/types/index.ts';
+import { cleanWords, practiceWordsFromRequest, missingPracticeWords, weaveMissingWords } from "../_shared/practiceWords.ts";
+/** Backup Mode keeps every practice word: woven into the first page (the one a live story shows). */
+// deno-lint-ignore no-explicit-any
+function withPracticeWords(pages: string[], userInfo: any): string[] {
+  if (!Array.isArray(pages) || !pages.length) return pages;
+  const words = cleanWords([
+    ...practiceWordsFromRequest(userInfo?.specialRequest),
+    ...String(userInfo?.targetVocabulary ?? "").split(/[,\s]+/),
+  ]);
+  const missing = missingPracticeWords(pages.join(" "), words);
+  if (!missing.length) return pages;
+  return [weaveMissingWords(pages[0], missing), ...pages.slice(1)];
+}
+
 
 // Token limit configurations for dynamic page counts
 interface TokenLimitConfig {
@@ -307,7 +321,7 @@ serve(async (req) => {
         // Build arc-aware response
         const responseData = {
           success: true,
-          pages: result.pages,
+          pages: withPracticeWords(result.pages, userInfo),
           level: templateLevel,
           pageCount: result.pages.length,
           metadata: {
@@ -348,7 +362,7 @@ serve(async (req) => {
         
         const responseData = {
           success: true,
-          pages: result.pages,
+          pages: withPracticeWords(result.pages, userInfo),
           level: templateLevel,
           pageCount: result.pages.length,
           metadata: {
@@ -503,6 +517,8 @@ serve(async (req) => {
     
     // Final emergency bulletproofing with hardcoded values
     actualPages = emergencyPlaceholderResolver(actualPages);
+    // Backup stories carry the parent's practice words too (../_shared/practiceWords.ts).
+    actualPages = withPracticeWords(actualPages, userInfo);
     
     // Build response structure
     const responseData = {

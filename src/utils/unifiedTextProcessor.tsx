@@ -6,6 +6,7 @@ import { tokenizeForHighlighting } from "@/utils/tokenize";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { DebugLogger } from "@/services/DebugLogger";
+import { hasPracticeWord } from "../../supabase/functions/_shared/practiceWords";
 
 // Performance Cache for word frequency lookups
 const wordDifficultyCache = new Map<string, any>();
@@ -20,6 +21,8 @@ interface TextProcessorOptions {
   userId?: string;
   highlightedWordIndex?: number;
   isMobile?: boolean;
+  /** The parent's practice words: shown highlighted (and tappable like every word). */
+  practiceWords?: string[];
 }
 
 
@@ -49,7 +52,8 @@ export const processTextWithConsistentFlow = ({
   isPremium,
   userId,
   highlightedWordIndex,
-  isMobile = false
+  isMobile = false,
+  practiceWords = [],
 }: TextProcessorOptions): React.ReactNode[] => {
   // Handle undefined/null/empty text
   if (!text || typeof text !== 'string' || text.trim().length === 0) {
@@ -106,7 +110,10 @@ export const processTextWithConsistentFlow = ({
       }
     }
     
-    const finalClassName = `inline ${className} ${highlightClasses}`;
+    // Practice words stand out so the child spots them (src/utils/unifiedTextProcessor.tsx; guard practice-words.test.ts).
+    const isPractice = practiceWords.length > 0 && practiceWords.some((w) => hasPracticeWord(token, w));
+    const practiceClasses = isPractice ? ' practice-word font-semibold underline decoration-amber-400 decoration-2 underline-offset-4 bg-amber-50 rounded-sm' : '';
+    const finalClassName = `inline ${className} ${highlightClasses}${practiceClasses}`;
     
     // Use mobile-optimized modal on mobile/tablet; desktop uses hover tooltips
     if (isMobile) {

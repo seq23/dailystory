@@ -43,7 +43,8 @@ serve(async (req) => {
   if (storyText.length < 20) return json({ error: "Invalid story text" }, 400);
 
   const story = storyText.slice(0, QUIZ_STORY_MAX_CHARS);
-  const shape = quizShapeForGrade(body.grade, body.age, storySeed(story));
+  const practiceWords = Array.isArray(body.practiceWords) ? (body.practiceWords as unknown[]).filter((w): w is string => typeof w === "string") : [];
+  const shape = quizShapeForGrade(body.grade, body.age, storySeed(story), practiceWords);
   const privateNames = [body.childName, body.displayName]
     .filter((n): n is string => typeof n === "string" && n.trim().length >= 2)
     .slice(0, 4);

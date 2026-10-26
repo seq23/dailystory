@@ -19,6 +19,8 @@ export interface LastReadStory {
   wordsRead: number;
   grade?: string;
   readingLevel?: string;
+  /** The parent's practice words, for that story's quiz. */
+  practiceWords?: string[];
   savedAt: number;
 }
 
