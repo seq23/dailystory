@@ -20,6 +20,10 @@ export interface UserInfo {
   age: number;
   grade: Grade;
   gradeLevel?: Grade; // Add this for compatibility
+  /** "Reads at": the grade the words are written at (child_profiles.reading_grade). */
+  readingGrade?: Grade;
+  /** The child's school grade (child_profiles.grade_level): sets topics and themes, never the word difficulty. */
+  schoolGrade?: Grade;
   nativeLanguage: LanguageCode;
   learningGoal: LearningGoal;
   avatar: Avatar;
@@ -29,7 +33,7 @@ export interface UserInfo {
   favoriteFood?: string;   // Optional - only if user provided
   specialRequest: string;
   targetVocabulary?: string;
-  difficultyLevel?: string; // Stores backend values after form conversion: "beginner", "easy", "medium", "hard", "expert"
+  difficultyLevel?: string; // A FRONTEND reading level ("pre-reader" … "advanced"), derived from Reads at; see docs/reading-levels.md
   readingLevel?: string; // Add this for compatibility
   interests?: string[]; // Add this for compatibility
   
@@ -48,7 +52,9 @@ export interface Story {
   id: string;
   title: string;
   segments: StorySegment[];
-  difficulty: string; // Frontend difficulty level for UI consistency
+  difficulty: string; // Frontend difficulty level (internal; screens show readingGrade)
+  /** The Reads-at grade the story was written at. */
+  readingGrade?: string;
   estimatedReadingTime: number;
   wordCount: number;
 }

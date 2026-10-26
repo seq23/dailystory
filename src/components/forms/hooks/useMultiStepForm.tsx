@@ -39,10 +39,15 @@ export const useMultiStepForm = () => {
       const next = { ...prev, ...updates };
       // Picking a grade sets the matching starting reading level (the parent can
       // still change it on step 2). Grades 6–10 start at their own expert level.
-      if (updates.grade && !updates.difficultyLevel) {
+      // "Reads at" starts at the school grade and follows it until the parent picks one.
+      if (updates.grade && !updates.difficultyLevel && (!prev.readingGrade || prev.readingGrade === prev.grade)) {
+        next.readingGrade = updates.grade;
         const level = readingLevelForGrade(updates.grade);
         if (level) next.difficultyLevel = level as UserInfo["difficultyLevel"];
         next.expertGradeLevel = expertGradeForGrade(updates.grade) ?? undefined;
+      }
+      if (updates.readingGrade) {
+        next.expertGradeLevel = expertGradeForGrade(updates.readingGrade) ?? undefined;
       }
       return next;
     });
@@ -133,7 +138,8 @@ export const useMultiStepForm = () => {
     }
 
     // Determine difficulty level - KEEP frontend difficulty in userInfo
-    const frontendDifficultyLevel = formData.difficultyLevel ||
+    const readsAt = formData.readingGrade ?? formData.grade;
+    const frontendDifficultyLevel = readingLevelForGrade(readsAt) || formData.difficultyLevel ||
       readingLevelForGrade(formData.grade) || readingLevelForAge(formData.age);
 
     // For analytics/logging only, derive backend difficulty
@@ -151,7 +157,10 @@ export const useMultiStepForm = () => {
       ...formData,
       specialRequest: combinedSpecialRequest,
       difficultyLevel: frontendDifficultyLevel,
-      expertGradeLevel: formData.expertGradeLevel ?? expertGradeForGrade(formData.grade) ?? undefined,
+      // Words from Reads at; topics from the school grade and age.
+      readingGrade: readsAt,
+      schoolGrade: formData.grade,
+      expertGradeLevel: expertGradeForGrade(readsAt) ?? formData.expertGradeLevel ?? undefined,
     };
   }, [formData, validateStep1, t]);
 

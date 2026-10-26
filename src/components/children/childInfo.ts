@@ -23,9 +23,20 @@ export function childAge(child: Pick<ChildProfile, "birth_year" | "birth_month">
   return age;
 }
 
-/** "5th grade · 10 years old", with nothing shown for what we don't know (no stray dashes). */
+/** The grade a child's stories are written at: Reads at, else the school grade. */
+export function readsAtGrade(child: Pick<ChildProfile, "grade_level"> & { reading_grade?: string | null }): string | null {
+  return normalizeGrade(child.reading_grade) ?? normalizeGrade(child.grade_level);
+}
+
+/** "School: 5th grade · Reads at 7th grade · 10 years old", nothing shown for what we don't know. */
 export function childSummary(child: ChildProfile): string {
-  const parts = [gradeText(child.grade_level), childAge(child) != null ? `${childAge(child)} years old` : null].filter(Boolean);
+  const school = gradeText(child.grade_level);
+  const reads = gradeText(readsAtGrade(child as ChildProfile & { reading_grade?: string | null }));
+  const parts = [
+    school ? `School: ${school}` : null,
+    reads ? `Reads at ${reads}` : null,
+    childAge(child) != null ? `${childAge(child)} years old` : null,
+  ].filter(Boolean);
   return parts.join(" · ");
 }
 

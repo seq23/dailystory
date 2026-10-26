@@ -1,5 +1,12 @@
 # Reading levels: the one map
 
+**What families see** (owner decision, 26 Oct 2026): each child carries exactly two
+things, both grades. **School grade** (`child_profiles.grade_level`) keeps topics and
+themes right for them. **Reads at** (`child_profiles.reading_grade`, Pre-K–10th) sets
+how hard the words are; it starts at the school grade and changes with the story
+page's Make it easier / Make it harder buttons or the Reads at picker on the child
+form. Everything below is internal, derived from Reads at.
+
 Time2Read names a child's level in four vocabularies. They are all read off **one
 module**, `supabase/functions/_shared/grades.ts` (re-exported to the app by
 `src/lib/grades.ts`; combinations for testing in `src/lib/readingLevelMap.ts`).
@@ -114,8 +121,8 @@ The guard checks that each line below still holds the named symbol.
 | src/services/LiveGenerationService.ts:53 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
 | supabase/functions/generate-adaptive-story/streamlined-handler.ts:150 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
 | supabase/functions/template-service/index.ts:164 | DifficultyLevelMapper.fromBackendValue(difficulty) | `difficulty` read backend-first |
-| src/components/ParentDashboard.tsx:909 | readingLevelForDifficulty(guardrails.minDifficulty) | stored minimum → picker value |
-| src/components/CleanStoryDisplay.tsx:1312 | minimumGradeForGuardrail | lock clamp compares grades |
+| src/components/ParentDashboard.tsx:910 | minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade, guardrails.minReadingGrade) | stored minimum → "Never easier than" grade |
+| src/components/CleanStoryDisplay.tsx:1314 | minimumGradeForGuardrail | lock clamp compares grades |
 | src/lib/readingLevelMap.ts:101 | normalizeStoredLevel | any stored column value → grade |
 <!-- converters:end -->
 
@@ -135,3 +142,95 @@ The guard checks that each line below still holds the named symbol.
   letting Pre-K through, and its level card mapped `easy` to "Pre-Reader".
 - ~40 hand-written copies of the level lists (types, arrays, a duplicate `.js` mapper)
   now import `READING_LEVELS` / `BACKEND_DIFFICULTIES` / `BackendDifficulty`.
+
+## Stored values in production (26 Oct 2026, counts only)
+
+From `.github/workflows/level-values-report.yml` (read-only):
+
+| Column | Values (rows) | Read as |
+|---|---|---|
+| `child_profiles.grade_level` | 3 (5), 5 (5), 2 (4), K (4), **Pre-K (4)**, 6 (3), 1 (3), 4 (2), 7 (1), null (1) | `normalizeGrade`; "Pre-K" rewritten to `PreK` by `20261026233000_reads_at.sql` |
+| `child_profiles.reading_grade` | null (32) | null → Reads at = school grade |
+| `profiles.grade_level` | K (14) | `normalizeGrade` |
+| `profiles.reading_level` | beginner (14) | frontend `beginner` = 1st–2nd (the column default) |
+| `profiles.difficulty_level` | null (13), independent (1) | frontend level |
+| `user_preferences…minDifficulty` / `minExpertGrade` | null (14), beginner (1) / null (14), 6th (1) | `minimumGradeForGuardrail`; the migration adds `minReadingGrade` |
+| `stories.reading_level` | no rows | — |
+
+## What changed 26 Oct 2026
+
+PRs #102 (the map, the Pre-K/K level fix, quizzes v1, session-ended), #104 (quiz plan:
+skills, bands, reports, one reading counter) and the Reads-at PR. Every file touched:
+
+- `.github/workflows/level-values-report.yml`
+- `config/llm_routing.json`
+- `deno.lock`
+- `docs/reading-levels.md`
+- `src/components/AudioE2ETestingPanel.tsx`
+- `src/components/children/ChildForm.tsx`
+- `src/components/children/childInfo.ts`
+- `src/components/CleanStoryDisplay.tsx`
+- `src/components/ComprehensionQuiz.tsx`
+- `src/components/ElevenLabsAudio.tsx`
+- `src/components/forms/hooks/useMultiStepForm.tsx`
+- `src/components/forms/steps/FormStep2ReadingPrefs.tsx`
+- `src/components/InteractiveWord.tsx`
+- `src/components/MobileOptimizedInteractiveWord.tsx`
+- `src/components/ParentDashboard.tsx`
+- `src/components/PremiumMyStoriesView.tsx`
+- `src/components/PremiumStoryLibrary.tsx`
+- `src/components/ResponsiveStoryHeader.tsx`
+- `src/components/UnifiedInteractiveWord.tsx`
+- `src/components/VoiceQuiz.tsx`
+- `src/config/audioConfig.ts`
+- `src/constants/app.ts`
+- `src/hooks/useActivityPersistence.ts`
+- `src/hooks/useAudioControls.ts`
+- `src/hooks/useChildProfiles.ts`
+- `src/hooks/useChildProgressData.ts`
+- `src/hooks/useTemplateCounts.ts`
+- `src/lib/lastReadStory.ts`
+- `src/lib/quiz.ts`
+- `src/lib/readingLadder.ts`
+- `src/lib/readingLevelMap.ts`
+- `src/pages/SessionEnded.tsx`
+- `src/services/DifficultyLevelMapper.ts`
+- `src/services/difficultyManager.ts`
+- `src/services/parentGuardrailsService.ts`
+- `src/services/personalizedLearningService.ts`
+- `src/services/premiumStoryManager.ts`
+- `src/services/premiumVocabularyService.ts`
+- `src/services/progressTrackingService.ts`
+- `src/services/storyGenerationService.ts`
+- `src/services/voiceCatalog/VoiceCatalogIntegration.ts`
+- `src/services/voiceCatalog/VoiceCatalogService.ts`
+- `src/services/voiceCatalog/VoiceSelector.ts`
+- `src/test/guards/parent-dashboard-reports.test.ts`
+- `src/test/guards/reading-level-ladder.test.ts`
+- `src/test/guards/reading-level-map.test.ts`
+- `src/test/guards/reads-at.test.ts`
+- `src/test/guards/session-ended-story.test.ts`
+- `src/test/guards/story-quiz.test.ts`
+- `src/test/guards/story-text-provider.test.ts`
+- `src/types/index.ts`
+- `src/utils/desktopTextProcessor.tsx`
+- `src/utils/storyQualityChecker.ts`
+- `src/utils/textProcessor.tsx`
+- `src/utils/vocabularyLevelClassifier.ts`
+- `supabase/functions/_shared/authorVoicePatterns.ts`
+- `supabase/functions/_shared/DifficultyLevelMapper.js`
+- `supabase/functions/_shared/DifficultyLevelMapper.ts`
+- `supabase/functions/_shared/grades.ts`
+- `supabase/functions/_shared/quiz.ts`
+- `supabase/functions/_shared/storyOutputCheck.ts`
+- `supabase/functions/_shared/storyPrompts.ts`
+- `supabase/functions/_shared/storyTextProvider.ts`
+- `supabase/functions/_shared/validation-utils.ts`
+- `supabase/functions/_shared/wordLists.ts`
+- `supabase/functions/correct-spelling/index.ts`
+- `supabase/functions/generate-adaptive-story/streamlined-handler.ts`
+- `supabase/functions/generate-quiz/index.ts`
+- `supabase/functions/template-service/index.ts`
+- `supabase/functions/translate-universal/index.ts`
+- `supabase/functions/word-dictionary/index.ts`
+- `supabase/migrations/20261026233000_reads_at.sql`

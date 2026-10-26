@@ -132,7 +132,8 @@ describe("the two 'beginner's", () => {
     expect(minimumGradeForGuardrail("expert", "8th")).toBe("8");
     const page = read("src/components/CleanStoryDisplay.tsx");
     expect(page).not.toMatch(/difficultyLevels\.indexOf/);
-    expect(page).toMatch(/gradeIndex\(step\.grade\) < gradeIndex\(minimumGradeForGuardrail\(minDifficulty, minExpertGrade\)\)/);
+    expect(page).toMatch(/gradeIndex\(step\.grade\) < gradeIndex\(minimumGradeForGuardrail\(minDifficulty, minExpertGrade, minReadingGradeRef\.current\)\)/);
+    expect(minimumGradeForGuardrail("beginner", "6th", "K")).toBe("K"); // the grade itself wins over the older fields
     const dash = read("src/components/ParentDashboard.tsx");
     expect(dash).not.toMatch(/DifficultyLevelMapper\.normalizeLevel\(guardrails\.minDifficulty\)/);
   });

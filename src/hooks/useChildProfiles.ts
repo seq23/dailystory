@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { LeanErrorService } from "@/utils/LeanErrorService";
 import { DebugLogger } from "@/services/DebugLogger";
+import { normalizeGrade } from "@/lib/grades";
 
 export type ChildProfile = Tables<"child_profiles">;
 
@@ -17,6 +18,8 @@ export interface NewChildInput {
   birth_month?: number | null;
   birth_year?: number | null;
   grade_level?: string | null;
+  /** "Reads at": the grade the story words are written at (Pre-K–10th). Starts at the school grade. */
+  reading_grade?: string | null;
   avatar?: Record<string, any> | null;
   favorite_color?: string | null;
   favorite_animal?: string | null;
@@ -157,19 +160,21 @@ export function useChildProfiles() {
       throw new Error(`You can add up to ${MAX_CHILD_PROFILES} children.`);
     }
     const user = await requireUser();
-    const payload: TablesInsert<"child_profiles"> = {
+    const payload: TablesInsert<"child_profiles"> & { reading_grade?: string | null } = {
       parent_user_id: user.id,
       display_name: input.display_name,
       birth_month: input.birth_month ?? null,
       birth_year: input.birth_year ?? null,
       grade_level: input.grade_level ?? null,
+      // Reads at starts at the school grade (owner, 26 Oct 2026).
+      reading_grade: normalizeGrade(input.reading_grade) ?? normalizeGrade(input.grade_level) ?? null,
       avatar: (input.avatar as any) ?? null,
       favorite_color: input.favorite_color ?? null,
       favorite_animal: input.favorite_animal ?? null,
       favorite_food: input.favorite_food ?? null,
       hobbies: input.hobbies ?? null,
     };
-    const { data, error } = await supabase.from("child_profiles").insert(payload).select("*").single();
+    const { data, error } = await supabase.from("child_profiles").insert(payload as any).select("*").single();
     if (error || !data) {
       DebugLogger.error("auth", "addChild error", error);
       throw new Error("We couldn't save that child just now. Please try again.");
@@ -183,18 +188,19 @@ export function useChildProfiles() {
   }, []);
 
   const updateChild = useCallback(async (id: string, input: Partial<NewChildInput>) => {
-    const patch: TablesUpdate<"child_profiles"> = {
+    const patch: TablesUpdate<"child_profiles"> & { reading_grade?: string | null } = {
       display_name: input.display_name,
       birth_month: input.birth_month ?? undefined,
       birth_year: input.birth_year ?? undefined,
       grade_level: input.grade_level,
+      ...(input.reading_grade !== undefined ? { reading_grade: normalizeGrade(input.reading_grade) } : {}),
       avatar: input.avatar as any,
       favorite_color: input.favorite_color ?? undefined,
       favorite_animal: input.favorite_animal ?? undefined,
       favorite_food: input.favorite_food ?? undefined,
       hobbies: input.hobbies ?? undefined,
     };
-    const { data, error } = await supabase.from("child_profiles").update(patch).eq("id", id).select("*").single();
+    const { data, error } = await supabase.from("child_profiles").update(patch as any).eq("id", id).select("*").single();
     if (error || !data) {
       DebugLogger.error("auth", "updateChild error", error);
       throw new Error("We couldn't save the changes just now. Please try again.");

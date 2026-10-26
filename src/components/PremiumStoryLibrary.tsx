@@ -1,5 +1,7 @@
 // Premium Story Library Component
 import React, { useState, useEffect } from 'react';
+import { GRADES, gradeLabel, type Grade } from "@/lib/grades";
+import { readsAtLabel, storyGrades } from "@/lib/readingLevelMap";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -33,7 +35,8 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
   const [savedStories, setSavedStories] = useState<SavedStory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel | 'all'>('all');
+  // "Reads at" filter: a grade, or all. Old level names stay internal (docs/reading-levels.md).
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const { isMobile, isTablet } = useIsMobile();
@@ -75,15 +78,15 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
       setLoading(true);
       const filters: any = {};
       
-      if (selectedDifficulty !== 'all') {
-        filters.difficulty = selectedDifficulty;
-      }
       
       if (showFavoritesOnly) {
         filters.isFavorite = true;
       }
 
-      const stories = await PremiumStoryManager.searchStories(searchQuery, filters);
+      const found = await PremiumStoryManager.searchStories(searchQuery, filters);
+      const stories = selectedDifficulty === 'all'
+        ? found
+        : found.filter((st) => storyGrades(st.readingGrade, st.difficulty).includes(selectedDifficulty as Grade));
       setSavedStories(stories);
       setPage(1);
     } catch (error) {
@@ -262,15 +265,6 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
     }).format(date);
   };
 
-  const getDifficultyColor = (difficulty: DifficultyLevel) => {
-    switch (difficulty) {
-      case 'easy': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'hard': return 'bg-orange-100 text-orange-800';
-      case 'expert': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   if (loading) {
     return (
@@ -310,16 +304,15 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               />
             </div>
-            <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as DifficultyLevel | 'all')}>
-              <SelectTrigger className="w-full lg:w-40">
-                <SelectValue placeholder="Difficulty" />
+            <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value)}>
+              <SelectTrigger className="w-full lg:w-44" data-testid="library-reads-at">
+                <SelectValue placeholder="Reads at" />
               </SelectTrigger>
               <SelectContent className="z-50">
-                <SelectItem value="all">All Levels</SelectItem>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-                <SelectItem value="expert">Expert</SelectItem>
+                <SelectItem value="all">Reads at: any grade</SelectItem>
+                {GRADES.map((g) => (
+                  <SelectItem key={g} value={g}>Reads at {gradeLabel(g, 'long')}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Button
@@ -386,9 +379,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                     <CardContent>
                       <div className="space-y-3">
                         <div className="flex items-center gap-3 flex-wrap">
-                          <Badge className={getDifficultyColor(story.difficulty)}>
-                            {story.difficulty}
-                          </Badge>
+                          <Badge variant="secondary" data-testid="story-reads-at">{readsAtLabel(story.readingGrade, story.difficulty)}</Badge>
                           <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                             <Clock className="w-3 h-3 mr-1" />
                             {story.estimatedReadingTime}m
@@ -495,9 +486,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                       <CardContent>
                         <div className="space-y-3">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Badge className={getDifficultyColor(story.difficulty)}>
-                              {story.difficulty}
-                            </Badge>
+                            <Badge variant="secondary" data-testid="story-reads-at">{readsAtLabel(story.readingGrade, story.difficulty)}</Badge>
                             <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                               <Clock className="w-3 h-3 mr-1" />
                               {story.estimatedReadingTime}m

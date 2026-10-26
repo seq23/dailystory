@@ -15,7 +15,7 @@ import { useGameContext } from "@/components/GameContextProvider";
 import { DebugLogger } from "@/services/DebugLogger";
 import { loadLastReadStory } from "@/lib/lastReadStory";
 import { normalizeGrade, readingLevelForGrade, gradeLabel, isReadingLevel, type ReadingLevel } from "@/lib/grades";
-import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
+import { readsAtLabel } from "@/lib/readingLevelMap";
 
 interface ReadingStats {
   wordsRead: number;
@@ -243,9 +243,8 @@ const handleHome = async () => {
   };
 
 const getDifficultyLabel = (level: ReadingLevel | null) => {
-    if (!level) return '';
-    const name = DifficultyLevelMapper.getDisplayName(level);
-    return endGrade ? `${name} · ${gradeLabel(endGrade, 'long')}` : name;
+    // Shown as a grade ("Reads at 2nd grade"); level names stay internal.
+    return readsAtLabel(endGrade, level);
   };
 
   const getEncouragementMessage = () => {
@@ -341,7 +340,7 @@ const getDifficultyLabel = (level: ReadingLevel | null) => {
                   <div className="text-lg font-bold text-purple-700">
                     {endLevel ? getDifficultyLabel(endLevel) : t("sessionEnded.readingLevel", "Reading Level")}
                   </div>
-                  <div className="text-sm text-purple-600">{t("sessionEnded.level", "Level")}</div>
+                  <div className="text-sm text-purple-600">{t("sessionEnded.readsAt", "Reading level")}</div>
                 </div>
               </div>
             </div>

@@ -87,7 +87,9 @@ describe("the story page wiring", () => {
     expect(page).toMatch(/canIncrease=\{!lockDifficulty\}/);
     expect(page).toMatch(/canDecrease=\{!lockDifficulty\}/);
     expect(page).toMatch(/levelLabel=\{readingStep\(readingGrade\)\.label\}/);
-    expect(read("src/components/ResponsiveStoryHeader.tsx")).toMatch(/levelLabel \?\? DifficultyLevelMapper\.getDisplayName/);
+    // fallback is a grade too, never an old level name
+    expect(read("src/components/ResponsiveStoryHeader.tsx")).toMatch(/levelLabel \?\? readsAtLabel\(null, currentDifficulty\)/);
+    expect(read("src/components/ResponsiveStoryHeader.tsx")).not.toMatch(/getDisplayName\(currentDifficulty\)/);
   });
 
   it("Backup Mode changes level too: a new story at the new level", () => {

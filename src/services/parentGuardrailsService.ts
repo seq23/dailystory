@@ -6,6 +6,8 @@ export type ParentGuardrails = {
   lockDifficulty: boolean;
   minDifficulty: DifficultyLevel;
   minExpertGrade: ExpertGradeLevel;
+  /** "Never easier than: ___ grade". Older rows have only minDifficulty/minExpertGrade. */
+  minReadingGrade?: string | null;
   allowDecreaseBelowMin?: boolean;
 };
 
@@ -37,6 +39,7 @@ export class ParentGuardrailsService {
       lockDifficulty: !!prefs.lockDifficulty,
       minDifficulty: (prefs.minDifficulty as DifficultyLevel) || DEFAULTS.minDifficulty,
       minExpertGrade: (prefs.minExpertGrade as ExpertGradeLevel) || DEFAULTS.minExpertGrade,
+      minReadingGrade: typeof prefs.minReadingGrade === "string" ? prefs.minReadingGrade : null,
       allowDecreaseBelowMin: !!prefs.allowDecreaseBelowMin,
     };
   }
@@ -61,6 +64,7 @@ export class ParentGuardrailsService {
       lockDifficulty: !!guardrails.lockDifficulty,
       minDifficulty: guardrails.minDifficulty,
       minExpertGrade: guardrails.minExpertGrade,
+      minReadingGrade: guardrails.minReadingGrade ?? null,
       allowDecreaseBelowMin: !!guardrails.allowDecreaseBelowMin,
     };
 

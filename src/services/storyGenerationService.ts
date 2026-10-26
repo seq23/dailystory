@@ -22,7 +22,7 @@ import { generateSessionId, generateSessionIdWithPrefix } from '@/utils/sessionI
 import { safeThemeJoin } from "@/lib/utils";
 
 import { LevelClampingService } from './voiceCatalog/LevelClampingService';
-import { GRADES, normalizeGrade, promptReadingLevelForGrade, typicalGradeForAge } from '@/lib/grades';
+import { GRADES, normalizeGrade, promptReadingLevelForGrade, storyAudienceLine, typicalGradeForAge } from '@/lib/grades';
 import { BACKEND_DIFFICULTIES } from "@/lib/grades";
 
 export interface StoryGenerationBundle {
@@ -346,6 +346,12 @@ export class StoryGenerationService {
     const culturalContext = getCulturalGuidanceString(reconstructedUserInfo);
 
     const readerLevel = promptReadingLevelForGrade(essentialUserInfo.gradeLevel);
+    // Words from Reads at; topics and themes from the child's real age and school grade.
+    const audienceLine = storyAudienceLine({
+      age: userInfo.age,
+      readsAt: userInfo.readingGrade ?? essentialUserInfo.gradeLevel,
+      schoolGrade: userInfo.schoolGrade,
+    });
     const educationalStandards = this.getEducationalVocabularyInstructions(vocabularyConfig.gradeLevel, vocabularyConfig.difficultyLevel)
       + (readerLevel ? ` The reader is in ${readerLevel}.` : '');
     
@@ -370,6 +376,8 @@ export class StoryGenerationService {
     const STORY_TEMPLATE = `${ctrlLine}
 
 ${mainCharacterPrompt}
+
+${audienceLine}
 
 ${vocabularyConfig.hasUserWords 
   ? `🎯 VOCABULARY REQUIREMENTS:

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readingLevelForDifficulty } from "@/lib/grades";
+import { readingLevelForDifficulty, minimumGradeForGuardrail, guardrailForGrade } from "@/lib/grades";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -14,14 +14,15 @@ describe("parent dashboard has the Reports it promises", () => {
     expect(d).toMatch(/<SelectItem value="insights">Reports<\/SelectItem>/);
     expect(d).toMatch(/Show section \(tap to choose\):/);
   });
-  it("a saved Advanced minimum shows as selected", () => {
+  it("a saved Advanced minimum shows as selected (as its grade)", () => {
     const d = read("src/components/ParentDashboard.tsx");
-    expect(d).toMatch(/minDifficulty: 'expert', minExpertGrade: grade/);
-    // The stored backend value goes through the one map (docs/reading-levels.md):
-    // expert → advanced → "advanced:<sub-level>", the value the Advanced items carry.
-    expect(d).toMatch(/const fe = readingLevelForDifficulty\(guardrails\.minDifficulty\)/);
-    expect(d).toMatch(/const selected = fe === 'advanced' \? `advanced:\$\{guardrails\.minExpertGrade\}` : fe;/);
+    // "Never easier than: ___ grade": the picker shows the stored minimum as a grade.
+    expect(d).toMatch(/const selected = minimumGradeForGuardrail\(guardrails\.minDifficulty, guardrails\.minExpertGrade, guardrails\.minReadingGrade\);/);
+    expect(d).toMatch(/onValueChange=\{\(v\) => setGuardrails\(\{ \.\.\.guardrails, \.\.\.guardrailForGrade\(v\) \}\)\}/);
+    // an older saved "Advanced — 8th" (expert + 8th) shows as 8th grade, and saving 8th keeps those fields
+    expect(minimumGradeForGuardrail("expert", "8th")).toBe("8");
+    expect(guardrailForGrade("8")).toEqual({ minReadingGrade: "8", minDifficulty: "expert", minExpertGrade: "8th" });
     expect(readingLevelForDifficulty("expert")).toBe("advanced");
-    expect(readingLevelForDifficulty("beginner")).toBe("pre-reader");
   });
+
 });
