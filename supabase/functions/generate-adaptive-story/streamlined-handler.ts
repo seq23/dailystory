@@ -483,6 +483,7 @@ Generate a corrected version that addresses these issues while keeping the story
           vocabCompliance: 0.85, // Default for force-split scenarios
           metadata: {
             processingMode: 'netflix-validated',
+            servedBy: servedBy(), // which tier and model wrote it (../_shared/storyTextProvider.ts)
             gradeLevel: bundle.systemSettings.gradeLevel,
             netflixValidation: {
               wasForceSplit: netflixValidation.wasForceSplit,
@@ -551,6 +552,7 @@ Generate a corrected version that addresses these issues while keeping the story
           vocabCompliance: retryVocabCompliance,
           metadata: {
             processingMode: 'retry-with-hints',
+            servedBy: servedBy(), // which tier and model wrote it (../_shared/storyTextProvider.ts)
             gradeLevel: bundle.systemSettings.gradeLevel,
             vocabularyCompliance: retryVocabCompliance,
             retryAttempt: retryConfig.repairAttempt,
@@ -591,6 +593,7 @@ Generate a corrected version that addresses these issues while keeping the story
       vocabCompliance,
       metadata: {
         processingMode: 'streamlined-bulk',
+            servedBy: servedBy(), // which tier and model wrote it (../_shared/storyTextProvider.ts)
         gradeLevel: bundle.systemSettings.gradeLevel,
         vocabularyCompliance: vocabCompliance
       }
@@ -1575,4 +1578,9 @@ function preprocessVocabularyFromCache(userPrompt: string, gradeLevel: number): 
     
     return { prompt: userPrompt, performance };
   }
+}
+/** The tier/model that answered last, e.g. "openrouter-free nvidia/nemotron-3-ultra-550b-a55b:free". */
+function servedBy(): string | null {
+  const ok = lastProviderAttempts().filter((a) => !a.error).pop();
+  return ok ? `${ok.provider} ${ok.model ?? ''}`.trim() : null;
 }
