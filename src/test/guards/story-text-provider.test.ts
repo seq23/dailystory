@@ -18,7 +18,7 @@ import {
   CLOUDFLARE_FREE_MODEL,
   cloudflareChatUrl,
 } from "../../../supabase/functions/_shared/storyTextProvider";
-import { deidentify } from "../../../supabase/functions/_shared/deidentify";
+import { deidentify, namesFromCharacterInfo, genderOf } from "../../../supabase/functions/_shared/deidentify";
 import { storyTextProblem, stripReasoning, jsonAnswerProblem } from "../../../supabase/functions/_shared/storyOutputCheck";
 import { MIN_THIRD_PARTY_TOKENS } from "../../../supabase/functions/_shared/storyTextProvider";
 import { parseModelJson, builtInWordEntry, freeDictionaryLookup } from "../../../supabase/functions/_shared/wordFallback";
@@ -193,8 +193,28 @@ describe("a child's name never leaves on the free or third-party routes", () => 
   it("a placeholder already in the text is not reused, and multi-word names are hidden whole and in part", () => {
     const d = deidentify(["Kiki met Mary Jane. Mary waved.", 'Character Info: {"name":"Mary Jane"}'], ["Mary Jane"]);
     expect(d.texts.join(" ")).not.toMatch(/Mary|Jane/);
-    expect(d.texts[0]).toMatch(/^Kiki met Lulu\. Lulu waved\.$/);
-    expect(d.restore("Lulu smiled.")).toBe("Mary Jane smiled.");
+    expect(d.texts[0]).toMatch(/^Kiki met Momo\. Momo waved\.$/);
+    expect(d.restore("Momo smiled.")).toBe("Mary Jane smiled.");
+  });
+
+  it("the placeholder keeps the child's pronouns (live 26 Oct: 'Kiki' made Aiden 'she')", () => {
+    const boy = deidentify(['Story for Aiden.\nCharacter Info: {"name":"Aiden","avatarType":"boy"}'], namesFromCharacterInfo('Character Info: {"name":"Aiden","avatarType":"boy"}'));
+    expect(boy.pairs).toEqual([["Milo", "Aiden"]]);
+    const girl = deidentify(["Story for Zara."], [{ name: "Zara", gender: "girl" }]);
+    expect(girl.pairs[0][0]).toBe("Lulu");
+    const unknown = deidentify(["Story for Sam."], ["Sam"]);
+    expect(unknown.pairs[0][0]).toBe("Kiki");
+    expect(genderOf("prefer-not-to-answer")).toBe("neutral");
+  });
+
+  it("a boy's Character Info sends a boy's placeholder on the free route", async () => {
+    resetProviderCircuit();
+    const boyBody = { ...BODY, messages: [{ role: "user", content: 'Story for Aiden.\nCharacter Info: {"name":"Aiden","avatarType":"boy"}' }] };
+    const r = scripted(() => new Response(answer("Milo saw his dog. He smiled."), { status: 200 }));
+    const out = await chatCompletionWithFallback(boyBody, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), privateNames: ["Aiden"] });
+    expect(JSON.stringify(r.calls[0].body)).toContain("Milo");
+    expect(JSON.stringify(r.calls[0].body)).not.toMatch(/aiden|kiki/i);
+    expect((await out.response.json()).choices[0].message.content).toBe("Aiden saw his dog. He smiled.");
   });
 
   it("word parts are not touched: 'Max' is hidden, 'maximum' is not", () => {

@@ -110,7 +110,8 @@ export function maskBody(apiBody: Record<string, unknown>, extraNames: string[] 
   // deno-lint-ignore no-explicit-any
   const messages = (apiBody.messages as any[]) ?? [];
   const contents = messages.map((m) => (typeof m?.content === "string" ? m.content : ""));
-  const names = [...extraNames, ...contents.flatMap(namesFromCharacterInfo)];
+  // Character Info first: it carries the child's gender, which picks a placeholder with the same pronouns.
+  const names = [...contents.flatMap(namesFromCharacterInfo), ...extraNames];
   const d = deidentify(contents, names);
   const masked = { ...apiBody, messages: messages.map((m, i) => (typeof m?.content === "string" ? { ...m, content: d.texts[i] } : m)) };
   return { masked, restore: d.restore, pairs: d.pairs };
