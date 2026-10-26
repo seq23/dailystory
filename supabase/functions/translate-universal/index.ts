@@ -1,5 +1,6 @@
 // DIAGNOSTIC REDEPLOY: 2025-01-23T03:00:00Z - Force packaging inclusion
 console.log("[translate-universal] DIAGNOSTIC LOADED: 2025-01-23T03:00:00Z");
+import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
@@ -99,13 +100,7 @@ function detectLanguage(text: string): { language: string, confidence: number } 
 
 async function detectIfEnglish(text: string, apiKey: string): Promise<boolean> {
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const response = (await chatCompletionWithFallback({
         model: 'gpt-4o-mini',
         messages: [
           {
@@ -119,8 +114,7 @@ async function detectIfEnglish(text: string, apiKey: string): Promise<boolean> {
         ],
         max_tokens: 5,
         temperature: 0,
-      }),
-    });
+      })).response;
 
     if (!response.ok) return false;
     
@@ -200,13 +194,7 @@ CRITICAL: For these specific common words that users have reported issues with:
 Always use these exact translations for these words.`
     : 'You are a helpful translation assistant for children learning English. Provide only the translated text, nothing else.';
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  const response = (await chatCompletionWithFallback({
       model: 'gpt-4o-mini',
       messages: [
         {
@@ -220,8 +208,7 @@ Always use these exact translations for these words.`
       ],
       max_tokens: isToEnglish ? 100 : 200,
       temperature: isToEnglish ? 0.1 : 0.2,
-    }),
-  });
+    })).response;
 
   if (!response.ok) {
     throw new Error(`OpenAI API error: ${response.status}`);
@@ -277,8 +264,9 @@ serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   try {
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
+    // Any one provider will do (OpenAI, OpenRouter :free, Lovable gateway: ../_shared/storyTextProvider.ts).
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY') ?? '';
+    if (!openaiApiKey && !Deno.env.get('OPENROUTER_API_KEY') && !Deno.env.get('LOVABLE_API_KEY')) {
       return new Response(
         JSON.stringify({ error: 'Translation service not configured' }),
         { 

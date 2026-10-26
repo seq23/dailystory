@@ -3,6 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
+import { parseModelJson, freeDictionaryLookup, builtInWordEntry } from "../_shared/wordFallback.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -260,6 +262,7 @@ const getWordDifficulty = (word: string): 'easy' | 'medium' | 'hard' => {
 };
 
 serve(async (req) => {
+  const reqClone = req.clone(); // the catch below re-reads the word for its fallback
   // Initialize educational cache on first request
   await initEducationalCache();
   
@@ -288,9 +291,8 @@ serve(async (req) => {
       });
     }
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
+    // No key check here: chatCompletionWithFallback tries OpenAI, then the Lovable
+    // AI gateway, and the catch below falls back to the free dictionary / built-in.
 
     // Language-specific prompts
     const languageMap: { [key: string]: string } = {
@@ -331,13 +333,7 @@ Make the definition simple and clear for children. The sample sentence should be
 
 IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but the phonetic pronunciation must always be in English. Make the definition simple and clear for children. The sample sentence should be engaging and relatable to kids.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const { response, provider } = await chatCompletionWithFallback({
         model: 'gpt-4o-mini',
         messages: [
           {
@@ -351,7 +347,6 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
         ],
         temperature: 0.3,
         max_tokens: 300,
-      }),
     });
 
     if (!response.ok) {
@@ -368,7 +363,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     logCost(sb, {
       sessionId: 'word-dictionary',
-      provider: 'openai',
+      provider,
       operationType: 'word_definition',
       modelUsed: 'gpt-4o-mini',
       cost: estimateOpenAIChatCost('gpt-4o-mini', usage?.prompt_tokens || 80, usage?.completion_tokens || 100),
@@ -379,7 +374,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
 
     let wordData: WordData;
     try {
-      wordData = JSON.parse(content);
+      wordData = parseModelJson<WordData>(content);
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', content);
       // Fallback word data based on user language
@@ -425,32 +420,14 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
 
   } catch (error) {
     console.error('Error in word-dictionary function:', error);
-    
-    // Enhanced fallback based on language (userLanguage is available from scope)
-    const fallbackDefinition = userLanguage === 'en' 
-      ? 'Unable to get definition'
-      : userLanguage === 'fr' ? 'Impossible d\'obtenir la définition'
-      : userLanguage === 'es' ? 'No se puede obtener la definición'
-      : userLanguage === 'zh' ? '无法获取定义'
-      : userLanguage === 'hi' ? 'परिभाषा प्राप्त करने में असमर्थ'
-      : userLanguage === 'ar' ? 'غير قادر على الحصول على التعريف'
-      : userLanguage === 'pt' ? 'Não é possível obter a definição'
-      : 'Unable to get definition';
-
-    return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : String(error),
-        word: '',
-        definition: fallbackDefinition,
-        phonetic: '',
-        sampleSentence: '',
-        difficulty: 'easy',
-        partOfSpeech: 'word'
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    // Never "Unable to get definition": the free dictionary (English), else a kind
+    // built-in entry. 200, so the reader always has something to show.
+    let fallbackWord = '';
+    try { fallbackWord = String((await reqClone.json())?.word ?? '').toLowerCase().replace(/[.,!?;:'"()]/g, '').trim(); } catch { /* body unreadable */ }
+    const entry = (userLanguage === 'en' && fallbackWord ? await freeDictionaryLookup(fallbackWord) : null)
+      ?? builtInWordEntry(fallbackWord || 'this word', userLanguage);
+    return new Response(JSON.stringify({ ...entry, source: 'fallback' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

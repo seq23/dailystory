@@ -288,11 +288,16 @@ export class LiveGenerationService {
       const contextWindow = (backendDiff === 'expert' || context.expertGradeLevel) ? 3 : 2;
       const recentContext = (context.storyContext || []).slice(-contextWindow).join('\n\n');
       
+      // The level travels with every page request, so "Make easier/harder" reaches the
+      // writer on the very next page (src/lib/readingLadder.ts).
+      if (context.difficulty) contextualUserInfo.difficultyLevel = context.difficulty;
       const generationPromise = StoryGenerationService.generateStory(contextualUserInfo, {
         sessionType: 'premium',
         pageNumber: nextPageNumber,
         existingStory: recentContext,
-        sessionId: actualSessionId
+        sessionId: actualSessionId,
+        difficulty: backendDiff,
+        expertGradeLevel: backendDiff === 'expert' ? context.expertGradeLevel : undefined
       });
       
       const result = await Promise.race([generationPromise, timeoutPromise]);

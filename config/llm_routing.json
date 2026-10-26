@@ -60,10 +60,21 @@
       "status": "out_of_scope_funded_by_subscriptions",
       "where": "supabase/functions",
       "purpose": "The Time2Read product itself: adaptive story generation, narration, speech-to-text, spelling correction, translation, dictionary lookups and illustration.",
-      "provider_endpoints": ["api.openai.com", "api.runware.ai", "ai.gateway.lovable.dev"],
+      "provider_endpoints": ["api.openai.com", "api.runware.ai", "ai.gateway.lovable.dev", "openrouter.ai/api", "api.dictionaryapi.dev"],
       "provider_model_ids": ["gpt-4o-mini", "gpt-4o", "gpt-image-1", "whisper-1", "tts-1-hd", "google/gemini-3.6-flash", "google/gemini-3-flash-preview"],
       "why_not_free": "Subscribers pay for this inference; it is cost of goods, not an unattended probe. The owner's zero-paid rule is about automation this repo runs on a schedule, and this lane runs only when a paying reader opens a story.",
-      "guard": "src/test/guards/zero-paid-llm.test.ts keeps this lane listed here, so a new paid call site cannot appear unrecorded."
+      "guard": "src/test/guards/zero-paid-llm.test.ts keeps this lane listed here, so a new paid call site cannot appear unrecorded.",
+      "text_provider_order": ["openai", "openrouter-free", "lovable-gateway", "backup content (Backup Mode stories, built-in word entries)"],
+      "openrouter_free_tier": {
+        "decided": "2026-10-26",
+        "quote": "we can do $0 only",
+        "max_cost_usd": 0,
+        "secret": "OPENROUTER_API_KEY (Supabase secret, a free OpenRouter account's key; absent = tier skipped silently)",
+        "models_in_order": ["google/gemma-4-31b-it:free", "nvidia/nemotron-3-super-120b-a12b:free", "nvidia/nemotron-3-ultra-550b-a55b:free"],
+        "why": "Story text and word definitions kept working only while OpenAI had credit (26 Oct 2026: 429 credit_balance_exhausted). Free models rate-limit, so three are tried in turn; every id is :free and storyTextProvider.ts refuses any other.",
+        "read_by": "supabase/functions/_shared/storyTextProvider.ts (OPENROUTER_FREE_MODELS, kept equal to this list by src/test/guards/story-text-provider.test.ts)"
+      },
+      "free_dictionary": "api.dictionaryapi.dev, no key, $0: word-dictionary's last tier before a built-in entry (supabase/functions/_shared/wordFallback.ts)"
     }
   ],
   "provider_endpoint_markers": [

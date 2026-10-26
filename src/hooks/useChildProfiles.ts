@@ -203,6 +203,23 @@ export function useChildProfiles() {
     return data as ChildProfile;
   }, []);
 
+  /** Keep the story page's reading level on the child (migration 20261026221000). */
+  const setChildReadingGrade = useCallback(async (id: string, readingGrade: string | null) => {
+    // The generated types predate reading_grade.
+    const { data, error } = await supabase
+      .from("child_profiles")
+      .update({ reading_grade: readingGrade } as any)
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error || !data) {
+      DebugLogger.error("auth", "setChildReadingGrade error", error);
+      throw new Error("We couldn't save the reading level just now.");
+    }
+    set({ children: state.children.map((c) => (c.id === id ? (data as ChildProfile) : c)) });
+    return data as ChildProfile;
+  }, []);
+
   const deleteChild = useCallback(async (id: string) => {
     const { error } = await supabase.from("child_profiles").delete().eq("id", id);
     if (error) {
@@ -228,6 +245,7 @@ export function useChildProfiles() {
     setActiveChild,
     addChild,
     updateChild,
+    setChildReadingGrade,
     deleteChild,
   };
 }

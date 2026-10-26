@@ -24,7 +24,7 @@ import type { UserInfo, Story, SessionStats } from "@/types";
 import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { APP_CONFIG } from "@/config/appConfig";
-import { expertGradeForGrade, normalizeGrade } from "@/lib/grades";
+import { startingReadingGrade, withReadingGrade } from "@/lib/readingLadder";
 
 interface PremiumMyStoriesViewProps {
   userInfo: UserInfo;
@@ -41,26 +41,30 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive
   const [showTutorial, setShowTutorial] = useState(false);
   const [requestDialogOpen, setRequestDialogOpen] = useState(openNewStoryOnArrival);
   const [specialRequest, setSpecialRequest] = useState("");
-  const { activeChild } = useChildProfiles();
+  const { activeChild, setChildReadingGrade } = useChildProfiles();
 
   // Move useMemo hooks to top level to fix hooks ordering violation
   const effectiveUserInfo: UserInfo = useMemo(() => {
     if (currentView === 'reading') {
-      return activeChild ? {
+      if (!activeChild) return { ...userInfo, specialRequest };
+      // The story is written at the child's reading level: the one chosen on the story
+      // page (reading_grade), else their school grade (src/lib/readingLadder.ts).
+      const readingGrade = startingReadingGrade({
+        readingGrade: (activeChild as { reading_grade?: string | null }).reading_grade,
+        grade: activeChild.grade_level,
+        gradeLevel: userInfo.gradeLevel,
+        age: userInfo.age,
+      });
+      return withReadingGrade({
         ...userInfo,
         name: activeChild.display_name || userInfo.name,
-        grade: normalizeGrade(activeChild.grade_level) || userInfo.grade,
-        // Both grade fields follow the child: difficultyManager and the voice picker read
-        // gradeLevel, which otherwise stayed on the account default ("K").
-        gradeLevel: normalizeGrade(activeChild.grade_level) || userInfo.gradeLevel,
-        expertGradeLevel: expertGradeForGrade(activeChild.grade_level) ?? userInfo.expertGradeLevel,
         storyLanguagePreference: userInfo.storyLanguagePreference, // Use parent's language preference
         avatar: (activeChild.avatar as any) || userInfo.avatar,
         specialRequest,
-      } : { ...userInfo, specialRequest };
+      }, readingGrade);
     }
     return userInfo;
-  }, [currentView, activeChild?.display_name, activeChild?.grade_level, activeChild?.avatar, userInfo, specialRequest]);
+  }, [currentView, activeChild?.display_name, activeChild?.grade_level, activeChild?.avatar /* reading_grade is read when a story opens; the story page keeps it live from there */, userInfo, specialRequest]);
 
   const readingAsName = useMemo(() => {
     if (currentView === 'reading') {
@@ -148,6 +152,7 @@ useEffect(() => {
     return (
       <CleanStoryDisplay
         userInfo={effectiveUserInfo}
+        onReadingGradeChange={activeChild ? (grade) => setChildReadingGrade(activeChild.id, grade).then(() => undefined) : undefined}
         isPremium={isPremium}
         onSessionEnded={(stats) => {
           setCurrentView('library');

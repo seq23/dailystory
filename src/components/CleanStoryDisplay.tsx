@@ -1,5 +1,6 @@
 import { StoryAudioControls } from "@/components/story/StoryAudioControls";
-import { EXPERT_GRADES, type ExpertGrade } from '@/lib/grades';
+import { EXPERT_GRADES, type ExpertGrade, type Grade } from '@/lib/grades';
+import { readingStep, stepReadingGrade, startingReadingGrade, withReadingGrade, type ReadingStep } from '@/lib/readingLadder';
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
 import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration";
 import { useStoryLogic } from "@/hooks/useStoryLogic";
@@ -164,6 +165,8 @@ interface CleanStoryDisplayProps {
   readingAsName?: string;
   currentStory?: any; // For saved stories - contains cachedImages and isFromSavedStory
   onPageImagesUpdate?: (images: Record<number, string>) => void; // CRITICAL: Callback to provide current images
+  /** Keep the reading level on the child (Premium, a child is selected). */
+  onReadingGradeChange?: (grade: Grade) => Promise<void>;
 }
 
 const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
@@ -176,6 +179,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   readingAsName,
   currentStory,
   onPageImagesUpdate, // CRITICAL: Extract callback for image updates
+  onReadingGradeChange,
 }) => {
   // ERROR-023 FIX: Defensive userInfo validation with complete fallback
   // Create stable reference to prevent infinite re-renders
@@ -394,6 +398,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     currentDifficulty, isChangingDifficulty, changeDirection, expertGradeLevel,
     lockDifficulty, minDifficulty, minExpertGrade, allowDecreaseBelowMin
   } = difficultyState;
+
+  // READING LEVEL LADDER (src/lib/readingLadder.ts): one step = one grade, Pre-K to 10th.
+  // levelRef is the truth every generation reads, so a page started from an older
+  // render (a timer, a stale callback) is still written at the level now showing.
+  const [readingGrade, setReadingGrade] = useState<Grade>(() => startingReadingGrade(safeUserInfo));
+  const levelRef = useRef<ReadingStep>(readingStep(readingGrade));
+  const liveContextRef = useRef(liveContext);
+  useEffect(() => { liveContextRef.current = liveContext; }, [liveContext]);
+  /** The user info a story is written from, at the level now showing. */
+  const atCurrentLevel = <T extends object>(info: T) => withReadingGrade(info, levelRef.current.grade);
   const {
     setCurrentDifficulty, setIsChangingDifficulty, setChangeDirection, setExpertGradeLevel,
     setLockDifficulty, setMinDifficulty, setMinExpertGrade, setAllowDecreaseBelowMin,
@@ -1874,11 +1888,7 @@ const initializeStory = async () => {
   }
   
   try {
-    const effectiveUser = {
-      ...userInfo,
-      difficultyLevel: currentDifficulty,
-      expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
-    } as UserInfo;
+    const effectiveUser = atCurrentLevel({ ...userInfo }) as UserInfo;
     if (isPremium) {
       // Premium: restore from cache if available (guarded by feature flag)
       try {
@@ -2381,7 +2391,16 @@ const initializeStory = async () => {
     try {
       // Ensure session ID consistency for continuation
       const sessionId = stableSessionId || generateSessionIdWithPrefix(`live-${safeUserInfo.name}`);
-      const result = await LiveGenerationService.generateNextPage(liveContext, vocabularyData, false, sessionId);
+      // Latest context (never a stale closure's), at the level now showing.
+      const baseContext = liveContextRef.current ?? liveContext;
+      const levelNow = levelRef.current;
+      const contextAtLevel = {
+        ...baseContext,
+        difficulty: levelNow.readingLevel,
+        expertGradeLevel: levelNow.expertGrade ?? undefined,
+        userInfo: atCurrentLevel(baseContext.userInfo),
+      };
+      const result = await LiveGenerationService.generateNextPage(contextAtLevel, vocabularyData, false, sessionId);
       
       DebugLogger.log('story', '✅ Premium Live Generation: generateNextPage result', {
         hasResult: !!result,
@@ -3447,12 +3466,10 @@ const handleRestartTimer = () => {
         if (teacherCsv) {
           combinedSpecial = `${combinedSpecial ? combinedSpecial + '\n' : ''}Teacher words: ${teacherCsv}`;
         }
-        const effectiveUser = {
+        const effectiveUser = atCurrentLevel({
           ...userInfo,
           specialRequest: combinedSpecial,
-          difficultyLevel: currentDifficulty,
-          expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
-        } as UserInfo;
+        }) as UserInfo;
         const sessionTypeParam = isRewrite ? 'rewrite' : 'new';
         DebugLogger.log('story', `Premium rewrite: Passing sessionType '${sessionTypeParam}' to LiveGenerationService`);
         const first = await LiveGenerationService.generateFirstPage(effectiveUser, sessionTypeParam, vocabularyData);
@@ -3482,12 +3499,10 @@ const handleRestartTimer = () => {
       } else {
         const originalPageCount = story.length;
         // ✅ CRITICAL FIX: Debug userInfo for story refresh
-        const refreshUserInfo = {
+        const refreshUserInfo = atCurrentLevel({
           ...userInfo,
           specialRequest: specialRequestOverride ?? safeUserInfo.specialRequest,
-          difficultyLevel: currentDifficulty,
-          expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
-        } as UserInfo;
+        }) as UserInfo;
         
         DebugLogger.log('story', '[GENDER DEBUG] Story refresh userInfo', {
           name: refreshUserInfo.name,
@@ -3762,246 +3777,98 @@ const handleRestartTimer = () => {
       }
     }, 5000);
   };
+  // "Make easier" / "Make harder": one grade per tap, Pre-K to 10th
+  // (src/lib/readingLadder.ts; guard: src/test/guards/reading-level-ladder.test.ts).
   const handleDifficultyChange = async (direction: 'up' | 'down') => {
-    // Block difficulty changes on template content (AI service unavailable)
-    if (storySource === 'fallback') {
-      toast({ 
-        title: "Sorry, difficulty adjustments aren't available right now", 
-        description: "Our AI story service is temporarily unavailable. Please start a new story to access different difficulty template content.",
-        duration: 5000 
+    if (isChangingDifficulty) return;
+
+    // Respect parent guardrails for premium users
+    if (isPremium && lockDifficulty) {
+      toast({ title: t('reader.toasts.difficultyLocked'), duration: 3000 });
+      return;
+    }
+
+    const from = levelRef.current;
+    const { step, atEdge } = stepReadingGrade(from.grade, direction);
+    if (atEdge) {
+      // Never a dead button: at the top or bottom the tap says so.
+      toast({
+        title: direction === 'up'
+          ? `Already at the hardest level (${from.label})`
+          : `Already at the easiest level (${from.label})`,
+        duration: 3000,
       });
       return;
     }
 
-    // Respect parent guardrails for premium users
-    if (isPremium) {
-      if (lockDifficulty) {
-        toast({ title: t('reader.toasts.difficultyLocked'), duration: 3000 });
-        return;
-      }
-      const currentIndex = difficultyLevels.indexOf(currentDifficulty);
+    if (isPremium && direction === 'down') {
+      const newIndex = difficultyLevels.indexOf(step.readingLevel);
       const minIndex = difficultyLevels.indexOf(minDifficulty);
-      if (direction === 'down' && currentIndex <= minIndex) {
+      if (newIndex < minIndex) {
         if (allowDecreaseBelowMin) {
-          // Allow decrease with an explanatory toast
           toast({ title: t('reader.toasts.minBelowAllowed', 'Going below the set minimum for this session'), duration: 3000 });
         } else {
           toast({ title: t('reader.toasts.minLevelReached', { minDifficulty }), duration: 3000 });
           return;
         }
       }
-      // Expert internal grade guardrail only applies when minimum is set to Expert
-      if (currentDifficulty === 'expert' && direction === 'down' && minDifficulty === 'expert') {
-        const gradeOrder: readonly ExpertGrade[] = EXPERT_GRADES;
-        const currentGradeIndex = gradeOrder.indexOf(expertGradeLevel);
-        const minGradeIndex = gradeOrder.indexOf(minExpertGrade);
-        if (currentGradeIndex <= minGradeIndex) {
-          toast({ title: t('reader.toasts.minExpertGradeReached', { minExpertGrade }), duration: 3000 });
-          return;
-        }
-      }
     }
+
     setIsChangingDifficulty(true);
     setChangeDirection(direction === 'up' ? 'increase' : 'decrease');
-    
-    const currentIndex = difficultyLevels.indexOf(currentDifficulty);
-    let newIndex = currentIndex;
-    let newGradeLevel = expertGradeLevel;
-    
-    // Handle expert mode internal grade cycling
-    if (currentDifficulty === 'expert') {
-      const gradeOrder: readonly ExpertGrade[] = EXPERT_GRADES;
-      const currentGradeIndex = gradeOrder.indexOf(expertGradeLevel);
-      
-      if (direction === 'up' && currentGradeIndex < gradeOrder.length - 1) {
-        newGradeLevel = gradeOrder[currentGradeIndex + 1];
-        setExpertGradeLevel(newGradeLevel);
-      } else if (direction === 'down' && currentGradeIndex > 0) {
-        newGradeLevel = gradeOrder[currentGradeIndex - 1];
-        setExpertGradeLevel(newGradeLevel);
-      } else if (direction === 'down' && currentGradeIndex === 0) {
-        // Transition from expert to hard
-        newIndex = currentIndex - 1;
-      }
-    } else {
-      // Normal difficulty progression
-      if (direction === 'up' && currentIndex < difficultyLevels.length - 1) {
-        newIndex = currentIndex + 1;
-        if (difficultyLevels[newIndex] === 'expert') {
-          setExpertGradeLevel(EXPERT_GRADES[0]); // Start expert at its first grade (6th)
-        }
-      } else if (direction === 'down' && currentIndex > 0) {
-        newIndex = currentIndex - 1;
-      }
+
+    // The level every generation reads from now on (a ref, so no stale closure can miss it).
+    levelRef.current = step;
+    setReadingGrade(step.grade);
+    setCurrentDifficulty(step.readingLevel);
+    if (step.expertGrade) setExpertGradeLevel(step.expertGrade);
+    if (liveContextRef.current) {
+      const next = {
+        ...liveContextRef.current,
+        difficulty: step.readingLevel,
+        expertGradeLevel: step.expertGrade ?? undefined,
+        userInfo: withReadingGrade(liveContextRef.current.userInfo, step.grade),
+      };
+      liveContextRef.current = next;
+      setLiveContext(next);
     }
-    
-      if (newIndex !== currentIndex) {
-        const newDifficulty = difficultyLevels[newIndex];
-        setCurrentDifficulty(newDifficulty);
-        
-        // Store the difficulty choice locally
-        DifficultyManager.storeDifficulty(safeUserInfo.name || 'guest', newDifficulty, safeUserInfo);
-        
-        // Persist to Supabase profile and preferences when authenticated
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            await supabase.from('profiles').update({ difficulty_level: newDifficulty }).eq('user_id', user.id);
-            if (newDifficulty === 'expert') {
-              // Save last expert grade for restoration
-              const { data: existing } = await supabase
-                .from('user_preferences')
-                .select('id, reading_preferences')
-                .eq('user_id', user.id)
-                .maybeSingle();
-              const basePrefs = (existing && typeof existing.reading_preferences === 'object') ? (existing.reading_preferences as Record<string, any>) : {};
-              const reading_preferences = { ...basePrefs, lastExpertGrade: newGradeLevel };
-              if (existing?.id) {
-                await supabase.from('user_preferences').update({ reading_preferences }).eq('id', existing.id);
-              } else {
-                await supabase.from('user_preferences').insert([{ user_id: user.id, reading_preferences }]);
-              }
-            }
-          }
-        } catch (e) {
-          DebugLogger.warn('auth', 'Could not persist difficulty preference', e);
+
+    const inBackupMode = storySource === 'fallback';
+    const nextPageNow = isPremium && !inBackupMode && !!liveContextRef.current && currentPage === story.length - 1;
+    toast({
+      title: `Reading level: ${step.label}`,
+      description: inBackupMode || !isPremium
+        ? `Starting a new story ${direction === 'up' ? 'a little harder' : 'a little easier'}.`
+        : `The next page will be ${direction === 'up' ? 'a little harder' : 'a little easier'}.`,
+      duration: 3000,
+    });
+
+    // Remember the choice: on the child (Premium), else on this device and profile.
+    DifficultyManager.storeDifficulty(safeUserInfo.name || 'guest', step.readingLevel, safeUserInfo);
+    try {
+      if (onReadingGradeChange) {
+        await onReadingGradeChange(step.grade);
+      } else {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from('profiles').update({ difficulty_level: step.readingLevel }).eq('user_id', user.id);
         }
-        
-        // ✅ FIX: Guest users trigger new story generation
-        if (!isPremium) {
-          DebugLogger.log('story', '🔄 Guest difficulty change: Triggering new story generation', {
-            oldDifficulty: difficultyLevels[currentIndex],
-            newDifficulty: newDifficulty
-          });
-          
-          ManagedTimers.setTimeout(() => {
-            setIsChangingDifficulty(false);
-            setChangeDirection(undefined);
-            handleGenerateNewStory();
-          }, 800, 'CleanStoryDisplay');
-          
-          return;
-        }
-        
-        // Update live context for all users (universal live difficulty updates)
-        if (liveContext) {
-          setLiveContext(prev => prev ? {
-            ...prev, 
-            difficulty: newDifficulty,
-            expertGradeLevel: newDifficulty === 'advanced' ? newGradeLevel : undefined
-          } : null);
-          
-          // ✅ FIX: Premium users generate next page or show toast
-          if (isPremium) {
-            ManagedTimers.setTimeout(() => {
-              setIsChangingDifficulty(false);
-              setChangeDirection(undefined);
-              
-              if (currentPage === story.length - 1) {
-                DebugLogger.log('story', '🔄 Premium difficulty change: Generating next page', {
-                  oldDifficulty: difficultyLevels[currentIndex],
-                  newDifficulty: newDifficulty,
-                  currentPage,
-                  storyLength: story.length
-                });
-                handleGenerateNextPageAndAdvance();
-              } else {
-                toast({
-                  title: "Reading Level Updated",
-                  description: "New difficulty will apply when you navigate forward",
-                  duration: 3000
-                });
-              }
-            }, 800, 'CleanStoryDisplay');
-            
-            return;
-          }
-        }
-        
-        // Animate badge change
-        ManagedTimers.setTimeout(() => setChangeDirection('badge'), 200, 'CleanStoryDisplay');
-      } else if (currentDifficulty === 'expert') {
-        // Update live context for expert grade level changes (universal updates)
-        if (liveContext) {
-          setLiveContext(prev => prev ? {...prev, expertGradeLevel: newGradeLevel} : null);
-          
-          // ✅ FIX: Premium users generate next page with new grade level
-          if (isPremium) {
-            // Persist last expert grade first
-            try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user) {
-                const { data: existing } = await supabase
-                  .from('user_preferences')
-                  .select('id, reading_preferences')
-                  .eq('user_id', user.id)
-                  .maybeSingle();
-                const basePrefs = (existing && typeof existing.reading_preferences === 'object') ? (existing.reading_preferences as Record<string, any>) : {};
-                const reading_preferences = { ...basePrefs, lastExpertGrade: newGradeLevel };
-                if (existing?.id) {
-                  await supabase.from('user_preferences').update({ reading_preferences }).eq('id', existing.id);
-                } else {
-                  await supabase.from('user_preferences').insert([{ user_id: user.id, reading_preferences }]);
-                }
-              }
-            } catch (e) {
-              DebugLogger.warn('auth', 'Could not persist expert grade preference', e);
-            }
-            
-            ManagedTimers.setTimeout(() => {
-              setIsChangingDifficulty(false);
-              setChangeDirection(undefined);
-              
-              if (currentPage === story.length - 1) {
-                DebugLogger.log('story', '🔄 Premium expert grade change: Generating next page', {
-                  oldGrade: expertGradeLevel,
-                  newGrade: newGradeLevel,
-                  currentPage,
-                  storyLength: story.length
-                });
-                handleGenerateNextPageAndAdvance();
-              } else {
-                toast({
-                  title: `Now Reading at ${newGradeLevel} Grade Level`,
-                  description: "New grade level will apply when you navigate forward",
-                  duration: 3000
-                });
-              }
-            }, 800, 'CleanStoryDisplay');
-            
-            return;
-          }
-        }
-        
-        // Persist last expert grade
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            const { data: existing } = await supabase
-              .from('user_preferences')
-              .select('id, reading_preferences')
-              .eq('user_id', user.id)
-              .maybeSingle();
-            const basePrefs = (existing && typeof existing.reading_preferences === 'object') ? (existing.reading_preferences as Record<string, any>) : {};
-            const reading_preferences = { ...basePrefs, lastExpertGrade: newGradeLevel };
-            if (existing?.id) {
-              await supabase.from('user_preferences').update({ reading_preferences }).eq('id', existing.id);
-            } else {
-              await supabase.from('user_preferences').insert([{ user_id: user.id, reading_preferences }]);
-            }
-          }
-        } catch (e) {
-          DebugLogger.warn('auth', 'Could not persist expert grade preference', e);
-        }
-        
-        // Animate badge change for expert level progression
-        ManagedTimers.setTimeout(() => setChangeDirection('badge'), 200, 'CleanStoryDisplay');
       }
-    
-    // Complete animation
+    } catch (e) {
+      DebugLogger.warn('auth', 'Could not persist reading level', e);
+    }
+
     ManagedTimers.setTimeout(() => {
       setIsChangingDifficulty(false);
-      setChangeDirection(undefined);
+      setChangeDirection('badge');
+      ManagedTimers.setTimeout(() => setChangeDirection(undefined), 600, 'CleanStoryDisplay');
+      if (inBackupMode || !isPremium) {
+        // Backup Mode or guest: a new story at the new level (a backup story at that
+        // level if the AI is still away).
+        handleGenerateNewStory();
+      } else if (nextPageNow) {
+        handleGenerateNextPageAndAdvance();
+      }
     }, 800, 'CleanStoryDisplay');
   };
 
@@ -4196,8 +4063,12 @@ const handleRestartTimer = () => {
           showLevelControls={true}
           isChangingDifficulty={isChangingDifficulty}
           changeDirection={changeDirection}
-          canIncrease={!lockDifficulty && (currentDifficulty !== 'expert' || expertGradeLevel !== EXPERT_GRADES[EXPERT_GRADES.length - 1])}
-          canDecrease={!lockDifficulty && (allowDecreaseBelowMin || (difficultyLevels.indexOf(currentDifficulty) > difficultyLevels.indexOf(minDifficulty)))}
+          // Enabled at the ends too: the tap says "Already at the hardest/easiest level".
+          canIncrease={!lockDifficulty}
+          canDecrease={!lockDifficulty}
+          levelLabel={readingStep(readingGrade).label}
+          increaseHint={stepReadingGrade(readingGrade, 'up').atEdge ? `Already at the hardest level (${readingStep(readingGrade).label})` : `Make harder: ${stepReadingGrade(readingGrade, 'up').step.label}`}
+          decreaseHint={stepReadingGrade(readingGrade, 'down').atEdge ? `Already at the easiest level (${readingStep(readingGrade).label})` : `Make easier: ${stepReadingGrade(readingGrade, 'down').step.label}`}
           onEndSession={() => setShowEndSessionConfirm(true)}
           onSaveStory={isPremium ? handleSaveStoryNow : undefined}
           isSaving={isSaving}

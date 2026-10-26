@@ -406,7 +406,9 @@ export class CharlotteVoiceService {
     } catch (error) {
       DebugLogger.error('audio', `Charlotte word explanation failed for "${word}"`, error);
       await this.charlotteInteractiveAudio({
-        text: `Sorry, I couldn't find the definition for ${word}`,
+        // Never an apology: a kind clue instead (matches builtInWordEntry in
+        // supabase/functions/_shared/wordFallback.ts).
+        text: `${cleanWord} is a word in your story. Read the sentence around it. The words nearby are clues to what it means.`,
         context: 'interactive'
       });
     }

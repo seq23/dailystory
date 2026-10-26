@@ -30,6 +30,11 @@ interface ResponsiveStoryHeaderProps {
   changeDirection?: 'increase' | 'decrease' | 'badge';
   canIncrease?: boolean;
   canDecrease?: boolean;
+  /** Badge text from the reading ladder, e.g. "2nd grade" (src/lib/readingLadder.ts). */
+  levelLabel?: string;
+  /** Button text: the level a tap goes to, or "Already at the hardest level". */
+  increaseHint?: string;
+  decreaseHint?: string;
   onEndSession?: () => void;
   onSaveStory?: () => void;
   isSaving?: boolean;
@@ -53,6 +58,9 @@ export const ResponsiveStoryHeader = ({
   changeDirection,
   canIncrease = true,
   canDecrease = true,
+  levelLabel,
+  increaseHint,
+  decreaseHint,
   onEndSession,
   onSaveStory,
   isSaving = false,
@@ -296,7 +304,7 @@ export const ResponsiveStoryHeader = ({
                               "transition-all duration-300",
                               buttonAnimations.decrease ? "animate-scale-in bg-secondary/20 border-secondary" : ""
                             )}
-                            aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
+                            aria-label={(decreaseHint ?? t("storyDisplay.decreaseDifficulty", "Make easier"))}
                           >
                             {isChangingDifficulty && changeDirection === 'decrease' ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -306,7 +314,7 @@ export const ResponsiveStoryHeader = ({
                           </MobileOptimizedButton>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
-                          {t("storyDisplay.decreaseDifficulty", "Make easier")}
+                          {(decreaseHint ?? t("storyDisplay.decreaseDifficulty", "Make easier"))}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -320,7 +328,7 @@ export const ResponsiveStoryHeader = ({
                       buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
                     )}
                   >
-                    {DifficultyLevelMapper.getDisplayName(currentDifficulty)}
+                    {levelLabel ?? DifficultyLevelMapper.getDisplayName(currentDifficulty)}
                   </Badge>
 
                   {onIncreaseDifficulty && (
@@ -337,7 +345,7 @@ export const ResponsiveStoryHeader = ({
                               "transition-all duration-300",
                               buttonAnimations.increase ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' : ''
                             )}
-                            aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
+                            aria-label={(increaseHint ?? t("storyDisplay.increaseDifficulty", "Make harder"))}
                           >
                             {isChangingDifficulty && changeDirection === 'increase' ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -347,7 +355,7 @@ export const ResponsiveStoryHeader = ({
                           </MobileOptimizedButton>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
-                          {t("storyDisplay.increaseDifficulty", "Make harder")}
+                          {(increaseHint ?? t("storyDisplay.increaseDifficulty", "Make harder"))}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -442,7 +450,7 @@ export const ResponsiveStoryHeader = ({
                         </MobileOptimizedButton>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
-                        {t("storyDisplay.decreaseDifficulty", "Make easier")}
+                        {(decreaseHint ?? t("storyDisplay.decreaseDifficulty", "Make easier"))}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -456,7 +464,7 @@ export const ResponsiveStoryHeader = ({
                     buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
                   )}
                 >
-                  {DifficultyLevelMapper.getDisplayName(currentDifficulty)}
+                  {levelLabel ?? DifficultyLevelMapper.getDisplayName(currentDifficulty)}
                 </Badge>
 
                 {onIncreaseDifficulty && (
@@ -482,7 +490,7 @@ export const ResponsiveStoryHeader = ({
                         </MobileOptimizedButton>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
-                        {t("storyDisplay.increaseDifficulty", "Make harder")}
+                        {(increaseHint ?? t("storyDisplay.increaseDifficulty", "Make harder"))}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -661,7 +669,7 @@ export const ResponsiveStoryHeader = ({
                               ? 'animate-scale-in bg-secondary/20 border-secondary' 
                               : ''
                           )}
-                          aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
+                          aria-label={(decreaseHint ?? t("storyDisplay.decreaseDifficulty", "Make easier"))}
                         >
                           {isChangingDifficulty && changeDirection === 'decrease' ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -674,7 +682,7 @@ export const ResponsiveStoryHeader = ({
                         </MobileOptimizedButton>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
-                        {t("storyDisplay.decreaseDifficulty", "Make easier")}
+                        {(decreaseHint ?? t("storyDisplay.decreaseDifficulty", "Make easier"))}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -694,7 +702,7 @@ export const ResponsiveStoryHeader = ({
                       : ''
                   )}
                   >
-                    {DifficultyLevelMapper.getDisplayName(currentDifficulty)}
+                    {levelLabel ?? DifficultyLevelMapper.getDisplayName(currentDifficulty)}
                   </Badge>
 
                 {onIncreaseDifficulty && (
@@ -715,7 +723,7 @@ export const ResponsiveStoryHeader = ({
                               ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' 
                               : ''
                           )}
-                          aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
+                          aria-label={(increaseHint ?? t("storyDisplay.increaseDifficulty", "Make harder"))}
                         >
                           {isChangingDifficulty && changeDirection === 'increase' ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -728,7 +736,7 @@ export const ResponsiveStoryHeader = ({
                         </MobileOptimizedButton>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
-                        {t("storyDisplay.increaseDifficulty", "Make harder")}
+                        {(increaseHint ?? t("storyDisplay.increaseDifficulty", "Make harder"))}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -847,7 +855,7 @@ export const ResponsiveStoryHeader = ({
                                 ? 'animate-scale-in bg-secondary/20 border-secondary' 
                                 : ''
                             )}
-                            aria-label={t("storyDisplay.decreaseDifficulty", "Make easier")}
+                            aria-label={(decreaseHint ?? t("storyDisplay.decreaseDifficulty", "Make easier"))}
                           >
                             {isChangingDifficulty && changeDirection === 'decrease' ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -860,7 +868,7 @@ export const ResponsiveStoryHeader = ({
                           </MobileOptimizedButton>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
-                          {t("storyDisplay.decreaseDifficulty", "Make easier")}
+                          {(decreaseHint ?? t("storyDisplay.decreaseDifficulty", "Make easier"))}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -879,7 +887,7 @@ export const ResponsiveStoryHeader = ({
                         : ''
                     )}
                   >
-                    {DifficultyLevelMapper.getDisplayName(currentDifficulty)}
+                    {levelLabel ?? DifficultyLevelMapper.getDisplayName(currentDifficulty)}
                   </Badge>
 
                   {onIncreaseDifficulty && (
@@ -900,7 +908,7 @@ export const ResponsiveStoryHeader = ({
                                 ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' 
                                 : ''
                             )}
-                            aria-label={t("storyDisplay.increaseDifficulty", "Make harder")}
+                            aria-label={(increaseHint ?? t("storyDisplay.increaseDifficulty", "Make harder"))}
                           >
                             {isChangingDifficulty && changeDirection === 'increase' ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -913,7 +921,7 @@ export const ResponsiveStoryHeader = ({
                           </MobileOptimizedButton>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
-                          {t("storyDisplay.increaseDifficulty", "Make harder")}
+                          {(increaseHint ?? t("storyDisplay.increaseDifficulty", "Make harder"))}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
