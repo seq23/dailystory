@@ -76,7 +76,10 @@ describe("grades and ages have one source of truth", () => {
   it("a child's grade and age are set only on the child (never on the grown-up's reading settings)", () => {
     const editor = read("src/components/PremiumProfileEditor.tsx");
     expect(editor).not.toMatch(/GRADES\.map\(|AGES\.map\(|htmlFor="grade"|htmlFor="age"/);
-    expect(editor).toMatch(/<ChildrenList \/>/);
+    expect(editor).toMatch(/Manage your children →/);
+    // The reading level is per child (reading_grade on the story page), never one account-wide picker.
+    expect(editor).not.toMatch(/htmlFor="difficulty"|Reading Ability/);
+    expect(editor).toMatch(/Reading level: set for each child/);
   });
 
   it("the list is Pre-K, K, 1st–10th and ages 3–15", () => {
