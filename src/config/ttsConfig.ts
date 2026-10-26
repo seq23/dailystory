@@ -29,6 +29,13 @@ export const TTS_CONFIG = {
   /**
    * Browser TTS settings (free and guest readers, and the premium fallback)
    */
+  /**
+   * Read to Me pace for whole stories (26 Oct 2026: the owner found narration "kind of slow").
+   * Applied as playback speed, so cached audio speeds up too and word highlighting (which
+   * follows audio.currentTime) stays in step. Single tapped words keep their slower rate.
+   */
+  STORY_NARRATION_SPEED: 1.15,
+
   BROWSER_TTS_DEFAULTS: {
     rate: 0.8,
     pitch: 1.0,

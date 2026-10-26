@@ -65,7 +65,7 @@ export class CharlotteVoiceService {
    * CHARLOTTE READS STORY - With word highlighting and timing
    * Uses sophisticated timing system for story reading with word-by-word highlighting
    */
-  async charlotteReadStory(text: string, onWordHighlight?: (wordIndex: number) => void, speed?: number): Promise<void> {
+  async charlotteReadStory(text: string, onWordHighlight?: (wordIndex: number) => void, speed: number = TTS_CONFIG.STORY_NARRATION_SPEED): Promise<void> {
     await this.routed('story', text, 'en', () => this.elevenLabsReadStory(text, onWordHighlight, speed), speed);
   }
 

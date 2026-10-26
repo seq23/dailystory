@@ -13,6 +13,7 @@ import './services/DebugLogger'
 // GLOBAL AUDIO SERVICE EXPOSURE - For AudioPlaybackTester and debugging
 import { charlotteVoiceService } from './services/CharlotteVoiceService';
 import { SmartElevenLabsTTS } from './services/smartElevenLabsTTS';
+import { supabase } from './integrations/supabase/client';
 
 // Expose unified Charlotte audio service globally for testing and debugging
 if (typeof window !== 'undefined') {
@@ -30,6 +31,13 @@ function Booted() {
   }, []);
   return null;
 }
+
+// Clarity records signed-out visitors only (index.html skips it when a session is stored at
+// load). Someone who signs in during a visit must stop being recorded at that moment.
+supabase.auth.onAuthStateChange((_event, session) => {
+  const clarity = (window as any).clarity;
+  if (session && typeof clarity === 'function') clarity('stop');
+});
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

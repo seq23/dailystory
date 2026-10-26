@@ -138,6 +138,8 @@
          records a signed-in family or a child reading (25 Oct 2026). -->
     <script>
       (function () {
+        // Arriving from a sign-in or confirmation link: the session is in the URL, not yet stored.
+        if (/access_token=|type=(magiclink|signup|recovery|invite)/.test(location.hash + location.search)) return;
         try {
           for (var i = 0; i < localStorage.length; i++) {
             if (/^sb-.*-auth-token$/.test(localStorage.key(i))) return;
