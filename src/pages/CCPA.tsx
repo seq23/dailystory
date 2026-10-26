@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const CCPA = () => {
   useEffect(() => {
     const title = "California Privacy Rights (CCPA) | Spry VSL LLC";
-    const desc = "Your California Consumer Privacy Act rights with Time2Read: the right to know, the right to delete and the right to opt out, and how to ask us.";
+    const desc = "Your California Consumer Privacy Act rights with Time-2-Read: the right to know, the right to delete and the right to opt out, and how to ask us.";
     document.title = title;
 
     let meta = document.querySelector('meta[name="description"]');

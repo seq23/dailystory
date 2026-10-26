@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { MADE_BY_LINE } from "@/seo/schema";
 
 /**
  * The site's own pages, one click from wherever this is rendered (the homepage,
@@ -7,7 +8,7 @@ import { Link } from "react-router-dom";
  * and fails CI if one is not.
  */
 export const SITE_LINKS: { to: string; label: string }[] = [
-  { to: "/about", label: "About Time2Read" },
+  { to: "/about", label: "About Time-2-Read" },
   { to: "/pricing", label: "Pricing" },
   { to: "/privacy", label: "Privacy policy" },
   { to: "/terms", label: "Terms of service" },
@@ -30,6 +31,10 @@ export const SiteFooterNav = () => (
           </li>
         ))}
       </ul>
+      <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground" data-testid="made-by">
+        <img src="/icon-192.png" alt="Time-2-Read logo" width={24} height={24} className="h-6 w-6" />
+        {MADE_BY_LINE}
+      </p>
     </nav>
   </footer>
 );

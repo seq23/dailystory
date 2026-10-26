@@ -855,10 +855,10 @@ const handleImageFallbackUsed = useCallback((isUsingFallback: boolean) => {
       }
       
       // Show new dismissible toast
+      // Calm, not red: the story still works without its pictures.
       const toastResult = toast({
-        variant: "destructive",
-        title: "Images are down",
-        description: "Try refreshing the page, or if that doesn't work, regenerate a new story.",
+        title: "Pictures are taking a break",
+        description: "The story still works. Keep reading; pictures come back on their own.",
       });
       
       // Track the toast for potential dismissal

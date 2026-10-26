@@ -8,11 +8,11 @@ import { SITE_URL } from "@/config/site";
 
 export default function GDPR() {
   useEffect(() => {
-    document.title = "Your GDPR Data Protection Rights | Time2Read";
+    document.title = "Your GDPR Data Protection Rights | Time-2-Read";
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Your GDPR rights as a Time2Read user. Learn about data access, portability, erasure, and how we protect your privacy under EU data protection law.');
+      metaDescription.setAttribute('content', 'Your GDPR rights as a Time-2-Read user. Learn about data access, portability, erasure, and how we protect your privacy under EU data protection law.');
     }
   }, []);
 
@@ -84,7 +84,7 @@ export default function GDPR() {
             you have certain rights under the General Data Protection Regulation (GDPR) regarding your personal data.
           </p>
           <p className="text-muted-foreground">
-            Time2Read is committed to respecting your privacy and providing transparency about how we 
+            Time-2-Read is committed to respecting your privacy and providing transparency about how we 
             collect, use, and protect your information.
           </p>
         </section>

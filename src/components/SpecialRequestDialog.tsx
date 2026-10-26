@@ -283,7 +283,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
       <DialogContent className="max-h-[100dvh] overflow-y-auto" aria-label={mode === 'new' ? "Start a new story" : "Change this story"} data-testid="new-story-dialog">
         <DialogHeader>
           <DialogTitle>{mode === 'new' ? "New story" : "Change this story"}</DialogTitle>
-          <DialogDescription>Everything here is optional. Tap "{mode === 'new' ? "Write story" : "Refresh story"}" when you're ready.</DialogDescription>
+          <DialogDescription>Everything here is optional. Tap the blue button when you're ready.</DialogDescription>
         </DialogHeader>
 
         {/* Who the story is for */}

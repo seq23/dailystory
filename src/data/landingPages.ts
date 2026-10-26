@@ -46,8 +46,8 @@ export interface LandingSource {
 }
 
 const ageFaq = (age: string): LandingFaq => ({
-  q: `Is Time2Read good for ${age}?`,
-  a: `Yes. Time2Read adapts every story to your child's reading level — from pre-readers who listen along with built-in narration to confident readers who want a challenge. You set the level and the AI does the rest.`,
+  q: `Is Time-2-Read good for ${age}?`,
+  a: `Yes. Time-2-Read adapts every story to your child's reading level — from pre-readers who listen along with built-in narration to confident readers who want a challenge. You set the level and the AI does the rest.`,
 });
 
 const freeFaq: LandingFaq = {
@@ -58,7 +58,7 @@ const freeFaq: LandingFaq = {
 const collectionPages: LandingPageConfig[] = [
   {
     slug: "free-books-for-kindergarteners",
-    title: "Free Books for Kindergarteners | Time2Read",
+    title: "Free Books for Kindergarteners | Time-2-Read",
     metaDescription:
       "Free, personalized reading adventures for kindergarteners. Interactive stories with illustrations and read-aloud narration. Start reading instantly — no signup.",
     h1: "Free Books for Kindergarteners",
@@ -68,7 +68,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: heroDiverse,
     heroImageAlt: "Diverse kindergarteners reading an illustrated story together",
     intro: [
-      "Finding free books for kindergarteners that actually hold their attention can be hard. Time2Read creates brand-new, fully illustrated stories tailored to your child's name, interests, and reading level — instantly, and free to start.",
+      "Finding free books for kindergarteners that actually hold their attention can be hard. Time-2-Read creates brand-new, fully illustrated stories tailored to your child's name, interests, and reading level — instantly, and free to start.",
       "Every story includes friendly illustrations on every page and built-in read-aloud narration, so even pre-readers can follow along and build confidence.",
     ],
     benefits: [
@@ -80,9 +80,9 @@ const collectionPages: LandingPageConfig[] = [
   },
   {
     slug: "kindergarten-sight-words",
-    title: "Kindergarten Sight Words List + Practice | Time2Read",
+    title: "Kindergarten Sight Words List + Practice | Time-2-Read",
     metaDescription:
-      "Free kindergarten sight words list to practice at home. Time2Read's beginner stories are built on Dolch sight words, with your child as the hero.",
+      "Free kindergarten sight words list to practice at home. Time-2-Read's beginner stories are built on Dolch sight words, with your child as the hero.",
     h1: "Kindergarten Sight Words",
     navLabel: "Kindergarten sight words",
     heroSubtitle:
@@ -91,7 +91,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImageAlt: "Child practicing sight words while reading at home",
     intro: [
       "Sight words are the high-frequency words kids learn to recognize instantly, without sounding them out. Mastering them is one of the biggest early wins in learning to read.",
-      "Below is a free kindergarten sight words list you can practice anywhere. Then put the words to work: Time2Read's beginner reading levels are written mostly with Dolch sight words, so your child keeps meeting them inside a personalized, illustrated story they actually want to read.",
+      "Below is a free kindergarten sight words list you can practice anywhere. Then put the words to work: Time-2-Read's beginner reading levels are written mostly with Dolch sight words, so your child keeps meeting them inside a personalized, illustrated story they actually want to read.",
     ],
     benefits: [
       { title: "Practice in context", body: "Seeing sight words inside a fun story helps them stick far better than flashcards alone." },
@@ -100,14 +100,14 @@ const collectionPages: LandingPageConfig[] = [
     ],
     faqs: [
       { q: "What are kindergarten sight words?", a: "Sight words are common words like 'the', 'and', 'is', and 'you' that kids should recognize instantly. They make up a huge share of everyday reading." },
-      { q: "Can I type my child's own sight words into a Time2Read story?", a: "Not at the moment. Choose a beginner reading level: those stories are written mostly with Dolch sight words. Keep practicing your class list with the printable list on this page." },
+      { q: "Can I type my child's own sight words into a Time-2-Read story?", a: "Not at the moment. Choose a beginner reading level: those stories are written mostly with Dolch sight words. Keep practicing your class list with the printable list on this page." },
       freeFaq,
     ],
     variant: "sightWords",
   },
   {
     slug: "toddler-books",
-    title: "Toddler Books — Interactive & Read-Aloud | Time2Read",
+    title: "Toddler Books — Interactive & Read-Aloud | Time-2-Read",
     metaDescription:
       "Gentle, illustrated toddler books with read-aloud narration. Personalized stories your little one can enjoy on any device. Free to start.",
     h1: "Toddler Books",
@@ -116,7 +116,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: homeReading,
     heroImageAlt: "Toddler enjoying a picture book at home",
     intro: [
-      "Toddlers love repetition, bright pictures, and hearing a familiar voice. Time2Read creates simple, gentle toddler books with an illustration on every page and built-in read-aloud narration.",
+      "Toddlers love repetition, bright pictures, and hearing a familiar voice. Time-2-Read creates simple, gentle toddler books with an illustration on every page and built-in read-aloud narration.",
       "Personalize each story with your toddler's name and favorite things to make story time feel truly their own.",
     ],
     benefits: [
@@ -128,7 +128,7 @@ const collectionPages: LandingPageConfig[] = [
   },
   {
     slug: "books-for-kindergarten",
-    title: "Books for Kindergarten — Personalized Stories | Time2Read",
+    title: "Books for Kindergarten — Personalized Stories | Time-2-Read",
     metaDescription:
       "Engaging books for kindergarten, personalized to your child's level and interests. Illustrated, read-aloud stories that build reading confidence. Free to start.",
     h1: "Books for Kindergarten",
@@ -137,7 +137,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: heroDiverse,
     heroImageAlt: "Kindergarten children reading personalized books",
     intro: [
-      "The right books for kindergarten meet kids exactly where they are. Time2Read generates illustrated stories tuned to the kindergarten reading level, with words and sentence lengths that build confidence instead of frustration.",
+      "The right books for kindergarten meet kids exactly where they are. Time-2-Read generates illustrated stories tuned to the kindergarten reading level, with words and sentence lengths that build confidence instead of frustration.",
       "Each story is personalized and paired with read-aloud narration, so every child can succeed at story time.",
     ],
     benefits: [
@@ -149,7 +149,7 @@ const collectionPages: LandingPageConfig[] = [
   },
   {
     slug: "first-grade-books",
-    title: "First Grade Books — Personalized Reading | Time2Read",
+    title: "First Grade Books — Personalized Reading | Time-2-Read",
     metaDescription:
       "Personalized first grade books that match your child's reading level. Illustrated, read-aloud stories to build fluency and confidence. Free to start.",
     h1: "First Grade Books",
@@ -158,7 +158,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: outdoorReading,
     heroImageAlt: "First grader reading a book outdoors",
     intro: [
-      "First graders are ready for slightly longer stories and richer vocabulary. Time2Read creates first grade books tuned to that level, with illustrations and optional narration for support.",
+      "First graders are ready for slightly longer stories and richer vocabulary. Time-2-Read creates first grade books tuned to that level, with illustrations and optional narration for support.",
       "Personalize each adventure to keep motivation high as your child's reading skills take off.",
     ],
     benefits: [
@@ -170,7 +170,7 @@ const collectionPages: LandingPageConfig[] = [
   },
   {
     slug: "books-for-5-year-olds",
-    title: "Books for 5 Year Olds — Personalized | Time2Read",
+    title: "Books for 5 Year Olds — Personalized | Time-2-Read",
     metaDescription:
       "Fun, personalized books for 5 year olds with illustrations and read-aloud narration. Stories tuned to their level. Free to start, no signup needed.",
     h1: "Books for 5 Year Olds",
@@ -179,7 +179,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: heroDiverse,
     heroImageAlt: "Five year old child reading an illustrated story",
     intro: [
-      "Five year olds are bursting with curiosity. Time2Read turns that energy into illustrated, personalized stories sized just right for them.",
+      "Five year olds are bursting with curiosity. Time-2-Read turns that energy into illustrated, personalized stories sized just right for them.",
       "With read-aloud narration and a picture on every page, story time works whether your child is reading or listening along.",
     ],
     benefits: [
@@ -191,7 +191,7 @@ const collectionPages: LandingPageConfig[] = [
   },
   {
     slug: "books-for-4-year-olds",
-    title: "Books for 4 Year Olds — Personalized | Time2Read",
+    title: "Books for 4 Year Olds — Personalized | Time-2-Read",
     metaDescription:
       "Gentle, personalized books for 4 year olds with read-aloud narration and illustrations. Story time tuned to their level. Free to start.",
     h1: "Books for 4 Year Olds",
@@ -200,7 +200,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: homeReading,
     heroImageAlt: "Four year old listening to an illustrated story",
     intro: [
-      "At four, kids love being read to and seeing themselves in stories. Time2Read creates short, gentle books for 4 year olds, personalized and read aloud.",
+      "At four, kids love being read to and seeing themselves in stories. Time-2-Read creates short, gentle books for 4 year olds, personalized and read aloud.",
       "Every page has an illustration to spark imagination and keep little ones engaged.",
     ],
     benefits: [
@@ -212,7 +212,7 @@ const collectionPages: LandingPageConfig[] = [
   },
   {
     slug: "books-for-6-year-olds",
-    title: "Books for 6 Year Olds — Personalized | Time2Read",
+    title: "Books for 6 Year Olds — Personalized | Time-2-Read",
     metaDescription:
       "Engaging, personalized books for 6 year olds tuned to their reading level. Illustrated, read-aloud stories that build confidence. Free to start.",
     h1: "Books for 6 Year Olds",
@@ -221,7 +221,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: libraryReading,
     heroImageAlt: "Six year old reading a book in a library",
     intro: [
-      "Six year olds are often reading on their own and ready for more. Time2Read creates personalized books for 6 year olds at just the right level, with optional narration for tricky moments.",
+      "Six year olds are often reading on their own and ready for more. Time-2-Read creates personalized books for 6 year olds at just the right level, with optional narration for tricky moments.",
       "Adjust the difficulty any time so stories keep pace with your child's growth.",
     ],
     benefits: [
@@ -233,7 +233,7 @@ const collectionPages: LandingPageConfig[] = [
   },
   {
     slug: "read-aloud-books-for-kindergarten",
-    title: "Read Aloud Books for Kindergarten | Time2Read",
+    title: "Read Aloud Books for Kindergarten | Time-2-Read",
     metaDescription:
       "Read-aloud books for kindergarten with built-in narration and illustrations. Personalized stories kids can listen to and follow along. Free to start.",
     h1: "Read Aloud Books for Kindergarten",
@@ -242,7 +242,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: outdoorReading,
     heroImageAlt: "Kindergartener following along with a read-aloud story",
     intro: [
-      "Read-aloud books for kindergarten help kids connect spoken words to written ones. Time2Read narrates every personalized story with a clear, friendly voice while highlighting the page.",
+      "Read-aloud books for kindergarten help kids connect spoken words to written ones. Time-2-Read narrates every personalized story with a clear, friendly voice while highlighting the page.",
       "It's perfect for the classroom carpet, the car, or bedtime — and free to start.",
     ],
     benefits: [
@@ -254,7 +254,7 @@ const collectionPages: LandingPageConfig[] = [
   },
   {
     slug: "books-for-toddlers",
-    title: "Books for Toddlers — Personalized & Narrated | Time2Read",
+    title: "Books for Toddlers — Personalized & Narrated | Time-2-Read",
     metaDescription:
       "Gentle, personalized books for toddlers with read-aloud narration and illustrations on every page. Free to start, no signup needed.",
     h1: "Books for Toddlers",
@@ -263,7 +263,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: homeReading,
     heroImageAlt: "Toddler enjoying a personalized picture book",
     intro: [
-      "Books for toddlers should be short, colorful, and comforting. Time2Read delivers exactly that — personalized stories with a picture on every page and gentle narration.",
+      "Books for toddlers should be short, colorful, and comforting. Time-2-Read delivers exactly that — personalized stories with a picture on every page and gentle narration.",
       "Add your toddler's name and favorites to make every story feel familiar and special.",
     ],
     benefits: [
@@ -275,7 +275,7 @@ const collectionPages: LandingPageConfig[] = [
   },
   {
     slug: "books-for-preschoolers",
-    title: "Books for Preschoolers — Personalized | Time2Read",
+    title: "Books for Preschoolers — Personalized | Time-2-Read",
     metaDescription:
       "Fun, personalized books for preschoolers with illustrations and read-aloud narration. Stories tuned to early learners. Free to start.",
     h1: "Books for Preschoolers",
@@ -284,7 +284,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: heroDiverse,
     heroImageAlt: "Preschooler reading an illustrated personalized story",
     intro: [
-      "Preschoolers are building the early skills that lead to reading. Time2Read makes books for preschoolers that are fun, simple, and personalized — with narration and illustrations to support them.",
+      "Preschoolers are building the early skills that lead to reading. Time-2-Read makes books for preschoolers that are fun, simple, and personalized — with narration and illustrations to support them.",
       "Story time becomes a daily adventure your preschooler asks for again and again.",
     ],
     benefits: [
@@ -296,7 +296,7 @@ const collectionPages: LandingPageConfig[] = [
   },
   {
     slug: "leveled-readers",
-    title: "Leveled Readers — Personalized & Adaptive | Time2Read",
+    title: "Leveled Readers — Personalized & Adaptive | Time-2-Read",
     metaDescription:
       "Personalized leveled readers that adapt to your child's reading level — from pre-K to grade school. Illustrated, narrated stories. Free to start.",
     h1: "Leveled Readers",
@@ -305,7 +305,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: libraryReading,
     heroImageAlt: "Child choosing a leveled reader in a library",
     intro: [
-      "Leveled readers help kids practice at just the right difficulty. Time2Read generates personalized leveled readers across five reading levels, so every child gets a story that fits.",
+      "Leveled readers help kids practice at just the right difficulty. Time-2-Read generates personalized leveled readers across five reading levels, so every child gets a story that fits.",
       "As skills grow, simply raise the level — no need to buy a whole new set of books.",
     ],
     benefits: [
@@ -314,14 +314,14 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Personalized", body: "Engaging stories starring your child at every level." },
     ],
     faqs: [
-      { q: "What reading levels are available?", a: "Time2Read spans five levels from pre-K through grade school, so you can match your child precisely." },
+      { q: "What reading levels are available?", a: "Time-2-Read spans five levels from pre-K through grade school, so you can match your child precisely." },
       freeFaq,
       { q: "Can siblings at different levels use it?", a: "Yes — set up profiles at different levels and each child gets level-appropriate stories." },
     ],
   },
   {
     slug: "short-bedtime-stories-for-kids",
-    title: "Short Bedtime Stories for Kids | Time2Read",
+    title: "Short Bedtime Stories for Kids | Time-2-Read",
     metaDescription:
       "Personalized short bedtime stories for kids with gentle narration and illustrations. Calm, cozy stories on demand. Free to start, no signup needed.",
     h1: "Short Bedtime Stories for Kids",
@@ -330,7 +330,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: homeReading,
     heroImageAlt: "Child listening to a short bedtime story before sleep",
     intro: [
-      "A short bedtime story is the perfect way to wind down. Time2Read creates personalized, gentle bedtime stories on demand, with soft narration and soothing illustrations.",
+      "A short bedtime story is the perfect way to wind down. Time-2-Read creates personalized, gentle bedtime stories on demand, with soft narration and soothing illustrations.",
       "Pick your child's favorite characters and themes for a calming routine that never repeats.",
     ],
     benefits: [

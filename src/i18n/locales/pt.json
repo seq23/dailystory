@@ -2,7 +2,7 @@
   "welcomeHero": {
     "companyTagline": "Um Assistente de Leitura Personalizado para Cada Criança",
     "carousel": {
-      "item1": "Time 2 Read pode ser usado como um assistente de leitura mágico em viagens de verão!",
+      "item1": "Time-2-Read pode ser usado como um assistente de leitura mágico em viagens de verão!",
       "item2": "Perfeito para o tempo de leitura após a escola - torne o dever de casa divertido e envolvente!",
       "item3": "Leve suas histórias para qualquer lugar - desde intervalos no playground até piqueniques em família!",
       "item4": "Melhore as visitas à biblioteca com histórias digitais interativas que inspiram a leitura!"
@@ -25,7 +25,7 @@
     "signInTooltip": "Entre ou crie uma conta para histórias ilimitadas, imagens de IA e recursos premium!",
     "safetyNote": "Histórias seguras, divertidas e educacionais para crianças de todas as idades",
     "footer": {
-      "companyName": "Time 2 Read LLC",
+      "companyName": "Time-2-Read LLC",
       "description": "Criando experiências de leitura mágicas para crianças",
       "copyright": "Todos os direitos reservados.",
       "privacyPolicy": "Política de Privacidade",
@@ -48,7 +48,7 @@
   "loginScreen": {
     "title": {
       "upgrade": "Atualize para Premium",
-      "join": "Junte-se ao Time2Read Premium"
+      "join": "Junte-se ao Time-2-Read Premium"
     },
     "subtitle": {
       "upgrade": "Continue com suas informações salvas e desbloqueie histórias ilimitadas",

@@ -5,7 +5,7 @@
     "subtitle": "Discover magical stories created specifically for your child's interests, reading level, and cultural background.",
     "companyTagline": "A Personalized Reading Assistant for Every Child",
     "carousel": {
-      "item1": "Time 2 Read can be used as a magical summer reading assistant on road trips!",
+      "item1": "Time-2-Read can be used as a magical summer reading assistant on road trips!",
       "item2": "Perfect for cozy home reading sessions with personalized stories.",
       "item3": "Great for outdoor adventures - read anywhere, anytime!",
       "item4": "Transform any space into a magical library experience."
@@ -17,7 +17,7 @@
     "signInTooltip": "Sign in or create account for unlimited stories, AI images & premium features!",
     "safetyNote": "Safe, educational content for all children.",
     "footer": {
-      "companyName": "Time 2 Read",
+      "companyName": "Time-2-Read",
       "description": "Making reading fun and accessible for every child.",
       "copyright": "All rights reserved.",
       "privacyPolicy": "Privacy Policy",
@@ -341,7 +341,7 @@
   },
   "readingTutorial": {
     "step1": {
-      "title": "Welcome to Time2Read!",
+      "title": "Welcome to Time-2-Read!",
       "description": "Let's take a quick tour to help you create amazing personalized stories for your child."
     },
     "step2": {

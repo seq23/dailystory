@@ -138,7 +138,15 @@ describe("marketing copy", () => {
   it("footer pitches the paid plan to parents and sends schools to contact us", () => {
     const src = read("src/components/WelcomeHero.tsx");
     expect(src).not.toMatch(/Free for personal/);
-    expect(src).toMatch(/4–8-year-olds/);
+    // Ages 3 to 15 everywhere (Oct 2026), never the old 4–8 pitch.
+    expect(src).toMatch(/ages 3 to 15/);
+    for (const f of ["src/components/WelcomeHero.tsx", "src/components/PricingSection.tsx", "src/components/StoryPaywall.tsx"]) {
+      expect(read(f), f).not.toMatch(/4–8|4-8-year/);
+    }
+    // Every contact address is on the real domain.
+    for (const f of ["src/components/WelcomeHero.tsx", "src/components/AccountDeletion.tsx", "src/components/CookieConsent.tsx", "src/components/SubscriptionManager.tsx"]) {
+      expect(read(f), f).not.toMatch(/time2read\.(app|com|example)/);
+    }
     expect(src).toMatch(/Schools: <a href="mailto:hello@time-2-read\.com[^"]*"[^>]*>contact us<\/a>/);
   });
 

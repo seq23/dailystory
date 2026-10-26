@@ -19,26 +19,12 @@ export class ImageFallbackService {
     text: '📖 Story Illustration'
   };
 
-  // Static image URLs - 6 variations of "Children with 'Images Not Working' signs"
+  // A calm "Picture coming soon" page (public/story-picture-placeholder.svg). The old
+  // "Images Not Working" signs were a developer notice that children saw.
   private static readonly FALLBACK_IMAGES_BASE64 = [
-    // Variation 1 - Original "Images Not Working" child illustration
-    "/assets/images-not-working-1.webp",
-    
-    // Variation 2 - Different child holding sign
-    "/assets/images-not-working-2.webp",
-    
-    // Variation 3 - Another child illustration
-    "/assets/images-not-working-3.webp",
-    
-    // Variation 4 - Fourth child variation 
-    "/assets/images-not-working-5.webp",
-    
-    // Variation 5 - Fifth child illustration
-    "/assets/images-not-working-6.webp",
-    
-    // Variation 6 - Final child variation
-    "/assets/images-not-working-7.webp"
+    "/story-picture-placeholder.svg",
   ];
+
 
   /**
    * Get a fallback image by index (0-5)
@@ -83,6 +69,7 @@ export class ImageFallbackService {
     
     return (
       this.FALLBACK_IMAGES_BASE64.includes(url) ||
+      url.includes('story-picture-placeholder') ||
       url.includes('images-not-working-')
     );
   }

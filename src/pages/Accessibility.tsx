@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const Accessibility = () => {
   useEffect(() => {
     const title = "Accessibility Statement | Spry VSL LLC";
-    const desc = "Our commitment to digital accessibility: the accessibility features Time2Read offers, the standards we work to, and how to tell us about a barrier.";
+    const desc = "Our commitment to digital accessibility: the accessibility features Time-2-Read offers, the standards we work to, and how to tell us about a barrier.";
     document.title = title;
 
     let meta = document.querySelector('meta[name="description"]');
@@ -149,7 +149,7 @@ const Accessibility = () => {
           </div>
 
           <h2>Accessibility Features</h2>
-          <p>Time2Read includes the following accessibility features:</p>
+          <p>Time-2-Read includes the following accessibility features:</p>
           <ul>
             <li>
               <strong>Responsive Design:</strong> Our platform works on devices of all sizes, from mobile
@@ -191,7 +191,7 @@ const Accessibility = () => {
           </ul>
 
           <h2>Compatibility</h2>
-          <p>Time2Read is designed to be compatible with:</p>
+          <p>Time-2-Read is designed to be compatible with:</p>
           <ul>
             <li>Major web browsers (Chrome, Firefox, Safari, Edge)</li>
             <li>Screen readers (NVDA, JAWS, VoiceOver)</li>
@@ -201,7 +201,7 @@ const Accessibility = () => {
 
           <h2>Feedback</h2>
           <p>
-            We welcome your feedback on the accessibility of Time2Read. Please let us know if you
+            We welcome your feedback on the accessibility of Time-2-Read. Please let us know if you
             encounter accessibility barriers:
           </p>
 
@@ -241,7 +241,7 @@ const Accessibility = () => {
 
           <h2>Assessment and Remediation</h2>
           <p>
-            Time2Read assesses accessibility through a combination of automated testing tools and
+            Time-2-Read assesses accessibility through a combination of automated testing tools and
             manual testing. We are committed to ongoing improvement and regularly review and update
             our accessibility practices.
           </p>

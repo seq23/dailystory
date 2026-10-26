@@ -90,12 +90,12 @@ export default function VerifyConsent() {
           {(status === "success" || status === "already_verified") && (
             <div className="space-y-4">
               <p className="text-muted-foreground">
-                Thank you! Your child can now use Time2Read with full features.
+                Thank you! Your child can now use Time-2-Read with full features.
               </p>
               <Link to="/">
                 <Button className="gap-2">
                   <ArrowLeft className="w-4 h-4" />
-                  Go to Time2Read
+                  Go to Time-2-Read
                 </Button>
               </Link>
             </div>

@@ -17,15 +17,24 @@ export const OG_IMAGE_URL = `${SITE_URL}/og-image.png`;
  * product's public source repository is the one that exists today. Add a social
  * profile here (and in index.html) the day one is opened.
  */
+export const ALTERNATE_NAMES = ["Time 2 Read", "time-2-read.com"] as const;
+/** The line on the homepage and in the footer. */
+export const MADE_BY_LINE = "Time-2-Read is made by Spry Labs in the USA.";
+
 export const SAME_AS = ["https://github.com/seq23/dailystory"] as const;
 
 export const ORGANIZATION = {
   "@type": "Organization",
   "@id": ORG_ID,
-  name: "Time2Read",
+  name: "Time-2-Read",
+  // Other ways people type the name, so search engines join them to this site
+  // (another site uses a similar name without the dashes).
+  alternateName: [...ALTERNATE_NAMES],
   legalName: "Spry VSL LLC",
   url: `${SITE_URL}/`,
   logo: LOGO_URL,
+  brand: { "@type": "Brand", name: "Spry Labs" },
+  address: { "@type": "PostalAddress", addressCountry: "US" },
   email: "privacy@time-2-read.com",
   sameAs: [...SAME_AS],
 } as const;
@@ -33,7 +42,8 @@ export const ORGANIZATION = {
 export const WEBSITE = {
   "@type": "WebSite",
   "@id": WEBSITE_ID,
-  name: "Time2Read",
+  name: "Time-2-Read",
+  alternateName: [...ALTERNATE_NAMES],
   url: `${SITE_URL}/`,
   inLanguage: "en-US",
   publisher: { "@id": ORG_ID },
@@ -45,7 +55,7 @@ const price = (cents: number) => (cents / 100).toFixed(2);
 export const SOFTWARE_APPLICATION = {
   "@type": "SoftwareApplication",
   "@id": APP_ID,
-  name: "Time2Read",
+  name: "Time-2-Read",
   url: `${SITE_URL}/`,
   applicationCategory: "EducationalApplication",
   operatingSystem: "Web browser",

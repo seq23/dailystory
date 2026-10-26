@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, Check, Sparkles } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,9 +45,7 @@ export function StoryPaywall() {
   return (
     <div className="max-w-3xl mx-auto py-6" data-testid="story-paywall">
       <div className="text-center mb-8">
-        <div className="inline-flex p-3 rounded-full bg-primary/10 mb-3">
-          <BookOpen className="w-8 h-8 text-primary" />
-        </div>
+        <img src="/icon-192.png" alt="Time-2-Read logo" className="mx-auto mb-3 h-14 w-14" />
         <h2 className="text-2xl md:text-3xl font-bold text-foreground">
           You've read your {FREE_STORY_LIMIT} free stories
         </h2>
@@ -99,7 +97,8 @@ export function StoryPaywall() {
         </p>
       )}
 
-      <p className="text-xs text-muted-foreground text-center mt-6">
+      <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">🔒 Secure checkout in US dollars, by Stripe.</p>
+      <p className="text-xs text-muted-foreground text-center mt-2">
         Card required to start the trial. Includes{" "}
         <a href={HEYGETONMYLEVEL_URL} target="_blank" rel="noopener noreferrer" className="underline">
           HeyGetOnMyLevel

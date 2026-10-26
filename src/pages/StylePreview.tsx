@@ -51,7 +51,7 @@ const getFriendlyDifficultyLabel = (d: string) => {
 };
 const StylePreview: React.FC = () => {
   useEffect(() => {
-    document.title = "Reader Style Preview | Time2Read";
+    document.title = "Reader Style Preview | Time-2-Read";
     const desc = "Preview Classic Storybook, Modern Card, and Hardcover Spread styles for the reader.";
     let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (!meta) {

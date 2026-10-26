@@ -42,13 +42,13 @@ const firstGuides: LandingPageConfig[] = [
     slug: "20-minute-reading-log",
     kind: "guide",
     variant: "readingLog",
-    title: "Free Printable 20-Minute Reading Log + Reading Timer | Time2Read",
+    title: "Free Printable 20-Minute Reading Log and Timer | Time-2-Read",
     metaDescription:
-      "A free printable 20-minute reading log for kids, with a parent or teacher initials column. Plus a built-in 20-minute reading timer inside every Time2Read story.",
+      "A free printable 20-minute reading log for kids, with a parent or teacher initials column, plus a 20-minute reading timer in every Time-2-Read story.",
     h1: "Free Printable 20-Minute Reading Log",
     navLabel: "20-minute reading log (printable)",
     heroSubtitle:
-      "Print the weekly log below, read for 20 minutes, fill in a row. When some of those minutes happen on a screen, make them minutes of real reading: every Time2Read story has a 20-minute timer built in.",
+      "Print the weekly log below, read for 20 minutes, fill in a row. When some of those minutes happen on a screen, make them minutes of real reading: every Time-2-Read story has a 20-minute timer built in.",
     heroImage: homeReading,
     heroImageAlt: "Child reading at home with a parent nearby",
     intro: [
@@ -57,7 +57,7 @@ const firstGuides: LandingPageConfig[] = [
     ],
     benefits: [
       { title: "Print it free", body: "One page, seven days, a column for minutes and a column for a grown-up's initials." },
-      { title: "A timer that's already running", body: "Open a Time2Read story and a 20-minute timer starts. Pause it, end early, or keep reading." },
+      { title: "A timer that's already running", body: "Open a Time-2-Read story and a 20-minute timer starts. Pause it, end early, or keep reading." },
       { title: "Minutes of actual reading", body: "The 20 minutes of screen time that's actually reading: your child reads a story where they are the main character." },
     ],
     sections: [
@@ -81,13 +81,13 @@ const firstGuides: LandingPageConfig[] = [
       {
         heading: "For teachers: an independent reading minutes tracker",
         paragraphs: [
-          "The printable works as a take-home independent reading log: one sheet per student per week, with an initials column for a parent or guardian. Students who read on Time2Read can copy the minutes from the story timer onto the sheet. Whether screen reading counts toward a class goal is your call.",
+          "The printable works as a take-home independent reading log: one sheet per student per week, with an initials column for a parent or guardian. Students who read on Time-2-Read can copy the minutes from the story timer onto the sheet. Whether screen reading counts toward a class goal is your call.",
         ],
       },
       {
-        heading: "Where Time2Read fits",
+        heading: "Where Time-2-Read fits",
         paragraphs: [
-          "If your child is going to have some screen time tonight anyway, Time2Read makes it reading time. Each story is new, illustrated on every page, written at the reading level you choose, and stars your child as the main character. Tap any word to hear it, use phonics help for tricky ones, or turn on read-aloud narration. The 20-minute timer floats on the page, so your child can see how far they've come.",
+          "If your child is going to have some screen time tonight anyway, Time-2-Read makes it reading time. Each story is new, illustrated on every page, written at the reading level you choose, and stars your child as the main character. Tap any word to hear it, use phonics help for tricky ones, or turn on read-aloud narration. The 20-minute timer floats on the page, so your child can see how far they've come.",
         ],
       },
     ],
@@ -98,8 +98,8 @@ const firstGuides: LandingPageConfig[] = [
         a: "Twenty minutes is a common school goal, not a magic number. What research does show is that time spent reading books is strongly linked to reading growth, and that many children read very little on most days. A steady daily habit matters more than any one long session.",
       },
       {
-        q: "Do minutes read on Time2Read count on a reading log?",
-        a: "Time2Read's timer shows exactly how many minutes your child read, so you can write them in. Whether screen reading counts toward a class goal is up to your child's teacher.",
+        q: "Do minutes read on Time-2-Read count on a reading log?",
+        a: "Time-2-Read's timer shows exactly how many minutes your child read, so you can write them in. Whether screen reading counts toward a class goal is up to your child's teacher.",
       },
       {
         q: "Is the reading log really free? Do I have to sign up?",
@@ -107,15 +107,15 @@ const firstGuides: LandingPageConfig[] = [
       },
       {
         q: "What ages is this log for?",
-        a: "It works for any child who can write a title or draw a picture in the box, and younger children can fill it in with a grown-up. Time2Read stories are written for ages 3 to 15.",
+        a: "It works for any child who can write a title or draw a picture in the box, and younger children can fill it in with a grown-up. Time-2-Read stories are written for ages 3 to 15.",
       },
-      { q: "How much does Time2Read cost?", a: pricingAnswer },
+      { q: "How much does Time-2-Read cost?", a: pricingAnswer },
     ],
   },
   {
     slug: "my-child-hates-reading",
     kind: "guide",
-    title: "My Child Hates Reading: What Actually Helps | Time2Read",
+    title: "My Child Hates Reading: What Actually Helps | Time-2-Read",
     metaDescription:
       "If your child hates reading, find out why first. Practical steps from literacy research: follow their interests, pick the right level, know when to ask.",
     h1: "My Child Hates Reading: What Actually Helps",
@@ -164,9 +164,9 @@ const firstGuides: LandingPageConfig[] = [
         ],
       },
       {
-        heading: "Where Time2Read can help",
+        heading: "Where Time-2-Read can help",
         paragraphs: [
-          "Time2Read writes a brand-new story around what your child is into (dinosaurs, football, space, horses), with your child as the main character and an illustration on every page. You set the reading level, so the story is neither too easy nor too hard. Tap any word to hear it read aloud, or use phonics help to sound it out, so a hard word doesn't end the session. A 20-minute timer makes the goal clear and finite.",
+          "Time-2-Read writes a brand-new story around what your child is into (dinosaurs, football, space, horses), with your child as the main character and an illustration on every page. You set the reading level, so the story is neither too easy nor too hard. Tap any word to hear it read aloud, or use phonics help to sound it out, so a hard word doesn't end the session. A 20-minute timer makes the goal clear and finite.",
           "It's screen time, and we won't pretend otherwise. The point is that it's the 20 minutes of screen time that's actually reading.",
         ],
       },
@@ -193,15 +193,15 @@ const firstGuides: LandingPageConfig[] = [
       },
       {
         q: "Will a reading app fix a reluctant reader?",
-        a: "No app fixes reluctance on its own. Time2Read can help by putting your child at the center of a story about their interests, matching the reading level, and giving read-aloud and phonics help for tricky words. The habit still comes from you.",
+        a: "No app fixes reluctance on its own. Time-2-Read can help by putting your child at the center of a story about their interests, matching the reading level, and giving read-aloud and phonics help for tricky words. The habit still comes from you.",
       },
-      { q: "How much does Time2Read cost?", a: pricingAnswer },
+      { q: "How much does Time-2-Read cost?", a: pricingAnswer },
     ],
   },
   {
     slug: "stories-where-your-child-is-the-main-character",
     kind: "guide",
-    title: "Stories Where Your Child Is the Main Character | Time2Read",
+    title: "Stories Where Your Child Is the Main Character | Time-2-Read",
     metaDescription:
       "Personalized stories where your child is the hero: their name, interests and reading level, a new illustrated story every time, with read-aloud help.",
     h1: "Stories Where Your Child Is the Main Character",
@@ -211,8 +211,8 @@ const firstGuides: LandingPageConfig[] = [
     heroImage: heroDiverse,
     heroImageAlt: "Children reading a personalized illustrated story",
     intro: [
-      "Kids light up when they see themselves in a story. Personalized books have been around for years, usually as a printed book with your child's name dropped into a fixed plot. Time2Read takes the idea further: it writes a new story, around your child, every time.",
-      "Tell it your child's first name (a nickname is fine), what they love and how well they read. Time2Read writes an illustrated story where they're the hero, at a level they can actually read.",
+      "Kids light up when they see themselves in a story. Personalized books have been around for years, usually as a printed book with your child's name dropped into a fixed plot. Time-2-Read takes the idea further: it writes a new story, around your child, every time.",
+      "Tell it your child's first name (a nickname is fine), what they love and how well they read. Time-2-Read writes an illustrated story where they're the hero, at a level they can actually read.",
     ],
     benefits: [
       { title: "They're the hero", body: "Your child's name and interests drive the plot, not just the cover." },
@@ -232,7 +232,7 @@ const firstGuides: LandingPageConfig[] = [
       {
         heading: "Printed personalized books vs. personalized story apps",
         paragraphs: [
-          "A printed personalized book is a lovely keepsake: one story, made to order and shipped to your door. A story app like Time2Read is better for daily reading practice: the stories keep coming, the level can grow with your child, and help with hard words is built in. Many families find a place for both.",
+          "A printed personalized book is a lovely keepsake: one story, made to order and shipped to your door. A story app like Time-2-Read is better for daily reading practice: the stories keep coming, the level can grow with your child, and help with hard words is built in. Many families find a place for both.",
         ],
       },
       {
@@ -252,7 +252,7 @@ const firstGuides: LandingPageConfig[] = [
     faqs: [
       {
         q: "Can my child really be the main character?",
-        a: "Yes. Time2Read builds each story around your child's first name (or a nickname) and their interests, and they are the hero of the plot, with an illustration on every page.",
+        a: "Yes. Time-2-Read builds each story around your child's first name (or a nickname) and their interests, and they are the hero of the plot, with an illustration on every page.",
       },
       {
         q: "What ages are the personalized stories for?",
@@ -260,7 +260,7 @@ const firstGuides: LandingPageConfig[] = [
       },
       {
         q: "Is it a printed book?",
-        a: "No. Time2Read stories are read on a phone, tablet or computer, and a new story can be made whenever your child wants one.",
+        a: "No. Time-2-Read stories are read on a phone, tablet or computer, and a new story can be made whenever your child wants one.",
       },
       {
         q: "What do I need to share about my child?",

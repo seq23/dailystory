@@ -16,7 +16,7 @@ const Index = () => {
 
   useEffect(() => {
     const url = `${SITE_URL}/`;
-    const title = "Time2Read - Interactive Reading Adventures for Kids";
+    const title = "Time-2-Read - Interactive Reading Adventures for Kids";
     const desc = "Personalized AI reading adventures for kids 3-15. Interactive stories with illustrations, phonics, and text-to-speech to build reading confidence.";
 
     document.title = title;
@@ -67,9 +67,15 @@ const Index = () => {
   return (
     <div className="homepage">
       <AuthWrapper />
-      <HomeIntro />
-      <ReadingCollectionsLinks />
-      <SiteFooterNav />
+      {/* Marketing text is for visitors and crawlers (prerendered signed out);
+          a signed-in family reading a story never scrolls into it. */}
+      {!isAuthenticated && (
+        <>
+          <HomeIntro />
+          <ReadingCollectionsLinks />
+          <SiteFooterNav />
+        </>
+      )}
     </div>
   );
 };

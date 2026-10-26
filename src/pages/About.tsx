@@ -6,11 +6,11 @@ import { SiteFooterNav } from "@/components/SiteFooterNav";
 import { FREE_STORY_LIMIT, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
 import { SITE_URL } from "@/config/site";
 
-export const ABOUT_TITLE = "About Time2Read: Personalized Reading Stories for Kids";
+export const ABOUT_TITLE = "About Time-2-Read: Personalized Reading Stories for Kids";
 export const ABOUT_DESCRIPTION =
-  "Who makes Time2Read, what it does and how it works: personalized illustrated stories with your child as the hero, read-aloud help and a reading timer.";
+  "Who makes Time-2-Read, what it does and how it works: personalized illustrated stories with your child as the hero, read-aloud help and a reading timer.";
 
-/** Who is behind Time2Read and what it does. Linked from the homepage and the site footer. */
+/** Who is behind Time-2-Read and what it does. Linked from the homepage and the site footer. */
 const About = () => {
   useEffect(() => {
     document.title = ABOUT_TITLE;
@@ -39,17 +39,17 @@ const About = () => {
             Back to Home
           </Button>
         </Link>
-        <h1 className="text-3xl md:text-4xl font-bold mb-6">About Time2Read</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-6">About Time-2-Read</h1>
         <section className="space-y-4 text-foreground/80 leading-relaxed">
           <p>
-            Time2Read makes a new illustrated story for your child every time they read. The story is built around
+            Time-2-Read makes a new illustrated story for your child every time they read. The story is built around
             them: their name, the things they love and the reading level they are at today. It is made for children
             from about 3 to 15, from pre-readers who listen along to confident readers who want a challenge.
           </p>
           <h2 className="text-xl font-semibold text-foreground pt-2">How it works</h2>
           <ul className="list-disc pl-6 space-y-1">
             <li>Tell us your child's name, age and interests, and pick a reading level.</li>
-            <li>Time2Read writes a story with your child as the main character, with a picture on every page.</li>
+            <li>Time-2-Read writes a story with your child as the main character, with a picture on every page.</li>
             <li>Tap any word to hear it, with phonics help for sounding out tricky words.</li>
             <li>Narration reads the story aloud and highlights each word as it is spoken.</li>
             <li>A 20-minute reading timer is built into every story.</li>
@@ -64,7 +64,7 @@ const About = () => {
           </p>
           <h2 className="text-xl font-semibold text-foreground pt-2">Who makes it</h2>
           <p>
-            Time2Read is built and run by Spry VSL LLC. We take children's privacy seriously: read our{" "}
+            Time-2-Read is built and run by Spry VSL LLC. We take children's privacy seriously: read our{" "}
             <Link to="/privacy" className="underline hover:text-primary">privacy policy</Link>, our{" "}
             <Link to="/ferpa" className="underline hover:text-primary">FERPA notes for schools</Link> and our{" "}
             <Link to="/accessibility" className="underline hover:text-primary">accessibility statement</Link>.

@@ -34,3 +34,15 @@ describe("developer widgets are gated", () => {
     expect(typeof devToolsAllowed()).toBe("boolean");
   });
 });
+
+describe("no developer notices in the story", () => {
+  it("a missing picture shows a calm placeholder, never 'Images Not Working' or a 'Fallback' tag", () => {
+    const svc = read("src/services/ImageFallbackService.ts");
+    const list = svc.slice(svc.indexOf("FALLBACK_IMAGES_BASE64 = ["), svc.indexOf("];", svc.indexOf("FALLBACK_IMAGES_BASE64 = [")));
+    expect(list).toMatch(/"\/story-picture-placeholder\.svg"/);
+    expect(list).not.toMatch(/images-not-working/);
+    expect(read("public/story-picture-placeholder.svg")).toMatch(/Picture coming soon/);
+    expect(read("src/components/ImageWithFallback.tsx")).toMatch(/\{isUsingFallback && devToolsAllowed\(\) && \(/);
+    expect(read("src/components/CleanStoryDisplay.tsx")).not.toMatch(/title: "Images are down"/);
+  });
+});

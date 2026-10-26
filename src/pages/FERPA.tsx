@@ -8,11 +8,11 @@ import { Badge } from "@/components/ui/badge";
 
 export default function FERPA() {
   useEffect(() => {
-    document.title = "FERPA Compliance for Schools and Teachers | Time2Read";
+    document.title = "FERPA Compliance for Schools and Teachers | Time-2-Read";
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Time2Read FERPA compliance information for schools and educational institutions. Learn how we protect student data and education records.');
+      metaDescription.setAttribute('content', 'Time-2-Read FERPA compliance information for schools and educational institutions. Learn how we protect student data and education records.');
     }
   }, []);
 
@@ -69,14 +69,14 @@ export default function FERPA() {
             </Badge>
           </div>
           <p className="text-muted-foreground mb-4">
-            Time2Read is committed to protecting student privacy and complying with the Family Educational 
+            Time-2-Read is committed to protecting student privacy and complying with the Family Educational 
             Rights and Privacy Act (FERPA). This page outlines our practices for schools and educational 
             institutions using our platform.
           </p>
           <Card className="bg-blue-50 border-blue-200">
             <CardContent className="pt-4">
               <p className="text-sm text-blue-800">
-                <strong>For Schools:</strong> If you're considering Time2Read for your classroom or institution, 
+                <strong>For Schools:</strong> If you're considering Time-2-Read for your classroom or institution, 
                 we're happy to discuss our data practices, sign data protection agreements, and work with your 
                 IT and legal teams to ensure compliance with your requirements.
               </p>
@@ -135,7 +135,7 @@ export default function FERPA() {
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-foreground mb-4">Student Data We Collect</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            When used in educational settings, Time2Read collects only the following:
+            When used in educational settings, Time-2-Read collects only the following:
           </p>
           
           <div className="space-y-4">
@@ -246,7 +246,7 @@ export default function FERPA() {
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-foreground mb-4">Annual Notification</h2>
           <p className="text-sm text-muted-foreground">
-            Schools using Time2Read should include information about our service in their annual 
+            Schools using Time-2-Read should include information about our service in their annual 
             FERPA notification to parents. We can provide template language for this notification 
             upon request.
           </p>
@@ -261,7 +261,7 @@ export default function FERPA() {
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">School Partnership Inquiries</h3>
                    <p className="text-sm text-muted-foreground mb-3">
-                    For schools and districts interested in using Time2Read, or to request a Data 
+                    For schools and districts interested in using Time-2-Read, or to request a Data 
                     Protection Agreement, please contact our privacy team.
                   </p>
                   <div className="space-y-2">

@@ -233,6 +233,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
         {checkoutError && (
           <p role="alert" className="text-center text-sm text-destructive mb-4">{checkoutError}</p>
         )}
+        <p className="text-xs text-muted-foreground text-center mb-6" data-testid="secure-checkout">🔒 Secure checkout in US dollars, by Stripe.</p>
         <RedeemCodeCard className="max-w-xl mx-auto mb-8" />
 
         {/* Back Button */}

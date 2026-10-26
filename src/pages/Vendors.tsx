@@ -93,7 +93,7 @@ const vendors: VendorInfo[] = [
 const Vendors = () => {
   useEffect(() => {
     const title = "Third-Party Vendors | Spry VSL LLC";
-    const desc = "The third-party services Time2Read relies on to run, what each vendor does for us, and the kind of data it handles on our behalf.";
+    const desc = "The third-party services Time-2-Read relies on to run, what each vendor does for us, and the kind of data it handles on our behalf.";
     document.title = title;
 
     let meta = document.querySelector('meta[name="description"]');
@@ -153,7 +153,7 @@ const Vendors = () => {
           <h1 className="text-3xl md:text-4xl font-bold">Third-Party Vendors</h1>
         </div>
         <p className="text-muted-foreground mt-2">
-          Transparency about the services that power Time2Read
+          Transparency about the services that power Time-2-Read
         </p>
         <p className="text-sm text-muted-foreground">
           Last updated: {new Date().getFullYear()}-01-01
@@ -163,7 +163,7 @@ const Vendors = () => {
       <section className="container mx-auto px-4 pb-12">
         <article className="prose max-w-none dark:prose-invert mb-8">
           <p className="lead">
-            Time2Read partners with trusted third-party service providers to deliver our platform.
+            Time-2-Read partners with trusted third-party service providers to deliver our platform.
             This page provides transparency about who these vendors are, what data they may receive,
             and how they protect your information.
           </p>
@@ -236,7 +236,7 @@ const Vendors = () => {
         <article className="prose max-w-none dark:prose-invert mt-12">
           <h2>For Educational Institutions</h2>
           <p>
-            If you are an educational institution considering Time2Read, we can provide:
+            If you are an educational institution considering Time-2-Read, we can provide:
           </p>
           <ul>
             <li>Copies of our Data Processing Agreements with vendors</li>

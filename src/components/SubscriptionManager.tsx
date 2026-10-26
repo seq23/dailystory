@@ -256,6 +256,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                   </CardContent>
                 </Card>
               </div>
+              <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">🔒 Secure checkout in US dollars, by Stripe.</p>
               </div>
             )}
           </CardContent>

@@ -22,8 +22,24 @@ describe("static shell structured data", () => {
   });
 
   it("declares the Organization and the WebSite for time-2-read.com", () => {
-    expect(byType("Organization")).toMatchObject({ name: "Time2Read", url: "https://time-2-read.com/" });
-    expect(byType("WebSite")).toMatchObject({ name: "Time2Read", url: "https://time-2-read.com/" });
+    expect(byType("Organization")).toMatchObject({ name: "Time-2-Read", url: "https://time-2-read.com/" });
+    expect(byType("WebSite")).toMatchObject({ name: "Time-2-Read", url: "https://time-2-read.com/" });
+  });
+
+  // 26 Oct 2026: a child landed on a different "Time2Read" site. The name carries its
+  // dashes, the other spellings point here, and the maker and country are stated.
+  it("names the brand Time-2-Read, joins the other spellings, and says Spry Labs, US", () => {
+    for (const t of ["Organization", "WebSite"]) {
+      expect(byType(t).alternateName, t).toEqual(["Time 2 Read", "time-2-read.com"]);
+    }
+    const org = byType("Organization");
+    expect(org.brand).toEqual({ "@type": "Brand", name: "Spry Labs" });
+    expect(org.address).toEqual({ "@type": "PostalAddress", addressCountry: "US" });
+    expect(org.alternateName).toEqual([...ORGANIZATION.alternateName]);
+    expect(org.brand).toEqual(ORGANIZATION.brand);
+    expect(org.address).toEqual(ORGANIZATION.address);
+    // no sameAs we have not verified: only live, own URLs
+    for (const u of org.sameAs) expect(u).toMatch(/^https:\/\/(github\.com\/seq23\/|time-2-read\.com)/);
     expect(byType("WebSite").publisher["@id"]).toBe(byType("Organization")["@id"]);
   });
 
@@ -55,7 +71,7 @@ describe("static shell structured data", () => {
 describe("per-page structured data (src/seo/schema.ts)", () => {
   it("every page gets a WebPage; inner pages also get a BreadcrumbList", () => {
     const home = pageGraph("/", "Home title", "d")["@graph"].map((n: any) => n["@type"]);
-    const inner = pageGraph("/ferpa", "FERPA | Time2Read", "d")["@graph"].map((n: any) => n["@type"]);
+    const inner = pageGraph("/ferpa", "FERPA | Time-2-Read", "d")["@graph"].map((n: any) => n["@type"]);
     expect(home).toContain("WebPage");
     expect(home).not.toContain("BreadcrumbList");
     expect(inner).toEqual(expect.arrayContaining(["WebPage", "BreadcrumbList"]));

@@ -107,14 +107,15 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         disabled={!canGoPrevious}
         variant="outline"
         size="default"
-        className="navigation-button h-11 px-4 font-semibold"
+        className="navigation-button h-11 px-2 sm:px-4 font-semibold shrink-0"
       >
-        <ChevronLeft className="w-5 h-5 mr-1" />
-        Previous
+        <ChevronLeft className="w-5 h-5 sm:mr-1" />
+        <span className="hidden sm:inline">Previous</span>
+        <span className="sm:hidden">Back</span>
       </Button>
 
       {/* Center Controls with Audio Buttons */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0">
         {/* Read to Me Button - Left of page numbers - Guest Users Only */}
         {!isPremium && audioEngineRef && onAudioStateChange && onAudioPlayed && (
           <div className="xl:flex hidden">
@@ -136,7 +137,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         
         {/* Page Indicator */}
         <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-          Page {currentPage + 1} of {totalPages}
+          <span className="hidden sm:inline">Page </span>{currentPage + 1} of {totalPages}
         </span>
         
         {/* Help Me Read Button - Right of page numbers - Guest Users Only */}
@@ -175,7 +176,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
           disabled={!canGoNext || isLoadingNextPage}
           variant="outline"
           size="default"
-          className="navigation-button h-11 px-4 font-semibold"
+          className="navigation-button h-11 px-2 sm:px-4 font-semibold shrink-0"
         >
           {isLoadingNextPage ? (
             <>

@@ -206,14 +206,14 @@ const handleBackToWelcome = () => {
   switch (currentState) {
     case "welcome":
       return (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in min-h-[100dvh]">
           <WelcomeHero onGetStarted={handleGetStarted} onSignIn={handleCreateAccount} />
         </div>
       );
     
     case "form":
       return (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in min-h-[100dvh]">
           <MultiStepUserForm 
             onSubmit={handleFormSubmit} 
             onBack={handleBackToWelcome}
@@ -224,7 +224,7 @@ const handleBackToWelcome = () => {
     
     case "reading":
       return userInfo ? (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in min-h-[100dvh]">
           <FreeReadingSession 
             userInfo={userInfo}
             onUpgrade={handleUpgrade}
@@ -251,7 +251,7 @@ onSessionEnded={async (stats) => {
     
     case "upgrade":
       return (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in min-h-[100dvh]">
           <PremiumUpgrade
             onBack={handleBackToReading}
             onSubscribe={handleSubscribe}
@@ -261,7 +261,7 @@ onSessionEnded={async (stats) => {
     
     case "login":
       return (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in min-h-[100dvh]">
           <LoginScreen 
             userInfo={userInfo} 
             onBack={userInfo ? handleBackToReading : handleBackToWelcome} 
@@ -271,7 +271,7 @@ onSessionEnded={async (stats) => {
     
     default:
       return (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in min-h-[100dvh]">
           <WelcomeHero onGetStarted={handleGetStarted} />
         </div>
       );

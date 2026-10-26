@@ -2,7 +2,7 @@
   "welcomeHero": {
     "companyTagline": "为每个孩子提供个性化阅读助手",
     "carousel": {
-      "item1": "Time 2 Read可以作为夏日旅行中的神奇阅读助手使用！",
+      "item1": "Time-2-Read可以作为夏日旅行中的神奇阅读助手使用！",
       "item2": "完美适合课后阅读时间 - 让作业变得有趣又吸引人！",
       "item3": "随时随地带着你的故事 - 从游乐场休息到家庭野餐！",
       "item4": "通过激发阅读兴趣的互动数字故事来增强图书馆访问体验！"
@@ -25,7 +25,7 @@
     "signInTooltip": "登录或创建账户，享受无限故事、AI图像和高级功能！",
     "safetyNote": "为所有年龄段的孩子提供安全、有趣、有教育意义的故事",
     "footer": {
-      "companyName": "Time 2 Read LLC",
+      "companyName": "Time-2-Read LLC",
       "description": "为儿童创造神奇的阅读体验",
       "copyright": "版权所有。",
       "privacyPolicy": "隐私政策",
@@ -48,7 +48,7 @@
   "loginScreen": {
     "title": {
       "upgrade": "升级到高级版",
-      "join": "加入Time2Read高级版"
+      "join": "加入Time-2-Read高级版"
     },
     "subtitle": {
       "upgrade": "继续使用您保存的信息并解锁无限故事",

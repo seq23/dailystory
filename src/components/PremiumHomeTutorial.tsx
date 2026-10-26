@@ -197,7 +197,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
           <span className="text-sm font-medium text-primary">Premium Member</span>
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-          Welcome to Time2Read, {userName}!
+          Welcome to Time-2-Read, {userName}!
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Here's everything you can do with your premium account. This guide is designed for parents and teachers — no tech skills needed!

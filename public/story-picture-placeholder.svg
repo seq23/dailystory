@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="A picture for this page is on its way">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e0f2fe"/>
+      <stop offset="1" stop-color="#ede9fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="48" fill="url(#sky)"/>
+  <g fill="#fcd34d">
+    <path d="M220 230l14 30 33 4-24 23 6 33-29-16-29 16 6-33-24-23 33-4z"/>
+    <path d="M800 190l10 22 24 3-17 16 4 24-21-12-21 12 4-24-17-16 24-3z"/>
+    <path d="M760 360l8 17 19 2-14 13 4 19-17-9-17 9 4-19-14-13 19-2z"/>
+  </g>
+  <g transform="translate(512 560)">
+    <path d="M-260 -120 Q-130 -170 0 -120 L0 170 Q-130 120 -260 170 Z" fill="#38bdf8"/>
+    <path d="M260 -120 Q130 -170 0 -120 L0 170 Q130 120 260 170 Z" fill="#0ea5e9"/>
+    <path d="M-230 -95 Q-120 -135 -15 -95 L-15 140 Q-120 100 -230 140 Z" fill="#f8fafc"/>
+    <path d="M230 -95 Q120 -135 15 -95 L15 140 Q120 100 230 140 Z" fill="#f1f5f9"/>
+  </g>
+  <text x="512" y="860" text-anchor="middle" font-family="Fredoka, Arial, sans-serif" font-size="54" fill="#1e3a8a">Picture coming soon</text>
+</svg>

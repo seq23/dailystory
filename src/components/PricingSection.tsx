@@ -23,7 +23,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
             Simple, transparent pricing
           </h1>
           <p className="text-muted-foreground mt-3">
-            Built for parents of 4–8-year-olds learning to read. Try {FREE_STORY_LIMIT} stories free, then {TRIAL_DAYS} days of Premium free.
+            Built for families with children ages 3 to 15, Pre-K to 10th grade. Try {FREE_STORY_LIMIT} stories free, then {TRIAL_DAYS} days of Premium free.
           </p>
         </header>
 
@@ -70,6 +70,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 <div className="text-3xl font-bold">{PLAN_PRICES.monthly.label}</div>
                 <div className="text-muted-foreground">per month, or {PLAN_PRICES.annual.label} per year</div>
                 <div className="text-sm font-medium text-primary mt-1">{TRIAL_DAYS}-day free trial</div>
+                <div className="text-xs text-muted-foreground mt-1" data-testid="secure-checkout">🔒 Secure checkout in US dollars, by Stripe. Have a code? Use it when you sign up.</div>
               </div>
               <p className="mb-4 rounded-md bg-primary/5 border border-primary/20 px-3 py-2 text-sm" data-testid="heygetonmylevel-bonus">
                 Includes{" "}
@@ -139,7 +140,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
 
         {/* ── A look inside the app ── */}
         <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-2">A look inside Time2Read</h2>
+          <h2 className="text-2xl font-bold mb-2">A look inside Time-2-Read</h2>
           <p className="text-muted-foreground mb-6">
             See what the reading experience looks like for free and premium users.
           </p>
@@ -154,7 +155,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
               <CardContent>
                 <img
                   src={readingScreenshot}
-                  alt="A reading session in Time2Read with illustrated story, interactive word highlighting, and floating timer"
+                  alt="A reading session in Time-2-Read with illustrated story, interactive word highlighting, and floating timer"
                   loading="lazy"
                   width={1280}
                   height={720}
