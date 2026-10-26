@@ -1,0 +1,78 @@
+# Daily Search Console truth for time-2-read.com, committed to the repo.
+#
+# Search Readiness checklist e4, e5 and i6: the only true numbers, free, and once
+# they land in the repo every other job reads them instead of guessing. The
+# service-account JSON is an Actions secret, never on a laptop.
+#
+# Every collector names its own stop rather than writing a silent zero: no
+# credential leaves the existing file untouched, a 401/403 or a quota refusal is
+# recorded in the file with the owner step, and Search Console answering with no
+# rows for a property that has impressions fails the run.
+name: Search Console Daily
+
+on:
+  schedule:
+    # 06:40 UTC daily. Search Console data lags ~3 days, so the hour is only
+    # about spreading load, not freshness.
+    - cron: '40 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: search-console-daily
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    # ~4x the 1.5 min observed for 36 URL inspections at 8 workers plus npm ci.
+    # A fault detector, not a budget: a slow runner is not a hang.
+    timeout-minutes: 12
+    env:
+      GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      # Rebase before writing, so a same-day push does not turn the commit into a conflict.
+      - run: git pull --rebase origin main
+
+      - name: Query truth (rolling 28 days, with query history)
+        run: npm run gsc:truth
+      - name: Index coverage (URL Inspection over the sitemap)
+        run: npm run gsc:coverage
+      - name: Sitemap status in Search Console
+        run: npm run gsc:sitemaps
+
+      - name: Commit the day's truth
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [[ -z "$(git status --porcelain data/search_intelligence)" ]]; then
+            echo "No change in data/search_intelligence today."
+            exit 0
+          fi
+          git add data/search_intelligence
+          git commit -m "Search Console truth $(date -u +%Y-%m-%d)
+
+          gsc_truth.json, gsc_query_history.json, index_coverage.json and
+          gsc_sitemaps.json as Search Console reported them today.
+
+          Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+          git push origin HEAD:main
+
+      - name: Summary
+        if: always()
+        run: |
+          for f in gsc_truth index_coverage gsc_sitemaps; do
+            p="data/search_intelligence/$f.json"
+            if [[ -f "$p" ]]; then
+              echo "### $f" >> "$GITHUB_STEP_SUMMARY"
+              node -e "const d=require('./$p');console.log('state',d.state,'| collected_at',d.collected_at)" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
