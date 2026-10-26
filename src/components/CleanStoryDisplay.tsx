@@ -1,4 +1,5 @@
 import { StoryAudioControls } from "@/components/story/StoryAudioControls";
+import { EXPERT_GRADES, type ExpertGrade } from '@/lib/grades';
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
 import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration";
 import { useStoryLogic } from "@/hooks/useStoryLogic";
@@ -3759,7 +3760,7 @@ const handleRestartTimer = () => {
       }
       // Expert internal grade guardrail only applies when minimum is set to Expert
       if (currentDifficulty === 'expert' && direction === 'down' && minDifficulty === 'expert') {
-        const gradeOrder: ("6th" | "7th" | "8th" | "9th" | "10th")[] = ["6th", "7th", "8th", "9th", "10th"];
+        const gradeOrder: readonly ExpertGrade[] = EXPERT_GRADES;
         const currentGradeIndex = gradeOrder.indexOf(expertGradeLevel);
         const minGradeIndex = gradeOrder.indexOf(minExpertGrade);
         if (currentGradeIndex <= minGradeIndex) {
@@ -3777,7 +3778,7 @@ const handleRestartTimer = () => {
     
     // Handle expert mode internal grade cycling
     if (currentDifficulty === 'expert') {
-      const gradeOrder: ("6th" | "7th" | "8th" | "9th" | "10th")[] = ["6th", "7th", "8th", "9th", "10th"];
+      const gradeOrder: readonly ExpertGrade[] = EXPERT_GRADES;
       const currentGradeIndex = gradeOrder.indexOf(expertGradeLevel);
       
       if (direction === 'up' && currentGradeIndex < gradeOrder.length - 1) {
@@ -3795,7 +3796,7 @@ const handleRestartTimer = () => {
       if (direction === 'up' && currentIndex < difficultyLevels.length - 1) {
         newIndex = currentIndex + 1;
         if (difficultyLevels[newIndex] === 'expert') {
-          setExpertGradeLevel("6th"); // Start expert at grade 6th
+          setExpertGradeLevel(EXPERT_GRADES[0]); // Start expert at its first grade (6th)
         }
       } else if (direction === 'down' && currentIndex > 0) {
         newIndex = currentIndex - 1;
@@ -4163,7 +4164,7 @@ const handleRestartTimer = () => {
           showLevelControls={true}
           isChangingDifficulty={isChangingDifficulty}
           changeDirection={changeDirection}
-          canIncrease={!lockDifficulty && (currentDifficulty !== 'expert' || expertGradeLevel !== "10th")}
+          canIncrease={!lockDifficulty && (currentDifficulty !== 'expert' || expertGradeLevel !== EXPERT_GRADES[EXPERT_GRADES.length - 1])}
           canDecrease={!lockDifficulty && (allowDecreaseBelowMin || (difficultyLevels.indexOf(currentDifficulty) > difficultyLevels.indexOf(minDifficulty)))}
           onEndSession={() => setShowEndSessionConfirm(true)}
           onSaveStory={isPremium ? handleSaveStoryNow : undefined}

@@ -24,6 +24,7 @@ import type { UserInfo, Story, SessionStats } from "@/types";
 import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { APP_CONFIG } from "@/config/appConfig";
+import { expertGradeForGrade, normalizeGrade } from "@/lib/grades";
 
 interface PremiumMyStoriesViewProps {
   userInfo: UserInfo;
@@ -40,29 +41,14 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive
   const [specialRequest, setSpecialRequest] = useState("");
   const { activeChild } = useChildProfiles();
 
-  // Normalize grade helper function - moved to top level
-  const normalizeGrade = (g: any): any => {
-    if (!g) return g;
-    const map: Record<string, any> = {
-      'Pre-K': 'PreK',
-      'K': 'K',
-      '1': '1st',
-      '2': '2nd',
-      '3': '3rd',
-      '4': '4th',
-      '5': '5th',
-      '6': '6th+',
-    };
-    return map[String(g)] || g;
-  };
-
   // Move useMemo hooks to top level to fix hooks ordering violation
   const effectiveUserInfo: UserInfo = useMemo(() => {
     if (currentView === 'reading') {
       return activeChild ? {
         ...userInfo,
         name: activeChild.display_name || userInfo.name,
-        grade: normalizeGrade((activeChild.grade_level as any)) || userInfo.grade,
+        grade: normalizeGrade(activeChild.grade_level) || userInfo.grade,
+        expertGradeLevel: expertGradeForGrade(activeChild.grade_level) ?? userInfo.expertGradeLevel,
         storyLanguagePreference: userInfo.storyLanguagePreference, // Use parent's language preference
         avatar: (activeChild.avatar as any) || userInfo.avatar,
         specialRequest,

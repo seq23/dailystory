@@ -6,6 +6,7 @@ import {
   difficultyToGradeLevel,
   type GradeLevel
 } from "@/constants/gradeBased";
+import { difficultyForAge } from "@/lib/grades";
 import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 
 export interface VocabularyIntegration {
@@ -144,10 +145,7 @@ export class VocabularyService {
 
     // Step 2: Silent fallback to age-based difficulty calculation (from UserInfoForm.tsx logic)
     if (userInfo?.age && typeof userInfo.age === 'number' && userInfo.age > 0) {
-      const ageDifficulty = userInfo.age <= 5 ? "beginner" : 
-                           userInfo.age <= 8 ? "easy" : 
-                           userInfo.age <= 11 ? "medium" : 
-                           userInfo.age <= 13 ? "hard" : "expert";
+      const ageDifficulty = difficultyForAge(userInfo.age); // src/lib/grades.ts
       
       try {
         return difficultyToGradeLevel(ageDifficulty as DifficultyLevel);

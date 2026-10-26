@@ -1,12 +1,13 @@
 // Central type definitions for the Time2Read application
+import type { Grade as SharedGrade, ExpertGrade } from "@/lib/grades";
 
 export type DifficultyLevel = "beginner" | "easy" | "medium" | "hard" | "expert";
-export type ExpertGradeLevel = "6th" | "7th" | "8th" | "9th" | "10th";
+export type ExpertGradeLevel = ExpertGrade; // from GRADES (src/lib/grades.ts)
 export type LanguageCode = "en" | "ar" | "es" | "zh" | "hi" | "pt" | "fr" | "ur" | "fr-francophone-african" | "en-african-american";
 export type LearningGoal = "improve-english-reading" | "learn-english-language" | "both";
 export type SkinTone = "pale" | "light" | "medium" | "olive" | "dark";
 export type AvatarType = "boy" | "girl" | "prefer-not-to-answer";
-export type Grade = "PreK" | "K" | "1" | "2" | "3" | "4" | "5" | "6";
+export type Grade = SharedGrade; // PreK, K, 1–10 from GRADES (src/lib/grades.ts)
 
 export interface Avatar {
   type: AvatarType;

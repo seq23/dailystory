@@ -492,7 +492,7 @@
       "easy": "Pre-K - 1er Grado",
       "medium": "2do - 3er Grado",
       "hard": "4to - 5to Grado",
-      "expert": "6to Grado+"
+      "expert": "6to - 10mo Grado"
     },
     "header": "Aventura de Lectura",
     "endSession": "Terminar Sesión",
@@ -875,7 +875,7 @@
       "label": "Nivel Escolar", "placeholder": "Seleccionar grado",
       "preK": "Pre-K", "k": "Kínder",
       "1st": "1er Grado", "2nd": "2do Grado", "3rd": "3er Grado",
-      "4th": "4to Grado", "5th": "5to Grado", "6thPlus": "6to Grado y más"
+      "4th": "4to Grado", "5th": "5to Grado", "6th": "6to Grado", "7th": "7mo Grado", "8th": "8vo Grado", "9th": "9no Grado", "10th": "10mo Grado"
     },
     "language": {
       "label": "Idioma Nativo", "placeholder": "Seleccionar idioma",

@@ -28,6 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ChildQuickSwitcher } from "@/components/ChildQuickSwitcher";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { AvatarUtils } from "@/utils/avatarUtils";
+import { gradeLabel } from "@/lib/grades";
 
 interface PremiumHeaderProps {
   userInfo: UserInfo;
@@ -213,7 +214,7 @@ export const PremiumHeader = ({
                     <div className="text-left hidden sm:block">
                       <p className="text-sm font-medium text-gray-800 truncate max-w-[120px]">{getDisplayName}</p>
                       <p className="text-xs text-gray-600 truncate max-w-[120px]">
-                        {getDisplayGrade === 'PreK' ? 'Pre-K' : `Grade ${getDisplayGrade}`}
+                        {gradeLabel(getDisplayGrade)}
                       </p>
                     </div>
                     <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform data-[state=open]:rotate-180" />
@@ -226,7 +227,7 @@ export const PremiumHeader = ({
                       <div>
                         <p className="text-sm font-medium">{getDisplayName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {getDisplayAge} years old • {getDisplayGrade === 'PreK' ? 'Pre-K' : `Grade ${getDisplayGrade}`}
+                          {getDisplayAge} years old • {gradeLabel(getDisplayGrade)}
                         </p>
                       </div>
                       {(hasPremium ?? isPremium) && (

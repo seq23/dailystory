@@ -150,5 +150,5 @@ export const GRADE_LEVEL_INFO = {
   1: { ages: '5-7', description: 'Beginning Reader', words: 120 },
   2: { ages: '7-9', description: 'Developing Reader', words: 200 },
   3: { ages: '9-11', description: 'Independent Reader', words: 300 },
-  4: { ages: '11+', description: 'Advanced/Adaptive Learning', words: 'Unlimited - Adaptive System' }
+  4: { ages: '11-15', description: 'Advanced/Adaptive Learning', words: 'Unlimited - Adaptive System' }
 } as const;

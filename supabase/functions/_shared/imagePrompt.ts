@@ -1,3 +1,4 @@
+import { clampAge } from "./grades.ts";
 /**
  * imagePrompt.ts — THE single source of truth for story-image prompts.
  *
@@ -321,7 +322,7 @@ export function buildCharacterSheet(user: ImageUserInfo, sessionId = ''): string
   const skin = isDark
     ? DEEP_SKIN
     : SKIN_TONES[user.avatar?.skinTone ?? ''] ?? 'warm medium-tan skin';
-  const age = user.age && user.age >= 3 && user.age <= 17 ? user.age : 7;
+  const age = user.age ? clampAge(user.age, 7) : 7; // 3–15, from ./grades.ts
 
   const parts = [
     // Explicit child cues: without them the model happily paints a young adult.

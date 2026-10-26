@@ -22,6 +22,7 @@ import { generateSessionId, generateSessionIdWithPrefix } from '@/utils/sessionI
 import { safeThemeJoin } from "@/lib/utils";
 
 import { LevelClampingService } from './voiceCatalog/LevelClampingService';
+import { GRADES, normalizeGrade, promptReadingLevelForGrade, typicalGradeForAge } from '@/lib/grades';
 
 export interface StoryGenerationBundle {
   sessionId: string;              // Session identifier for debugging and caching
@@ -214,7 +215,8 @@ export class StoryGenerationService {
       avatarType: userInfo.avatar?.type,
       // REMOVED: avatarSkinTone - kept separate for edge function hair mapping only
       difficultyLevel: userInfo.difficultyLevel, // Needed for story complexity
-      gradeLevel: userInfo.gradeLevel || 'PreK', // Needed for vocabulary/complexity
+      // The child's school grade (Pre-K … 10th), else the usual grade for their age
+      gradeLevel: normalizeGrade(userInfo.grade ?? userInfo.gradeLevel) ?? typicalGradeForAge(userInfo.age || 5),
       // USER PREFERENCES - only include if they exist, don't force defaults
       ...(userInfo.favoriteColor && { favoriteColor: userInfo.favoriteColor }),
       ...(userInfo.favoriteAnimal && { favoriteAnimal: userInfo.favoriteAnimal }),
@@ -342,7 +344,9 @@ export class StoryGenerationService {
     };
     const culturalContext = getCulturalGuidanceString(reconstructedUserInfo);
 
-    const educationalStandards = this.getEducationalVocabularyInstructions(vocabularyConfig.gradeLevel, vocabularyConfig.difficultyLevel);
+    const readerLevel = promptReadingLevelForGrade(essentialUserInfo.gradeLevel);
+    const educationalStandards = this.getEducationalVocabularyInstructions(vocabularyConfig.gradeLevel, vocabularyConfig.difficultyLevel)
+      + (readerLevel ? ` The reader is in ${readerLevel}.` : '');
     
       // Generate single CTRL line instead of verbose template  
       const { ResourceLoader } = await import('./failSoft/ResourceLoader');
@@ -597,8 +601,8 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
       age: extractedData.age || 5,
       nativeLanguage: extractedData.nativeLanguage || 'en',
       difficultyLevel: extractedData.difficultyLevel || 'beginner',
-      gradeLevel: extractedData.gradeLevel || 'PreK',
-      grade: extractedData.gradeLevel || 'PreK',
+      gradeLevel: normalizeGrade(extractedData.gradeLevel) ?? GRADES[0],
+      grade: normalizeGrade(extractedData.gradeLevel) ?? GRADES[0],
       learningGoal: 'improve-english-reading' as LearningGoal,
       avatar: {
         type: (extractedData.avatarType || 'prefer-not-to-answer') as AvatarType,

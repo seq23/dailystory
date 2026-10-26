@@ -39,9 +39,8 @@ export const SUPPORTED_LANGUAGES = [
   'en', 'ar', 'es', 'zh', 'hi', 'pt', 'fr'
 ] as const;
 
-export const GRADE_LEVELS = [
-  'PreK', 'K', '1', '2', '3', '4', '5', '6'
-] as const;
+// One list of grades for the whole app: src/lib/grades.ts (Pre-K, K, 1st–10th).
+export { GRADES as GRADE_LEVELS } from '@/lib/grades';
 
 export const DIFFICULTY_LEVELS = [
   'beginner', 'easy', 'medium', 'hard', 'expert'

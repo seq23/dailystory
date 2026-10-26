@@ -33,6 +33,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
+import { isExpertGrade, normalizeExpertGrade } from '@/lib/grades';
 import { getTokenLimitForDifficulty, STORY_PROMPTS, EXPERT_STORY_PROMPTS, getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '../../supabase/functions/_shared/storyPrompts';
 import { DifficultyLevelMapper } from '../../supabase/functions/_shared/DifficultyLevelMapper';
 import { ErrorHandler } from '@/utils/errorHandling';
@@ -379,18 +380,8 @@ export class NetflixStyleStoryService {
    */
   private static isExpertGradeLevel(difficulty: string): boolean {
     // Check for standard expert grade levels
-    if (['6th', '7th', '8th', '9th', '10th'].includes(difficulty)) {
-      return true;
-    }
-    
-    // Check for alternate naming (grade6, grade7, etc.)
-    const gradeMatch = difficulty.match(/^grade(\d+)$/);
-    if (gradeMatch) {
-      const gradeNum = parseInt(gradeMatch[1]);
-      return gradeNum >= 6 && gradeNum <= 10;
-    }
-    
-    return false;
+    // "6th"…"10th", or alternate naming (grade6 … grade10), via src/lib/grades.ts
+    return isExpertGrade(difficulty) || (/^grade\d+$/.test(difficulty) && normalizeExpertGrade(difficulty) !== null);
   }
 
   static async generateCompleteStory(userInfo: UserInfo, sessionId?: string): Promise<NetflixStoryResult> {

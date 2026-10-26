@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import type { AvatarType, SkinTone } from "@/types";
 import { AvatarUtils } from "@/utils/avatarUtils";
+import { GRADES, gradeLabel, normalizeGrade } from "@/lib/grades";
 
 // Proper interface for database child records
 interface DatabaseChild {
@@ -29,7 +30,7 @@ interface DatabaseChild {
   } | null;
 }
 
-const gradeOptions = ["Pre-K", "K", "1", "2", "3", "4", "5", "6", "7", "8"];
+const gradeOptions = GRADES; // Pre-K … 10th, from src/lib/grades.ts
 const monthOptions = [
   { value: 1, label: "January" },
   { value: 2, label: "February" },
@@ -165,7 +166,7 @@ export function ChildManager() {
     const currentAvatar = c.avatar || { type: "prefer-not-to-answer", skinTone: "medium" };
     setEditDraft({ 
       name: c.display_name, 
-      grade: c.grade_level || "", 
+      grade: normalizeGrade(c.grade_level) || c.grade_level || "", 
       birthMonth: (c as any).birth_month || null,
       birthYear: (c as any).birth_year || null,
       avatar: currentAvatar as { type: AvatarType; skinTone: SkinTone },
@@ -252,7 +253,7 @@ export function ChildManager() {
                 </SelectTrigger>
                 <SelectContent>
                   {gradeOptions.map((g) => (
-                    <SelectItem key={g} value={g}>{g}</SelectItem>
+                    <SelectItem key={g} value={g}>{gradeLabel(g)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -351,7 +352,7 @@ export function ChildManager() {
                              </SelectTrigger>
                              <SelectContent>
                                {gradeOptions.map((g) => (
-                                 <SelectItem key={g} value={g}>{g}</SelectItem>
+                                 <SelectItem key={g} value={g}>{gradeLabel(g)}</SelectItem>
                                ))}
                              </SelectContent>
                            </Select>
@@ -431,7 +432,7 @@ export function ChildManager() {
                            <div className="text-xs text-muted-foreground">{calculateAge(getTypedChild(c).birth_year)}</div>
                          </div>
                        </div>
-                       <div className="text-sm text-muted-foreground">{c.grade_level || "—"}</div>
+                       <div className="text-sm text-muted-foreground">{c.grade_level ? gradeLabel(c.grade_level) : "—"}</div>
                         <div className="text-sm text-muted-foreground">
                           {getTypedChild(c).favorite_color || getTypedChild(c).favorite_animal ? 
                             `${getTypedChild(c).favorite_color || ''}${getTypedChild(c).favorite_color && getTypedChild(c).favorite_animal ? ', ' : ''}${getTypedChild(c).favorite_animal || ''}` : 

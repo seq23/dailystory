@@ -236,7 +236,7 @@
           "beginner": "Ages 5-7 • Basic sight words • Simple sentences • Building reading foundation",
           "developing": "Ages 7-9 • Expanding vocabulary • Longer sentences • Growing confidence",
           "independent": "Ages 9-11 • Complex stories • Advanced vocabulary • Independent reading",
-          "advanced": "Ages 11+ • Sophisticated narratives • Grade-appropriate content • Expert comprehension"
+          "advanced": "Ages 11 to 15 • 6th to 10th grade • Middle-school and early high-school stories • Rich vocabulary"
         },
         "learnMore": {
           "title": "About Reading Levels",
@@ -620,7 +620,7 @@
       "easy": "Pre-K - 1st Grade",
       "medium": "2nd - 3rd Grade",
       "hard": "4th - 5th Grade",
-      "expert": "6th Grade+"
+      "expert": "6th - 10th Grade"
     }
   },
   "common": {
@@ -1010,7 +1010,7 @@
       "3rd": "3rd Grade",
       "4th": "4th Grade",
       "5th": "5th Grade",
-      "6thPlus": "6th Grade & Up"
+      "6th": "6th Grade", "7th": "7th Grade", "8th": "8th Grade", "9th": "9th Grade", "10th": "10th Grade"
     },
     "language": {
       "label": "Native Language",

@@ -4,6 +4,7 @@
  */
 
 import type { ThemeIntent } from '@/utils/themeIntent';
+import { GRADES, normalizeGrade } from '@/lib/grades';
 
 export class ResourceLoader {
   /**
@@ -35,7 +36,7 @@ export class ResourceLoader {
     // Extract user constraints
     const userConstraints = {
       age: userInfo.age || 5,
-      gradeLevel: userInfo.gradeLevel || 'PreK',
+      gradeLevel: normalizeGrade(userInfo.grade ?? userInfo.gradeLevel) ?? GRADES[0],
       difficultyLevel: difficultyLevel,
       nativeLanguage: userInfo.nativeLanguage || 'en'
     };
@@ -73,7 +74,7 @@ export class ResourceLoader {
       },
       user: {
         age: userInfo.age || 5,
-        gradeLevel: userInfo.gradeLevel || 'PreK',
+        gradeLevel: normalizeGrade(userInfo.grade ?? userInfo.gradeLevel) ?? GRADES[0],
         difficultyLevel: difficultyLevel
       },
       safety: {

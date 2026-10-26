@@ -3,67 +3,18 @@
 // Easy to update and modify without code changes
 
 export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
-export type ExpertGradeLevel = '6th' | '7th' | '8th' | '9th' | '10th';
+import { EXPERT_GRADES, GRADE_PROFILES, type ExpertGrade, expertGradeForGrade, isExpertGrade, normalizeExpertGrade } from './grades.ts';
+
+// Expert sub-levels come from the one grade list (./grades.ts): 6th–10th.
+export type ExpertGradeLevel = ExpertGrade;
 
 // Universal Grade Format Normalizer - Accepts ANY grade format
 export function normalizeGradeFormat(input: string | number | undefined): ExpertGradeLevel | null {
-  if (!input) return null;
-  
-  const inputStr = String(input).toLowerCase().trim();
-  console.log(`🔄 NORMALIZE: Input "${input}" → "${inputStr}"`);
-  
-  // Direct matches (already normalized)
-  if (['6th', '7th', '8th', '9th', '10th'].includes(inputStr)) {
-    console.log(`✅ NORMALIZE: Direct match → "${inputStr}"`);
-    return inputStr as ExpertGradeLevel;
-  }
-  
-  // Grade format: "grade6", "grade7", etc.
-  const gradeMatch = inputStr.match(/^grade(\d+)$/);
-  if (gradeMatch) {
-    const num = parseInt(gradeMatch[1]);
-    if (num >= 6 && num <= 10) {
-      const result = `${num}th` as ExpertGradeLevel;
-      console.log(`✅ NORMALIZE: Grade format → "${result}"`);
-      return result;
-    }
-  }
-  
-  // Numeric format: 6, 7, 8, 9, 10
-  const num = parseInt(inputStr);
-  if (!isNaN(num) && num >= 6 && num <= 10) {
-    const result = `${num}th` as ExpertGradeLevel;
-    console.log(`✅ NORMALIZE: Numeric format → "${result}"`);
-    return result;
-  }
-  
-  // Text format: "sixth", "seventh", etc.
-  const textMap: Record<string, ExpertGradeLevel> = {
-    'sixth': '6th',
-    'seventh': '7th', 
-    'eighth': '8th',
-    'ninth': '9th',
-    'tenth': '10th'
-  };
-  
-  if (textMap[inputStr]) {
-    console.log(`✅ NORMALIZE: Text format → "${textMap[inputStr]}"`);
-    return textMap[inputStr];
-  }
-  
-  // Mixed formats: "Grade 6", "6 grade", etc.
-  const mixedMatch = inputStr.match(/(\d+)/);
-  if (mixedMatch) {
-    const num = parseInt(mixedMatch[1]);
-    if (num >= 6 && num <= 10) {
-      const result = `${num}th` as ExpertGradeLevel;
-      console.log(`✅ NORMALIZE: Mixed format → "${result}"`);
-      return result;
-    }
-  }
-  
-  console.warn(`⚠️ NORMALIZE: No match found for "${input}" - returning null`);
-  return null;
+  if (input === undefined || input === null || input === '') return null;
+  // "6th", "grade7", 8, "ninth", "Grade 10" → the shared normalizer (./grades.ts)
+  const result = normalizeExpertGrade(typeof input === 'string' ? input.trim() : input);
+  if (!result) console.warn(`⚠️ NORMALIZE: No expert grade for "${input}" - returning null`);
+  return result;
 }
 
 export interface StoryPromptConfig {
@@ -350,7 +301,7 @@ export const EXPERT_STORY_PROMPTS: Record<ExpertGradeLevel, ExpertStoryPromptCon
   
   "6th": {
     gradeLevel: "6th",
-    systemPrompt: `You are an expert story writer creating 6th grade level content for advanced 11+ year old readers.
+    systemPrompt: `You are an expert story writer creating 6th grade level content for readers at ${GRADE_PROFILES['6'].promptReadingLevel}.
 
 CRITICAL RULES:
 - Story continues indefinitely unless user explicitly requests an ending
@@ -396,7 +347,7 @@ Use seed={seed} to control randomized story variation.`,
 
   "7th": {
     gradeLevel: "7th",
-    systemPrompt: `You are an expert story writer creating 7th grade level content for advanced 11+ year old readers.
+    systemPrompt: `You are an expert story writer creating 7th grade level content for readers at ${GRADE_PROFILES['7'].promptReadingLevel}.
 
 CRITICAL RULES:
 - Story continues indefinitely unless user explicitly requests an ending
@@ -442,7 +393,7 @@ Use seed={seed} to control randomized story variation.`,
 
   "8th": {
     gradeLevel: "8th",
-    systemPrompt: `You are an expert story writer creating 8th grade level content for advanced 11+ year old readers.
+    systemPrompt: `You are an expert story writer creating 8th grade level content for readers at ${GRADE_PROFILES['8'].promptReadingLevel}.
 
 CRITICAL RULES:
 - Story continues indefinitely unless user explicitly requests an ending
@@ -488,7 +439,7 @@ Use seed={seed} to control randomized story variation.`,
 
   "9th": {
     gradeLevel: "9th",
-    systemPrompt: `You are an expert story writer creating 9th grade level content for advanced 11+ year old readers.
+    systemPrompt: `You are an expert story writer creating 9th grade level content for readers at ${GRADE_PROFILES['9'].promptReadingLevel}.
 
 CRITICAL RULES:
 - Story continues indefinitely unless user explicitly requests an ending
@@ -534,7 +485,7 @@ Use seed={seed} to control randomized story variation.`,
 
   "10th": {
     gradeLevel: "10th",
-    systemPrompt: `You are an expert story writer creating 10th grade level content for advanced 11+ year old readers.
+    systemPrompt: `You are an expert story writer creating 10th grade level content for readers at ${GRADE_PROFILES['10'].promptReadingLevel}.
 
 CRITICAL RULES:
 - Story continues indefinitely unless user explicitly requests an ending
@@ -684,7 +635,7 @@ function normalizeGradeLevel(difficulty: string): string {
  */
 function isExpertGradeLevel(difficulty: string): boolean {
   const normalized = normalizeGradeLevel(difficulty);
-  return ['6th', '7th', '8th', '9th', '10th'].includes(normalized);
+  return isExpertGrade(normalized);
 }
 
 /**
@@ -826,9 +777,8 @@ export function resolvePromptPlaceholders(
 }
 
 // Map numeric grade to expert grade level for grades 6-10
-export const mapGradeToExpertLevel = (gradeLevel: number): ExpertGradeLevel | null => {
-  if (gradeLevel >= 6 && gradeLevel <= 10) {
-    return `${gradeLevel}th` as ExpertGradeLevel;
-  }
-  return null;
-};
+export const mapGradeToExpertLevel = (gradeLevel: number): ExpertGradeLevel | null =>
+  expertGradeForGrade(gradeLevel);
+
+// Every expert grade in the shared list has a prompt (pinned by grades-single-source.test.ts).
+export const EXPERT_PROMPT_GRADES: readonly ExpertGradeLevel[] = EXPERT_GRADES;
