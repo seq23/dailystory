@@ -162,6 +162,8 @@ describe("only real story text reaches a page", () => {
     const handler = read("supabase/functions/generate-adaptive-story/streamlined-handler.ts");
     expect((handler.match(/accept: \(text, finishReason\) => storyTextProblem\(text, finishReason\)/g) || []).length).toBe(2);
     expect(handler).toMatch(/errorType: 'output_rejected'/);
+    // Every successful story says which tier and model wrote it.
+    expect((handler.match(/servedBy: servedBy\(\),/g) || []).length).toBe(3);
     expect(read("supabase/functions/word-dictionary/index.ts")).toMatch(/accept: jsonAnswerProblem\('definition'\)/);
     for (const fn of ["translate-universal", "correct-spelling"]) expect(read(`supabase/functions/${fn}/index.ts`), fn).toMatch(/accept: plainAnswerProblem/);
     expect(jsonAnswerProblem("definition")('{"definition":"Sure of yourself."}', "stop")).toBeNull();
