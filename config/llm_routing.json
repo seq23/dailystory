@@ -98,7 +98,7 @@
       "text_chain": {
         "decided": "2026-10-26",
         "quote": "i'd rather use the openrouter free ... i dont wanna pay anything if possible",
-        "applies_to": "story pages (generate-adaptive-story), word-dictionary, translate-universal, correct-spelling",
+        "applies_to": "story pages (generate-adaptive-story), end-of-story quizzes (generate-quiz), word-dictionary, translate-universal, correct-spelling",
         "read_by": "supabase/functions/_shared/storyTextProvider.ts (kept equal to this block by src/test/guards/story-text-provider.test.ts)",
         "privacy_rule": "Before any request leaves on tiers 1-3, every child's name (and names found in the prompt's Character Info: name, parent, sibling, school, city) is replaced with a placeholder (Kiki, Lulu, ...) and put back in the returned text: supabase/functions/_shared/deidentify.ts. No email or ids are ever in a prompt. OpenAI (tier 4, paid, no training on API data) receives the request as written.",
         "order": [

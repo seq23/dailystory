@@ -24,6 +24,7 @@ export interface VoiceIntegrationResult {
 }
 
 import { DebugLogger } from '../DebugLogger';
+import { BACKEND_DIFFICULTIES } from "@/lib/grades";
 
 export class VoiceCatalogIntegration {
   /**
@@ -222,7 +223,7 @@ export class VoiceCatalogIntegration {
       ...stats,
       integrationVersion: '1.0.0',
       avcVersion: '1.1.0',
-      supportedLevels: ['beginner', 'easy', 'medium', 'hard', 'expert'] as DifficultyLevel[]
+      supportedLevels: [...BACKEND_DIFFICULTIES] as DifficultyLevel[]
     };
   }
 

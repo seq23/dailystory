@@ -1,7 +1,8 @@
 // Central type definitions for the Time-2-Read application
 import type { Grade as SharedGrade, ExpertGrade } from "@/lib/grades";
+import { type BackendDifficulty } from "@/lib/grades";
 
-export type DifficultyLevel = "beginner" | "easy" | "medium" | "hard" | "expert";
+export type DifficultyLevel = BackendDifficulty;
 export type ExpertGradeLevel = ExpertGrade; // from GRADES (src/lib/grades.ts)
 export type LanguageCode = "en" | "ar" | "es" | "zh" | "hi" | "pt" | "fr" | "ur" | "fr-francophone-african" | "en-african-american";
 export type LearningGoal = "improve-english-reading" | "learn-english-language" | "both";
@@ -58,4 +59,9 @@ export interface SessionStats {
   pagesRead: number;
   startTime: number;
   accuracy: number;
+  /** Frontend reading level at the end of the session. */
+  currentDifficulty?: string;
+  /** Reading grade at the end of the session ("PreK" … "10"). */
+  readingGrade?: string;
+  storyTitle?: string;
 }

@@ -10,6 +10,7 @@
 // Guard: src/test/guards/reading-level-ladder.test.ts.
 import {
   GRADES,
+  READING_LEVELS,
   type Grade,
   type ReadingLevel,
   type ExpertGrade,
@@ -49,7 +50,7 @@ export function stepReadingGrade(grade: Grade, direction: "up" | "down"): { step
   return { step: readingStep(GRADES[j]), atEdge: false };
 }
 
-const FRONTEND_LEVELS: readonly ReadingLevel[] = ["pre-reader", "beginner", "developing", "independent", "advanced"];
+const FRONTEND_LEVELS: readonly ReadingLevel[] = READING_LEVELS;
 
 /**
  * Where the ladder starts: a saved reading grade for this child, else the child's

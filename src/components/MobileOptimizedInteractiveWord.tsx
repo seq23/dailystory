@@ -13,11 +13,12 @@ import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 import { useToast } from "@/hooks/use-toast";
 import { DebugLogger } from "@/services/DebugLogger";
+import type { DifficultyLevel } from "@/types";
 
 interface MobileOptimizedInteractiveWordProps {
   word: string;
   className?: string;
-  difficulty?: "beginner" | "easy" | "medium" | "hard" | "expert";
+  difficulty?: DifficultyLevel;
   userInfo?: UserInfo;
   isPremium?: boolean;
   sentenceContext?: string;

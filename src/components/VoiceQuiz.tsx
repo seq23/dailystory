@@ -8,16 +8,10 @@ import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 import { useToast } from '@/components/ui/use-toast';
 import type { UserInfo } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
-import { supabase } from '@/integrations/supabase/client';
+import { loadStoryQuiz, type QuizQuestion } from '@/lib/quiz';
+import { saveQuizAttempt } from '@/hooks/useActivityPersistence';
 
-interface Question {
-  id: string;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation?: string;
-  type: 'multiple-choice' | 'true-false' | 'character-emotion';
-}
+type Question = QuizQuestion;
 
 interface VoiceQuizProps {
   userInfo: UserInfo;
@@ -26,6 +20,7 @@ interface VoiceQuizProps {
   onComplete: (score: number, totalQuestions: number) => void;
   onClose: () => void;
   storyTitle?: string;
+  storyGrade?: string;
 }
 
 // Simple hash for caching quiz per story
@@ -43,7 +38,8 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
   isVisible, 
   onComplete, 
   onClose,
-  storyTitle = ''
+  storyTitle = '',
+  storyGrade,
 }) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -60,6 +56,10 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
   const [waitingForAnswer, setWaitingForAnswer] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+
+  // The score as of the last answer (a timeout's closure would read a stale state value).
+  const scoreRef = useRef(0);
+  const savedRef = useRef(false);
 
   const voiceEventListenerRef = useRef<((event: CustomEvent) => void) | null>(null);
 
@@ -90,25 +90,15 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
     } catch {}
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-quiz', {
-        body: {
-          storyText,
-          age: userInfo.age,
-          difficulty: userInfo.difficultyLevel || 'easy',
-          language: i18n.language || 'en',
-        },
-      });
-
-      if (error) throw new Error(error.message || 'Quiz generation failed');
-      if (!data?.questions?.length) throw new Error('No questions returned');
-
-      const generated: Question[] = data.questions;
-      setQuestions(generated);
-      setAnswers(new Array(generated.length).fill(null));
-      try { sessionStorage.setItem(cacheKey, JSON.stringify(generated)); } catch {}
+      // AI first; a quiz from the story text itself when the AI is down (never empty).
+      const quiz = await loadStoryQuiz({ storyText, userInfo: userInfo as any, storyGrade });
+      if (!quiz.questions.length) throw new Error('This story is too short for a quiz');
+      setQuestions(quiz.questions);
+      setAnswers(new Array(quiz.questions.length).fill(null));
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(quiz.questions)); } catch {}
     } catch (err: any) {
-      DebugLogger.error('ui', 'AI voice quiz generation failed', err);
-      setGenerationError(err?.message || 'Could not generate quiz');
+      DebugLogger.error('ui', 'Voice quiz could not be built', err);
+      setGenerationError(err?.message || 'Could not make a quiz for this story');
     } finally {
       setIsGenerating(false);
     }
@@ -229,7 +219,8 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
 
     const isCorrect = answerIndex === questions[currentQuestion].correctAnswer;
     if (isCorrect) {
-      setScore(score + 1);
+      scoreRef.current += 1;
+      setScore(scoreRef.current);
     }
 
     setShowResult(true);
@@ -267,18 +258,33 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
       setQuizComplete(true);
       setWaitingForAnswer(false);
       
+      const finalScore = scoreRef.current;
       window.dispatchEvent(new CustomEvent('voice:quiz:complete', {
         detail: {
-          score,
+          score: finalScore,
           totalQuestions: questions.length,
-          percentage: Math.round((score / questions.length) * 100)
+          percentage: Math.round((finalScore / questions.length) * 100)
         }
       }));
+      // The voice quiz result goes to Progress and the parent dashboard too (it was never saved).
+      if (!savedRef.current) {
+        savedRef.current = true;
+        void saveQuizAttempt({
+          score: finalScore,
+          totalQuestions: questions.length,
+          storyText,
+          language: 'en',
+          userInfo,
+          mode: 'ai',
+          storyTitle,
+          details: { answers, questions: questions.map((q) => ({ id: q.id, type: q.type })), voice: true, grade: storyGrade },
+        }).catch((e) => DebugLogger.warn('ui', 'Voice quiz save failed', e));
+      }
     }
   };
 
   const handleEndQuiz = () => {
-    onComplete(score, questions.length);
+    onComplete(scoreRef.current, questions.length);
     onClose();
   };
 
@@ -287,6 +293,8 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
     setCurrentAnswer(null);
     setShowResult(false);
     setScore(0);
+    scoreRef.current = 0;
+    savedRef.current = false;
     setAnswers(new Array(questions.length).fill(null));
     setQuizComplete(false);
     setQuizStarted(false);

@@ -142,10 +142,13 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       // Direct difficulty passed from Netflix service - CONVERT FRONTEND TO BACKEND
       const originalDifficulty = config.difficulty;
       
-      // 🔄 CRITICAL FIX: Convert frontend difficulty to backend difficulty
-      effectiveDifficulty = DifficultyLevelMapper.toBackend(originalDifficulty);
+      // Clients send config.difficulty ALREADY converted to a backend value
+      // (NetflixStyleStoryService, LiveGenerationService). Read it backend-first:
+      // "beginner" is Pre-K/K here. Converting it again as a frontend value turned
+      // every Pre-K/K story into a 1st–2nd grade ("easy") one. docs/reading-levels.md.
+      effectiveDifficulty = DifficultyLevelMapper.fromBackendValue(originalDifficulty) ?? DifficultyLevelMapper.toBackend(originalDifficulty);
       
-      console.log(`🔄 DIFFICULTY MAPPING: "${originalDifficulty}" (frontend) → "${effectiveDifficulty}" (backend)`);
+      console.log(`🔄 DIFFICULTY: "${originalDifficulty}" → "${effectiveDifficulty}" (backend)`);
       
       // BULLETPROOF GRADE NORMALIZATION: Try to normalize any grade format
       const normalizedGrade = normalizeGradeFormat(originalDifficulty);

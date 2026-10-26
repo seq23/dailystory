@@ -1,145 +1,75 @@
+// End-of-story comprehension quiz (26 Oct 2026).
+//
+// Before: one call to the Lovable AI gateway (a Gemini model: the Gemini API terms
+// forbid services likely used by under-18s), the child's name sent as is, no check of
+// what came back, and a 500 to the child when the gateway was down.
+// Now: the same text chain as the story pages (../_shared/storyTextProvider.ts: free
+// OpenRouter models first, Workers AI, OpenRouter paid, OpenAI last), names masked on
+// every free/third-party route, every question checked against the story
+// (../_shared/quiz.ts), and a quiz written from the story text itself when no model
+// gives a usable one. A child always gets a quiz; the answer says where it came from.
+// Guard: src/test/guards/story-quiz.test.ts.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
+import {
+  buildQuizMessages,
+  finalizeQuiz,
+  parseQuizJson,
+  quizShapeForGrade,
+  QUIZ_STORY_MAX_CHARS,
+} from "../_shared/quiz.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+/** The OpenAI-tier model; the other tiers swap in their own (toCompatibleBody). */
+const OPENAI_QUIZ_MODEL = "gpt-4o-mini";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  let body: Record<string, unknown> = {};
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
-
-    const { storyText, age, difficulty, language } = await req.json();
-
-    if (!storyText || typeof storyText !== "string" || storyText.length < 20) {
-      return new Response(JSON.stringify({ error: "Invalid story text" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Truncate story to ~2000 chars to keep costs low
-    const truncatedStory = storyText.slice(0, 2000);
-
-    const isYoung = (age || 6) < 8;
-    const isLowerLevel = difficulty === "beginner" || difficulty === "easy";
-    const questionCount = isLowerLevel ? 3 : isYoung ? 3 : 5;
-
-    const systemPrompt = `You are a children's reading comprehension quiz generator. Generate exactly ${questionCount} multiple-choice questions about the story provided. Questions must test actual comprehension of THIS specific story — characters, events, settings, emotions, and details that appear in the text. The child is ${age || 6} years old reading at ${difficulty || "easy"} level${language && language !== "en" ? `, language: ${language}` : ""}.
-
-Rules:
-- Each question must have exactly 4 options (A-D)
-- Wrong answers (distractors) must be plausible but clearly wrong based on the story
-- Mix question types: character identification, plot events, setting details, character emotions, cause/effect
-- Keep language age-appropriate
-- Include a brief explanation for the correct answer`;
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate quiz questions for this story:\n\n${truncatedStory}` },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "create_quiz",
-              description: "Create a comprehension quiz from the story",
-              parameters: {
-                type: "object",
-                properties: {
-                  questions: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        id: { type: "string", description: "Unique question id like q1, q2" },
-                        question: { type: "string", description: "The question text" },
-                        options: {
-                          type: "array",
-                          items: { type: "string" },
-                          description: "Exactly 4 answer options",
-                        },
-                        correctAnswer: {
-                          type: "number",
-                          description: "Index (0-3) of the correct option",
-                        },
-                        explanation: {
-                          type: "string",
-                          description: "Brief explanation of why the answer is correct",
-                        },
-                        type: {
-                          type: "string",
-                          enum: ["multiple-choice", "true-false", "character-emotion"],
-                        },
-                      },
-                      required: ["id", "question", "options", "correctAnswer", "explanation", "type"],
-                      additionalProperties: false,
-                    },
-                  },
-                },
-                required: ["questions"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "create_quiz" } },
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited, please try again shortly." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      return new Response(JSON.stringify({ error: "AI generation failed" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-
-    if (!toolCall?.function?.arguments) {
-      console.error("No tool call in response:", JSON.stringify(data));
-      return new Response(JSON.stringify({ error: "AI did not return quiz data" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const quizData = JSON.parse(toolCall.function.arguments);
-
-    return new Response(JSON.stringify(quizData), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (e) {
-    console.error("generate-quiz error:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    body = await req.json();
+  } catch {
+    return json({ error: "Invalid JSON" }, 400);
   }
+  const storyText = typeof body.storyText === "string" ? body.storyText.replace(/\s+/g, " ").trim() : "";
+  if (storyText.length < 20) return json({ error: "Invalid story text" }, 400);
+
+  const story = storyText.slice(0, QUIZ_STORY_MAX_CHARS);
+  const shape = quizShapeForGrade(body.grade, body.age);
+  const privateNames = [body.childName, body.displayName]
+    .filter((n): n is string => typeof n === "string" && n.trim().length >= 2)
+    .slice(0, 4);
+
+  let raw: unknown = null;
+  let provider = "none";
+  try {
+    const { response, provider: p, attempts } = await chatCompletionWithFallback(
+      {
+        model: OPENAI_QUIZ_MODEL,
+        messages: buildQuizMessages(story, shape),
+        max_tokens: 1800,
+        temperature: 0.4,
+      },
+      { privateNames },
+    );
+    console.log("generate-quiz provider", { provider: p, attempts: attempts.map((a) => `${a.provider} ${a.model ?? ""} ${a.status ?? "-"}`) });
+    if (response.ok) {
+      const data = await response.json();
+      raw = parseQuizJson(data?.choices?.[0]?.message?.content ?? "");
+      provider = p;
+    }
+  } catch (e) {
+    console.error("generate-quiz: text chain failed", e instanceof Error ? e.message : String(e));
+  }
+
+  const { questions, source } = finalizeQuiz(raw, story, shape);
+  if (!questions.length) return json({ error: "Story too short for a quiz", questions: [], source }, 422);
+  return json({ questions, source, provider: source === "fallback" ? "story-text" : provider, grade: shape.grade });
 });

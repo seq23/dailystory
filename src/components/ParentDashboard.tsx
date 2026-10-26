@@ -18,6 +18,7 @@ import { TagInput } from "@/components/ui/tag-input";
 import EnhancedSubscriptionManager from "@/services/enhancedSubscriptionManager";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
+import { READING_LEVELS, EXPERT_GRADES, readingLevelForDifficulty, frontendLevelToDifficulty, backendDifficultyOf } from "@/lib/grades";
 import { useChildProgressData } from "@/hooks/useChildProgressData";
 
 interface ParentDashboardProps {
@@ -883,7 +884,10 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     Stories will never go below this difficulty level.
                   </p>
                   {(() => {
-                    const selected = guardrails.minDifficulty === 'advanced' ? `advanced:${guardrails.minExpertGrade}` : guardrails.minDifficulty;
+                    // Stored as a BACKEND difficulty (+ expert sub-level); shown as the
+                    // frontend reading levels. Both directions go through @/lib/grades.
+                    const fe = readingLevelForDifficulty(guardrails.minDifficulty) ?? 'pre-reader';
+                    const selected = fe === 'advanced' ? `advanced:${guardrails.minExpertGrade}` : fe;
                     return (
                       <Select
                         value={selected}
@@ -892,7 +896,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                             const grade = v.split(':')[1] as ExpertGradeLevel;
                             setGuardrails({ ...guardrails, minDifficulty: 'expert', minExpertGrade: grade });
                           } else {
-                            setGuardrails({ ...guardrails, minDifficulty: v, minExpertGrade: '6th' });
+                            setGuardrails({ ...guardrails, minDifficulty: frontendLevelToDifficulty(v) ?? 'beginner', minExpertGrade: '6th' });
                           }
                         }}
                       >
@@ -900,15 +904,12 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                           <SelectValue placeholder="Select minimum" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pre-reader">Pre-Reader</SelectItem>
-                          <SelectItem value="beginner">Beginner</SelectItem>
-                          <SelectItem value="developing">Developing</SelectItem>
-                          <SelectItem value="independent">Independent</SelectItem>
-                          <SelectItem value="advanced:6th">Advanced — 6th</SelectItem>
-                          <SelectItem value="advanced:7th">Advanced — 7th</SelectItem>
-                          <SelectItem value="advanced:8th">Advanced — 8th</SelectItem>
-                          <SelectItem value="advanced:9th">Advanced — 9th</SelectItem>
-                          <SelectItem value="advanced:10th">Advanced — 10th</SelectItem>
+                          {READING_LEVELS.filter((l) => l !== 'advanced').map((l) => (
+                            <SelectItem key={l} value={l}>{DifficultyLevelMapper.getDisplayName(l)}</SelectItem>
+                          ))}
+                          {EXPERT_GRADES.map((g) => (
+                            <SelectItem key={g} value={`advanced:${g}`}>Advanced — {g}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     );
@@ -929,9 +930,11 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                   <Button disabled={saving} onClick={async () => {
                     try {
                       setSaving(true);
+                      // minDifficulty is already a backend value. Re-reading it as a frontend
+                      // one turned a saved Pre-Reader ("beginner") into 1st–2nd ("easy").
                       const backendGuardrails = {
                         ...guardrails,
-                        minDifficulty: guardrails.minDifficulty === 'expert' ? 'expert' : DifficultyLevelMapper.normalizeLevel(guardrails.minDifficulty)
+                        minDifficulty: backendDifficultyOf(guardrails.minDifficulty) ?? 'beginner',
                       };
                       await ParentGuardrailsService.saveGuardrails(backendGuardrails);
                       toast({ title: 'Settings saved' });

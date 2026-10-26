@@ -13,9 +13,10 @@ import type {
 } from './types';
 import { VoiceProcessor } from './VoiceProcessor';
 
-export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+export type DifficultyLevel = BackendDifficulty;
 
 import { DebugLogger } from '../DebugLogger';
+import { type BackendDifficulty } from "@/lib/grades";
 
 export class VoiceCatalogService {
   private static voiceCache = new Map<DifficultyLevel, ProcessedVoice[]>();

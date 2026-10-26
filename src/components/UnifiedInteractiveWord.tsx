@@ -17,11 +17,12 @@ import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import type { UserInfo } from "@/types";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 import { MobileTTSModal } from "./MobileTTSModal";
+import type { DifficultyLevel } from "@/types";
 
 interface UnifiedInteractiveWordProps {
   word: string;
   className?: string;
-  difficulty?: "beginner" | "easy" | "medium" | "hard" | "expert";
+  difficulty?: DifficultyLevel;
   userInfo?: UserInfo;
   isPremium?: boolean;
   sentenceContext?: string;

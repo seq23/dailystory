@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { BACKEND_DIFFICULTIES } from "@/lib/grades";
 
 interface TemplateCounts {
   [key: string]: number;
@@ -12,7 +13,7 @@ export function useTemplateCounts() {
   useEffect(() => {
     const fetchTemplateCounts = async () => {
       try {
-        const levels = ['beginner', 'easy', 'medium', 'hard', 'expert', 'grade6', 'grade7', 'grade8', 'grade9', 'grade10'];
+        const levels = [...BACKEND_DIFFICULTIES, 'grade6', 'grade7', 'grade8', 'grade9', 'grade10'];
         const countPromises = levels.map(async (level) => {
           const { data } = await supabase.functions.invoke('template-service', {
             body: {

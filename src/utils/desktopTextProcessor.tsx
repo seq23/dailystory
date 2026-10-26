@@ -1,12 +1,13 @@
 import React from "react";
 import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
 import type { UserInfo } from "@/types";
+import type { DifficultyLevel } from "@/types";
 
 // Desktop-specific text processor that uses the MobileOptimizedInteractiveWord with modal behavior
 export const processTextForDesktop = (
   text: string, 
   className: string = "", 
-  difficulty: "beginner" | "easy" | "medium" | "hard" | "expert" = "easy",
+  difficulty: DifficultyLevel = "easy",
   userInfo?: UserInfo, 
   isPremium?: boolean, 
   userId?: string, 

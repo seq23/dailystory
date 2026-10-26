@@ -158,8 +158,11 @@ serve(async (req) => {
     const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');
     
     // Handle difficulty parameter with proper frontend->backend conversion
+    // `difficulty` arrives already converted (backend: "beginner" = Pre-K/K);
+    // userInfo.difficultyLevel is a frontend reading level ("beginner" = 1st–2nd).
     const rawDifficulty = difficulty || userInfo?.difficultyLevel;
-    const effectiveDifficulty = DifficultyLevelMapper.normalizeLevel(rawDifficulty || 'easy');
+    const effectiveDifficulty = (difficulty ? DifficultyLevelMapper.fromBackendValue(difficulty) : null)
+      ?? DifficultyLevelMapper.normalizeLevel(userInfo?.difficultyLevel || difficulty || 'easy');
     
     console.log('🔄 Template service difficulty mapping:', {
       input: rawDifficulty,

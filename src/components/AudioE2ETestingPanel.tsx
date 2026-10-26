@@ -15,10 +15,11 @@ import { MultilingualWordTester } from '@/components/MultilingualWordTester';
 import { AudioEventMonitor } from '@/components/AudioEventMonitor';
 import type { UserInfo, LanguageCode } from '@/types';
 import { useLanguageSync } from '@/hooks/useLanguageSync';
+import type { DifficultyLevel } from "@/types";
 export const AudioE2ETestingPanel = () => {
   const [userType, setUserType] = useState<'guest' | 'premium'>('premium');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [difficulty, setDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>('easy');
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('easy');
   const [highlightingEnabled, setHighlightingEnabled] = useState(true);
   const [showCoach, setShowCoach] = useState(false);
 

@@ -8,6 +8,7 @@ import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 // Temporarily disabled - service removed
 // import { ThemedSessionManager } from './themedSessionManager';
 import { ProgressiveRevelationSystem } from './progressiveRevelationSystem';
+import { BACKEND_DIFFICULTIES } from "@/lib/grades";
 
 // Vocabulary bucket management interfaces (consolidated from vocabularyBucketManager)
 interface VocabularyBucket {
@@ -545,12 +546,12 @@ export class PremiumVocabularyService {
 
     if (masteryRatio > 0.8 && strugglingRatio < 0.2) {
       // User is excelling, consider increasing difficulty
-      const levels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+      const levels: DifficultyLevel[] = [...BACKEND_DIFFICULTIES];
       const currentIndex = levels.indexOf(currentLevel);
       return currentIndex < levels.length - 1 ? levels[currentIndex + 1] : currentLevel;
     } else if (masteryRatio < 0.5 || strugglingRatio > 0.4) {
       // User is struggling, consider decreasing difficulty
-      const levels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+      const levels: DifficultyLevel[] = [...BACKEND_DIFFICULTIES];
       const currentIndex = levels.indexOf(currentLevel);
       return currentIndex > 0 ? levels[currentIndex - 1] : currentLevel;
     }

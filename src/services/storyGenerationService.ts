@@ -23,6 +23,7 @@ import { safeThemeJoin } from "@/lib/utils";
 
 import { LevelClampingService } from './voiceCatalog/LevelClampingService';
 import { GRADES, normalizeGrade, promptReadingLevelForGrade, typicalGradeForAge } from '@/lib/grades';
+import { BACKEND_DIFFICULTIES } from "@/lib/grades";
 
 export interface StoryGenerationBundle {
   sessionId: string;              // Session identifier for debugging and caching
@@ -489,7 +490,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
    * Map string difficulty to DifficultyLevel enum
    */
   private static mapToDifficultyLevel(difficulty?: string): DifficultyLevel {
-    const validLevels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+    const validLevels: DifficultyLevel[] = [...BACKEND_DIFFICULTIES];
     const normalized = difficulty?.toLowerCase() as DifficultyLevel;
     return validLevels.includes(normalized) ? normalized : 'easy';
   }

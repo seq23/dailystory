@@ -1,7 +1,8 @@
+import { type BackendDifficulty } from "./grades.ts";
 // Color-Based Story Voice Patterns for Never-Ending Stories
 // Moved from frontend to edge functions for single source of truth
 
-export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+export type DifficultyLevel = BackendDifficulty;
 
 export interface ColorVoice {
   name: string;

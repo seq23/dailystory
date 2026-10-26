@@ -2,8 +2,9 @@
 // Moved from frontend to edge functions for single source of truth
 // Easy to update and modify without code changes
 
-export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+export type DifficultyLevel = BackendDifficulty;
 import { EXPERT_GRADES, GRADE_PROFILES, type ExpertGrade, expertGradeForGrade, isExpertGrade, normalizeExpertGrade } from './grades.ts';
+import { type BackendDifficulty } from "./grades.ts";
 
 // Expert sub-levels come from the one grade list (./grades.ts): 6th–10th.
 export type ExpertGradeLevel = ExpertGrade;

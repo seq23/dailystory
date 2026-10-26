@@ -1,11 +1,12 @@
 import React from "react";
 import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
+import type { DifficultyLevel } from "@/types";
 
 // Function to process text and wrap words in InteractiveWord components
 export const processTextForPhonetics = (
   text: string, 
   className: string = "", 
-  difficulty: "beginner" | "easy" | "medium" | "hard" | "expert" = "easy",
+  difficulty: DifficultyLevel = "easy",
   userInfo?: any, // Add userInfo parameter
   isPremium?: boolean, // Add isPremium parameter
   userId?: string, // Add userId parameter

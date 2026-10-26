@@ -23,6 +23,7 @@ import { DebugLogger } from "@/services/DebugLogger";
 import { useAudioControls } from "@/hooks/useAudioControls";
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 import { browserTTSService } from "@/services/BrowserTTSService";
+import type { DifficultyLevel } from "@/types";
 
 interface ElevenLabsAudioProps {
   text: string;
@@ -32,7 +33,7 @@ interface ElevenLabsAudioProps {
   currentPage?: number;
   totalPages?: number;
   isExtendedPage?: boolean; // True if this page was added beyond the original 10
-  difficulty?: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+  difficulty?: DifficultyLevel;
   onWordHighlight?: (wordIndex: number) => void;
   contentHash?: string;
   onAudioStateChange?: (isPlaying: boolean) => void;
