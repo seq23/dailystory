@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -18,17 +19,19 @@ import {
   Bug, 
   User,
   Settings,
-  ChevronDown
+  ChevronDown,
+  Loader2,
+  Plus
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ChildQuickSwitcher } from "@/components/ChildQuickSwitcher";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
-import { AvatarUtils } from "@/utils/avatarUtils";
-import { gradeLabel } from "@/lib/grades";
+import { childAvatarUrl, childSummary } from "@/components/children/childInfo";
+import { openChildDialog } from "@/components/children/ChildDialog";
+import { toast } from "sonner";
 
 interface PremiumHeaderProps {
   userInfo: UserInfo;
@@ -42,6 +45,8 @@ interface PremiumHeaderProps {
   onSignOut: () => void;
   onToggleDevMode: () => void;
   onProfileClick: () => void;
+  /** Open the grown-up's settings (plan, code, children, email). */
+  onGrownUpSettings?: () => void;
 }
 
 export const PremiumHeader = ({ 
@@ -53,13 +58,13 @@ export const PremiumHeader = ({
   subscriptionTier, 
   onSignOut, 
   onToggleDevMode,
-  onProfileClick 
+  onProfileClick,
+  onGrownUpSettings = onProfileClick,
 }: PremiumHeaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
-  const { activeChild } = useChildProfiles();
 
-  const { open, openMobile, isMobile } = useSidebar();
+  const { open, openMobile, isMobile, toggleSidebar } = useSidebar();
   const isSidebarOpen = isMobile ? openMobile : open;
 
   // Set CSS var for header height so sidebar can offset on tablets
@@ -91,177 +96,133 @@ export const PremiumHeader = ({
     };
   }, []);
 
-  const getAvatarUrl = useMemo(() => {
-    return AvatarUtils.getAvatarUrlWithFallback(
-      activeChild?.avatar,
-      userInfo.avatar
-    );
-  }, [activeChild?.avatar, userInfo.avatar]);
-
-  const getDisplayName = useMemo(() => {
-    return activeChild ? activeChild.display_name : userInfo.name;
-  }, [activeChild?.display_name, userInfo.name]);
-
-  const getDisplayGrade = useMemo(() => {
-    return activeChild ? activeChild.grade_level : userInfo.grade;
-  }, [activeChild?.grade_level, userInfo.grade]);
-
-  const getDisplayAge = useMemo(() => {
-    if (activeChild) {
-      const currentYear = new Date().getFullYear();
-      const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-indexed
-      const birthYear = activeChild.birth_year;
-      const birthMonth = activeChild.birth_month;
-      
-      let age = currentYear - birthYear;
-      if (currentMonth < birthMonth) {
-        age--;
-      }
-      return age;
-    }
-    return userInfo.age;
-  }, [activeChild?.birth_year, activeChild?.birth_month, userInfo.age]);
-
-  const getInitial = useMemo(() => {
-    const displayName = activeChild ? activeChild.display_name : userInfo.name;
-    return displayName.charAt(0).toUpperCase();
-  }, [activeChild?.display_name, userInfo.name]);
-
-  const hasSelectedAvatar = useMemo(() => {
-    return AvatarUtils.hasValidAvatarData(activeChild?.avatar) || 
-           AvatarUtils.hasValidAvatarData(userInfo.avatar);
-  }, [activeChild?.avatar, userInfo.avatar]);
+  const { children, activeChild, setActiveChild, loading: childrenLoading } = useChildProfiles();
+  const [switchingTo, setSwitchingTo] = useState<string | null>(null);
 
   return (
     <header ref={headerRef} className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-[70]">
-      <div className="container mx-auto px-4 pr-[env(safe-area-inset-right)] py-3">
+      <div className="container mx-auto px-3 sm:px-4 pr-[env(safe-area-inset-right)] py-2 sm:py-3">
         <div className="flex justify-between items-center gap-2 min-w-0">
           {/* Logo and Title */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            {/* Enhanced Mobile Sidebar Toggle */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarTrigger 
-                    aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"} 
-                    className="mr-1 md:hidden h-9 w-9 hover:bg-muted/50 rounded-md transition-colors" 
-                  />
-                </TooltipTrigger>
-                <TooltipContent side="bottom">{isSidebarOpen ? 'Close navigation' : 'Open navigation'}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            {/* Enhanced Desktop/Tablet trigger */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarTrigger 
-                    aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"} 
-                    className="hidden md:inline-flex mr-2 h-9 w-9 hover:bg-muted/50 rounded-md transition-colors" 
-                  />
-                </TooltipTrigger>
-                <TooltipContent side="bottom">{isSidebarOpen ? 'Close navigation' : 'Open navigation'}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <div className="p-2 bg-gradient-primary rounded-lg">
-              <Clock className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <button
-                onClick={() => (window.location.href = '/')}
-                className="text-left text-xl font-bold text-gray-800 truncate max-w-[50vw] sm:max-w-none hover:underline story-link"
-                aria-label="Go to Time2Read Home"
-              >
-                Time2Read
-              </button>
-              <div className="flex items-center gap-2">
-                <p className="hidden sm:block text-sm text-gray-600">Welcome back!</p>
-                {showDevTools && devTestMode && (
-                  <Badge variant="outline" className="border-orange-500 text-orange-600 text-xs">
-                    <Bug className="w-3 h-3 mr-1" />
-                    Test Mode
-                  </Badge>
-                )}
-              </div>
-            </div>
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+            {/* Labelled menu button (no bare icons) */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={toggleSidebar}
+              aria-expanded={isSidebarOpen}
+              aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
+              className="h-10 px-2 sm:px-3 shrink-0 gap-0"
+              data-testid="menu-button"
+            >
+              <span aria-hidden className="text-lg leading-none">☰</span>
+              <span className="ml-1 text-xs sm:text-sm">Menu</span>
+            </Button>
+            <a href="/" className="flex items-center gap-1 sm:gap-2 min-w-0" aria-label="Time-2-Read home">
+              <img src="/icon-192.png" alt="" className="h-8 w-8 sm:h-9 sm:w-9 shrink-0" />
+              <span className="text-sm sm:text-xl font-bold text-gray-900 whitespace-nowrap">Time-2-Read</span>
+            </a>
+            {showDevTools && devTestMode && (
+              <Badge variant="outline" className="border-orange-500 text-orange-600 text-xs">
+                <Bug className="w-3 h-3 mr-1" />
+                Test Mode
+              </Badge>
+            )}
           </div>
 
           {/* Enhanced User Avatar and Actions */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
 
-            {/* Enhanced Avatar with Dropdown + Child badge overlay */}
-            <div className="relative">
-              <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="relative z-10 flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
-                  >
-                    <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
-                      <AvatarImage 
-                        src={getAvatarUrl} 
-                        alt={getDisplayName}
-                        onError={(e) => {
-                          DebugLogger.warn('ui', 'Avatar image failed to load', { url: getAvatarUrl, error: e });
-                        }}
-                        onLoad={() => {
-                          DebugLogger.log('ui', 'Avatar image loaded successfully', { url: getAvatarUrl });
-                        }}
-                      />
-                      <AvatarFallback className="bg-gradient-primary text-white text-sm font-semibold">
-                        {getInitial}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="text-left hidden sm:block">
-                      <p className="text-sm font-medium text-gray-800 truncate max-w-[120px]">{getDisplayName}</p>
-                      <p className="text-xs text-gray-600 truncate max-w-[120px]">
-                        {gradeLabel(getDisplayGrade)}
-                      </p>
-                    </div>
-                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform data-[state=open]:rotate-180" />
-                  </Button>
-                </DropdownMenuTrigger>
-                
-                <DropdownMenuContent align="end" className="w-56 z-[75] bg-popover shadow-md">
-                  <div className="px-3 py-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium">{getDisplayName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {getDisplayAge} years old • {gradeLabel(getDisplayGrade)}
-                        </p>
-                      </div>
-                      {(hasPremium ?? isPremium) && (
-                        <div className="flex items-center text-primary" aria-label="Premium">
-                          <Crown className="w-4 h-4" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuItem onClick={onProfileClick} className="cursor-pointer">
-                    <User className="w-4 h-4 mr-2" />
-                    Edit Profile
-                  </DropdownMenuItem>
-                  
-                  {showDevTools && (
-                    <DropdownMenuItem onClick={onToggleDevMode} className="cursor-pointer">
-                      <Bug className="w-4 h-4 mr-2" />
-                      {devTestMode ? 'Disable' : 'Enable'} Test Mode
-                    </DropdownMenuItem>
+            {/* "Reading as: Maya ▾": every child, + Add a child, Grown-up settings */}
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-3 py-1.5 sm:py-2 h-auto rounded-lg border hover:bg-gray-100 shrink-0"
+                  data-testid="reader-switcher"
+                  aria-label={activeChild ? `Reading as ${activeChild.display_name}. Tap to switch child` : "Add a child"}
+                >
+                  {activeChild ? (
+                    <img src={childAvatarUrl(activeChild)} alt="" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover ring-2 ring-primary" />
+                  ) : (
+                    <span className="w-8 h-8 rounded-full border border-dashed flex items-center justify-center"><Plus className="w-4 h-4" /></span>
                   )}
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuItem onClick={onSignOut} className="cursor-pointer text-red-600">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
+                  <span className="text-left leading-tight">
+                    <span className="block text-[11px] text-gray-600">{activeChild ? "Reading as" : childrenLoading ? "Loading…" : "Who's reading?"}</span>
+                    <span className="block text-sm font-semibold text-gray-900 max-w-[5.5rem] sm:max-w-[10rem] truncate" data-testid="reader-name">
+                      {activeChild ? activeChild.display_name : childrenLoading ? "" : "Add a child"}
+                    </span>
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end" className="w-72 z-[75] bg-popover shadow-md">
+                <DropdownMenuLabel>Who's reading?</DropdownMenuLabel>
+                {children.map((c) => {
+                  const current = activeChild?.id === c.id;
+                  return (
+                    <DropdownMenuItem
+                      key={c.id}
+                      className="cursor-pointer gap-3 py-2"
+                      data-testid="reader-option"
+                      onSelect={async (e) => {
+                        if (current) return;
+                        e.preventDefault();
+                        setSwitchingTo(c.id);
+                        try {
+                          await setActiveChild(c.id);
+                          toast.success(`${c.display_name} is reading now`);
+                          setIsDropdownOpen(false);
+                        } catch (err) {
+                          toast.error(err instanceof Error ? err.message : "Please try again.");
+                        } finally {
+                          setSwitchingTo(null);
+                        }
+                      }}
+                    >
+                      <img src={childAvatarUrl(c)} alt="" className={`w-9 h-9 rounded-full object-cover ${current ? "ring-2 ring-primary" : ""}`} />
+                      <span className="flex-1 min-w-0">
+                        <span className="block font-medium truncate">{c.display_name}</span>
+                        {childSummary(c) && <span className="block text-xs text-muted-foreground">{childSummary(c)}</span>}
+                      </span>
+                      {switchingTo === c.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" aria-label="Switching" />
+                      ) : current ? (
+                        <span className="text-primary font-bold" aria-label="Reading now">✓</span>
+                      ) : null}
+                    </DropdownMenuItem>
+                  );
+                })}
+                <DropdownMenuItem className="cursor-pointer" onSelect={() => openChildDialog()} data-testid="header-add-child">
+                  <Plus className="w-4 h-4 mr-2" />
+                  {children.length ? "Add another child" : "Add a child"}
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                  Grown-up{(hasPremium ?? isPremium) ? " · Premium" : ""}
+                </DropdownMenuLabel>
+                <DropdownMenuItem onSelect={onGrownUpSettings} className="cursor-pointer">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Grown-up settings (plan, code, children)
+                </DropdownMenuItem>
+
+                {showDevTools && (
+                  <DropdownMenuItem onClick={onToggleDevMode} className="cursor-pointer">
+                    <Bug className="w-4 h-4 mr-2" />
+                    {devTestMode ? 'Disable' : 'Enable'} Test Mode
                   </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <ChildQuickSwitcher className="absolute bottom-[-14px] -left-5 z-0 md:-bottom-1 md:-left-4" size="sm" />
-            </div>
+                )}
+
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onSignOut} className="cursor-pointer text-red-600">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

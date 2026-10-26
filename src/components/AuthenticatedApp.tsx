@@ -26,6 +26,9 @@ import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { devToolsAllowed } from "@/lib/devTools";
 import { codeFromUrl, premiumUntilLabel, redeemAccessCode } from "@/lib/accessCode";
 import { toast } from "sonner";
+import { useChildProfiles } from "@/hooks/useChildProfiles";
+import { ChildDialog } from "@/components/children/ChildDialog";
+import { FirstChildScreen } from "@/components/children/FirstChildScreen";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { DiscountActivationBanner } from "@/components/DiscountActivationBanner";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
@@ -99,6 +102,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   // Authoritative billing status from database for gating premium features
   const { isPremium: isSubscriptionActive, loading: subLoading, premiumUntil } = useCachedSubscriptionStatus(user.id);
   const showDevTools = devToolsAllowed(user);
+  // The grown-up owns the account; children are the readers.
+  const { children: childProfiles, loading: childrenLoading, error: childrenError } = useChildProfiles();
+  const parentName = (user.user_metadata?.display_name as string | undefined) ?? null;
   // While subscription status is loading, assume active to prevent a flash of the paywall
   const hasPaidAccess = subLoading ? true : isSubscriptionActive;
   // Narration voice follows the PAID status only: free accounts get the browser voice,
@@ -688,6 +694,16 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
     return <AdaptiveEnhancedLoading isPremium={isPremium} />;
   }
 
+  // First run: add the first child before anything else (then New Story).
+  if (!childrenLoading && !childrenError && childProfiles.length === 0 && currentView !== "account") {
+    return (
+      <>
+        <FirstChildScreen parentName={parentName} hasPremium={!subLoading && !!isSubscriptionActive} premiumUntil={premiumUntil} />
+        <ChildDialog />
+      </>
+    );
+  }
+
   // Handle post-90-day email confirmation requirement
   if (currentView === "email-confirmation-required") {
     return (
@@ -770,7 +786,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               setCurrentView(view as AppView);
             }}
             userInfo={userInfo}
-            isPremium={isPremium}
+            isPremium={effectiveSubscriptionActive}
+            hasPremium={!subLoading && !!isSubscriptionActive}
           />
           
           <div className="flex-1 flex flex-col min-w-0 min-h-0">
@@ -783,7 +800,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               subscriptionTier={subscriptionTier || undefined}
               onSignOut={handleSignOut}
               onToggleDevMode={toggleDevTestMode}
-              onProfileClick={() => setIsEditingProfile(true)}
+              onProfileClick={() => setCurrentView("account")}
+              onGrownUpSettings={() => { setIsEditingProfile(false); setCurrentView("account"); }}
             />
 
             <main className="flex-1 min-h-0 overflow-y-auto overscroll-auto mobile-scroll h-[calc(100dvh-var(--app-header-height))] p-2 sm:p-4 md:p-6">
@@ -806,7 +824,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                   <span>
                     {freeStories.remaining} of {freeStories.limit} free stories left. Then try Premium free for {TRIAL_DAYS} days.
                   </span>
-                  <span className="flex gap-3">
+                  <span className="flex items-center gap-4">
                     <button type="button" className="font-medium text-primary underline" onClick={() => setCurrentView("account")}>Have a code?</button>
                     <a href="/pricing" className="font-medium text-primary underline">See plans</a>
                   </span>
@@ -1003,6 +1021,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           </div>
         </div>
         
+        <ChildDialog />
         {/* System health badge removed for cleaner interface */}
         {/* <DismissibleSystemStatus className="fixed bottom-4 left-4 w-80 max-h-96 overflow-auto z-40" /> */}
       </SidebarProvider>

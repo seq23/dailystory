@@ -186,7 +186,7 @@ export async function mockSupabase(page: Page, init: Partial<MockState> = {}): P
       const prefer = req.headers()["prefer"] ?? "";
       const returnRows = (list: Row[]) => {
         if (wantsObject) return list.length === 1 ? json(route, list[0]) : json(route, { code: "PGRST116", message: "0 rows" }, 406);
-        if (!prefer.includes("return=representation") && method !== "GET") return route.fulfill({ status: 201, headers: { "access-control-allow-origin": "*" } });
+        if (!prefer.includes("return=representation") && method !== "GET") return route.fulfill({ status: method === "POST" ? 201 : 204, headers: { "access-control-allow-origin": "*" } });
         return json(route, list, 200, { "content-range": `0-${Math.max(0, list.length - 1)}/${list.length}` });
       };
       if (method === "GET" || method === "HEAD") {
@@ -205,8 +205,14 @@ export async function mockSupabase(page: Page, init: Partial<MockState> = {}): P
         const items: Row[] = Array.isArray(body) ? body : [body];
         const conflict = params.get("on_conflict");
         const out: Row[] = [];
+        // Unique keys the real schema has (a duplicate insert is a 409, as in Postgres).
+        const UNIQUE: Record<string, string> = { user_preferences: "user_id", subscribers: "email" };
         for (const item of items) {
           const key = conflict ?? (prefer.includes("merge-duplicates") ? "id" : null);
+          const uniq = UNIQUE[name];
+          if (!key && uniq && item[uniq] != null && rows.some((r) => r[uniq] === item[uniq])) {
+            return json(route, { code: "23505", message: `duplicate key value violates unique constraint "${name}_${uniq}_key"` }, 409);
+          }
           const hit = key ? rows.find((r) => item[key] != null && r[key] === item[key]) : null;
           if (hit) {
             Object.assign(hit, item, { updated_at: new Date().toISOString() });

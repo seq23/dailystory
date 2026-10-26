@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useChildProfiles } from "@/hooks/useChildProfiles";
+import { childAvatarUrl, childSummary } from "@/components/children/childInfo";
 import { TagInput } from "@/components/ui/tag-input";
 import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
 import { ValidationFeedback } from "@/components/ValidationFeedback";
@@ -10,6 +12,8 @@ import { spellcheckService } from "@/services/spellcheckService";
 import { supabase } from "@/integrations/supabase/client";
 import { Globe, Loader2 } from "lucide-react";
 import { DebugLogger } from '@/services/DebugLogger';
+const STORY_IDEAS = ["Animals", "Space", "Dinosaurs", "Ocean", "Friendship", "Sports", "Mystery", "Something funny"];
+
 interface SpecialRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -28,6 +32,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
   mode = 'refresh',
 }) => {
   const [value, setValue] = useState(initialValue);
+  const { children, activeChild, setActiveChild } = useChildProfiles();
   const [targetVocab, setTargetVocab] = useState<string>("");
   const { validationState, validateFormOnSubmit, resetValidation } = useValidationOnSubmit();
   
@@ -275,25 +280,55 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
   };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-label="Update special requests before generating a new story">
+      <DialogContent className="max-h-[100dvh] overflow-y-auto" aria-label={mode === 'new' ? "Start a new story" : "Change this story"} data-testid="new-story-dialog">
         <DialogHeader>
-          <DialogTitle>Add your magic!</DialogTitle>
-          <DialogDescription>
-            Update any special requests. These guide the AI when creating your next page-by-page story.
-          </DialogDescription>
+          <DialogTitle>{mode === 'new' ? "New story" : "Change this story"}</DialogTitle>
+          <DialogDescription>Everything here is optional. Tap "{mode === 'new' ? "Write story" : "Refresh story"}" when you're ready.</DialogDescription>
         </DialogHeader>
+
+        {/* Who the story is for */}
+        {children.length > 0 && (
+          <div className="flex items-center gap-3 rounded-lg border p-3" data-testid="story-for">
+            {activeChild && <img src={childAvatarUrl(activeChild)} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-primary" />}
+            <label htmlFor="story-for-child" className="text-sm font-medium shrink-0">Story for:</label>
+            <select
+              id="story-for-child"
+              className="h-10 min-w-0 flex-1 rounded-md border bg-background px-2 text-base"
+              value={activeChild?.id ?? ""}
+              disabled={isGenerating}
+              onChange={(e) => { setActiveChild(e.target.value).catch(() => {}); }}
+            >
+              {children.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.display_name}{childSummary(c) ? ` (${childSummary(c)})` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="space-y-2">
-          <label htmlFor="special-requests" className="text-sm font-medium text-muted-foreground">
-            Special requests (optional)
+          <label htmlFor="special-requests" className="text-sm font-semibold">
+            What should it be about? <span className="font-normal text-muted-foreground">(optional)</span>
           </label>
+          <div className="flex flex-wrap gap-2" aria-label="Ideas: tap to add">
+            {STORY_IDEAS.map((idea) => (
+              <button
+                key={idea}
+                type="button"
+                className="rounded-full border px-3 py-1.5 text-sm hover:border-primary"
+                onClick={() => handleInputChange('specialRequest', value.trim() ? `${value.trim()}, ${idea.toLowerCase()}` : idea)}
+              >
+                + {idea}
+              </button>
+            ))}
+          </div>
           <Textarea
             id="special-requests"
-            placeholder={`Themes: underwater adventure AND friendship --> Enter
-Characters: brave princess AND talking dragon --> Enter
-Setting: magical forest AND cozy cottage --> Enter`}
+            placeholder="For example: a dolphin who is scared of the dark"
             value={value}
             onChange={(e) => handleInputChange('specialRequest', e.target.value)}
-            className={`min-h-[120px] placeholder:text-xs ${validationErrors.specialRequest?.length > 0 ? 'border-destructive' : ''}`}
+            className={`min-h-[90px] text-base ${validationErrors.specialRequest?.length > 0 ? 'border-destructive' : ''}`}
             spellCheck="true"
           />
           
@@ -340,23 +375,15 @@ Setting: magical forest AND cozy cottage --> Enter`}
             </div>
           )}
           
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            <span className="font-medium">This format helps our system provide best results:</span><br/>
-            <span className="text-muted-foreground/80">
-              Themes: underwater adventure AND friendship →Enter<br/>
-              Setting: Pacific Ocean AND Hawaii →Enter<br/>
-              Characters: story about a dolphin named Brian →Enter
-            </span>
-          </p>
         </div>
         <div className="space-y-2 mt-4">
-          <label htmlFor="target-vocab" className="text-sm font-medium text-muted-foreground">
-            Target vocabulary (optional)
+          <label htmlFor="target-vocab" className="text-sm font-semibold">
+            Any words to practice? <span className="font-normal text-muted-foreground">(optional)</span>
           </label>
           <TagInput
             value={targetVocab}
             onChange={(value) => handleInputChange('targetVocabulary', value)}
-            placeholder="ocean, brave, explore"
+            placeholder="Type a word, then press Enter"
             validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'general')}
             validationError={validationErrors.targetVocabulary}
           />
@@ -404,7 +431,7 @@ Setting: magical forest AND cozy cottage --> Enter`}
             </div>
           )}
           
-          <p className="text-xs text-muted-foreground">Words here will guide the AI to include them in the next story.</p>
+          <p className="text-xs text-muted-foreground">We'll use these words in the story.</p>
         </div>
         
         <ValidationFeedback
@@ -417,10 +444,11 @@ Setting: magical forest AND cozy cottage --> Enter`}
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isGenerating}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isGenerating}>
+          <Button onClick={handleSubmit} disabled={isGenerating} className="min-h-11" data-testid="write-story">
+            {isGenerating && <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden />}
             {isGenerating 
-              ? (mode === 'new' ? "Writing..." : "Refreshing...") 
-              : (mode === 'new' ? "Write story" : "Refresh story")
+              ? (mode === 'new' ? "Writing your story…" : "Refreshing…") 
+              : (mode === 'new' ? (activeChild ? `Write ${activeChild.display_name}'s story` : "Write story") : "Refresh story")
             }
           </Button>
         </DialogFooter>

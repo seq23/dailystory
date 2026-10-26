@@ -10,6 +10,7 @@ import { ConsentWithdrawal } from "@/components/ConsentWithdrawal";
 import { freeFeatures, premiumFeatures as topPremiumFeatures, additionalOfferings } from "@/constants/featureLists";
 import { Badge } from "@/components/ui/badge";
 import { premiumUntilLabel } from "@/lib/accessCode";
+import { ChildrenList } from "@/components/children/ChildrenList";
 import { FREE_STORY_LIMIT } from "@/lib/freeStoryAllowance";
 
 interface MyAccountProps {
@@ -38,7 +39,7 @@ export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMod
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-foreground">My Account</h1>
+            <h1 className="text-2xl font-bold text-foreground">Grown-up settings</h1>
             <Badge variant={isPremium ? 'premium' : 'guest'} className="text-xs">
               {isPremium ? 'Premium' : 'Free'}
             </Badge>
@@ -56,7 +57,10 @@ export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMod
         </div>
       </div>
 
-      {/* Plan, code and billing first: the things a parent comes here for */}
+      {/* Children first: who reads under this account */}
+      <ChildrenList />
+
+      {/* Plan, code and billing: the things a parent comes here for */}
       <SubscriptionManager showComparison={false} />
 
       <PasswordChangeForm />
