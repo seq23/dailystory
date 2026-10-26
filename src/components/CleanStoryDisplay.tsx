@@ -3270,7 +3270,7 @@ const handleDockCoach = () => {
     try { sessionStorage.setItem('last_user_info', JSON.stringify(userInfo)); } catch {}
     if (displayedStory.length) {
       try { sessionStorage.setItem('last_story_text', displayedStory.join(' ')); } catch {} // Keep full story for upgrades
-      saveLastReadStory({ text: displayedStory.join(' '), title: storyTitle || '', pagesRead, wordsRead: totalWordsRead, grade: levelRef.current.grade, readingLevel: levelRef.current.readingLevel });
+      saveLastReadStory({ text: displayedStory.join(' '), title: storyTitle || '', pagesRead, wordsRead: totalWordsRead, grade: levelRef.current.grade, readingLevel: levelRef.current.readingLevel, practiceWords });
     }
     onSessionEnded(sessionStats);
   };

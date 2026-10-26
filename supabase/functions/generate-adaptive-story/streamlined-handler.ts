@@ -3,7 +3,7 @@
 // Uses shared validation utilities for consistent page generation
 
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, normalizeGradeFormat, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
-import { expertGradeForGrade } from "../_shared/grades.ts";
+import { expertGradeForGrade, audienceThemesForSystemPrompt } from "../_shared/grades.ts";
 import { chatCompletionWithFallback, lastProviderAttempts } from "../_shared/storyTextProvider.ts";
 import { logStoryFailure } from "../_shared/storyFailureLog.ts";
 import { practiceWordsFromPrompt, missingPracticeWords, practiceWordsRequired, weaveMissingWords } from "../_shared/practiceWords.ts";
@@ -245,6 +245,8 @@ export async function handleStreamlinedGeneration(requestBody: any) {
 
     // Bundle already contains resolved natural language - use directly
     let finalSystemPrompt = promptConfig.systemPrompt;
+    // Words from Reads at, themes from the real age: the THEMES line outranks "mature themes" (../_shared/grades.ts).
+    finalSystemPrompt += audienceThemesForSystemPrompt(bundle.storyContent);
     let finalUserPrompt = bundle.storyContent;
 
     // Parse control line from bundle - Enhanced with fail-soft defaults
@@ -1283,6 +1285,8 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         currentModelIndex++;
         retriesOnCurrentModel = 0;
         if (currentModelIndex >= modelProgression.length) {
+          // A good first answer held back only for a practice-word retry is kept (woven in below).
+          if (practiceFallbackText) break;
           console.error('❌ All AI generation attempts failed');
           throw new Error('All AI generation attempts failed');
         }
@@ -1293,6 +1297,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       attempt++;
       
       if (attempt > maxAttempts) {
+        if (practiceFallbackText) break;
         console.error('❌ Maximum attempts reached');
         throw new Error('All AI generation attempts failed');
       }

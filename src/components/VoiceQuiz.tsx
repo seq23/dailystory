@@ -8,7 +8,7 @@ import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 import { useToast } from '@/components/ui/use-toast';
 import type { UserInfo } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
-import { loadStoryQuiz, type QuizQuestion } from '@/lib/quiz';
+import { loadStoryQuiz, quizCacheKey, readCachedQuiz, type QuizQuestion } from '@/lib/quiz';
 import { saveQuizAttempt } from '@/hooks/useActivityPersistence';
 
 type Question = QuizQuestion;
@@ -25,14 +25,6 @@ interface VoiceQuizProps {
   practiceWords?: string[];
 }
 
-// Simple hash for caching quiz per story
-const hashStory = (text: string): string => {
-  let hash = 0;
-  for (let i = 0; i < Math.min(text.length, 500); i++) {
-    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
-  }
-  return `quiz_${hash}`;
-};
 
 export const VoiceQuiz: React.FC<VoiceQuizProps> = ({ 
   userInfo, 
@@ -79,17 +71,14 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
     setGenerationError(null);
 
     // Check cache
-    const cacheKey = hashStory(storyText);
+    const cacheKey = quizCacheKey({ storyText, userInfo: userInfo as any, storyGrade, practiceWords });
     try {
-      const cached = sessionStorage.getItem(cacheKey);
+      const cached = readCachedQuiz(sessionStorage.getItem(cacheKey));
       if (cached) {
-        const parsed = JSON.parse(cached) as Question[];
-        if (parsed.length > 0) {
-          setQuestions(parsed);
-          setAnswers(new Array(parsed.length).fill(null));
-          setIsGenerating(false);
-          return;
-        }
+        setQuestions(cached.questions as Question[]);
+        setAnswers(new Array(cached.questions.length).fill(null));
+        setIsGenerating(false);
+        return;
       }
     } catch {}
 
@@ -99,7 +88,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
       if (!quiz.questions.length) throw new Error('This story is too short for a quiz');
       setQuestions(quiz.questions);
       setAnswers(new Array(quiz.questions.length).fill(null));
-      try { sessionStorage.setItem(cacheKey, JSON.stringify(quiz.questions)); } catch {}
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ questions: quiz.questions, source: quiz.source })); } catch {}
     } catch (err: any) {
       DebugLogger.error('ui', 'Voice quiz could not be built', err);
       setGenerationError(err?.message || 'Could not make a quiz for this story');
