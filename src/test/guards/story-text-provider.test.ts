@@ -19,6 +19,8 @@ import {
   cloudflareChatUrl,
 } from "../../../supabase/functions/_shared/storyTextProvider";
 import { deidentify } from "../../../supabase/functions/_shared/deidentify";
+import { storyTextProblem, stripReasoning, jsonAnswerProblem } from "../../../supabase/functions/_shared/storyOutputCheck";
+import { MIN_THIRD_PARTY_TOKENS } from "../../../supabase/functions/_shared/storyTextProvider";
 import { parseModelJson, builtInWordEntry, freeDictionaryLookup } from "../../../supabase/functions/_shared/wordFallback";
 
 const ROOT = join(__dirname, "../../..");
@@ -101,6 +103,69 @@ describe("the chain: free first, paid last", () => {
   it("no Gemini and no Lovable gateway in the text chain", () => {
     const src = read("supabase/functions/_shared/storyTextProvider.ts");
     expect(src).not.toMatch(/generativelanguage\.googleapis|ai\.gateway\.lovable|"google\/gemini/);
+  });
+});
+
+// The exact text a child saw as page 1 on 26 Oct 2026 (a free reasoning model's planning).
+const LIVE_BAD_PAGE = "Let me analyze the requirements carefully: Continuous narrative with";
+const GOOD_PAGE = "Aiden found a big green egg in the sand. It wiggled and cracked open. A tiny dinosaur blinked up at him and said, \"Rawr!\" Aiden laughed and gave it a gentle pat.";
+
+describe("only real story text reaches a page", () => {
+  beforeEach(() => resetProviderCircuit());
+
+  it("the live 26 Oct planning text is rejected; a real page passes", () => {
+    expect(storyTextProblem(LIVE_BAD_PAGE, "stop")).toMatch(/planning text/);
+    expect(storyTextProblem(GOOD_PAGE, "stop")).toBeNull();
+  });
+
+  it("rejects truncation, too-short text, markdown, JSON, and meta talk anywhere", () => {
+    expect(storyTextProblem(GOOD_PAGE, "length")).toMatch(/truncated/);
+    expect(storyTextProblem("Aiden found a big green egg in the sand and it", "stop")).toMatch(/cut off/);
+    expect(storyTextProblem("Aiden ran.", "stop")).toMatch(/too short/);
+    expect(storyTextProblem("# Page 1\n" + GOOD_PAGE, "stop")).toMatch(/markdown/);
+    expect(storyTextProblem('{"page":"' + GOOD_PAGE + '"}', "stop")).toMatch(/JSON/);
+    expect(storyTextProblem("Here is the story: " + GOOD_PAGE, "stop")).toMatch(/planning/);
+    expect(storyTextProblem(GOOD_PAGE + " As an AI, I hope you liked it.", "stop")).toMatch(/planning/);
+  });
+
+  it("strips <think> blocks, closed or not", () => {
+    expect(stripReasoning("<think>plan the plot</think>" + GOOD_PAGE)).toBe(GOOD_PAGE);
+    expect(stripReasoning(GOOD_PAGE + "<think>more planning")).toBe(GOOD_PAGE);
+    expect(storyTextProblem("<think>Let me analyze</think>" + GOOD_PAGE, "stop")).toBeNull();
+  });
+
+  it("a rejected answer moves the chain to the next model, and the page gets the real story", async () => {
+    const r = scripted((_u, _b, n) => new Response(answer(n === 1 ? LIVE_BAD_PAGE : GOOD_PAGE.replace(/Aiden/g, "Kiki")), { status: 200 }));
+    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), accept: (t, f) => storyTextProblem(t, f) });
+    expect(r.calls.map((c) => c.body.model)).toEqual(OPENROUTER_FREE_MODELS.slice(0, 2));
+    expect(out.attempts[0].error).toMatch(/rejected: planning text/);
+    expect((await out.response.json()).choices[0].message.content).toBe(GOOD_PAGE);
+  });
+
+  it("when every model writes planning text, nothing is served (the caller falls back to Backup Mode)", async () => {
+    const r = scripted(() => new Response(answer(LIVE_BAD_PAGE), { status: 200 }));
+    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), accept: (t, f) => storyTextProblem(t, f) });
+    expect(out.response.ok).toBe(false);
+    expect(out.attempts.every((a) => /rejected/.test(a.error ?? ""))).toBe(true);
+  });
+
+  it("OpenRouter is asked for no reasoning and a budget that cannot cut a page off; reasoning fields never reach the caller", async () => {
+    const withReasoning = JSON.stringify({ choices: [{ finish_reason: "stop", message: { content: GOOD_PAGE, reasoning: "Let me analyze" } }] });
+    const r = scripted(() => new Response(withReasoning, { status: 200 }));
+    const out = await chatCompletionWithFallback({ ...BODY, max_completion_tokens: 150 }, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
+    expect(r.calls[0].body.reasoning).toEqual({ enabled: false, exclude: true });
+    expect(r.calls[0].body.max_tokens).toBeGreaterThanOrEqual(MIN_THIRD_PARTY_TOKENS);
+    expect((await out.response.json()).choices[0].message.reasoning).toBeUndefined();
+  });
+
+  it("every caller checks its answers", () => {
+    const handler = read("supabase/functions/generate-adaptive-story/streamlined-handler.ts");
+    expect((handler.match(/accept: \(text, finishReason\) => storyTextProblem\(text, finishReason\)/g) || []).length).toBe(2);
+    expect(handler).toMatch(/errorType: 'output_rejected'/);
+    expect(read("supabase/functions/word-dictionary/index.ts")).toMatch(/accept: jsonAnswerProblem\('definition'\)/);
+    for (const fn of ["translate-universal", "correct-spelling"]) expect(read(`supabase/functions/${fn}/index.ts`), fn).toMatch(/accept: plainAnswerProblem/);
+    expect(jsonAnswerProblem("definition")('{"definition":"Sure of yourself."}', "stop")).toBeNull();
+    expect(jsonAnswerProblem("definition")(LIVE_BAD_PAGE, "stop")).toBe("not JSON");
   });
 });
 
@@ -197,7 +262,7 @@ describe("generate-adaptive-story wiring", () => {
 
   it("starts when any one provider of the chain has a key, and passes the child's name for masking", () => {
     expect(handler).toMatch(/\['OPENROUTER_API_KEY', 'CLOUDFLARE_WORKERS_AI_TOKEN', 'OPENAI_API_KEY'\]\.some/);
-    expect(handler).toMatch(/chatCompletionWithFallback\(apiBody, \{ privateNames: \[userInfo\?\.name/);
+    expect(handler).toMatch(/chatCompletionWithFallback\(apiBody, \{\s*privateNames: \[userInfo\?\.name/);
   });
 
   it("writes every failed story to story_generation_failures", () => {

@@ -6,6 +6,7 @@ import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPl
 import { expertGradeForGrade } from "../_shared/grades.ts";
 import { chatCompletionWithFallback, lastProviderAttempts } from "../_shared/storyTextProvider.ts";
 import { logStoryFailure } from "../_shared/storyFailureLog.ts";
+import { storyTextProblem } from "../_shared/storyOutputCheck.ts";
 import { 
   parseIntoPages as sharedParseIntoPages, 
   mapDifficultyToLevel,
@@ -953,7 +954,16 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         async () => {
           // Free first, paid last (../_shared/storyTextProvider.ts); the child's name is
           // masked on every free/third-party route and put back in the returned text.
-          const sent = await chatCompletionWithFallback(apiBody, { privateNames: [userInfo?.name, userInfo?.displayName] });
+          const sent = await chatCompletionWithFallback(apiBody, {
+            privateNames: [userInfo?.name, userInfo?.displayName],
+            // Only real story text reaches a page: no planning text, nothing cut off (../_shared/storyOutputCheck.ts).
+            accept: (text, finishReason) => storyTextProblem(text, finishReason),
+          });
+          const rejected = sent.attempts.filter((a) => (a.error ?? '').startsWith('rejected:'));
+          if (rejected.length) {
+            // Fire-and-forget: which model wrote something unusable, and why.
+            logStoryFailure({ stage: 'edge', errorType: 'output_rejected', message: rejected.map((a) => `${a.model}: ${a.error}`).join(' | '), providerAttempts: rejected, sessionId: sessionId ?? null, pageNumber: config?.pageNumber ?? null });
+          }
           console.log('📡 Story text provider', { provider: sent.provider, attempts: sent.attempts.map((a) => `${a.provider} ${a.model ?? ''} ${a.status ?? '-'}`) });
           return sent.response;
         },
@@ -1449,7 +1459,7 @@ Please generate the final story version with natural narrative flow.`;
       apiBody.temperature = 0.7;
     }
     
-    const { response } = await chatCompletionWithFallback(apiBody, { privateNames: privateNames.filter((n): n is string => !!n) });
+    const { response } = await chatCompletionWithFallback(apiBody, { privateNames: privateNames.filter((n): n is string => !!n), accept: (text, finishReason) => storyTextProblem(text, finishReason) });
     
     if (!response.ok) {
       console.warn('⚠️ Re-injection API call failed, using executed content as-is');

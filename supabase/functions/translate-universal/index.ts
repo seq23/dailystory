@@ -1,6 +1,7 @@
 // DIAGNOSTIC REDEPLOY: 2025-01-23T03:00:00Z - Force packaging inclusion
 console.log("[translate-universal] DIAGNOSTIC LOADED: 2025-01-23T03:00:00Z");
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
+import { plainAnswerProblem } from "../_shared/storyOutputCheck.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
@@ -114,7 +115,7 @@ async function detectIfEnglish(text: string, apiKey: string): Promise<boolean> {
         ],
         max_tokens: 5,
         temperature: 0,
-      })).response;
+      }, { accept: plainAnswerProblem })).response;
 
     if (!response.ok) return false;
     
@@ -208,7 +209,7 @@ Always use these exact translations for these words.`
       ],
       max_tokens: isToEnglish ? 100 : 200,
       temperature: isToEnglish ? 0.1 : 0.2,
-    })).response;
+    }, { accept: plainAnswerProblem })).response;
 
   if (!response.ok) {
     throw new Error(`OpenAI API error: ${response.status}`);
