@@ -1,11 +1,7 @@
 import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
 import type { AvatarType, SkinTone } from "@/types"
-import { DebugLogger } from '@/services/DebugLogger'
 
 interface AvatarSelection {
   type: AvatarType
@@ -50,120 +46,112 @@ const skinToneColors = {
   dark: "#8b5a3c"
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  boy: "Boy",
+  girl: "Girl",
+  "prefer-not-to-answer": "Other",
+}
+
+/** Small check-mark badge on whatever is selected, so the choice is never a guess. */
+const SelectedMark = () => (
+  <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold shadow ring-2 ring-background" aria-hidden>
+    ✓
+  </span>
+)
+
+export const avatarImageFor = (type: string | undefined, tone: string | undefined): string =>
+  avatarImages[(type as keyof typeof avatarImages) ?? "prefer-not-to-answer"]?.[(tone as SkinTone) ?? "medium"] ??
+  avatarImages["prefer-not-to-answer"].medium
+
+/**
+ * Pick a picture, then a skin tone. Each choice shows a thick ring, a ✓ and the
+ * word "Selected", so a parent on a phone always sees what is picked.
+ */
 export const AvatarPicker = React.forwardRef<
   HTMLDivElement,
   AvatarPickerProps
 >(({ value, onChange, className }, ref) => {
   const { t } = useTranslation()
-  
-  const handleTypeChange = (type: AvatarType) => {
-    onChange({ ...value, type })
-  }
-
-  const handleSkinToneChange = (skinTone: SkinTone) => {
-    onChange({ ...value, skinTone })
-  }
-
-  // Get avatar directly from the avatar images mapping
-  const currentAvatar = avatarImages[value.type as keyof typeof avatarImages]?.[value.skinTone]
-  
-  // Add debugging for avatar image selection
-  React.useEffect(() => {
-    DebugLogger.log('ui', 'AvatarPicker current selection:', {
-      type: value.type,
-      skinTone: value.skinTone,
-      currentAvatar,
-      imageExists: !!currentAvatar
-    });
-  }, [value.type, value.skinTone, currentAvatar]);
+  const types = Object.keys(avatarImages) as AvatarType[]
+  const tones = Object.keys(skinToneColors) as SkinTone[]
 
   return (
-    <div ref={ref} className={cn("space-y-4", className)}>
-      {/* Avatar Type Selection */}
-      <div className="space-y-3">
-        <Label className="text-lg font-semibold text-foreground">
-          {t("userInfoForm.fields.avatarTypes.label", "Avatar Type:")}
-        </Label>
-        <RadioGroup
-          value={value.type}
-          onValueChange={handleTypeChange}
-          className="flex gap-4 flex-wrap"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="boy" id="boy" />
-            <Label htmlFor="boy" className="text-base cursor-pointer">{t("userInfoForm.fields.avatarTypes.boy", "Boy")}</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="girl" id="girl" />
-            <Label htmlFor="girl" className="text-base cursor-pointer">{t("userInfoForm.fields.avatarTypes.girl", "Girl")}</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="prefer-not-to-answer" id="prefer-not-to-answer" />
-            <Label htmlFor="prefer-not-to-answer" className="text-base cursor-pointer">{t("userInfoForm.fields.avatarTypes.preferNotToAnswer", "Prefer not to answer")}</Label>
-          </div>
-        </RadioGroup>
-      </div>
-
-      {/* Skin Tone Selection */}
-      <div className="space-y-3">
-        <Label className="text-lg font-semibold text-foreground">
-          {t("userInfoForm.fields.skinTone.label", "Skin Tone:")}
-        </Label>
-        <div className="grid grid-cols-5 gap-3 max-w-sm mx-auto">
-          {(Object.keys(skinToneColors) as Array<keyof typeof skinToneColors>).map((tone) => (
-            <div key={tone} className="flex flex-col items-center gap-2">
-              <Button
+    <div ref={ref} className={cn("space-y-5", className)} data-testid="avatar-picker">
+      <fieldset className="space-y-2">
+        <legend className="text-base font-semibold text-foreground">
+          {t("avatarPicker.picture", "Picture")}
+        </legend>
+        <div className="grid grid-cols-3 gap-3 max-w-sm">
+          {types.map((type) => {
+            const selected = value.type === type
+            return (
+              <button
+                key={type}
                 type="button"
-                variant="outline"
-                onClick={() => handleSkinToneChange(tone)}
+                onClick={() => onChange({ ...value, type })}
+                aria-pressed={selected}
+                aria-label={`${TYPE_LABELS[type]} picture${selected ? ", selected" : ""}`}
+                data-testid={`avatar-type-${type}`}
                 className={cn(
-                  "w-12 h-12 rounded-full border-4 hover:scale-110 transition-all duration-200 hover:shadow-lg",
-                  value.skinTone === tone 
-                    ? "border-primary shadow-lg scale-110 ring-2 ring-primary/20" 
-                    : "border-gray-300 hover:border-primary/50"
+                  "relative flex flex-col items-center gap-1 rounded-xl p-2 transition",
+                  selected ? "ring-4 ring-primary bg-primary/10" : "ring-1 ring-border hover:ring-primary/50",
                 )}
-                style={{ backgroundColor: skinToneColors[tone] }}
-                aria-label={`${t("userInfoForm.fields.skinTone.select", "Select")} ${t(`userInfoForm.fields.skinTone.options.${tone}`, tone)} ${t("userInfoForm.fields.skinTone.label", "skin tone")}`}
-              />
-              <span className="text-xs text-muted-foreground text-center capitalize">
-                {t(`userInfoForm.fields.skinTone.options.${tone}`, tone)}
-              </span>
-            </div>
-          ))}
+              >
+                {selected && <SelectedMark />}
+                <img src={avatarImageFor(type, value.skinTone)} alt="" className="h-16 w-16 rounded-full object-cover" />
+                <span className="text-sm">{TYPE_LABELS[type]}</span>
+                <span className={cn("text-xs font-semibold", selected ? "text-primary" : "invisible")}>Selected</span>
+              </button>
+            )
+          })}
         </div>
-      </div>
+      </fieldset>
 
-      {/* Avatar Preview */}
-      {currentAvatar && (
-        <div className="space-y-3">
-          <Label className="text-lg font-semibold text-foreground">
-            {t("userInfoForm.fields.avatarPreview.label", "Your avatar:")}
-          </Label>
-          <div className="flex justify-center">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
-              <img
-                src={currentAvatar}
-                alt={`${value.type} avatar with ${value.skinTone} skin tone`}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  DebugLogger.error('ui', 'Avatar image failed to load:', {
-                    src: currentAvatar,
-                    type: value.type,
-                    skinTone: value.skinTone
-                  });
-                  // Use existing fallback image from avatar mapping
-                  const fallbackImage = avatarImages.boy[value.skinTone] || avatarImages.boy.medium;
-                  (e.target as HTMLImageElement).src = fallbackImage;
-                  DebugLogger.log('ui', 'Using fallback image:', fallbackImage);
-                }}
-                onLoad={() => {
-                  DebugLogger.log('ui', 'Avatar image loaded successfully:', currentAvatar);
-                }}
-              />
-            </div>
-          </div>
+      <fieldset className="space-y-2">
+        <legend className="text-base font-semibold text-foreground">
+          {t("avatarPicker.skinTone", "Skin tone")}
+        </legend>
+        <div className="grid grid-cols-5 gap-2 max-w-sm">
+          {tones.map((tone) => {
+            const selected = value.skinTone === tone
+            return (
+              <button
+                key={tone}
+                type="button"
+                onClick={() => onChange({ ...value, skinTone: tone })}
+                aria-pressed={selected}
+                aria-label={`${tone} skin tone${selected ? ", selected" : ""}`}
+                data-testid={`avatar-tone-${tone}`}
+                className="flex flex-col items-center gap-1"
+              >
+                <span
+                  className={cn(
+                    "relative h-11 w-11 rounded-full border-2",
+                    selected ? "ring-4 ring-primary ring-offset-2 border-white" : "border-gray-300",
+                  )}
+                  style={{ backgroundColor: skinToneColors[tone] }}
+                >
+                  {selected && <SelectedMark />}
+                </span>
+                <span className={cn("text-xs capitalize", selected ? "font-semibold text-primary" : "text-muted-foreground")}>
+                  {selected ? "Selected" : t(`userInfoForm.fields.skinTone.options.${tone}`, tone)}
+                </span>
+              </button>
+            )
+          })}
         </div>
-      )}
+      </fieldset>
+
+      <div className="flex items-center gap-3 rounded-lg bg-muted/40 p-3" data-testid="avatar-preview">
+        <img
+          src={avatarImageFor(value.type, value.skinTone)}
+          alt={`Chosen picture: ${TYPE_LABELS[value.type] ?? "Other"}, ${value.skinTone} skin tone`}
+          className="h-14 w-14 rounded-full object-cover ring-4 ring-primary"
+        />
+        <p className="text-sm">
+          <span className="font-semibold">Selected:</span> {TYPE_LABELS[value.type] ?? "Other"}, {value.skinTone} skin tone
+        </p>
+      </div>
     </div>
   )
 })

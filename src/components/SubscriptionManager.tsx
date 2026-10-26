@@ -150,7 +150,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Subscription Management</h2>
+        <h2 className="text-2xl font-bold">Your plan</h2>
         <Button 
           variant="outline" 
           size="sm" 
@@ -158,7 +158,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
           disabled={refreshing}
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Refresh Status
+          Check again
         </Button>
       </div>
 

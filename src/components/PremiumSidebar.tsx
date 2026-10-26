@@ -38,78 +38,37 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useLocation } from 'react-router-dom';
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useChildProfiles } from "@/hooks/useChildProfiles";
+import { childAvatarUrl } from "@/components/children/childInfo";
 
 interface PremiumSidebarProps {
   currentView: string;
   onViewChange: (view: string) => void;
   userInfo: UserInfo;
   isPremium: boolean;
+  /** Real Premium (paid or code), for the badge. isPremium only gates the menu. */
+  hasPremium?: boolean;
 }
 
+// Two calm groups: what the child uses, and what the grown-up manages.
+const GROUP_LABELS: Record<string, string> = {
+  child: "For your child",
+  grownup: "For grown-ups",
+};
+
 const sidebarItems = [
-  // Core Navigation
-  {
-    title: "Home",
-    url: "home",
-    icon: Home,
-    description: "Guide & FAQ",
-    premium: false,
-    group: "core"
-  },
-  {
-    title: "My Stories",
-    url: "stories",
-    icon: BookOpen,
-    description: "Read and create stories",
-    premium: false,
-    group: "core"
-  },
-  // Learning & Progress
-  {
-    title: "Progress Dashboard",
-    url: "progress",
-    icon: BarChart3,
-    description: "Track your reading journey",
-    premium: false,
-    group: "learning"
-  },
-  {
-    title: "Story Library", 
-    url: "library",
-    icon: Library,
-    description: "Saved stories & collections",
-    premium: true,
-    group: "learning"
-  },
-  // Settings & Profile
-  {
-    title: "Profile Settings",
-    url: "profile",
-    icon: Settings,
-    description: "Edit your reading profile",
-    premium: false,
-    group: "settings"
-  },
-  {
-    title: "Parent / Teacher Dashboard",
-    url: "parent",
-    icon: User,
-    description: "Parent controls & reports",
-    premium: false,
-    group: "settings"
-  },
-  {
-    title: "My Account",
-    url: "account",
-    icon: CreditCard,
-    description: "Manage subscription & settings",
-    premium: false,
-    group: "settings"
-  }
+  { title: "My Stories", url: "stories", icon: BookOpen, description: "Read or start a new story", premium: false, group: "child" },
+  { title: "Story Library", url: "library", icon: Library, description: "Saved stories", premium: true, group: "child" },
+  { title: "Progress", url: "progress", icon: BarChart3, description: "Stories read and words learned", premium: false, group: "child" },
+  { title: "Grown-up settings", url: "account", icon: CreditCard, description: "Children, plan, code, sign-in", premium: false, group: "grownup" },
+  { title: "Reading settings", url: "profile", icon: Settings, description: "Story language and reading level", premium: false, group: "grownup" },
+  { title: "Parent dashboard", url: "parent", icon: User, description: "Reports, word lists, controls", premium: false, group: "grownup" },
+  { title: "Help", url: "home", icon: Home, description: "How it works and questions", premium: false, group: "grownup" },
 ];
 
-export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium }: PremiumSidebarProps) => {
-  const { state, toggleSidebar } = useSidebar();
+export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium, hasPremium }: PremiumSidebarProps) => {
+  const { activeChild } = useChildProfiles();
+  const { state, toggleSidebar, openMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const collapsed = state === "collapsed";
   const { isMobileOrTablet } = useIsMobile();
@@ -125,6 +84,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   });
   const [imageToggleFeedback, setImageToggleFeedback] = useState(false);
   const [vocabOpen, setVocabOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -207,12 +167,10 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
         <div className="flex items-center gap-3">
           {!effectiveCollapsed && (
             <>
-              <div className="p-2 bg-gradient-primary rounded-lg">
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
+              <img src="/icon-192.png" alt="" className="h-10 w-10" />
               <div className="flex-1">
-                <h2 className="font-bold text-lg">Time2Read</h2>
-                {isPremium && (
+                <h2 className="font-bold text-lg">Time-2-Read</h2>
+                {hasPremium && (
                   <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs">
                     <Crown className="w-3 h-3 mr-1" />
                     Premium
@@ -243,17 +201,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
       </div>
 
       <SidebarContent className="p-2">
-        {/* User Welcome */}
-        {!effectiveCollapsed && (
-          <div className="px-3 py-4 mb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-white font-semibold">
-                {userInfo.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <p className="font-medium text-sm">Welcome back,</p>
-                <p className="font-bold text-primary">{userInfo.name}!</p>
-              </div>
+        {/* Who is reading now */}
+        {!effectiveCollapsed && activeChild && (
+          <div className="px-3 py-3 mb-2 flex items-center gap-3">
+            <img src={childAvatarUrl(activeChild)} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-primary" />
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">Reading now</p>
+              <p className="font-bold text-primary truncate">{activeChild.display_name}</p>
             </div>
           </div>
         )}
@@ -262,14 +216,21 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
         {Object.entries(groupedItems).map(([groupName, items]) => (
           <SidebarGroup key={groupName}>
             <SidebarGroupLabel className={effectiveCollapsed ? "sr-only" : "text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-2"}>
-              {groupName.charAt(0).toUpperCase() + groupName.slice(1)}
+              {GROUP_LABELS[groupName] ?? groupName}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => (
                   <SidebarMenuItem key={item.url} className={effectiveCollapsed ? "my-1" : ""}>
                     <SidebarMenuButton 
-                      onClick={() => onViewChange(item.url)}
+                      onClick={() => {
+                        onViewChange(item.url);
+                        // On a phone or iPad the menu covers the page: close it so the parent sees where they went.
+                        if (isMobileOrTablet) {
+                          if (openMobile) setOpenMobile(false);
+                          else if (state === "expanded") toggleSidebar();
+                        }
+                      }}
                       className={`${getNavClasses(item)} ${effectiveCollapsed ? "justify-center gap-0 mx-auto h-10 w-10 rounded-md" : ""}`}
                       disabled={item.premium && !isPremium}
                     >
@@ -295,10 +256,21 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
           </SidebarGroup>
         ))}
 
-          {isPremium && (
+          {isPremium && !effectiveCollapsed && (
+            <button
+              type="button"
+              className="mx-2 mt-2 text-left text-sm font-medium text-muted-foreground underline"
+              aria-expanded={toolsOpen}
+              onClick={() => setToolsOpen((v) => !v)}
+              data-testid="reading-tools-toggle"
+            >
+              {toolsOpen ? "Hide reading page options ▴" : "Reading page options (timer, towers, pictures) ▾"}
+            </button>
+          )}
+          {isPremium && (toolsOpen || effectiveCollapsed) && (
             <SidebarGroup>
               <SidebarGroupLabel className={effectiveCollapsed ? "sr-only" : ""}>
-                Reading tools
+                Reading page options
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -466,21 +438,21 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
 
 
         {/* Premium Features Highlight */}
-        {!effectiveCollapsed && !isPremium && (
+        {!effectiveCollapsed && !hasPremium && (
           <div className="mt-auto p-3">
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Crown className="w-4 h-4 text-yellow-600" />
-                <span className="font-semibold text-yellow-800 text-sm">Upgrade to Premium</span>
+                <span className="font-semibold text-yellow-800 text-sm">Premium</span>
               </div>
               <p className="text-xs text-yellow-700 mb-3">
-                Unlock story library, learning goals, and advanced features!
+                Unlimited stories, the story library and more. Have a code? Use it in Grown-up settings.
               </p>
               <button 
-                onClick={() => onViewChange("account")}
+                onClick={() => { onViewChange("account"); if (isMobileOrTablet) { if (openMobile) setOpenMobile(false); else if (state === "expanded") toggleSidebar(); } }}
                 className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-medium py-2 px-3 rounded-md hover:from-yellow-500 hover:to-orange-600 transition-colors"
               >
-                Learn More
+                See plans or use a code
               </button>
             </div>
           </div>

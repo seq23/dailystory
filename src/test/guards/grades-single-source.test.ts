@@ -59,9 +59,9 @@ describe("grades and ages have one source of truth", () => {
   it("every picker reads the shared list", () => {
     const pickers: Array<[string, RegExp[]]> = [
       ["src/components/forms/steps/FormStep1Essential.tsx", [/GRADES\.map\(/, /AGES\.map\(/]],
-      ["src/components/PremiumProfileEditor.tsx", [/GRADES\.map\(/, /AGES\.map\(/, /isValidAge\(/]],
-      ["src/components/ChildManager.tsx", [/gradeOptions = GRADES\b/]],
-      ["src/components/PremiumHeader.tsx", [/gradeLabel\(getDisplayGrade\)/]],
+      // Child add/edit form, header, lists and story form all show grades through childInfo.
+      ["src/components/children/childInfo.ts", [/CHILD_GRADES[^=]*= GRADES\.map\(/, /CHILD_MIN_AGE = MIN_AGE/, /CHILD_MAX_AGE = MAX_AGE/, /normalizeGrade\(grade\)/]],
+      ["src/components/children/ChildForm.tsx", [/CHILD_GRADES\.map\(/, /AGES\.map\(/, /normalizeGrade\(child\?\.grade_level\)/]],
       ["src/components/forms/hooks/useMultiStepForm.tsx", [/isValidAge\(formData\.age\)/]],
       ["src/constants/app.ts", [/GRADES as GRADE_LEVELS/]],
       ["src/types/index.ts", [/export type Grade = SharedGrade/]],
@@ -71,6 +71,12 @@ describe("grades and ages have one source of truth", () => {
       expect(src, `${file} imports src/lib/grades`).toMatch(/from ["']@\/lib\/grades["']/);
       for (const re of patterns) expect(src, `${file} ${re}`).toMatch(re);
     }
+  });
+
+  it("a child's grade and age are set only on the child (never on the grown-up's reading settings)", () => {
+    const editor = read("src/components/PremiumProfileEditor.tsx");
+    expect(editor).not.toMatch(/GRADES\.map\(|AGES\.map\(|htmlFor="grade"|htmlFor="age"/);
+    expect(editor).toMatch(/<ChildrenList \/>/);
   });
 
   it("the list is Pre-K, K, 1st–10th and ages 3–15", () => {

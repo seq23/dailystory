@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DebugLogger } from '@/services/DebugLogger';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,12 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { User, Save, CheckCircle, BookOpen, Sparkles } from "lucide-react";
-import { ChildSwitcher } from "@/components/ChildSwitcher";
+import { ChildrenList } from "@/components/children/ChildrenList";
 import { useLanguageSync } from "@/hooks/useLanguageSync";
 import type { UserInfo, Grade, LanguageCode, DifficultyLevel } from "@/types";
 import { DifficultyManager } from "@/services/difficultyManager";
-import { AvatarPicker } from "@/components/ui/avatar-picker";
-import { AGES, GRADES, MAX_AGE, MIN_AGE, gradeLabel, isValidAge } from "@/lib/grades";
 
 interface PremiumProfileEditorProps {
   userInfo: UserInfo;
@@ -48,35 +45,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Validate required fields
-      if (!formData.name?.trim()) {
-        toast({
-          title: "Name Required",
-          description: "Please enter a name before saving.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!isValidAge(formData.age)) {
-        toast({
-          title: "Invalid Age",
-          description: `Please select a valid age between ${MIN_AGE} and ${MAX_AGE}.`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!formData.grade) {
-        toast({
-          title: "Grade Required",
-          description: "Please select a grade level.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      DebugLogger.log('ui', 'PremiumProfileEditor: Saving account holder data...', {
+      DebugLogger.log('ui', 'PremiumProfileEditor: Saving reading settings...', {
         name: formData.name,
         age: formData.age,
         grade: formData.grade,
@@ -85,12 +54,12 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
       });
       await onSave(formData);
       toast({
-        title: "Account Settings Updated! ✨",
-        description: `Account holder "${formData.name}" preferences have been saved successfully.`,
+        title: "Saved: reading settings",
+        description: "Language and reading level are saved for your children's stories.",
         duration: 4000,
       });
       setHasChanges(false);
-      DebugLogger.log('ui', 'PremiumProfileEditor: Account holder save completed successfully');
+      DebugLogger.log('ui', 'PremiumProfileEditor: Reading settings saved');
     } catch (error) {
       DebugLogger.error('auth', 'PremiumProfileEditor: Save failed', error);
       toast({
@@ -122,11 +91,10 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
             <User className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Edit Profile</h1>
-            <p className="text-muted-foreground">Customize your reading experience</p>
+            <h1 className="text-2xl font-bold text-foreground">Reading settings</h1>
+            <p className="text-muted-foreground">Language and reading level for stories. Each child's name, grade and picture are under "Your children".</p>
           </div>
         </div>
-        <Badge variant="premium">Premium</Badge>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -135,61 +103,10 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5" />
-              Account Holder Information
+              Language
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter your name"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Select
-                  value={formData.age?.toString() || "7"}
-                  onValueChange={(value) => {
-                    const parsedAge = parseInt(value);
-                    if (!isNaN(parsedAge)) {
-                      setFormData(prev => ({ ...prev, age: parsedAge }));
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select age" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AGES.map(age => (
-                      <SelectItem key={age} value={age.toString()}>
-                        {`${age} years old`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="grade">Grade</Label>
-                <Select
-                  value={formData.grade || "K"}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, grade: value as Grade }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select grade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GRADES.map(g => <SelectItem key={g} value={g}>{gradeLabel(g)}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="language">Native Language</Label>
               <Select
@@ -217,14 +134,6 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
               <p className="text-xs text-muted-foreground">
                 Changing your native language will update the interface language. Story content and navigation will remain in their original format.
               </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="avatar">Avatar</Label>
-              <AvatarPicker
-                value={formData.avatar || { type: 'prefer-not-to-answer', skinTone: 'medium' }}
-                onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
-              />
             </div>
 
           </CardContent>
@@ -308,22 +217,10 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
           </CardContent>
         </Card>
 
-        {/* Child Personalization Notice */}
-        <Card className="border-muted/60">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5" />
-              Child Personalization
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Personalization settings like avatar, favorite color, animal, and hobbies are managed individually for each child profile below.
-            </p>
-            <div className="bg-muted/20 p-3 rounded-lg">
-              <p className="text-sm font-medium mb-2">Current Active Child:</p>
-              <ChildSwitcher />
-            </div>
+        {/* Children: name, grade, age and picture live on each child */}
+        <Card className="border-muted/60 lg:col-span-2">
+          <CardContent className="pt-6">
+            <ChildrenList />
           </CardContent>
         </Card>
       </div>
@@ -357,7 +254,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
             ) : (
               <>
                 <CheckCircle className="w-4 h-4 mr-2" />
-                Save Profile
+                Save settings
               </>
             )}
           </Button>

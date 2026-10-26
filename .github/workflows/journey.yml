@@ -1,0 +1,36 @@
+name: Parent journey
+
+# The parent journey over the built site with Supabase mocked
+# (e2e/parent-journey.spec.ts): sign up with a code → Premium badge → children →
+# avatar → switch → start a story, and no developer panel for a family.
+# Separate from checks.yml so the merge gate stays fast; runs on PRs and main.
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  journey:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Journey over vite preview
+        run: |
+          npx vite preview --port 4173 --strictPort &
+          npx --yes wait-on@8.0.1 http://localhost:4173 --timeout 60000
+          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts --project=chromium --retries=1
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: journey-report
+          path: test-results/
+          retention-days: 7
