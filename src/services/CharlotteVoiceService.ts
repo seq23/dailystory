@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
 import { BrowserTTSService } from '@/services/BrowserTTSService';
 import { TTS_CONFIG } from '@/config/ttsConfig';
+import { splitSyllables } from '@/lib/syllables';
 import { currentNarrationProvider, isUserAbort, narrate } from '@/services/narrationRouter';
 import type { SupportedLanguage } from '@/types/multilingual';
 
@@ -418,7 +419,7 @@ export class CharlotteVoiceService {
     try {
       // Use phonetic dictionary for syllable breakdown
       const cleanWordForSyllables = cleanWord.toLowerCase().replace(/[^a-z]/g, '');
-      const syllables = phonicsMiniDict[cleanWordForSyllables] || [cleanWord];
+      const syllables = phonicsMiniDict[cleanWordForSyllables] || splitSyllables(cleanWord);
       
       if (!syllables || syllables.length === 0) {
         throw new Error('No syllables found');

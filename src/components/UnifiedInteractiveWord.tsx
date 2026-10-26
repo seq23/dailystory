@@ -1,3 +1,4 @@
+import { splitSyllables } from "@/lib/syllables";
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
@@ -53,6 +54,8 @@ export const UnifiedInteractiveWord: React.FC<UnifiedInteractiveWordProps> = ({
   // States
   const [showTooltip, setShowTooltip] = useState(false);
   const [showMobileModal, setShowMobileModal] = useState(false);
+  const [panelInfo, setPanelInfo] = useState<{ kind: "meaning" | "syllables"; text: string } | null>(null);
+  const [justSaved, setJustSaved] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [wordData, setWordData] = useState<any>(null);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
@@ -242,7 +245,8 @@ export const UnifiedInteractiveWord: React.FC<UnifiedInteractiveWordProps> = ({
         definition = getWordDefinition(cleanWord, sentenceContext);
       }
       
-      // Show definition
+      // Show definition (in the word panel too: a toast sits behind the open panel)
+      setPanelInfo({ kind: "meaning", text: definition });
       toast({
         title: userLanguageT('interactiveWord.definition', 'Definition'),
         description: `"${cleanWord}" = ${definition}`,
@@ -302,6 +306,7 @@ export const UnifiedInteractiveWord: React.FC<UnifiedInteractiveWordProps> = ({
   const handleSyllables = async () => {
     try {
       setIsPlaying(true);
+      setPanelInfo({ kind: "syllables", text: splitSyllables(cleanWord).join(" · ") });
       await charlotteVoiceService.charlotteSyllableWord(cleanWord);
     } catch (e) {
       DebugLogger.error('audio', 'Mobile Charlotte Syllables failed', e);
@@ -335,7 +340,8 @@ export const UnifiedInteractiveWord: React.FC<UnifiedInteractiveWordProps> = ({
       addVocabularyWord?.();
     } catch {}
 
-    setShowMobileModal(false);
+    // Stay on the panel and show "✓ Saved to word list" there; a toast sits behind the panel.
+    setJustSaved(true);
     toast({ title: 'Saved to Vocabulary', description: cleanWord, duration: 1800 });
   };
 
@@ -464,7 +470,7 @@ export const UnifiedInteractiveWord: React.FC<UnifiedInteractiveWordProps> = ({
         </span>
         <MobileTTSModal
           isOpen={showMobileModal}
-          onClose={() => setShowMobileModal(false)}
+          onClose={() => { setShowMobileModal(false); setPanelInfo(null); }}
           word={word}
           onHearIt={handleHearIt}
           onExplain={handleExplain}
@@ -474,7 +480,8 @@ export const UnifiedInteractiveWord: React.FC<UnifiedInteractiveWordProps> = ({
           userInfo={userInfo}
           isPlaying={isPlaying}
           isLoadingWordData={isLoadingWordData}
-          isSaved={wordAlreadySaved}
+          isSaved={wordAlreadySaved || justSaved}
+          info={panelInfo}
         />
       </>
     );
