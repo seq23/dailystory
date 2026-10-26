@@ -45,7 +45,9 @@ export const CollapsibleFloatingTimer = ({
 }: CollapsibleFloatingTimerProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
-  const [isCollapsed, setIsCollapsed] = useState(false); // NOT auto-collapsed - consistent for all users
+  // On a phone the open controls cover the story text, so they start folded into the
+  // small clock (tap it to open them). Larger screens start open.
+  const [isCollapsed, setIsCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showChoice, setShowChoice] = useState(false);
   const [expiredAcknowledged, setExpiredAcknowledged] = useState(false); // Prevent re-trigger loop at 0s
@@ -228,7 +230,7 @@ useEffect(() => {
           onClick={() => setIsCollapsed(false)}
           id="timer-display"
           role="button"
-          aria-label="Expand timer controls"
+          aria-label="Timer: tap to show timer buttons"
         >
           {/* Time display with enhanced styling for free users */}
           <div className={cn(
@@ -390,7 +392,7 @@ useEffect(() => {
 
       {/* Control Buttons */}
       <TooltipProvider>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
           {/* Play/Pause */}
           <Tooltip open={isMobileOrTablet ? mobileTooltip === 'play' : undefined}>
             <TooltipTrigger asChild>
@@ -405,11 +407,12 @@ useEffect(() => {
                     DebugLogger.log('ui', 'Timer button clicked', { isReading, timeRemaining });
                     onToggleReading();
                   }}
-                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                 className="min-h-[44px] min-w-[44px] px-2.5 rounded-full bg-background/95 backdrop-blur-sm"
                  aria-label={isReading ? t("floatingTimer.pauseTimer", "Pause Timer") : t("floatingTimer.startTimer", "Start Timer")}
                  id="timer-play-button"
                >
                 {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                <span className="ml-1 text-xs">{isReading ? "Pause" : "Start"}</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -431,11 +434,12 @@ useEffect(() => {
                    onReduceTime?.();
                  }}
                 disabled={!onReduceTime || timeRemaining <= 5 * 60}
-                className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                className="min-h-[44px] min-w-[44px] px-2.5 rounded-full bg-background/95 backdrop-blur-sm"
                 aria-label={t("floatingTimer.reduceTime", "Reduce time by 5 minutes")}
                 id="timer-reduce-button"
               >
                 <Minus className="w-4 h-4" />
+                <span className="ml-0.5 text-xs">5 min</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -457,11 +461,12 @@ useEffect(() => {
                      }
                      onIncreaseTime?.();
                    }}
-                  className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                  className="min-h-[44px] min-w-[44px] px-2.5 rounded-full bg-background/95 backdrop-blur-sm"
                   aria-label={t("floatingTimer.increaseTime", "Add 15 minutes of reading time")}
                   id="timer-increase-button"
                 >
                   <Plus className="w-4 h-4" />
+                  <span className="ml-0.5 text-xs">15 min</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -485,11 +490,12 @@ useEffect(() => {
                     onKeepReadingUntimed?.();
                     onDismiss?.();
                   }}
-                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm border-2 border-red-500 text-red-500 hover:bg-red-50 hover:border-red-600"
+                 className="min-h-[44px] min-w-[44px] px-2.5 rounded-full bg-background/95 backdrop-blur-sm"
                 aria-label={t("floatingTimer.dismissTimer", "Dismiss timer for unlimited reading")}
                 id="timer-dismiss-x-button"
               >
                 <X className="w-4 h-4" />
+                <span className="ml-1 text-xs">No timer</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -511,11 +517,12 @@ useEffect(() => {
                    }
                    setIsCollapsed(true);
                  }}
-                className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                className="min-h-[44px] min-w-[44px] px-2.5 rounded-full bg-background/95 backdrop-blur-sm"
                 aria-label={t("floatingTimer.collapse", "Collapse timer")}
                 id="timer-collapse-button"
               >
                 <ChevronDown className="w-4 h-4" />
+                <span className="ml-1 text-xs">Hide</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">

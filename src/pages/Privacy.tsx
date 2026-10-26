@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 
 const Privacy = () => {
   useEffect(() => {
-    const title = "Privacy Policy | Time2Read by Spry VSL LLC";
-    const desc = "Privacy Policy for Time2Read by Spry VSL LLC. Learn how we collect, use, and protect your data under GDPR, CCPA, and COPPA.";
+    const title = "Privacy Policy | Time-2-Read by Spry VSL LLC";
+    const desc = "Privacy Policy for Time-2-Read by Spry VSL LLC. Learn how we collect, use, and protect your data under GDPR, CCPA, and COPPA.";
     document.title = title;
 
     let meta = document.querySelector('meta[name="description"]');
@@ -43,7 +43,7 @@ const Privacy = () => {
           {/* GDPR Art. 13(1)(a) — Identity of controller */}
           <h2>1. Data Controller</h2>
           <p>
-            <strong>Spry VSL LLC</strong> ("we", "us", "our") operates the Time2Read platform.<br />
+            <strong>Spry VSL LLC</strong> ("we", "us", "our") operates the Time-2-Read platform.<br />
             Privacy Contact: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>
           </p>
 
@@ -92,7 +92,7 @@ const Privacy = () => {
 
           {/* COPPA */}
           <h2>5. Children's Privacy (COPPA &amp; GDPR Art. 8)</h2>
-          <p>Time2Read is designed for families and educational use. We comply with:</p>
+          <p>Time-2-Read is designed for families and educational use. We comply with:</p>
           <ul>
             <li><strong>COPPA (US):</strong> Parental consent required for users under 13</li>
             <li><strong>GDPR Art. 8 (EU):</strong> Parental consent required for users under 16</li>

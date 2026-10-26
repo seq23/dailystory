@@ -168,7 +168,7 @@ export const AccountDeletion = ({ userEmail }: AccountDeletionProps) => {
         <p className="text-xs text-muted-foreground">
           If you have an active subscription, please cancel it before deleting your account.
           Need help?{" "}
-          <a href="mailto:hello@time2read.app" className="text-primary hover:underline">
+          <a href="mailto:hello@time-2-read.com" className="text-primary hover:underline">
             Contact us
           </a>
         </p>

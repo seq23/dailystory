@@ -27,7 +27,7 @@ import About from "@/pages/About";
 import { SiteFooterNav } from "@/components/SiteFooterNav";
 export { pageGraph, ORGANIZATION, WEBSITE, OG_IMAGE_URL } from "@/seo/schema";
 
-const HOME_TITLE = "Time2Read - Interactive Reading Adventures for Kids";
+const HOME_TITLE = "Time-2-Read - Interactive Reading Adventures for Kids";
 
 export const prerenderRoutes: { path: string; element: ReactElement }[] = [
   // The homepage app (AuthWrapper) needs a live session; its static twin is the

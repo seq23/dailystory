@@ -1,4 +1,4 @@
-// Central type definitions for the Time2Read application
+// Central type definitions for the Time-2-Read application
 import type { Grade as SharedGrade, ExpertGrade } from "@/lib/grades";
 
 export type DifficultyLevel = "beginner" | "easy" | "medium" | "hard" | "expert";

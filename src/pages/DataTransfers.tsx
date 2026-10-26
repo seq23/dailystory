@@ -6,9 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const DataTransfers = () => {
   useEffect(() => {
-    document.title = "International Data Transfers | Time2Read";
+    document.title = "International Data Transfers | Time-2-Read";
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', 'How Spry VSL LLC handles international data transfers for Time2Read under GDPR Articles 44-49, and where to send any question about them.');
+    if (meta) meta.setAttribute('content', 'How Spry VSL LLC handles international data transfers for Time-2-Read under GDPR Articles 44-49, and where to send any question about them.');
   }, []);
 
   const processors = [
@@ -99,7 +99,7 @@ const DataTransfers = () => {
           </CardHeader>
           <CardContent className="prose max-w-none text-sm">
             <p>
-              Spry VSL LLC operates the Time2Read platform. As our infrastructure providers are primarily
+              Spry VSL LLC operates the Time-2-Read platform. As our infrastructure providers are primarily
               based in the United States, personal data of EU/EEA users may be transferred outside the
               European Economic Area.
             </p>

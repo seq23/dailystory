@@ -1,5 +1,6 @@
 import React from 'react';
 import { useImageWithFallback } from '@/hooks/useImageWithFallback';
+import { devToolsAllowed } from '@/lib/devTools';
 import { useSmartObjectFit } from '@/hooks/useSmartObjectFit';
 import { DebugLogger } from '@/services/DebugLogger';
 
@@ -81,14 +82,15 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
           }
         }}
       />
-      {isUsingFallback && (
+      {/* Developer label only; a family just sees the calm placeholder picture. */}
+      {isUsingFallback && devToolsAllowed() && (
         <div className="absolute top-2 right-2 bg-background/80 rounded px-2 py-1 text-xs text-muted-foreground">
           Fallback
         </div>
       )}
-      {error && !isDebugMode && (
-        <div className="absolute bottom-2 left-2 bg-destructive/10 border border-destructive/20 rounded px-2 py-1 text-xs text-destructive">
-          Image unavailable
+      {error && !isDebugMode && !isUsingFallback && (
+        <div className="absolute bottom-2 left-2 bg-background/90 border rounded px-2 py-1 text-xs text-muted-foreground">
+          Picture coming soon
         </div>
       )}
     </div>

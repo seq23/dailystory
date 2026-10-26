@@ -402,6 +402,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       <Card className="w-full max-w-2xl mx-auto bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
         <h1 className="sr-only">Sign in or sign up for Time-2-Read</h1>
         <CardHeader className="text-center">
+          <img src="/icon-192.png" alt="Time-2-Read logo" className="mx-auto h-14 w-14" />
           <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900">
             {userInfo ? "Keep reading with Time-2-Read" : "Join Time-2-Read"}
           </CardTitle>
@@ -728,6 +729,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                       <p className="text-xs text-gray-500 text-center mt-2">
                         {t("loginScreen.payment.instruction")}
                       </p>
+                      <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">🔒 Secure checkout in US dollars, by Stripe.</p>
                     </div>
                   )}
                 </div>

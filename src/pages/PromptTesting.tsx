@@ -136,7 +136,7 @@ export default function PromptTesting() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start mb-6">
             <div className="lg:col-span-2">
               <h1 className="text-4xl font-fun font-bold text-foreground mb-2">
-                Time2Read Testing Console
+                Time-2-Read Testing Console
                 {isDebugMode && (
                   <span className="ml-3 text-sm bg-primary/10 text-primary px-2 py-1 rounded-md">
                     Debug Mode Active

@@ -4,9 +4,9 @@ import { PLAN_PRICES } from "@/lib/freeStoryAllowance";
 
 const Pricing = () => {
   useEffect(() => {
-    document.title = "Pricing | Time2Read - Free, Premium, Enterprise";
+    document.title = "Pricing | Time-2-Read - Free, Premium, Enterprise";
 
-    const desc = "Compare Free, Premium, and Enterprise plans for Time2Read. Upgrade for unlimited reading, live generation, analytics, and more.";
+    const desc = "Compare Free, Premium, and Enterprise plans for Time-2-Read. Upgrade for unlimited reading, live generation, analytics, and more.";
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
       meta = document.createElement('meta');
@@ -26,7 +26,7 @@ const Pricing = () => {
 
     // Per-route Open Graph tags
     const ogUrl = window.location.origin + '/pricing';
-    const ogTitle = 'Pricing | Time2Read - Free, Premium, Enterprise';
+    const ogTitle = 'Pricing | Time-2-Read - Free, Premium, Enterprise';
     const setOg = (property: string, content: string) => {
       let el = document.head.querySelector(`meta[property="${property}"]`) as HTMLMetaElement | null;
       if (!el) {
@@ -46,7 +46,7 @@ const Pricing = () => {
     script.text = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Product",
-      name: "Time2Read Premium",
+      name: "Time-2-Read Premium",
       description: desc,
       // Prices come from PLAN_PRICES (docs/PRICING.md), never typed here.
       offers: (["monthly", "annual"] as const).map((plan) => ({

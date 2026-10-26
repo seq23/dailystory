@@ -60,7 +60,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
   {
     slug: "is-reading-20-minutes-a-day-enough",
     kind: "guide",
-    title: "Is Reading 20 Minutes a Day Enough? The Research | Time2Read",
+    title: "Is Reading 20 Minutes a Day Enough? The Research | Time-2-Read",
     metaDescription:
       "Where the \"20 minutes a day\" rule comes from, what the 1.8 million words figure means, how long kids should read by age, and how to make it stick.",
     h1: "Is Reading 20 Minutes a Day Enough?",
@@ -76,7 +76,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     benefits: [
       { title: "A goal, not a test", body: "Researchers describe 20 minutes as a guide. Short days are fine; steady days matter most." },
       { title: "The numbers, checked", body: "We read the original 1988 study so you know what the 1.8 million figure actually measured." },
-      { title: "A timer built in", body: "Every Time2Read story has a 20-minute reading timer, so the goal is visible and finite." },
+      { title: "A timer built in", body: "Every Time-2-Read story has a 20-minute reading timer, so the goal is visible and finite." },
     ],
     sections: [
       {
@@ -114,9 +114,9 @@ export const blueOceanGuides: LandingPageConfig[] = [
         ],
       },
       {
-        heading: "Where Time2Read fits",
+        heading: "Where Time-2-Read fits",
         paragraphs: [
-          "Time2Read writes an illustrated story around your child, at the reading level you set, with a 20-minute timer that starts when they begin. Tap any word to hear it read aloud. It's screen time, and we won't pretend otherwise: the point is that it's 20 minutes of screen time that's actually reading.",
+          "Time-2-Read writes an illustrated story around your child, at the reading level you set, with a 20-minute timer that starts when they begin. Tap any word to hear it read aloud. It's screen time, and we won't pretend otherwise: the point is that it's 20 minutes of screen time that's actually reading.",
         ],
       },
     ],
@@ -138,24 +138,24 @@ export const blueOceanGuides: LandingPageConfig[] = [
         q: "What if my child can only manage 5 minutes?",
         a: "Start there. Reading researchers say a 5-minute day is fine and that forcing reading tends to backfire. Build up gradually and keep the time predictable.",
       },
-      { q: "How much does Time2Read cost?", a: pricingAnswer },
+      { q: "How much does Time-2-Read cost?", a: pricingAnswer },
     ],
   },
   {
     slug: "reading-app-with-timer-for-kids",
     kind: "guide",
-    title: "Reading App With a Timer for Kids: 20-Minute Stories | Time2Read",
+    title: "Kids Reading App With a 20-Minute Timer | Time-2-Read",
     metaDescription:
       "A kids' reading app with a built-in 20-minute timer: personalized illustrated stories at your child's level, tap-to-hear words. First 3 stories free.",
     h1: "A Reading App With a Built-In Timer for Kids",
     navLabel: "Reading app with a timer",
     heroSubtitle:
-      "Most reading timers just count minutes. Time2Read gives your child something worth reading for those minutes: a new story where they're the main character.",
+      "Most reading timers just count minutes. Time-2-Read gives your child something worth reading for those minutes: a new story where they're the main character.",
     heroImage: homeReading,
     heroImageAlt: "Child reading on a tablet at home",
     intro: [
       "If your child's school asks for 20 minutes of reading a night, you've probably tried a kitchen timer, a phone stopwatch or a reading-log app. They track time well. What they can't do is make the reading itself appealing.",
-      "Time2Read puts the timer inside the story. Every story has a 20-minute reading timer, and the story is written around your child, at the reading level you choose.",
+      "Time-2-Read puts the timer inside the story. Every story has a 20-minute reading timer, and the story is written around your child, at the reading level you choose.",
     ],
     benefits: [
       { title: "Timer in every story", body: "A 20-minute timer starts when reading starts. Pause it, end early, or keep going." },
@@ -166,12 +166,12 @@ export const blueOceanGuides: LandingPageConfig[] = [
       {
         heading: "Timer apps vs. a reading app with a timer",
         paragraphs: [
-          "Standalone timers and reading trackers are good at logging minutes, and some fluency apps time a child reading a passage aloud to calculate words per minute. Those are useful tools. They answer a different question: how long did my child read? Time2Read is built around a second question: what will make my child want to read for those 20 minutes?",
+          "Standalone timers and reading trackers are good at logging minutes, and some fluency apps time a child reading a passage aloud to calculate words per minute. Those are useful tools. They answer a different question: how long did my child read? Time-2-Read is built around a second question: what will make my child want to read for those 20 minutes?",
         ],
         bullets: [
           "A countdown or log: great for accountability, but the reading material is up to you.",
           "A fluency timer: measures speed on short passages, useful for practice drills.",
-          "Time2Read: the timer sits inside a personalized, illustrated story at the right level, so the minutes and the motivation come together.",
+          "Time-2-Read: the timer sits inside a personalized, illustrated story at the right level, so the minutes and the motivation come together.",
         ],
       },
       {
@@ -193,7 +193,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     sources: [SOURCES.anderson1988Eric, SOURCES.lucid2023],
     faqs: [
       {
-        q: "Does Time2Read have a reading timer?",
+        q: "Does Time-2-Read have a reading timer?",
         a: "Yes. Every story has a built-in 20-minute reading timer that starts when your child starts reading. You can pause it, end early or keep reading.",
       },
       {
@@ -206,15 +206,15 @@ export const blueOceanGuides: LandingPageConfig[] = [
       },
       {
         q: "Does the app work on phones and tablets?",
-        a: "Yes. Time2Read runs in the browser on phones, tablets and computers.",
+        a: "Yes. Time-2-Read runs in the browser on phones, tablets and computers.",
       },
-      { q: "How much does Time2Read cost?", a: pricingAnswer },
+      { q: "How much does Time-2-Read cost?", a: pricingAnswer },
     ],
   },
   {
     slug: "reading-app-for-kids-struggling-to-read",
     kind: "guide",
-    title: "Reading App for Kids Struggling to Read: A Guide | Time2Read",
+    title: "Reading App for Kids Struggling to Read: A Guide | Time-2-Read",
     metaDescription:
       "What to look for in a reading app for a struggling reader: the right level, help with hard words, short sessions, and when to ask the school for help.",
     h1: "A Reading App for Kids Who Are Struggling to Read",
@@ -225,7 +225,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     heroImageAlt: "Child reading outdoors with a parent",
     intro: [
       "When a child struggles to read, every page can feel like a test. Parents often reach for an app, hoping practice will feel less like work. That can help, as long as the practice is at the right level and the child has support with words they can't yet read.",
-      "This page covers what to look for in a reading app for a struggling reader, how Time2Read approaches it, and when to talk to your child's teacher. An app is practice, not a diagnosis or a treatment.",
+      "This page covers what to look for in a reading app for a struggling reader, how Time-2-Read approaches it, and when to talk to your child's teacher. An app is practice, not a diagnosis or a treatment.",
     ],
     benefits: [
       { title: "Set the level yourself", body: "Choose a reading level your child can manage, then move it up as they grow." },
@@ -251,9 +251,9 @@ export const blueOceanGuides: LandingPageConfig[] = [
         ],
       },
       {
-        heading: "How Time2Read helps",
+        heading: "How Time-2-Read helps",
         paragraphs: [
-          "Time2Read writes an illustrated story around your child, with them as the main character, at the reading level you choose. Every word can be tapped to hear it read aloud, phonics help is built in, and a 20-minute timer keeps sessions a manageable size. Younger or less confident readers can listen to narration while they follow the words.",
+          "Time-2-Read writes an illustrated story around your child, with them as the main character, at the reading level you choose. Every word can be tapped to hear it read aloud, phonics help is built in, and a 20-minute timer keeps sessions a manageable size. Younger or less confident readers can listen to narration while they follow the words.",
         ],
       },
       {
@@ -278,16 +278,16 @@ export const blueOceanGuides: LandingPageConfig[] = [
         a: "No. An app can give enjoyable practice at the right level. If you think your child has a reading difficulty, talk to their teacher or school about an assessment.",
       },
       {
-        q: "Does Time2Read read the story aloud?",
+        q: "Does Time-2-Read read the story aloud?",
         a: "Yes. Your child can listen to narration and tap any word to hear it, which helps less confident readers keep going.",
       },
-      { q: "How much does Time2Read cost?", a: pricingAnswer },
+      { q: "How much does Time-2-Read cost?", a: pricingAnswer },
     ],
   },
   {
     slug: "high-interest-low-level-stories",
     kind: "guide",
-    title: "Hi-Lo Stories: High Interest, Low Level Reading | Time2Read",
+    title: "Hi-Lo Stories: High Interest, Low Level Reading | Time-2-Read",
     metaDescription:
       "What high-interest, low-level (hi-lo) stories are, why they help reluctant readers, and how to get hi-lo stories about what your child loves.",
     h1: "High-Interest, Low-Level Stories for Kids",
@@ -298,7 +298,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     heroImageAlt: "Children reading illustrated stories",
     intro: [
       "A 10-year-old who reads at a second-grade level doesn't want a story about a kitten finding its mittens. They want football, mysteries, space battles, horses or video games. High-interest, low-level books, often called hi-lo books, are written for exactly that gap.",
-      "The catch is that hi-lo shelves are small, and they rarely cover your child's exact obsession. Time2Read writes a hi-lo story about whatever your child loves, starring them, at the level you set.",
+      "The catch is that hi-lo shelves are small, and they rarely cover your child's exact obsession. Time-2-Read writes a hi-lo story about whatever your child loves, starring them, at the level you set.",
     ],
     benefits: [
       { title: "Their interest, not a shelf's", body: "Any topic your child cares about, from skateboarding to sharks." },
@@ -323,7 +323,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
         ],
       },
       {
-        heading: "How Time2Read makes hi-lo stories",
+        heading: "How Time-2-Read makes hi-lo stories",
         bullets: [
           "Pick the topic: your child's real interest, as specific as they like.",
           "Set the reading level separately from their age.",
@@ -335,7 +335,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
       {
         heading: "Hi-lo books and hi-lo stories work together",
         paragraphs: [
-          "Your library's hi-lo collection and graphic novels are well worth exploring; ask a librarian for their high/low list. Time2Read adds an endless supply of stories on your child's exact topic, so there's always something new between library trips. If your child pushes books away entirely, read our guide for parents whose child hates reading.",
+          "Your library's hi-lo collection and graphic novels are well worth exploring; ask a librarian for their high/low list. Time-2-Read adds an endless supply of stories on your child's exact topic, so there's always something new between library trips. If your child pushes books away entirely, read our guide for parents whose child hates reading.",
         ],
       },
     ],
@@ -351,19 +351,19 @@ export const blueOceanGuides: LandingPageConfig[] = [
       },
       {
         q: "Can I get hi-lo stories about a specific topic?",
-        a: "Yes. With Time2Read you choose the topic and the reading level separately, so a story can be about exactly what your child loves at a level they can read.",
+        a: "Yes. With Time-2-Read you choose the topic and the reading level separately, so a story can be about exactly what your child loves at a level they can read.",
       },
       {
-        q: "What ages does Time2Read cover?",
+        q: "What ages does Time-2-Read cover?",
         a: "Ages 3 to 15, with reading levels from pre-K up to 10th grade.",
       },
-      { q: "How much does Time2Read cost?", a: pricingAnswer },
+      { q: "How much does Time-2-Read cost?", a: pricingAnswer },
     ],
   },
   {
     slug: "bedtime-stories-about-your-childs-favorite-things",
     kind: "guide",
-    title: "Bedtime Stories About Your Child's Favorite Things | Time2Read",
+    title: "Bedtime Stories About Your Child's Favorite Things | Time-2-Read",
     metaDescription:
       "A bedtime story for the kid obsessed with dinosaurs, unicorns, trucks or football: personalized, illustrated, read-aloud stories starring your child.",
     h1: "Bedtime Stories About Your Child's Favorite Things",
@@ -374,7 +374,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     heroImageAlt: "Child enjoying an illustrated story",
     intro: [
       "Every parent knows the request: \"Tell me a story about a dinosaur. No, a T. rex. Who plays football. And eats pasta.\" Making up a fresh story every night is hard work, and the same five books on the shelf wear thin.",
-      "Time2Read writes a new illustrated story around your child and the thing they're obsessed with this month, at a level that suits them. Read it together, let them read it, or have it read aloud.",
+      "Time-2-Read writes a new illustrated story around your child and the thing they're obsessed with this month, at a level that suits them. Read it together, let them read it, or have it read aloud.",
     ],
     benefits: [
       { title: "Whatever they're into", body: "Dinosaurs, unicorns, diggers, space, horses, football, or all of them at once." },
@@ -413,7 +413,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     faqs: [
       {
         q: "Can I get a bedtime story about my child's favorite thing?",
-        a: "Yes. Time2Read writes a new illustrated story around whatever your child loves, with your child as the main character.",
+        a: "Yes. Time-2-Read writes a new illustrated story around whatever your child loves, with your child as the main character.",
       },
       {
         q: "Can the story be read aloud?",
@@ -427,24 +427,24 @@ export const blueOceanGuides: LandingPageConfig[] = [
         q: "Do I need to share personal details?",
         a: "A first name or nickname and the things your child likes are enough to make the story theirs.",
       },
-      { q: "How much does Time2Read cost?", a: pricingAnswer },
+      { q: "How much does Time-2-Read cost?", a: pricingAnswer },
     ],
   },
   {
     slug: "sight-word-story-generator",
     kind: "guide",
-    title: "Sight Word Story Generator Built on Dolch Words | Time2Read",
+    title: "Sight Word Story Generator Built on Dolch Words | Time-2-Read",
     metaDescription:
-      "Generate illustrated sight word stories for beginning readers. Time2Read's early levels use Dolch sight words, with your child as the main character.",
+      "Generate illustrated sight word stories for beginning readers. Time-2-Read's early levels use Dolch sight words, with your child as the main character.",
     h1: "A Sight Word Story Generator for Beginning Readers",
     navLabel: "Sight word story generator",
     heroSubtitle:
-      "Flashcards teach the words. Stories make them stick. Time2Read writes new, illustrated beginner stories built on the most common sight words.",
+      "Flashcards teach the words. Stories make them stick. Time-2-Read writes new, illustrated beginner stories built on the most common sight words.",
     heroImage: homeReading,
     heroImageAlt: "Young child reading with a parent",
     intro: [
       "Sight words are the small, common words (the, and, is, you, said) that beginning readers learn to recognize at a glance. Flashcards help, but children also need to meet those words again and again in real sentences.",
-      "Printable sight word stories run out fast. Time2Read generates new ones: early reading levels are written mostly with Dolch sight words, and each story stars your child.",
+      "Printable sight word stories run out fast. Time-2-Read generates new ones: early reading levels are written mostly with Dolch sight words, and each story stars your child.",
     ],
     benefits: [
       { title: "Built on Dolch words", body: "Beginner levels lean heavily on the Dolch pre-primer, primer and grade 1 lists." },
@@ -459,7 +459,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
         ],
       },
       {
-        heading: "How Time2Read generates sight word stories",
+        heading: "How Time-2-Read generates sight word stories",
         bullets: [
           "Choose a beginner reading level. Early levels are written mostly with Dolch sight words and short, simple sentences.",
           "Your child is the main character, so they want to keep reading.",
@@ -480,7 +480,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
       {
         heading: "Sight word stories vs. decodable texts",
         paragraphs: [
-          "Decodable texts are written so that almost every word follows phonics patterns a child has been taught. Sight word stories focus on high-frequency words. Most beginner readers benefit from both. Time2Read's beginner stories lean on sight words and simple words with phonics help; if your child's school uses a specific decodable sequence, keep using those books for that practice too.",
+          "Decodable texts are written so that almost every word follows phonics patterns a child has been taught. Sight word stories focus on high-frequency words. Most beginner readers benefit from both. Time-2-Read's beginner stories lean on sight words and simple words with phonics help; if your child's school uses a specific decodable sequence, keep using those books for that practice too.",
         ],
       },
     ],
@@ -488,7 +488,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     faqs: [
       {
         q: "Is there a sight word story generator?",
-        a: "Yes. Time2Read generates new illustrated stories for beginning readers. Its early reading levels are written mostly with Dolch sight words, and your child is the main character.",
+        a: "Yes. Time-2-Read generates new illustrated stories for beginning readers. Its early reading levels are written mostly with Dolch sight words, and your child is the main character.",
       },
       {
         q: "What are Dolch sight words?",
@@ -502,13 +502,13 @@ export const blueOceanGuides: LandingPageConfig[] = [
         q: "What age are sight word stories for?",
         a: "Usually ages 4 to 7 (pre-K to first grade), or any child at a beginning reading level.",
       },
-      { q: "How much does Time2Read cost?", a: pricingAnswer },
+      { q: "How much does Time-2-Read cost?", a: pricingAnswer },
     ],
   },
   {
     slug: "reading-for-kids-with-adhd",
     kind: "guide",
-    title: "How to Make Reading Fun for Kids With ADHD | Time2Read",
+    title: "How to Make Reading Fun for Kids With ADHD | Time-2-Read",
     metaDescription:
       "Supportive ways to make reading easier and more fun for a child with ADHD: interest-led topics, short timed sessions, movement, choice and read-aloud.",
     h1: "How to Make Reading Fun for a Child With ADHD",
@@ -519,7 +519,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     heroImageAlt: "Child reading outdoors",
     intro: [
       "Many children with ADHD find long, quiet reading sessions hard, especially with a book they didn't choose. That doesn't mean they can't love reading. It usually means the format needs to change.",
-      "This guide collects practical ideas from ADHD and literacy specialists. It isn't medical advice, and Time2Read doesn't treat ADHD; it's a set of ways to make reading time work better at home.",
+      "This guide collects practical ideas from ADHD and literacy specialists. It isn't medical advice, and Time-2-Read doesn't treat ADHD; it's a set of ways to make reading time work better at home.",
     ],
     benefits: [
       { title: "Start with their passions", body: "Interest is the strongest hook. Let the topic come from them." },
@@ -548,9 +548,9 @@ export const blueOceanGuides: LandingPageConfig[] = [
         ],
       },
       {
-        heading: "Where Time2Read can help",
+        heading: "Where Time-2-Read can help",
         paragraphs: [
-          "Time2Read writes a new illustrated story about whatever your child is into, with them as the main character, so there's always something new. You set the reading level. Any word can be tapped to hear it, phonics help is built in, and a 20-minute timer gives each session a clear finish; pause or end early whenever you need to.",
+          "Time-2-Read writes a new illustrated story about whatever your child is into, with them as the main character, so there's always something new. You set the reading level. Any word can be tapped to hear it, phonics help is built in, and a 20-minute timer gives each session a clear finish; pause or end early whenever you need to.",
           "If you have concerns about attention or reading, talk to your child's teacher or doctor. An app is a reading tool, not a treatment.",
         ],
       },
@@ -566,20 +566,20 @@ export const blueOceanGuides: LandingPageConfig[] = [
         a: "There's no fixed rule. Many families find short sessions with breaks work better than one long one. Start with what your child can manage and build up.",
       },
       {
-        q: "Is Time2Read a treatment for ADHD?",
-        a: "No. Time2Read is a reading app. It can make reading time more engaging with interest-led stories, short timed sessions and read-aloud help, but it doesn't treat or diagnose anything.",
+        q: "Is Time-2-Read a treatment for ADHD?",
+        a: "No. Time-2-Read is a reading app. It can make reading time more engaging with interest-led stories, short timed sessions and read-aloud help, but it doesn't treat or diagnose anything.",
       },
       {
         q: "Can my child listen instead of reading?",
         a: "Yes. Stories can be read aloud, and your child can tap any word to hear it while following along.",
       },
-      { q: "How much does Time2Read cost?", a: pricingAnswer },
+      { q: "How much does Time-2-Read cost?", a: pricingAnswer },
     ],
   },
   {
     slug: "reading-app-for-esl-kids",
     kind: "guide",
-    title: "Reading App for ESL Kids: Easy English Stories | Time2Read",
+    title: "Reading App for ESL Kids: Easy English Stories | Time-2-Read",
     metaDescription:
       "Easy English reading practice for ESL kids: personalized illustrated stories at the right level, tap any word to hear it. First 3 stories free.",
     h1: "A Reading App for ESL Kids Learning English",
@@ -590,7 +590,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     heroImageAlt: "Diverse children reading illustrated stories",
     intro: [
       "Children learning English need lots of reading at a level they can follow, with support for the words they don't know yet. Easy ESL story collections and worksheets help, but they run out, and they rarely feel like they're about your child.",
-      "Time2Read writes new English stories at the reading level you choose, with an illustration on every page and narration you can turn on. Your child is the main character. Stories are in English.",
+      "Time-2-Read writes new English stories at the reading level you choose, with an illustration on every page and narration you can turn on. Your child is the main character. Stories are in English.",
     ],
     benefits: [
       { title: "Easy English, your choice of level", body: "Set a simpler level without making the topic feel young." },
@@ -615,7 +615,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
         ],
       },
       {
-        heading: "How Time2Read supports English learners",
+        heading: "How Time-2-Read supports English learners",
         bullets: [
           "Choose a reading level from pre-K upward, separate from your child's age.",
           "Turn on narration to hear the story, or tap single words.",
@@ -628,7 +628,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
     sources: [SOURCES.colorin, SOURCES.readingRocketsHiLo],
     faqs: [
       {
-        q: "Is Time2Read good for ESL kids?",
+        q: "Is Time-2-Read good for ESL kids?",
         a: "It can be a helpful practice tool: you set an easier English reading level, every page has an illustration, and any word can be tapped to hear it read aloud.",
       },
       {
@@ -643,7 +643,7 @@ export const blueOceanGuides: LandingPageConfig[] = [
         q: "Can older ESL kids use it without the stories feeling babyish?",
         a: "Yes. You choose the topic and the reading level separately, so a 12-year-old can read about their interests in simpler English.",
       },
-      { q: "How much does Time2Read cost?", a: pricingAnswer },
+      { q: "How much does Time-2-Read cost?", a: pricingAnswer },
     ],
   },
 ];

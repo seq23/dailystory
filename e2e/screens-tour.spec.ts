@@ -57,8 +57,14 @@ for (const d of DEVICES) {
     });
 
     test(`signed in ${d.name}`, async ({ page }) => {
+      test.setTimeout(240_000);
       const user = makeUser();
-      await mockSupabase(page, { user });
+      const pages = [
+        "Axel looked up at the night sky. A tiny silver rocket was blinking on the roof of the school.",
+        "He climbed the ladder, one careful step at a time, and opened the little round door.",
+        "Inside, a robot named Pip waved a bright blue hand. \"Ready to fly?\" Pip asked.",
+      ];
+      await mockSupabase(page, { user, story: { success: true, story: pages.join("\n\n"), pages, title: "Axel and the Silver Rocket" } });
       await signInAs(page, user);
       await page.goto("/");
       await page.waitForTimeout(2500);
@@ -91,7 +97,14 @@ for (const d of DEVICES) {
       await tryClick(page, [/new story/i]);
       await page.waitForTimeout(800);
       await shot(page, 11, "new-story-dialog", d.name);
-      await page.keyboard.press("Escape");
+      // Write the story and look at the reading screen
+      await page.getByTestId("write-story").click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(6000);
+      await shot(page, 16, "reading-page", d.name);
+      await page.mouse.wheel(0, 700);
+      await shot(page, 17, "reading-page-lower", d.name);
+      await page.goto("/");
+      await page.waitForTimeout(2500);
       const nav = async (title: string | RegExp) => {
         await tryClick(page, [/^☰ ?menu$/i, /open menu/i, /open navigation/i], 1500);
         await page.waitForTimeout(400);
@@ -106,6 +119,12 @@ for (const d of DEVICES) {
       await shot(page, 14, "grown-up-settings-plan", d.name);
       await nav(/parent dashboard|parent \/ teacher/i);
       await shot(page, 15, "parent-dashboard", d.name);
+      await nav(/^progress/i);
+      await shot(page, 18, "progress", d.name);
+      await nav(/story library/i);
+      await shot(page, 19, "library", d.name);
+      await nav(/reading settings/i);
+      await shot(page, 20, "reading-settings", d.name);
     });
   });
 }

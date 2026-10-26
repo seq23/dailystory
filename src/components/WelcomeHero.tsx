@@ -10,7 +10,9 @@ import { APP_CONFIG } from "@/constants/app";
 import { Link } from "react-router-dom";
 import { DebugLogger } from '@/services/DebugLogger';
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
-import logoImage from "@/assets/time2read-logo.png";
+// The clock-in-book mark (public/icon-192.png); the wordmark PNG spells the name without dashes.
+const logoImage = "/icon-192.png";
+import { MADE_BY_LINE } from "@/seo/schema";
 import carouselImage1 from "@/assets/carousel-1-car-reading.jpg";
 import carouselImage2 from "@/assets/carousel-2-home-reading.jpg";
 import carouselImage3 from "@/assets/carousel-3-outdoor-reading.jpg";
@@ -58,7 +60,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
         <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
           {/* Single descriptive page heading for SEO + screen readers */}
-          <h1 className="sr-only">Time2Read — Interactive AI Reading Adventures for Kids</h1>
+          <h1 className="sr-only">Time-2-Read — Interactive AI Reading Adventures for Kids</h1>
 
           {/* Mobile Layout - Fixed Overlap Prevention */}
           <div className="flex sm:hidden justify-between items-center gap-2 min-h-[50px]">
@@ -88,13 +90,13 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             <div className="flex items-center gap-1 flex-1 justify-center min-w-0 px-2">
               <img 
                 src={logoImage} 
-                alt="Time2Read - Interactive reading platform for children with AI-powered stories"
-                className="w-5 h-5 flex-shrink-0 drop-shadow-lg"
+                alt="Time-2-Read - Interactive reading platform for children with AI-powered stories"
+                className="w-7 h-7 flex-shrink-0 drop-shadow-lg"
               />
               <div className="flex items-center font-comic mobile-text-fixed truncate">
-                <span className="text-xs font-bold text-white drop-shadow-lg">Time</span>
-                <span className="text-sm font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5">2</span>
-                <span className="text-xs font-bold text-white drop-shadow-lg">Read!</span>
+                <span className="text-sm font-bold text-white drop-shadow-lg">Time</span>
+                <span className="text-sm font-schoolbell text-yellow-300 drop-shadow-lg">-2-</span>
+                <span className="text-sm font-bold text-white drop-shadow-lg">Read</span>
               </div>
             </div>
 
@@ -188,7 +190,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               <div className="flex items-center gap-2 sm:gap-4 hover-scale transition-all duration-300">
                 <img 
                   src={logoImage} 
-                  alt="Time 2 Read Logo" 
+                  alt="Time-2-Read Logo" 
                   className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 drop-shadow-lg"
                 />
                 <div className="flex flex-col">
@@ -197,10 +199,10 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                       Time
                     </span>
                     <span className="text-2xl sm:text-4xl md:text-6xl font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
-                      2
+                      -2-
                     </span>
                     <span className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
-                      Read!
+                      Read
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-white/80 whitespace-nowrap">{t("welcomeHero.companyTagline")}</p>
@@ -385,7 +387,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             </div>
             <div className="flex items-center gap-2 text-xs text-white/60">
               <span className="text-white/40">{t("welcomeHero.footer.familyOfTools", "Our Family of Tools")}:</span>
-              <a href="/" className="hover:text-white/90 transition-colors font-medium text-white/70">Time2Read</a>
+              <a href="/" className="hover:text-white/90 transition-colors font-medium text-white/70">Time-2-Read</a>
               <span className="text-white/30">·</span>
               <a href="https://heygetonmylevel.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/90 transition-colors font-medium text-white/70">HeyGetOnMyLevel</a>
             </div>
@@ -396,7 +398,9 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             <div className="flex items-center gap-2">
               <span>© {new Date().getFullYear()} {t("welcomeHero.footer.companyName")}. {t("welcomeHero.footer.copyright")}</span>
               <span className="text-white/30">·</span>
-              <span data-testid="footer-pitch">Helping 4–8-year-olds learn to read. <a href="/pricing" className="underline hover:text-white/80 transition-colors">Try 3 stories free, then 7 days of Premium free</a>. Schools: <a href="mailto:hello@time-2-read.com?subject=School%20pricing" className="underline hover:text-white/80 transition-colors">contact us</a>.</span>
+              <span data-testid="landing-made-by">{MADE_BY_LINE}</span>
+              <span className="text-white/30">·</span>
+              <span data-testid="footer-pitch">Helping children ages 3 to 15 love reading. <a href="/pricing" className="underline hover:text-white/80 transition-colors">Try 3 stories free, then 7 days of Premium free</a>. Schools: <a href="mailto:hello@time-2-read.com?subject=School%20pricing" className="underline hover:text-white/80 transition-colors">contact us</a>.</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
               <a href="/pricing" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.plansAndPricing", "Pricing")}</a>
@@ -407,7 +411,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               <a href="/ferpa" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.ferpa", "FERPA")}</a>
               <a href="/accessibility" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.accessibility", "Accessibility")}</a>
               <a href="/vendors" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.vendors", "Vendors")}</a>
-              <a href="mailto:hello@time2read.app" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.contactUs")}</a>
+              <a href="mailto:hello@time-2-read.com" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.contactUs")}</a>
             </div>
           </div>
         </div>

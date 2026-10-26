@@ -66,7 +66,7 @@ const SightWordsSection = () => (
       Free Kindergarten Sight Words List
     </h2>
     <p className="text-muted-foreground mb-6">
-      Practice these high-frequency words at home, then add them to a Time2Read story so your child sees them in context.
+      Practice these high-frequency words at home, then add them to a Time-2-Read story so your child sees them in context.
     </p>
     <div className="flex flex-wrap gap-2 mb-10">
       {kindergartenSightWords.map((word) => (
@@ -83,7 +83,7 @@ const SightWordsSection = () => (
         Turn sight words into stories ✨
       </h3>
       <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-        Time2Read's beginner reading levels are written mostly with Dolch sight words, so your child meets
+        Time-2-Read's beginner reading levels are written mostly with Dolch sight words, so your child meets
         them again and again inside a personalized, illustrated story where they are the main character.
       </p>
       <Button asChild size="lg">
@@ -305,7 +305,7 @@ const LandingPage = ({ slug }: { slug: string }) => {
           </ul>
           <div className="mt-6">
             <Link to="/" className="text-sm font-medium text-primary hover:underline">
-              ← Back to Time2Read home
+              ← Back to Time-2-Read home
             </Link>
           </div>
         </nav>

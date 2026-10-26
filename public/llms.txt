@@ -1,8 +1,8 @@
-# Time2Read
+# Time-2-Read
 
 > Personalized, interactive reading adventures for children aged 3–15, with AI-generated illustrations, phonetic learning, and text-to-speech narration.
 
-Time2Read creates never-ending, age-appropriate stories tailored to each child's reading level (PreK–10th grade). The first 3 stories are free; Premium starts with a 7-day free trial, then $12.99/month or $99/year (the yearly plan saves $57, 36%). Every story has a 20-minute reading timer. Premium subscribers get unlimited live story generation, a saved story library, voice narration, and parent analytics.
+Time-2-Read creates never-ending, age-appropriate stories tailored to each child's reading level (PreK–10th grade). The first 3 stories are free; Premium starts with a 7-day free trial, then $12.99/month or $99/year (the yearly plan saves $57, 36%). Every story has a 20-minute reading timer. Premium subscribers get unlimited live story generation, a saved story library, voice narration, and parent analytics.
 
 ## Pages
 
