@@ -50,6 +50,9 @@ export const CollapsibleFloatingTimer = ({
   const [isCollapsed, setIsCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showChoice, setShowChoice] = useState(false);
+  // Once the timer has run, a paused timer says "Resume", not "Start" (26 Oct 2026).
+  const [startedOnce, setStartedOnce] = useState(false);
+  useEffect(() => { if (isReading) setStartedOnce(true); }, [isReading]);
   const [expiredAcknowledged, setExpiredAcknowledged] = useState(false); // Prevent re-trigger loop at 0s
   const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false); // Confirmation for guest users ending session
   // Two-tap confirm state for the new top-right "End Session" pill (guest only)
@@ -408,11 +411,11 @@ useEffect(() => {
                     onToggleReading();
                   }}
                  className="min-h-[44px] min-w-[44px] px-2.5 rounded-full bg-background/95 backdrop-blur-sm"
-                 aria-label={isReading ? t("floatingTimer.pauseTimer", "Pause Timer") : t("floatingTimer.startTimer", "Start Timer")}
+                 aria-label={isReading ? t("floatingTimer.pauseTimer", "Pause Timer") : startedOnce ? "Resume Timer" : t("floatingTimer.startTimer", "Start Timer")}
                  id="timer-play-button"
                >
                 {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                <span className="ml-1 text-xs">{isReading ? "Pause" : "Start"}</span>
+                <span className="ml-1 text-xs">{isReading ? "Pause" : startedOnce ? "Resume" : "Start"}</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
