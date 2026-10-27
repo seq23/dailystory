@@ -162,8 +162,8 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResult = await emailResponse.json();
     console.log("COPPA notification sent successfully:", emailResult);
 
-    // Fire-and-forget cost tracking
-    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    // Fire-and-forget cost tracking (the service client above; a second `const sb` here
+    // stopped the function from booting: 503 BOOT_ERROR on every request).
     logCost(sb, {
       sessionId: 'send-coppa-notification',
       provider: 'resend',
