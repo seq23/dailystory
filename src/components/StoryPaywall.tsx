@@ -2,13 +2,11 @@ import { useState } from "react";
 import { Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { DebugLogger } from "@/services/DebugLogger";
 import { RedeemCodeCard } from "@/components/RedeemCodeCard";
-import { checkoutBody, checkoutErrorMessage } from "@/lib/accessCode";
+import { startTrialCheckout, type TrialPlan } from "@/lib/trialCheckout";
 import { FREE_STORY_LIMIT, HEYGETONMYLEVEL_URL, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
 
-type Plan = "monthly" | "annual";
+type Plan = TrialPlan;
 
 /** Shown once an account has used its free stories: start the 7-day trial through Stripe checkout. */
 export function StoryPaywall() {
@@ -18,26 +16,9 @@ export function StoryPaywall() {
   const startTrial = async (plan: Plan) => {
     setPending(plan);
     setError(null);
-    try {
-      const { data: session } = await supabase.auth.getSession();
-      const { data, error: fnError } = await supabase.functions.invoke("create-checkout", {
-        body: checkoutBody(plan),
-        headers: session.session ? { Authorization: `Bearer ${session.session.access_token}` } : undefined,
-      });
-      if (fnError || data?.error) {
-        const refused = await checkoutErrorMessage(fnError, data);
-        if (refused) {
-          setError(refused);
-          setPending(null);
-          return;
-        }
-        throw fnError ?? new Error(data.error);
-      }
-      if (!data?.url) throw new Error("Checkout did not return a link");
-      window.location.href = data.url;
-    } catch (err) {
-      DebugLogger.error("auth", "Trial checkout failed", err);
-      setError("We couldn't open checkout just now. Please try again in a moment.");
+    const problem = await startTrialCheckout(plan);
+    if (problem) {
+      setError(problem);
       setPending(null);
     }
   };
