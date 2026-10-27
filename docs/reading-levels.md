@@ -63,6 +63,11 @@ grade's target so ordinary variation passes. The Reads-at grade decides it.
   dash, or a connector with no subject such as "And waited…") is rejected the same
   way; dialogue openings and "But Kiki…" pass (`midSentenceStart` in
   `supabase/functions/_shared/storyOutputCheck.ts`).
+- The live prompt gives the grade's longest sentence (`maxSentenceWords`), and a page
+  whose sentences average more than 1.5 times that is rejected the same way
+  (`SENTENCE_LENGTH_SLACK` in `livePage.ts`).
+- A live answer cut by the token budget keeps its complete sentences when they still
+  meet the floor (`completeSentencesOf`); the budget covers the longest page kept.
 - A live call shows ONE page: page markers are removed and pages that only repeat
   earlier pages are dropped (`livePageFromAnswer`). The live prompt says the grade's
   length and the floor, and on the last page that it is the ending.

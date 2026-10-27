@@ -91,7 +91,22 @@ export function maxWordsForGrade(grade: unknown): number {
  * word) plus margin, so a good model is never cut off by a budget sized for 15 words.
  */
 export function livePageTokenBudget(grade: unknown): number {
-  return Math.ceil(maxWordsForGrade(grade) * 1.6) + 200;
+  // Sized for the longest page we KEEP (maxKeptWordsForGrade, 30% over the target), not
+  // the target's top: a 6th-grade page of 500+ words ran out of a 840-token budget.
+  return Math.ceil(maxKeptWordsForGrade(grade) * 1.6) + 200;
+}
+
+/**
+ * A live answer cut by the token budget, kept up to its last complete sentence; null when
+ * nothing complete is left. 26 Oct 2026: a 6th-grade page (target 200-400 words) was
+ * rejected as "truncated" after 500+ good words, the 40 s request budget ran out looking
+ * for another model, and the reader got an error. The page is capped to whole sentences
+ * anyway (capWords), so the complete part of a long cut answer is a full page.
+ */
+export function completeSentencesOf(text: string): string | null {
+  const t = stripReasoning(text || "").trim();
+  const m = t.match(/^[\s\S]*[.!?…]["'”’)\]*_]*(?=\s|$)/);
+  return m && m[0].trim() ? m[0].trim() : null;
 }
 
 /**
@@ -122,17 +137,41 @@ export function livePageInstruction(grade: unknown, opts: { ending?: boolean } =
   const target = p?.wordsPerPage ?? "30-50 words per page";
   const min = minWordsForGrade(grade);
   return `\n\nLIVE PAGE (this overrides any page format above): write exactly ONE page of ${target}, never fewer than ${min} and never more than ${maxWordsForGrade(grade)} words. ` +
+    `Keep every sentence to about ${maxSentenceWordsForGrade(grade)} words or fewer. ` +
     `Do not write *** or any page marker, and do not write a second page. Never repeat a sentence. ` +
     (opts.ending
       ? `This is the LAST page: continue from the last line of the story so far and bring it to a satisfying ending. Do not retell earlier pages.`
       : `Continue from the last line of the story so far with new events; never retell or copy earlier pages.`);
 }
 
+/** The grade's longest sentence (GRADE_PROFILES.maxSentenceWords); 15 when unknown. */
+export function maxSentenceWordsForGrade(grade: unknown): number {
+  return gradeProfile(grade)?.maxSentenceWords ?? 15;
+}
+
+/**
+ * A page whose sentences average more than this many times the grade's longest sentence
+ * reads above the grade (26 Oct 2026, live: a 5th-grade page averaged 29.6 words a
+ * sentence against 20, Flesch-Kincaid 11.3). Loose on purpose: one long sentence is fine.
+ */
+export const SENTENCE_LENGTH_SLACK = 1.5;
+export function averageSentenceWords(text: string): number {
+  const s = sentencesOf(text);
+  return s.length ? wordCount(text) / s.length : wordCount(text);
+}
+
 /**
  * Why this answer must not be the next live page, or null when it may.
  * Checks the page the reader would see (after livePageFromAnswer).
  */
-export function livePageProblem(answer: string, finishReason: string | null | undefined, opts: { minWords: number; previous?: string }): string | null {
+export function livePageProblem(answer: string, finishReason: string | null | undefined, opts: { minWords: number; previous?: string; maxSentenceWords?: number }): string | null {
+  if (finishReason === "length") {
+    // Cut by the budget: judge (and later show) only its complete sentences.
+    const kept = completeSentencesOf(answer);
+    if (!kept) return "truncated (finish_reason length)";
+    const problem = livePageProblem(kept, "stop", opts);
+    return problem ? `truncated, and its complete part ${problem}` : null;
+  }
   const base = storyTextProblem(answer, finishReason);
   if (base && !/^too short/.test(base)) return base;
   const page = livePageFromAnswer(answer, opts.previous ?? "");
@@ -144,6 +183,10 @@ export function livePageProblem(answer: string, finishReason: string | null | un
   const again = repeatedSentence(page);
   if (again) return `repeats a sentence ("${again.slice(0, 50)}")`;
   if (opts.previous && overlapWithPrevious(page, opts.previous) >= NEAR_DUPLICATE_SHARE) return "near-copy of the previous page";
+  if (opts.maxSentenceWords) {
+    const avg = averageSentenceWords(page);
+    if (avg > opts.maxSentenceWords * SENTENCE_LENGTH_SLACK) return `sentences too long for the grade (average ${avg.toFixed(1)} words; grade max ${opts.maxSentenceWords})`;
+  }
   return null;
 }
 
