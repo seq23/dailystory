@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { startTrialCheckout, type TrialPlan } from "@/lib/trialCheckout";
+import { RedeemCodeCard } from "@/components/RedeemCodeCard";
 import { FREE_STORY_LIMIT, HEYGETONMYLEVEL_URL, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
 import { freeFeatures, premiumFeatures, additionalOfferings, enterpriseFeatures } from "@/constants/featureLists";
 import readingScreenshot from "@/assets/pricing-screenshot-reading.jpg";
@@ -125,6 +126,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
               </div>
               {signedIn ? (
                 <div className="space-y-2" data-testid="pricing-trial-signed-in">
+                  <RedeemCodeCard className="mb-2" />
                   {(["monthly", "annual"] as TrialPlan[]).map((plan) => (
                     <Button
                       key={plan}

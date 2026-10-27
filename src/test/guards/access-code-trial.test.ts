@@ -130,12 +130,21 @@ describe("access_codes table", () => {
 
 describe("the parent can enter a code wherever Premium is offered", () => {
   it("every paywall surface shows the one \"Have a code?\" box, and checkout never carries a code", () => {
-    for (const f of ["src/components/PremiumUpgrade.tsx", "src/components/StoryPaywall.tsx", "src/components/SubscriptionManager.tsx"]) {
+    for (const f of ["src/components/PremiumUpgrade.tsx", "src/components/SubscriptionManager.tsx", "src/lib/trialCheckout.ts"]) {
       const src = read(f);
-      expect(src, f).toMatch(/<RedeemCodeCard\b/);
       expect(src, f).toMatch(/body: checkoutBody\([^,)]+\)/); // plan only: a code is redeemed, never sent to Stripe
       expect(src, f).toMatch(/checkoutErrorMessage\(/);
       expect(src, f).not.toMatch(/AccessCodeField|apply-discount-code/); // one code box, one path
+    }
+    // The paywall and the signed-in Pricing card start checkout through src/lib/trialCheckout.ts
+    // (27 Oct 2026) and show the same code box.
+    for (const f of ["src/components/PremiumUpgrade.tsx", "src/components/StoryPaywall.tsx", "src/components/SubscriptionManager.tsx", "src/components/PricingSection.tsx"]) {
+      const src = read(f);
+      expect(src, f).toMatch(/<RedeemCodeCard\b/);
+      expect(src, f).not.toMatch(/AccessCodeField|apply-discount-code/);
+    }
+    for (const f of ["src/components/StoryPaywall.tsx", "src/components/PricingSection.tsx"]) {
+      expect(read(f), f).toMatch(/await startTrialCheckout\(plan\)/);
     }
     const card = read("src/components/RedeemCodeCard.tsx");
     expect(card).toMatch(/Have a code\?/);
