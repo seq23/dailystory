@@ -15,6 +15,8 @@ interface StoryTimerIntegrationProps {
   onKeepReadingUntimed?: () => void;
   onSaveStoryNow?: () => void;
   onDismiss: () => void;
+  /** In the page flow, clear of the story picture and text (CollapsibleFloatingTimer). */
+  docked?: boolean;
 }
 
 export const StoryTimerIntegration: React.FC<StoryTimerIntegrationProps> = ({
@@ -29,7 +31,8 @@ export const StoryTimerIntegration: React.FC<StoryTimerIntegrationProps> = ({
   onRestartTimer,
   onKeepReadingUntimed,
   onSaveStoryNow,
-  onDismiss
+  onDismiss,
+  docked = false,
 }) => {
   const handleDismiss = () => {
     DebugLogger.log('ui', 'Timer dismissed by user');
@@ -62,6 +65,7 @@ export const StoryTimerIntegration: React.FC<StoryTimerIntegrationProps> = ({
       onRestartTimer={isPremium ? onRestartTimer : undefined}
       onKeepReadingUntimed={isPremium ? onKeepReadingUntimed : undefined}
       onSaveStoryNow={isPremium ? onSaveStoryNow : undefined}
+      docked={docked}
     />
   );
 };

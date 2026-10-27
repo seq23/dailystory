@@ -26,6 +26,11 @@ interface CollapsibleFloatingTimerProps {
   onRestartTimer?: () => void; // Premium: restart a new timed session in-session
   onKeepReadingUntimed?: () => void; // Premium: keep reading with timer off
   onSaveStoryNow?: () => void; // Premium: save the current story now
+  /**
+   * Docked: in the page's own flow (above the story) instead of floating. A floating timer
+   * covered the story picture and its controls lay across the picture's edge (27 Oct 2026).
+   */
+  docked?: boolean;
 }
 
 export const CollapsibleFloatingTimer = ({
@@ -41,7 +46,8 @@ export const CollapsibleFloatingTimer = ({
   onDismiss,
   onRestartTimer,
   onKeepReadingUntimed,
-  onSaveStoryNow
+  onSaveStoryNow,
+  docked = false,
 }: CollapsibleFloatingTimerProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
@@ -181,6 +187,7 @@ useEffect(() => {
 
   // Responsive positioning
   const getPositionClasses = () => {
+    if (docked) return "relative z-[1] mx-auto";
     return cn(
       "fixed z-[60]",
       // Clear of the left sidebar (16rem wide when open, ui/sidebar.tsx SIDEBAR_WIDTH) so the
@@ -194,7 +201,7 @@ useEffect(() => {
 
   if (isCollapsed && !showCelebration && !showChoice) {
     return (
-      <div className={cn(getPositionClasses())}>
+      <div className={cn(getPositionClasses())} data-testid={docked ? "reading-timer-docked" : undefined}>
         {/* Enhanced Collapsed Timer - More Prominent for Free Users */}
         <div 
           className={cn(
@@ -231,7 +238,7 @@ useEffect(() => {
             !isReading && [
               "bg-gradient-to-br from-yellow-500/10 to-orange-500/10"
             ],
-            isMobile ? "w-16 h-16" : isTablet ? "w-20 h-20" : "w-28 h-28"
+            isMobile ? "w-16 h-16" : (isTablet || docked) ? "w-20 h-20" : "w-28 h-28"
           )}
           onClick={() => setIsCollapsed(false)}
           id="timer-display"
@@ -244,7 +251,7 @@ useEffect(() => {
             getTimerColor(),
             !isPremium && timeRemaining <= 300 && "text-red-600",
             lowTimePulse && "animate-bounce",
-            isMobile ? "text-sm" : isTablet ? "text-base" : "text-lg"
+            isMobile ? "text-sm" : (isTablet || docked) ? "text-base" : "text-lg"
           )}>
             {formatTime(timeRemaining)}
           </div>
@@ -286,7 +293,7 @@ useEffect(() => {
   }
 
   return (
-    <div className={cn(getPositionClasses(), "flex flex-col items-center gap-3")}>
+    <div className={cn(getPositionClasses(), docked ? "flex flex-row flex-wrap items-center justify-center gap-3" : "flex flex-col items-center gap-3")} data-testid={docked ? "reading-timer-docked" : undefined}>
       {/* Expanded Timer Display */}
       <div className="relative">
         {/* End Session pill — guest only, top-right of HUD container */}
@@ -350,7 +357,7 @@ useEffect(() => {
               "animate-pulse ring-2 ring-yellow-400/50"
             ],
             isReading && "border-border",
-            isMobile ? "w-24 h-24" : isTablet ? "w-28 h-28" : "w-40 h-40"
+            isMobile ? "w-24 h-24" : (isTablet || docked) ? "w-28 h-28" : "w-40 h-40"
           )}
           onClick={() => {
             if (!isMobileOrTablet) {
@@ -382,13 +389,13 @@ useEffect(() => {
             <div className={cn(
               "font-bold", 
               getTimerColor(),
-              isMobile ? "text-base" : isTablet ? "text-lg" : "text-2xl"
+              isMobile ? "text-base" : (isTablet || docked) ? "text-lg" : "text-2xl"
             )}>
               {formatTime(timeRemaining)}
             </div>
             <div className={cn(
               "text-muted-foreground",
-              isMobile ? "text-xs hidden" : isTablet ? "text-xs" : "text-base"
+              isMobile ? "text-xs hidden" : (isTablet || docked) ? "text-xs" : "text-base"
             )}>
               {!isMobile && t("floatingTimer.readingTime", "Reading Time")}
             </div>

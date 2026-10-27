@@ -30,6 +30,8 @@ export interface NewChildInput {
 interface StoreState {
   children: ChildProfile[];
   activeChildId: string | null;
+  /** The child being switched to while the choice is saved; null when no switch is pending. */
+  switchingToId: string | null;
   loading: boolean;
   error: string | null;
   userId: string | null;
@@ -38,7 +40,12 @@ interface StoreState {
 export const MAX_CHILD_PROFILES = 40;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-let state: StoreState = { children: [], activeChildId: null, loading: true, error: null, userId: null };
+let state: StoreState = { children: [], activeChildId: null, switchingToId: null, loading: true, error: null, userId: null };
+/**
+ * Bumped on every switch. A load that started before the latest switch must not put the
+ * old stored child back (27 Oct 2026, live: "Story for:" reverted to the previous child).
+ */
+let activeVersion = 0;
 const listeners = new Set<() => void>();
 let inflight: Promise<void> | null = null;
 let authWired = false;
@@ -65,6 +72,8 @@ async function persistActive(userId: string, childId: string | null) {
 
 async function load(force = false): Promise<void> {
   if (inflight && !force) return inflight;
+  // Read before any await: a switch made while this load waits must win.
+  const versionAtStart = activeVersion;
   inflight = (async () => {
     try {
       const {
@@ -72,7 +81,7 @@ async function load(force = false): Promise<void> {
       } = await supabase.auth.getSession();
       const user = session?.user;
       if (!user) {
-        set({ children: [], activeChildId: null, loading: false, error: null, userId: null });
+        set({ children: [], activeChildId: null, switchingToId: null, loading: false, error: null, userId: null });
         return;
       }
       if (state.userId !== user.id) set({ loading: true, userId: user.id });
@@ -83,10 +92,12 @@ async function load(force = false): Promise<void> {
       if (kidsErr) throw kidsErr;
       const children = (kids || []) as ChildProfile[];
       const stored = ((prefs as { active_child_id?: string | null } | null)?.active_child_id ?? null) as string | null;
-      const effective = effectiveActiveChild(children, stored);
+      // A switch made while this load was in flight wins over what the database said.
+      const switchedMeanwhile = activeVersion !== versionAtStart || state.switchingToId !== null;
+      const effective = effectiveActiveChild(children, switchedMeanwhile ? state.activeChildId : stored);
       set({ children, activeChildId: effective?.id ?? null, loading: false, error: null });
       // Keep the saved pointer on a real child (it was null, or pointed at a deleted child).
-      if (effective && effective.id !== stored) {
+      if (!switchedMeanwhile && effective && effective.id !== stored) {
         persistActive(user.id, effective.id).catch((e) => DebugLogger.warn("auth", "Could not save the active child", e));
       }
     } catch (e: any) {
@@ -103,7 +114,7 @@ function wireAuth() {
   if (authWired) return;
   authWired = true;
   supabase.auth.onAuthStateChange((event) => {
-    if (event === "SIGNED_OUT") set({ children: [], activeChildId: null, loading: false, error: null, userId: null });
+    if (event === "SIGNED_OUT") set({ children: [], activeChildId: null, switchingToId: null, loading: false, error: null, userId: null });
     if (event === "SIGNED_IN" || event === "INITIAL_SESSION") void load(true);
   });
 }
@@ -116,8 +127,9 @@ const snapshot = () => state;
 
 /** Test hook: start from a clean store. */
 export function __resetChildProfilesStore(next?: Partial<StoreState>) {
-  state = { children: [], activeChildId: null, loading: true, error: null, userId: null, ...next };
+  state = { children: [], activeChildId: null, switchingToId: null, loading: true, error: null, userId: null, ...next };
   inflight = null;
+  activeVersion = 0;
   listeners.forEach((l) => l());
 }
 
@@ -142,16 +154,21 @@ export function useChildProfiles() {
     if (childId !== null && (!UUID.test(childId) || !state.children.some((c) => c.id === childId))) {
       throw new Error("That child wasn't found. Please try again.");
     }
-    const user = await requireUser();
+    // Switch on screen first, then save: the session check alone took seconds live, and
+    // the name did not change until it was done (27 Oct 2026).
     const previous = state.activeChildId;
-    set({ activeChildId: childId, error: null });
+    const version = ++activeVersion;
+    set({ activeChildId: childId, switchingToId: childId, error: null });
     try {
+      const user = await requireUser();
       await persistActive(user.id, childId);
       window.dispatchEvent(new CustomEvent("active-child-changed", { detail: { id: childId } }));
     } catch (e) {
-      set({ activeChildId: previous });
+      if (version === activeVersion) set({ activeChildId: previous });
       DebugLogger.error("auth", "setActiveChild error", e);
       throw new Error("We couldn't switch just now. Please try again.");
+    } finally {
+      if (version === activeVersion) set({ switchingToId: null });
     }
   }, []);
 
@@ -246,6 +263,9 @@ export function useChildProfiles() {
     activeChildId: activeChild?.id ?? null,
     activeChild,
     loading: s.loading,
+    /** True while a new reader is being saved (show "Switching…"). */
+    switching: s.switchingToId !== null,
+    switchingToId: s.switchingToId,
     error: s.error,
     refresh: () => load(true),
     setActiveChild,

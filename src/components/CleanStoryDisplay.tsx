@@ -107,6 +107,8 @@ import "@/styles/storyDisplay.css";
 
 // Static image placeholder for when images are disabled by user
 const IMAGES_DISABLED_PLACEHOLDER = '/serious-readers-corner.png';
+/** A page longer than this (upper grades) reads in the page's own scroll, not a small inner box. */
+export const LONG_PAGE_WORDS = 150;
 // useWordHighlighting integrated into useAudioControls
 import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
@@ -4031,15 +4033,20 @@ const handleRestartTimer = () => {
 
   const progress = displayedStory.length > 0 ? ((currentPage + 1) / displayedStory.length) * 100 : 0;
   const isShortPage = countWords(currentStoryText || "") <= 8;
+  // Upper-grade pages run 200-500 words. Past LONG_PAGE_WORDS the text uses the page's own
+  // scroll (no inner scroll box) and the picture stays in view beside it (27 Oct 2026).
+  const isLongPage = countWords(currentStoryText || "") > LONG_PAGE_WORDS;
   const controlsBlocked = !isPremium && timeRemaining <= 0;
 
   // Desktop card height calculation for perfect mirroring
-  const { heightStyle, containerClassName, dynamicHeight } = useDesktopCardHeight({
+  const { heightStyle: fittedHeightStyle, containerClassName: fittedContainerClassName, dynamicHeight } = useDesktopCardHeight({
     textContent: currentStoryText,
     fontSize: difficultyBasedTextConfig.fontSize,
     lineHeight: difficultyBasedTextConfig.lineHeight,
     isDesktop: !isMobile && typeof window !== 'undefined' && window.innerWidth >= 1280 // xl breakpoint
   });
+  const heightStyle = isLongPage ? undefined : fittedHeightStyle;
+  const containerClassName = isLongPage ? "" : fittedContainerClassName;
 
   // Aggressive prefetch: progressively preload many upcoming images without blocking UI
   useEffect(() => {
@@ -4220,6 +4227,26 @@ const handleRestartTimer = () => {
                 </div>
               </div>
 
+              {/* Reading timer, docked in the page flow: floating, it covered the story picture
+                  and its controls lay across the picture's edge (27 Oct 2026). */}
+              <div className="mb-3 flex justify-center" data-testid="reading-timer-slot">
+                <StoryTimerIntegration
+                    docked
+                    isPremium={isPremium}
+                    timerEnabled={timerEnabled}
+                    timeRemaining={timeRemaining}
+                    isTimerRunning={isTimerRunning}
+                    onToggleTimer={handleToggleTimer}
+                    onReduceTime={handleReduceTime}
+                    onEndSession={handleEndSession}
+                    onExtendTime={isPremium ? handleExtendTime : undefined}
+                    onRestartTimer={isPremium ? handleRestartTimer : undefined}
+                    onKeepReadingUntimed={isPremium ? handleKeepReadingUntimed : undefined}
+                    onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}
+                    onDismiss={() => { try { localStorage.setItem('readingTimerEnabled','0'); } catch {} setTimerEnabled(false); setIsTimerRunning(false); setIsTimerCanceled(true); setIsTimerVisible(false); window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: false })); }}
+                  />
+              </div>
+
               {/* Premium Only Desktop Controls */}
               {isPremium && (
                 <div
@@ -4334,7 +4361,7 @@ const handleRestartTimer = () => {
                   {/* Bottom Half: Text - Fixed size to prevent layout shifts */}
                   <div className={cn(
                     "w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative transition-all duration-300",
-                    imagesEnabled ? "flex-[0.4]" : "flex-1 min-h-[400px]"
+                    isLongPage ? "flex-none" : imagesEnabled ? "flex-[0.4]" : "flex-1 min-h-[400px]"
                   )}>
                      {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
@@ -4346,7 +4373,7 @@ const handleRestartTimer = () => {
                         </div>
                       </div>
                     )}
-                    <div className={cn("flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4")}>
+                    <div className={cn(isLongPage ? "px-4 md:px-6 pb-4" : "flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4")} data-testid="story-text-scroll-mobile">
                       <div 
                         className={cn("story-content storybook-frame story-content--difficulty-aware w-full", justAdvanced && "animate-enter", difficultyBasedContainerConfig)}
                         data-difficulty={currentDifficulty}
@@ -4384,19 +4411,19 @@ const handleRestartTimer = () => {
                   {/* Desktop: Perfectly mirrored split columns */}
                 <div className={cn(
                   "hidden xl:flex flex-1 min-h-0 transition-all duration-300",
-                  imagesEnabled ? "xl:grid xl:grid-cols-2 gap-0" : "flex-col gap-4 relative"
+                  imagesEnabled ? cn("xl:grid xl:grid-cols-2 gap-0", isLongPage && "items-start") : "flex-col gap-4 relative"
                 )}>
                   {/* Image Section - LEFT SIDE - Equal size on desktop */}
                   {/* DESKTOP IMAGE FIX: Always show images on desktop (xl breakpoint already filters) */}
                   {(
                     <div className={cn(
                       "transition-all duration-300",
-                      imagesEnabled ? "xl:order-1 h-full min-h-0" : "xl:order-2 w-full"
+                      imagesEnabled ? (isLongPage ? "xl:order-1 self-start sticky top-4" : "xl:order-1 h-full min-h-0") : "xl:order-2 w-full"
                     )}>
                       <div className={cn(
                         "rounded-2xl overflow-hidden bg-muted/30 transition-all duration-300",
                         imagesEnabled 
-                          ? `${containerClassName} w-full shadow-2xl` 
+                          ? `${isLongPage ? "aspect-[4/3]" : containerClassName} w-full shadow-2xl` 
                           : "w-[220px] h-[220px] shadow-md opacity-60 absolute top-4 right-4 z-10"
                       )} style={imagesEnabled ? heightStyle : undefined}>
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && !isGeneratingImage && !isPreparingImage && !imageLoadingStates[currentPage] && (
@@ -4443,7 +4470,7 @@ const handleRestartTimer = () => {
                   <div className={cn(
                     "flex flex-col transition-all duration-300",
                     imagesEnabled ? "xl:order-2" : "xl:order-1 w-full max-w-5xl mx-auto"
-                  )} style={imagesEnabled ? heightStyle : { minHeight: '500px' }}>
+                  )} style={imagesEnabled ? heightStyle : { minHeight: '500px' }} data-testid="story-text-column" data-long-page={isLongPage ? "true" : undefined}>
                     <div className={`${containerClassName} w-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative`}>
                       {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
@@ -4455,7 +4482,7 @@ const handleRestartTimer = () => {
                           </div>
                         </div>
                       )}
-                      <div className={cn("h-full overflow-y-auto overflow-x-hidden p-3 md:p-4", isShortPage && "flex items-center justify-center")}> 
+                      <div className={cn(isLongPage ? "overflow-x-hidden p-3 md:p-6" : "h-full overflow-y-auto overflow-x-hidden p-3 md:p-4", isShortPage && "flex items-center justify-center")} data-testid="story-text-scroll"> 
                         <div 
                           className={cn("story-content story-content--compact story-content--difficulty-aware w-full", (isPremium && isShortPage || currentDifficulty === 'easy') && "text-center", justAdvanced && "animate-enter", difficultyBasedContainerConfig)}
                           data-difficulty={currentDifficulty}
@@ -4859,21 +4886,7 @@ const handleRestartTimer = () => {
         }}
       />
 
-      {/* Unified Timer Integration - All Users */}
-      <StoryTimerIntegration
-        isPremium={isPremium}
-        timerEnabled={timerEnabled}
-        timeRemaining={timeRemaining}
-        isTimerRunning={isTimerRunning}
-        onToggleTimer={handleToggleTimer}
-        onReduceTime={handleReduceTime}
-        onEndSession={handleEndSession}
-        onExtendTime={isPremium ? handleExtendTime : undefined}
-        onRestartTimer={isPremium ? handleRestartTimer : undefined}
-        onKeepReadingUntimed={isPremium ? handleKeepReadingUntimed : undefined}
-        onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}
-        onDismiss={() => { try { localStorage.setItem('readingTimerEnabled','0'); } catch {} setTimerEnabled(false); setIsTimerRunning(false); setIsTimerCanceled(true); setIsTimerVisible(false); window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: false })); }}
-      />
+
 
 
 
