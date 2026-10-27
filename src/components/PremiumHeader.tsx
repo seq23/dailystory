@@ -159,7 +159,10 @@ export const PremiumHeader = ({
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="w-72 z-[75] bg-popover shadow-md">
+              {/* Scrolls inside the screen (27 Oct 2026: with many children, "Add another child" and
+                  "Grown-up settings" fell below a phone screen and could not be reached).
+                  Guard: src/test/guards/menu-back.test.ts. */}
+              <DropdownMenuContent align="end" collisionPadding={8} className="w-72 z-[75] bg-popover shadow-md max-h-[var(--radix-dropdown-menu-content-available-height)] overflow-y-auto overscroll-contain" data-testid="reader-menu">
                 <DropdownMenuLabel>Who's reading?</DropdownMenuLabel>
                 {children.map((c) => {
                   const current = activeChild?.id === c.id;

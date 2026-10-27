@@ -6,7 +6,7 @@ import { pagesReadCount, saveLastReadStory } from '@/lib/lastReadStory';
 import { cleanWords, practiceWordsFromRequest } from '../../supabase/functions/_shared/practiceWords';
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
 import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration";
-import { useStoryLogic } from "@/hooks/useStoryLogic";
+import { SESSION_SECONDS, useStoryLogic } from "@/hooks/useStoryLogic";
 import { useNavigationPersistence } from "@/hooks/useNavigationPersistence";
 import { ImageDeduplicationService } from "@/services/imageDeduplicationService";
 import { NetflixSessionManager } from "@/services/NetflixSessionManager";
@@ -283,6 +283,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
   // Initialize useStoryLogic hook for centralized state management
   const readProgressRef = useRef<() => { pagesRead: number; wordsRead: number }>(() => ({ pagesRead: 0, wordsRead: 0 }));
+  // True while a new story is being written (set each render, read by the timer).
+  const newStoryWritingRef = useRef(false);
   const {
     state: {
       story,
@@ -342,8 +344,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     onSessionEnded,
     // Timer-end stats count the words read, like End Session (set below, once the pages exist).
     readProgress: () => readProgressRef.current(),
+    // Time-up waits for a new story that is still being written (src/hooks/useStoryLogic.ts).
+    deferSessionEnd: () => newStoryWritingRef.current,
     netflixSessionId: useMemo(() => getNetflixSessionId(), []) // Pass Netflix session ID (computed once per mount to prevent re-creation)
   });
+  newStoryWritingRef.current = isGeneratingNewStory || isGeneratingRewrite || (isLoading && story.length === 0);
 
   // Initialize consolidated hooks for state management
   const { state: imageState, actions: imageActions } = useImageManagement();
@@ -1704,6 +1709,8 @@ useEffect(() => {
     intervalId = ManagedTimers.setInterval(() => {
       setTimeRemaining(prev => {
         if (prev <= 1) {
+          // A new story is still being written: it gets a fresh session (useStoryLogic.ts).
+          if (newStoryWritingRef.current) return SESSION_SECONDS;
           setIsTimerRunning(false);
           return 0;
         }
@@ -3322,6 +3329,20 @@ const handleDockCoach = () => {
     setHasChosenUntimed(true); // Permanently disable timer for this session
   };
 
+// One library entry per story (27 Oct 2026, final live tests: tapping Save twice in one
+// session added two entries, and a story re-opened from the library was saved as a new one,
+// because every save made a new id). The id stays the same until a different story starts;
+// a library story keeps its own id. Guard: src/test/guards/tap-buttons.test.ts.
+const saveIdRef = useRef<{ first: string; id: string } | null>(null);
+const storyIdForSave = (): string => {
+  if (currentStory?.isFromSavedStory && currentStory?.id) return String(currentStory.id);
+  const first = story[0] ?? '';
+  if (!saveIdRef.current || saveIdRef.current.first !== first) {
+    saveIdRef.current = { first, id: generateSessionIdWithPrefix('story') };
+  }
+  return saveIdRef.current.id;
+};
+
 const handleSaveStoryNow = async () => {
     if (!isPremium || story.length === 0 || isSaving) return;
     setIsSaving(true);
@@ -3344,7 +3365,7 @@ const handleSaveStoryNow = async () => {
       const wordCount = story.reduce((sum, s) => sum + countWords(s), 0);
       const estimatedReadingTime = Math.max(1, Math.round(wordCount / 150));
       const storyObj: StoryType = {
-        id: generateSessionIdWithPrefix('story'),
+        id: storyIdForSave(),
         title: storyTitle || `${safeUserInfo.name}'s Adventure`,
         segments,
         difficulty: currentDifficulty,

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { popView, pushView, showsBack } from "@/lib/viewTrail";
 import { savedReadingGrade } from '@/lib/readingGradeStore';
 import { DebugLogger } from '@/services/DebugLogger';
 import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
@@ -93,8 +94,32 @@ interface CurrentStory {
   isFromSavedStory?: boolean;
 }
 
+/**
+ * Room under the last control on every page, so the round feedback button (FloatingFeedback:
+ * bottom-6 + h-14 = 80px) never covers it (27 Oct 2026: it covered "Save settings" at the end
+ * of Reading settings on a phone). Guard: src/test/guards/menu-back.test.ts.
+ */
+export const MAIN_BOTTOM_CLEARANCE = "calc(var(--cookie-banner-h, 0px) + 6rem)";
+
 export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [currentView, setCurrentView] = useState<AppView>("stories");
+  // "← Back" on menu pages: the views visited, newest last (src/lib/viewTrail.ts).
+  const viewTrailRef = useRef<string[]>([]);
+  const lastViewRef = useRef<AppView>("stories");
+  const goingBackRef = useRef(false);
+  useEffect(() => {
+    if (lastViewRef.current === currentView) return;
+    if (!goingBackRef.current) viewTrailRef.current = pushView(viewTrailRef.current, lastViewRef.current, currentView);
+    goingBackRef.current = false;
+    lastViewRef.current = currentView;
+  }, [currentView]);
+  const goBack = () => {
+    const { to, trail } = popView(viewTrailRef.current, currentView);
+    viewTrailRef.current = trail;
+    goingBackRef.current = true;
+    setIsEditingProfile(false);
+    setCurrentView(to as AppView);
+  };
   const [userProfile, setUserProfile] = useState<UserProfile | PremiumUserPreferences | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -821,7 +846,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               onGrownUpSettings={() => { setIsEditingProfile(false); setCurrentView("account"); }}
             />
 
-            <main className="flex-1 min-h-0 overflow-y-auto overscroll-auto mobile-scroll h-[calc(100dvh-var(--app-header-height))] p-2 sm:p-4 md:p-6" style={{ paddingBottom: "calc(var(--cookie-banner-h, 0px) + 1rem)" }}>
+            <main className="flex-1 min-h-0 overflow-y-auto overscroll-auto mobile-scroll h-[calc(100dvh-var(--app-header-height))] p-2 sm:p-4 md:p-6" style={{ paddingBottom: MAIN_BOTTOM_CLEARANCE }}>
               {/* Developer widget: dev builds and admins only, never families */}
               {showDevTools && <DismissibleSystemStatus />}
 
@@ -856,6 +881,17 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                 />
               )}
               
+              {showsBack(currentView) && !isEditingProfile && (
+                <button
+                  type="button"
+                  onClick={goBack}
+                  data-testid="view-back"
+                  className="mb-3 inline-flex min-h-11 items-center gap-1 rounded-full border border-border bg-background px-4 text-base font-medium text-foreground shadow-sm hover:bg-muted"
+                >
+                  <span aria-hidden>←</span> Back
+                </button>
+              )}
+
               {isEditingProfile ? (
                 <PremiumProfileEditor
                   userInfo={userInfo}
@@ -1010,10 +1046,12 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                          userInfo={userInfo}
                          isPremium={isPremium}
                          currentStory={currentStory}
-                         onSessionEnded={(stats) => {
-                           DebugLogger.log('story', 'Story session ended:', stats);
-                           setCurrentView("library");
-                         }}
+                         // A story finished from the library ends like a new one: the
+                         // session-ended page with its quiz (27 Oct 2026, final live tests:
+                         // ending a saved story went back to the library, so a story resumed
+                         // from Save never got its end-of-story quiz).
+                         // Guard: src/test/guards/menu-back.test.ts.
+                         onSessionEnded={handleSessionEnded}
                          onHome={() => setCurrentView("stories")}
                          onUpgrade={() => setCurrentView("account")}
                          onNewStory={() => setCurrentView("stories")}
