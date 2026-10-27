@@ -199,19 +199,19 @@ The guard checks that each line below still holds the named symbol.
 | src/services/DifficultyLevelMapper.ts:50 | fromBackendValue | delegates to backendDifficultyOf |
 | supabase/functions/_shared/DifficultyLevelMapper.ts:46 | toBackend | delegates to frontendLevelToDifficulty |
 | supabase/functions/_shared/DifficultyLevelMapper.ts:51 | fromBackendValue | delegates to backendDifficultyOf |
-| src/services/NetflixStyleStoryService.ts:79 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
+| src/services/NetflixStyleStoryService.ts:82 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
 | src/services/LiveGenerationService.ts:53 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
-| supabase/functions/generate-adaptive-story/streamlined-handler.ts:154 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
+| supabase/functions/generate-adaptive-story/streamlined-handler.ts:163 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
 | supabase/functions/template-service/index.ts:178 | DifficultyLevelMapper.fromBackendValue(difficulty) | `difficulty` read backend-first |
 | src/components/ParentDashboard.tsx:910 | minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade, guardrails.minReadingGrade) | stored minimum → "Never easier than" grade |
-| src/components/CleanStoryDisplay.tsx:1322 | const minGrade = minimumGradeForGuardrail | lock clamp compares grades |
+| src/components/CleanStoryDisplay.tsx:1323 | const minGrade = minimumGradeForGuardrail | lock clamp compares grades |
 | src/lib/readingLevelMap.ts:101 | normalizeStoredLevel | any stored column value → grade |
 <!-- converters:end -->
 
 ## Mismatches fixed 26 Oct 2026
 
 - **Pre-K/K stories were written at 1st–2nd grade.** The clients convert the level to
-  a backend value before sending (`NetflixStyleStoryService.ts:79`,
+  a backend value before sending (`NetflixStyleStoryService.ts:82`,
   `LiveGenerationService.ts:53`), and `streamlined-handler.ts` converted it AGAIN as if
   it were a frontend value, so backend `beginner` became `easy`. Same in
   `template-service` for the ending page. Both now read `config.difficulty`

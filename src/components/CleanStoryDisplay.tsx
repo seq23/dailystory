@@ -127,7 +127,6 @@ import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/Ne
 import { LiveGenerationService, type LiveGenerationContext, type LivePageResult } from "@/services/LiveGenerationService";
 import { DifficultyManager } from "@/services/difficultyManager";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
-import { DiagnosticTool } from "@/utils/diagnostics";
 import { UnifiedValidator } from "@/utils/unifiedValidator";
 
 import { StoryImageService } from "@/services/StoryImageService";
@@ -1289,7 +1288,9 @@ useEffect(() => {
     
     const SAFETY_TIMEOUT_MS = 60000; // 60 seconds for better reliability
     const safetyTimer = ManagedTimers.setTimeout(() => {
-      DebugLogger.warn('story', 'Story loader safety timeout triggered after 25s');
+      DebugLogger.warn('story', 'Story loader safety timeout triggered after 60s');
+      // A guest is never left on an error screen: show the backup story (27 Oct 2026).
+      if (!isPremium) { startBackupStory(); return; }
       setIsLoading(false);
       setError('Story setup is taking longer than usual. Please try again or check your connection.');
     }, SAFETY_TIMEOUT_MS, 'CleanStoryDisplay');
@@ -1913,6 +1914,23 @@ useEffect(() => {
 
 // Add initialization guard
 const isInitializingRef = useRef(false);
+// Set by startBackupStory(): the next initialization shows the backup story at once.
+const forceBackupRef = useRef(false);
+// Each guest initialization's number: a slow answer that lands after the backup story is dropped.
+const guestRunRef = useRef(0);
+
+/**
+ * Show the backup story now (27 Oct 2026). "Start Adventure" on the recovery screen and
+ * the guest safety timer both land here; before, the button re-ran the same slow
+ * generation and the visitor stayed on "Restarting Story Magic…".
+ * Guard: src/test/guards/guest-story-path.test.ts.
+ */
+const startBackupStory = () => {
+  forceBackupRef.current = true;
+  isInitializingRef.current = false;
+  setError(null);
+  void initializeStory();
+};
 
 const initializeStory = async () => {
   // Prevent multiple simultaneous initializations
@@ -1938,10 +1956,9 @@ const initializeStory = async () => {
   loaderStartRef.current = Date.now();
   setError(null);
   
-  // Run diagnostics for free users to identify API issues
-  if (!isPremium) {
-    await DiagnosticTool.runFullDiagnostic();
-  }
+  // No diagnostics on the guest path (27 Oct 2026): they read the profiles table as a
+  // signed-out visitor (42501 permission denied) and sent a paid image request before
+  // every guest story. A guest never touches profiles. Guard: src/test/guards/guest-story-path.test.ts.
   
   try {
     const effectiveUser = atCurrentLevel({ ...userInfo }) as UserInfo;
@@ -2221,7 +2238,16 @@ const initializeStory = async () => {
       
       let result;
       try {
+        const guestRun = ++guestRunRef.current;
+        if (forceBackupRef.current) {
+          forceBackupRef.current = false;
+          throw new Error('backup story requested');
+        }
         result = await NetflixStyleStoryService.generateCompleteStory(effectiveUser);
+        if (guestRun !== guestRunRef.current) {
+          DebugLogger.warn('story', 'Guest story answer arrived after the backup story was shown; kept the backup story');
+          return;
+        }
         
         DebugLogger.log('story', 'DIAGNOSTIC: NetflixStyleStoryService result received', {
           hasError: !!result.error,
@@ -4110,7 +4136,7 @@ const handleRestartTimer = () => {
             </div>
           )}
           
-          <MobileOptimizedButton onClick={() => (onNewStory ? onNewStory() : window.location.reload())} className="bg-white text-primary">
+          <MobileOptimizedButton onClick={() => (!isPremium ? startBackupStory() : onNewStory ? onNewStory() : window.location.reload())} className="bg-white text-primary" data-testid="start-backup-story">
             Start Adventure
           </MobileOptimizedButton>
         </div>

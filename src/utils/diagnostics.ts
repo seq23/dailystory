@@ -6,8 +6,8 @@ export class DiagnosticTool {
     try {
       console.log('🔍 DIAGNOSTIC: Testing Supabase connection...');
       
-      // Test basic connection
-      const { data, error } = await supabase.from('profiles').select('count').limit(1);
+      // Auth only: a signed-out visitor may not read profiles (42501), so never test with it.
+      const { error } = await supabase.auth.getSession();
       
       if (error) {
         console.error('🔍 DIAGNOSTIC: Supabase connection failed:', error);

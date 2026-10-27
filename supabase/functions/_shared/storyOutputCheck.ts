@@ -15,6 +15,34 @@ export function stripReasoning(text: string): string {
     .trim();
 }
 
+/** Remove *** / ** / * page markers at the very start and end of an answer. */
+export function stripPageMarkers(text: string): string {
+  return (text ?? "").replace(/^(\s*\*{1,3}\s*)+/, "").replace(/(\s*\*{1,3}\s*)+$/, "").trim();
+}
+
+/**
+ * A whole story cut off by the token budget (finish_reason "length"): the complete pages
+ * before the last page marker, or null when fewer than minPages are complete. A budget
+ * cut must not throw away a good story (27 Oct 2026: every guest story was rejected so).
+ */
+export function completePagesOf(text: string, minPages = 6): string | null {
+  const t = stripReasoning(text ?? "");
+  const cut = t.lastIndexOf("***");
+  if (cut <= 0) return null;
+  const head = t.slice(0, cut).trim();
+  const pages = head.split(/\s*\*{3}\s*/).filter((p) => p.trim());
+  return pages.length >= minPages ? `${head}\n***` : null;
+}
+
+/** For whole stories: a budget cut keeps its complete pages; then the usual checks. */
+export function wholeStoryTextProblem(text: string, finishReason?: string | null): string | null {
+  if (finishReason === "length") {
+    const kept = completePagesOf(text);
+    return kept ? storyTextProblem(kept, null) : "truncated (finish_reason length, under 6 complete pages)";
+  }
+  return storyTextProblem(text, finishReason);
+}
+
 const META_START = /^\s*(let me\b|let's (analy[sz]e|think|break)|okay[,.]|ok[,.]|alright[,.]|first[,]|i need to\b|i will\b|i'll\b|i'm going to\b|we need to\b|here is\b|here's\b|sure[,!.]|certainly[,!.]|the user\b|thinking\b|analysis\b)/i;
 const META_ANYWHERE = /\b(as an ai|language model|the user (wants|asked|is asking)|word count|requirements?\b|analy[sz]e\b|analy[sz]ing\b|continuous narrative|the prompt|output format|constraints?\b|step \d+:|draft:)/i;
 const MARKDOWN_HEADER = /^\s{0,3}#{1,6}\s/m;
@@ -26,7 +54,10 @@ const ENDS_LIKE_PROSE = /[.!?…]["'”’)\]*_]*\s*$/;
  * @param minChars far shorter than this is rejected (default 80).
  */
 export function storyTextProblem(text: string, finishReason?: string | null, minChars = 80): string | null {
-  const t = stripReasoning(text ?? "");
+  // A page marker before or after the text is format, not a cut-off: the prompts end
+  // every page with "***", so "…flight.\n***" is a finished page (27 Oct 2026: the free
+  // tier's best model was rejected as "cut off" for exactly that, on every guest story).
+  const t = stripPageMarkers(stripReasoning(text ?? ""));
   if (!t) return "empty";
   if (finishReason === "length") return "truncated (finish_reason length)";
   if (META_START.test(t)) return `planning text: "${t.slice(0, 60)}"`;

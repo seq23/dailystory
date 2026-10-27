@@ -56,6 +56,9 @@ export interface NetflixStoryResult {
   error?: string;
 }
 
+/** The longest a guest waits for a story before the backup story is shown (below the page's 60 s safety timer). */
+export const GUEST_STORY_DEADLINE_MS = 45_000;
+
 export class NetflixStyleStoryService {
   /**
    * Generate a complete story with AI-first preference and comprehensive debugging
@@ -93,7 +96,7 @@ export class NetflixStyleStoryService {
       }
 
       // Use NetflixRetryService for robust retry logic with circuit breaker
-      return await NetflixRetryService.executeWithRetry(async () => {
+      const generation = NetflixRetryService.executeWithRetry(async () => {
         const attemptId = `attempt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         DebugLogger.log('story', `Netflix: Starting AI generation attempt ${attemptId}`, { generationId });
         const { StoryGenerationService } = await import('./storyGenerationService');
@@ -133,7 +136,7 @@ export class NetflixStyleStoryService {
             sessionId: actualSessionId
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('AI generation timeout after 75 seconds')), 75000)
+            setTimeout(() => reject(new Error('AI generation timeout after 40 seconds')), 40000)
           )
         ]) as any;
 
@@ -209,7 +212,7 @@ export class NetflixStyleStoryService {
         };
         
       }, `next-story-generation-${userInfo.name}`, {
-        maxRetries: 3,
+        maxRetries: 1,      // one retry: the deadline below bounds the whole wait
         initialDelay: 1500, // Faster initial retry for next story
         maxDelay: 6000,     // Lower max delay for better UX
         backoffMultiplier: 1.5 // Gentler backoff
@@ -221,6 +224,23 @@ export class NetflixStyleStoryService {
         DebugLogger.warn('story', `Netflix Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`, { generationId });
         return this.generateFallbackStory(userInfo, difficulty, `ai_exhausted_all_attempts`);
       });
+
+      // A guest never waits past GUEST_STORY_DEADLINE_MS (27 Oct 2026): the retries used to
+      // run past the story page's 60 s safety timer, which then showed "Restarting Story
+      // Magic…" with no story. At the deadline the backup story is shown instead.
+      // Guard: src/test/guards/guest-story-path.test.ts.
+      let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+      const deadline = new Promise<NetflixStoryResult>((resolve) => {
+        deadlineTimer = setTimeout(() => {
+          DebugLogger.warn('story', 'Netflix: guest story deadline reached, showing the backup story', { generationId });
+          resolve(this.generateFallbackStory(userInfo, difficulty, 'guest_story_deadline'));
+        }, GUEST_STORY_DEADLINE_MS);
+      });
+      try {
+        return await Promise.race([generation, deadline]);
+      } finally {
+        if (deadlineTimer) clearTimeout(deadlineTimer);
+      }
     } catch (outerError) {
       // ULTIMATE SAFETY NET: Should never reach here due to inner fallbacks, but guarantee no exceptions
       DebugLogger.error('story', 'CRITICAL: Outer safety net caught error in Netflix generation', { outerError });
