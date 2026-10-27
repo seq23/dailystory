@@ -59,6 +59,10 @@ grade's target so ordinary variation passes. The Reads-at grade decides it.
   is a near-copy of the story so far (half its three-word runs already read) is
   rejected and the next model is asked, the same way cut-off text is
   (`supabase/functions/_shared/livePage.ts`, `livePageProblem`).
+- A page that starts mid-sentence (a lowercase first letter, a leading "…", "," or
+  dash, or a connector with no subject such as "And waited…") is rejected the same
+  way; dialogue openings and "But Kiki…" pass (`midSentenceStart` in
+  `supabase/functions/_shared/storyOutputCheck.ts`).
 - A live call shows ONE page: page markers are removed and pages that only repeat
   earlier pages are dropped (`livePageFromAnswer`). The live prompt says the grade's
   length and the floor, and on the last page that it is the ending.

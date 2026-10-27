@@ -16,7 +16,7 @@
 // Backup Mode builds its page with backupPageFrom() so it meets the same floor.
 // Guard: src/test/guards/live-page.test.ts.
 import { minWordsPerPageForGrade, gradeProfile } from "./grades.ts";
-import { storyTextProblem, stripReasoning } from "./storyOutputCheck.ts";
+import { midSentenceStart, storyTextProblem, stripReasoning } from "./storyOutputCheck.ts";
 
 /** Words in a text (page markers are not words). */
 export function wordCount(text: string): number {
@@ -137,6 +137,8 @@ export function livePageProblem(answer: string, finishReason: string | null | un
   if (base && !/^too short/.test(base)) return base;
   const page = livePageFromAnswer(answer, opts.previous ?? "");
   if (!page) return "repeats the previous page";
+  const mid = midSentenceStart(page);
+  if (mid) return mid;
   const n = wordCount(page);
   if (n < opts.minWords) return `too short (${n} < ${opts.minWords} words)`;
   const again = repeatedSentence(page);
