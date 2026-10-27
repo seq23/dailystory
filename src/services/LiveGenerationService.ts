@@ -298,7 +298,7 @@ export class LiveGenerationService {
       
       // Wrap with 25s Promise.race timeout for faster UX feedback
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Next page generation timeout (25s)')), 25000);
+        setTimeout(() => reject(new Error('Next page generation timeout (46s)')), 46000); // > STORY_FETCH_TIMEOUT_MS
       });
       
       // Use reduced context window: last 2 pages for non-expert, last 3 for expert
@@ -424,7 +424,7 @@ export class LiveGenerationService {
       
       // Wrap with 35-45s Promise.race timeout for robust timeout handling
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Ending page generation timeout (40s)')), 40000);
+        setTimeout(() => reject(new Error('Ending page generation timeout (46s)')), 46000); // > STORY_FETCH_TIMEOUT_MS
       });
       
       const generationPromise = StoryGenerationService.generateStory(endingUserInfo, {

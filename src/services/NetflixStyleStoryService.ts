@@ -57,7 +57,7 @@ export interface NetflixStoryResult {
 }
 
 /** The longest a guest waits for a story before the backup story is shown (below the page's 60 s safety timer). */
-export const GUEST_STORY_DEADLINE_MS = 45_000;
+export const GUEST_STORY_DEADLINE_MS = 52_000;
 
 export class NetflixStyleStoryService {
   /**
@@ -136,7 +136,7 @@ export class NetflixStyleStoryService {
             sessionId: actualSessionId
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('AI generation timeout after 40 seconds')), 40000)
+            setTimeout(() => reject(new Error('AI generation timeout after 46 seconds')), 46000) // > STORY_FETCH_TIMEOUT_MS
           )
         ]) as any;
 

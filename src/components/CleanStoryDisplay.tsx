@@ -280,6 +280,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   }, [safeUserInfo.name]);
 
   // Initialize useStoryLogic hook for centralized state management
+  const readProgressRef = useRef<() => { pagesRead: number; wordsRead: number }>(() => ({ pagesRead: 0, wordsRead: 0 }));
   const {
     state: {
       story,
@@ -337,6 +338,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     initialDifficulty: (safeUserInfo.difficultyLevel || 'beginner') as DifficultyLevel,
     expertGradeLevel: safeUserInfo.expertGradeLevel,
     onSessionEnded,
+    // Timer-end stats count the words read, like End Session (set below, once the pages exist).
+    readProgress: () => readProgressRef.current(),
     netflixSessionId: useMemo(() => getNetflixSessionId(), []) // Pass Netflix session ID (computed once per mount to prevent re-creation)
   });
 
@@ -460,6 +463,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     ...String((safeUserInfo as any).targetVocabulary ?? '').split(/[,\s]+/),
   ]);
   const sessionRead = pagesReadCount(displayedStory, shownPages());
+  readProgressRef.current = () => pagesReadCount(displayedStory, shownPages());
 
   // Record the story as it is read, so the session-ended page always has it for the
   // quiz and games, even when the session ends while a new story is being written.

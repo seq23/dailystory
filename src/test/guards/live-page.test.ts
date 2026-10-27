@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { GRADES, GRADE_PROFILES } from "@/lib/grades";
 import {
   backupPageFrom, livePageFromAnswer, livePageProblem, livePageTokenBudget, minWordsForGrade,
-  overlapWithPrevious, repeatedSentence, wholeStoryProblem, wordCount, livePageInstruction,
+  overlapWithPrevious, repeatedSentence, wholeStoryProblem, wordCount, livePageInstruction, capWords, maxKeptWordsForGrade,
 } from "../../../supabase/functions/_shared/livePage";
 import { weaveMissingWords } from "../../../supabase/functions/_shared/practiceWords";
 
@@ -83,7 +83,7 @@ describe("a too-short, repeating or copied live page is rejected (the chain then
   it("a live page gets the token room its grade needs (not 60 tokens)", () => {
     expect(livePageTokenBudget("2")).toBeGreaterThanOrEqual(250);
     expect(livePageTokenBudget("6")).toBeGreaterThanOrEqual(800);
-    expect(livePageInstruction("2", { ending: true })).toMatch(/never fewer than 24 words[\s\S]*LAST page/);
+    expect(livePageInstruction("2", { ending: true })).toMatch(/never fewer than 24 and never more than 50 words[\s\S]*LAST page/);
   });
 });
 
@@ -94,7 +94,7 @@ describe("the story handler applies all of it, on every tier", () => {
     expect(h).toMatch(/finalSystemPrompt \+= livePageInstruction\(pageGrade, \{ ending: !!config\.isEndingPage \}\);/);
     expect(h).toMatch(/if \(isLivePage\) maxTokens = Math\.max\(maxTokens, livePageTokenBudget\(pageGrade\)\);/);
     expect(h).toMatch(/: livePageProblem\(text, finishReason, \{ minWords, previous: previousPages \}\),/);
-    expect(h).toMatch(/if \(isLivePage && storyText\) storyText = livePageFromAnswer\(storyText, previousPages\);/);
+    expect(h).toMatch(/if \(isLivePage && storyText\) storyText = capWords\(livePageFromAnswer\(storyText, previousPages\), maxKeptWordsForGrade\(pageGrade\)\);/);
     expect(h).toMatch(/wholeStoryProblem\(finishReason === 'length'/);
     // The grade-word rewrite may not drop a page below the floor.
     expect(h).toMatch(/rewritePageWithProvider\(userInfo, requestDeadline, minWordsForGrade\(readsAt\)\)/);
@@ -161,5 +161,31 @@ describe("layout: the New story dialog fits; the timer never covers the sidebar"
     expect(left, "desktop timer position").not.toBeNull();
     expect(Number(left![1])).toBeGreaterThanOrEqual(sidebarRem);
     expect(read("src/components/ui/sidebar.tsx")).toMatch(/return isMobileOrTablet/);
+  });
+});
+
+describe("a live page is not far over its grade either (live: 281 words for a 2nd grader)", () => {
+  it("keeps whole sentences up to 30% over the grade's top", () => {
+    const long = Array.from({ length: 30 }, (_, i) => `Sam sees star number ${i} in the sky.`).join(" ");
+    const kept = capWords(long, maxKeptWordsForGrade("2"));
+    expect(maxKeptWordsForGrade("2")).toBe(65);
+    expect(wordCount(kept)).toBeLessThanOrEqual(65);
+    expect(wordCount(kept)).toBeGreaterThanOrEqual(minWordsForGrade("2"));
+    expect(kept).toMatch(/\.$/);
+    const h = read("supabase/functions/generate-adaptive-story/streamlined-handler.ts");
+    expect(h).toMatch(/storyText = capWords\(livePageFromAnswer\(storyText, previousPages\), maxKeptWordsForGrade\(pageGrade\)\);/);
+    // The guest story is told the grade's page length too.
+    expect(h).toMatch(/Each page: \$\{gradeProfile\(storyGrade\)\?\.wordsPerPage/);
+  });
+});
+
+describe("words read count when the timer ends the session (live: wordsRead 0 with pagesRead 3)", () => {
+  it("the timer-end stats read the one counter, not a hard-coded 0", () => {
+    const hook = read("src/hooks/useStoryLogic.tsx");
+    expect(hook).not.toMatch(/wordsRead: 0, \/\/ This would be calculated elsewhere/);
+    expect(hook).toMatch(/wordsRead: read\?\.wordsRead \?\? 0,/);
+    const d = read("src/components/CleanStoryDisplay.tsx");
+    expect(d).toMatch(/readProgress: \(\) => readProgressRef\.current\(\),/);
+    expect(d).toMatch(/readProgressRef\.current = \(\) => pagesReadCount\(displayedStory, shownPages\(\)\);/);
   });
 });

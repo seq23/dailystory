@@ -44,6 +44,12 @@ export interface UseStoryLogicProps {
   expertGradeLevel?: ExpertGradeLevel;
   onSessionEnded?: (stats: any) => void;
   netflixSessionId?: string; // Add optional Netflix session ID
+  /**
+   * Pages and words read so far (the one counter, src/lib/lastReadStory.ts pagesReadCount).
+   * The timer-end stats used to send wordsRead: 0 (27 Oct 2026: /session-ended showed
+   * wordsRead 0 with pagesRead 3). Guard: src/test/guards/live-page.test.ts.
+   */
+  readProgress?: () => { pagesRead: number; wordsRead: number };
 }
 
 export const useStoryLogic = ({
@@ -52,8 +58,11 @@ export const useStoryLogic = ({
   initialDifficulty,
   expertGradeLevel,
   onSessionEnded,
-  netflixSessionId
+  netflixSessionId,
+  readProgress
 }: UseStoryLogicProps) => {
+  const readProgressRef = useRef(readProgress);
+  readProgressRef.current = readProgress;
   // Core story state
   const [story, setStory] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -121,10 +130,11 @@ export const useStoryLogic = ({
         if (prev <= 1) {
           setIsTimerRunning(false);
           if (onSessionEnded) {
+            const read = readProgressRef.current?.();
             const sessionStats = {
               timeSpent: (20 * 60 - prev) * 1000,
-              wordsRead: 0, // This would be calculated elsewhere
-              pagesRead: currentPage + 1,
+              wordsRead: read?.wordsRead ?? 0,
+              pagesRead: read?.pagesRead ?? currentPage + 1,
               startTime: sessionStartTime.current,
               accuracy: 100
             };
