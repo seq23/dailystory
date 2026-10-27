@@ -2,6 +2,10 @@ import { Check, Crown, Building2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { startTrialCheckout, type TrialPlan } from "@/lib/trialCheckout";
+import { RedeemCodeCard } from "@/components/RedeemCodeCard";
 import { FREE_STORY_LIMIT, HEYGETONMYLEVEL_URL, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
 import { freeFeatures, premiumFeatures, additionalOfferings, enterpriseFeatures } from "@/constants/featureLists";
 import readingScreenshot from "@/assets/pricing-screenshot-reading.jpg";
@@ -15,6 +19,26 @@ interface PricingSectionProps {
 }
 
 export function PricingSection({ compact }: PricingSectionProps) {
+  // A signed-in parent starts the trial here (Stripe checkout); everyone else signs up first.
+  // Guard: src/test/guards/pricing-trial.test.ts.
+  const [signedIn, setSignedIn] = useState(false);
+  const [pending, setPending] = useState<TrialPlan | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    supabase.auth.getSession().then(({ data }) => { if (live) setSignedIn(!!data.session); }).catch(() => {});
+    return () => { live = false; };
+  }, []);
+  const startTrial = async (plan: TrialPlan) => {
+    setPending(plan);
+    setError(null);
+    const problem = await startTrialCheckout(plan);
+    if (problem) {
+      setError(problem);
+      setPending(null);
+    }
+  };
+
   return (
     <section className={compact ? "py-10" : "py-16"}>
       <div className="container mx-auto px-4">
@@ -100,9 +124,30 @@ export function PricingSection({ compact }: PricingSectionProps) {
                   </ul>
                 </div>
               </div>
-              <Link to="/auth">
-                <Button className="w-full">Start {TRIAL_DAYS}-day free trial</Button>
-              </Link>
+              {signedIn ? (
+                <div className="space-y-2" data-testid="pricing-trial-signed-in">
+                  <RedeemCodeCard className="mb-2" />
+                  {(["monthly", "annual"] as TrialPlan[]).map((plan) => (
+                    <Button
+                      key={plan}
+                      className="w-full"
+                      variant={plan === "annual" ? "default" : "outline"}
+                      disabled={pending !== null}
+                      onClick={() => startTrial(plan)}
+                      data-testid={`pricing-trial-${plan}`}
+                    >
+                      {pending === plan
+                        ? "Opening checkout…"
+                        : `Start ${TRIAL_DAYS}-day free trial · ${PLAN_PRICES[plan].label}${PLAN_PRICES[plan].period}`}
+                    </Button>
+                  ))}
+                  {error && <p role="alert" className="text-sm text-destructive">{error} Tap a plan to try again.</p>}
+                </div>
+              ) : (
+                <Link to="/auth">
+                  <Button className="w-full">Start {TRIAL_DAYS}-day free trial</Button>
+                </Link>
+              )}
             </CardContent>
           </Card>
 
