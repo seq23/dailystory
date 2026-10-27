@@ -186,7 +186,18 @@ function pictureFor(option: string): string | null {
 // ── checking a model's quiz ──────────────────────────────────────────────────
 
 const BANNED_OPTION = /\b(all|none|both|neither) of (the )?(above|these|them)\b|^both\b|^all of\b/i;
-const clean = (s: unknown) => (typeof s === "string" ? s.replace(/\s+/g, " ").trim() : "");
+/**
+ * Markdown emphasis out: the quiz shows and reads aloud plain text, so a model's
+ * "Find the word **by**." showed a kindergartener the asterisks (27 Oct 2026, live).
+ */
+export function stripMarkdown(s: string): string {
+  return s
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    .replace(/(^|[^\w*])\*(?!\s)([^*]+?)\*(?!\w)/g, "$1$2")
+    .replace(/`([^`]+)`/g, "$1");
+}
+const clean = (s: unknown) => (typeof s === "string" ? stripMarkdown(s).replace(/\s+/g, " ").trim() : "");
 
 /** True when the quote really is in the story (≥80% of its words, in one sentence or two). */
 export function evidenceInStory(evidence: string, story: string): boolean {

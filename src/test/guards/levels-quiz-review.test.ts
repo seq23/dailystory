@@ -15,7 +15,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import { GRADES, audienceThemesForSystemPrompt, storyAudienceLine } from "@/lib/grades";
-import { finalizeQuiz, quizShapeForGrade, quizzesPracticeWord, storySeed, type QuizQuestion } from "../../../supabase/functions/_shared/quiz";
+import { finalizeQuiz, normalizeQuizQuestions, stripMarkdown, quizShapeForGrade, quizzesPracticeWord, storySeed, type QuizQuestion } from "../../../supabase/functions/_shared/quiz";
 import { quizCacheKey, readCachedQuiz } from "@/lib/quiz";
 
 const ROOT = join(__dirname, "../../..");
@@ -123,5 +123,23 @@ describe("5. the quiz cache key covers the whole story, the grade and the practi
       expect(src).toContain("readCachedQuiz(sessionStorage.getItem(cacheKey))");
       expect(src).not.toMatch(/hashStory/);
     }
+  });
+});
+
+// 27 Oct 2026, live: a model's sight-word question "Find the word **by**." reached the
+// quiz, which shows and reads aloud plain text, so the child saw the asterisks.
+describe("quiz text never shows markdown", () => {
+  const story = "Maya found a huge footprint in the mud by the creek. She ran home and drew it, toe by toe. The next morning a scientist smiled at her drawing.";
+  it("strips bold, italics and code marks from what the model wrote", () => {
+    expect(stripMarkdown("Find the word **by**.")).toBe("Find the word by.");
+    expect(stripMarkdown("What did *Maya* find?")).toBe("What did Maya find?");
+    expect(stripMarkdown("Tap __she__ or `mud`.")).toBe("Tap she or mud.");
+    expect(stripMarkdown("2 * 3 = 6")).toBe("2 * 3 = 6");
+    const shape = quizShapeForGrade("K", 5, storySeed(story));
+    const qs = normalizeQuizQuestions({ questions: [
+      { question: "What did **Maya** find in the mud?", options: ["A **footprint**", "A ball"], correctAnswer: 0, skill: "what-happened", evidence: "Maya found a huge footprint in the mud by the creek." },
+    ] }, story, shape);
+    expect(qs.length).toBe(1);
+    for (const q of qs) for (const t of [q.question, ...q.options, q.explanation]) expect(t, t).not.toMatch(/[*_`]{1,2}\w/);
   });
 });
