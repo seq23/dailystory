@@ -265,12 +265,48 @@ export function normalizeQuizQuestions(raw: unknown, story: string, shape: QuizS
 // ── questions from the story text alone, one builder per skill ────────────────
 
 const NAME_BANK = ["Maya", "Leo", "Zara", "Omar", "Ivy", "Theo", "Nia", "Sam", "Ruby", "Kai", "Lena", "Max"];
-const WORD_BANK = ["apple", "rocket", "pillow", "turtle", "garden", "button", "candle", "ladder", "pencil", "bridge",
-  "jacket", "basket", "violin", "carrot", "planet", "window", "bucket", "feather", "kitten", "puddle", "castle",
-  "orange", "blanket", "dragon", "river", "cloud", "forest", "ocean", "school", "bicycle", "mitten", "lantern",
-  "giggled", "jumped", "whispered", "painted", "climbed", "sneezed", "danced", "shiny", "sleepy", "purple", "tiny",
-  "brave", "gentle", "noisy", "secret", "golden", "silver", "muddy", "storm", "moon", "seed", "boat", "map",
-  "tiger", "lemon", "wagon", "rabbit", "pocket", "music", "table", "zebra", "honey", "kettle", "violet", "helmet"];
+
+// Fill-in-the-blank: the wrong choices are a different kind of word from the answer, so
+// only the answer fits the sentence. Any noun from a bank fits "Leo sat by the ____" as
+// well as "window" does; "giggled" or "softly" cannot.
+const BLANK_NOUNS = ["apple", "rocket", "pillow", "turtle", "pencil", "ladder", "jacket", "basket", "violin", "carrot",
+  "planet", "kitten", "castle", "blanket", "dragon", "bicycle", "mitten", "lantern", "tiger", "lemon", "wagon", "rabbit",
+  "zebra", "kettle", "helmet", "feather", "bucket"];
+const BLANK_VERBS = ["giggled", "sneezed", "whispered", "painted", "climbed", "danced", "wiggled", "yawned", "hopped", "tumbled"];
+const BLANK_ADVERBS = ["softly", "quickly", "loudly", "gently", "slowly", "sleepily", "proudly", "bravely"];
+const DETERMINER = /^(the|a|an|his|her|my|their|our|its|your|this|that|these|those|some|every)$/i;
+type BlankClass = "after-determiner" | "past-verb" | "adverb";
+
+/** What kind of word fills the blank, from the word and the word before it (null: unsure, do not ask). */
+function blankClass(sentence: string, answer: string): BlankClass | null {
+  const toks = tokens(sentence);
+  const i = toks.findIndex((t) => t.toLowerCase() === answer.toLowerCase());
+  if (i < 0) return null;
+  const before = i > 0 ? toks[i - 1]! : "";
+  const after = toks[i + 1] ?? "";
+  const a = answer.toLowerCase();
+  if (DETERMINER.test(before) && !/(ed|ly)$/.test(a)) {
+    // "the ____ dog" may want an adjective; a determiner then the blank then a word that
+    // could be the noun is still filled only by a noun or adjective, never a verb or adverb.
+    return after && /ly$/.test(after) ? null : "after-determiner";
+  }
+  if (/[^e]ed$|[^aeiou]ied$/.test(a) && a.length >= 5 && !DETERMINER.test(before)) return "past-verb";
+  if (/ly$/.test(a) && a.length >= 5 && !/(ily|ally|ely)$/.test(a.slice(0, -2) + "ly") && !["only", "family", "early", "belly", "jelly", "silly", "holly", "fly", "July"].includes(a)) return "adverb";
+  return null;
+}
+
+/** Wrong choices for a blank that cannot fit the sentence (null when the class is unsure or the bank runs short). */
+function blankDistractors(sentence: string, answer: string, story: string, n: number, pick: () => number): string[] | null {
+  const cls = blankClass(sentence, answer);
+  if (!cls) return null;
+  const bank = cls === "after-determiner" ? [...BLANK_VERBS, ...BLANK_ADVERBS] : BLANK_NOUNS;
+  const wrong = bank.filter((x) => !hasWord(story, x) && x !== answer.toLowerCase())
+    .sort((x, y) => Math.abs(x.length - answer.length) - Math.abs(y.length - answer.length) || pick() - 0.5).slice(0, n - 1);
+  return wrong.length < n - 1 ? null : wrong;
+}
+
+/** Words that show a feeling: a "plain" sentence offered as a wrong choice must have none. */
+const FEELING_WORDS = /\b(felt|feel|feels|feeling|feelings|happy|happily|glad|sad|sadly|upset|scared|afraid|frightened|terrified|fear|worried|worry|nervous|anxious|angry|angrily|mad|furious|cross|excited|thrilled|delighted|joy|joyful|proud|ashamed|embarrassed|lonely|bored|tired|sleepy|exhausted|calm|relieved|hopeful|hoped|hope|wished|wish|love|loved|loves|hate|hated|miss|missed|jealous|grumpy|cheerful|grateful|curious|confused|surprised|shocked|amazed|smiled|smile|smiling|grinned|laughed|laugh|cried|cry|crying|tears|frowned|sighed|shouted|yelled|screamed|gasped|trembled|shivered|hugged|beamed|giggled|sobbed|groaned|winced|blushed|heart|wow|oh no|hooray|yay)\b/i;
 
 /** Near-synonyms a child knows (word → same meaning, and words that clearly do not mean it). */
 const SYNONYMS: Record<string, { same: string; not: string[] }> = {
@@ -388,6 +424,8 @@ interface BuildCtx {
   shape: QuizShape;
   pick: () => number;
   used: Set<string>;
+  /** What the quiz has already asked: `w:<word>` tested words and `ev:<sentence>` quoted sentences. */
+  seen: Set<string>;
 }
 
 const BUILDERS: Record<QuizSkill, Builder> = {
@@ -418,9 +456,9 @@ const BUILDERS: Record<QuizSkill, Builder> = {
     }
     return null;
   },
-  spelling: ({ story, sentences, names, n, shape, used, pick }) => {
+  spelling: ({ story, sentences, names, n, shape, used, pick, seen }) => {
     const minLen = GRADE_PROFILES[shape.grade].difficulty === "easy" ? 4 : GRADE_PROFILES[shape.grade].difficulty === "medium" ? 5 : 7;
-    const cands = [...new Set(tokens(story))].filter((w) => (w.length >= minLen || shape.practiceWords.includes(w)) && /^[a-z]+$/.test(w) && !SPELL_SKIP.has(w) && !names.includes(w) && !used.has(`sp:${w}`));
+    const cands = [...new Set(tokens(story))].filter((w) => (w.length >= minLen || shape.practiceWords.includes(w)) && /^[a-z]+$/.test(w) && !SPELL_SKIP.has(w) && !names.includes(w) && !used.has(`sp:${w}`) && !seen.has(`w:${w}`));
     const practice = new Set(shape.practiceWords);
     cands.sort((a, b) => Number(practice.has(b)) - Number(practice.has(a)) || b.length - a.length || pick() - 0.5);
     for (const w of cands.slice(0, 12)) {
@@ -433,7 +471,7 @@ const BUILDERS: Record<QuizSkill, Builder> = {
     }
     return null;
   },
-  "word-meaning": ({ story, sentences, names, n, shape, used, pick }) => {
+  "word-meaning": ({ story, sentences, names, n, shape, used, pick, seen }) => {
     // 0. a practice word the parent typed, in its sentence (meaning if known, else context clue)
     for (const pw of shape.practiceWords) {
       if (used.has(`wm:${pw}`)) continue;
@@ -445,16 +483,17 @@ const BUILDERS: Record<QuizSkill, Builder> = {
         return { question: `Your practice word! The story says: ${quote(shorten(s, 18))} What does “${pw}” mean here?`, options: [same, ...not.slice(0, n - 1)], correctAnswer: 0,
           explanation: `“${pw}” means “${same}”.`, type: "multiple-choice", skill: "word-meaning", evidence: s };
       }
-      const wrong = WORD_BANK.filter((x) => !hasWord(story, x) && x !== pw)
-        .sort((a, b) => Math.abs(a.length - pw.length) - Math.abs(b.length - pw.length) || pick() - 0.5).slice(0, n - 1);
-      if (wrong.length < n - 1) continue;
+      if (seen.has(`ev:${s}`)) continue;
+      const wrong = blankDistractors(s, pw, story, n, pick);
+      if (!wrong) continue;
       used.add(`wm:${pw}`);
       return { question: `Your practice word! Which word fits? ${quote(s.replace(wordRe(pw, "u"), "____"))}`, options: [pw, ...wrong], correctAnswer: 0,
         explanation: `The story says: ${quote(s)}`, type: "multiple-choice", skill: "word-meaning", evidence: s };
     }
     // 1. a word with a known meaning, asked in its sentence
     for (const s of sentences) {
-      const hit = tokens(s).map((t) => t.toLowerCase()).find((t) => SYNONYMS[t] && !used.has(`wm:${t}`));
+      if (seen.has(`ev:${s}`)) continue;
+      const hit = tokens(s).map((t) => t.toLowerCase()).find((t) => SYNONYMS[t] && !used.has(`wm:${t}`) && !seen.has(`w:${t}`));
       if (!hit) continue;
       const { same, not } = SYNONYMS[hit];
       used.add(`wm:${hit}`);
@@ -462,15 +501,17 @@ const BUILDERS: Record<QuizSkill, Builder> = {
         explanation: `"${hit}" means "${same}".`, type: "multiple-choice", skill: "word-meaning", evidence: s };
     }
     // 2. context clues: the word that fits the sentence
-    const usable = sentences.filter((s) => words(s).length >= 5 && words(s).length <= 30);
+    const usable = sentences.filter((s) => words(s).length >= 5 && words(s).length <= 30 && !seen.has(`ev:${s}`));
     for (const s of usable.sort(() => pick() - 0.5)) {
       const cands = tokens(s).filter((w) => w.length >= 4 && !STOP.has(w.toLowerCase()) && !names.includes(w) && !used.has(`wm:${w.toLowerCase()}`) &&
-        (s.match(wordRe(w, "gu")) ?? []).length === 1);
-      if (!cands.length) continue;
-      const answer = cands.sort((a, b) => b.length - a.length)[0];
-      const wrong = WORD_BANK.filter((x) => !hasWord(story, x) && x !== answer.toLowerCase())
-        .sort((a, b) => Math.abs(a.length - answer.length) - Math.abs(b.length - answer.length) || pick() - 0.5).slice(0, n - 1);
-      if (wrong.length < n - 1) continue;
+        !seen.has(`w:${w.toLowerCase()}`) && (s.match(wordRe(w, "gu")) ?? []).length === 1);
+      let answer = "";
+      let wrong: string[] | null = null;
+      for (const c of cands.sort((a, b) => b.length - a.length)) {
+        wrong = blankDistractors(s, c, story, n, pick);
+        if (wrong) { answer = c; break; }
+      }
+      if (!answer || !wrong) continue;
       used.add(`wm:${answer.toLowerCase()}`);
       return { question: `Use the sentence to pick the missing word: ${quote(s.replace(wordRe(answer, "u"), "____"))}`, options: [answer.toLowerCase(), ...wrong],
         correctAnswer: 0, explanation: `The story says: "${s}"`, type: "multiple-choice", skill: "word-meaning", evidence: s };
@@ -512,10 +553,10 @@ const BUILDERS: Record<QuizSkill, Builder> = {
     }
     return null;
   },
-  "between-the-lines": ({ sentences, names, n, used }) => {
+  "between-the-lines": ({ sentences, names, n, used, seen }) => {
     for (const s of sentences) {
       const cue = FEELING_CUES.find((c) => c.re.test(s));
-      if (!cue || used.has(`bl:${s}`)) continue;
+      if (!cue || used.has(`bl:${s}`) || seen.has(`ev:${s}`)) continue;
       used.add(`bl:${s}`);
       const cueWord = (s.match(cue.re) ?? [""])[0];
       // Name the character only when the sentence is plainly about them; otherwise "the person who…".
@@ -526,7 +567,7 @@ const BUILDERS: Record<QuizSkill, Builder> = {
     }
     for (const s of sentences) {
       const m = s.match(/^(.{8,}?)\s+because\s+(.{6,}?)[.!?]?$/i);
-      if (!m || used.has(`bl:${s}`)) continue;
+      if (!m || used.has(`bl:${s}`) || seen.has(`ev:${s}`)) continue;
       used.add(`bl:${s}`);
       const reason = shorten(m[2], 10);
       const wrong = sentences.filter((x) => x !== s && !/because/i.test(x)).slice(0, n - 1).map((x) => shorten(x.replace(/[.!?]$/, ""), 10));
@@ -536,13 +577,14 @@ const BUILDERS: Record<QuizSkill, Builder> = {
     }
     return null;
   },
-  "big-picture": ({ story, sentences, names, n, shape, used }, variant) => {
+  "big-picture": ({ story, sentences, names, n, shape, used, seen }, variant) => {
     const noun = mostCommonNoun(story, names);
     const main = names[0];
     if (!main && !noun) return null;
     const topics = TOPIC_BANK.filter((t) => !contentWords(t).some((w) => hasWord(story, w))).slice(0, n - 1);
     if (topics.length < n - 1) return null;
-    if (variant % 2 === 0 && !used.has("bp:about")) {
+    // "Mostly about" and "best title" have the same answer: a quiz asks one of them.
+    if (variant % 2 === 0 && !used.has("bp:about") && !used.has("bp:title")) {
       used.add("bp:about");
       const answer = main && noun ? `${main} and the ${noun}` : main ? `What happens to ${main}` : `The ${noun}`;
       return { question: "What is this story mostly about?", options: [answer, ...topics], correctAnswer: 0,
@@ -550,15 +592,20 @@ const BUILDERS: Record<QuizSkill, Builder> = {
     }
     // Older readers: finding evidence ("Which sentence shows…").
     if (GRADE_PROFILES[shape.grade].difficulty === "expert" && !used.has("bp:evidence")) {
-      const proof = sentences.find((x) => FEELING_CUES.some((c) => c.re.test(x)));
-      const plain = sentences.filter((x) => x !== proof && !FEELING_CUES.some((c) => c.re.test(x)) && !/[!?]["”]?$/.test(x)).slice(0, n - 1);
+      // The right sentence's clue must be in what the child sees (not cut off by "…"), and
+      // every wrong sentence must show no feeling at all: no feeling word, no "!" or "?",
+      // no dialogue. Otherwise two answers are arguably right.
+      const shown = (x: string) => shorten(x, 16);
+      const proof = sentences.find((x) => !seen.has(`ev:${x}`) && FEELING_CUES.some((c) => c.re.test(shown(x))));
+      const plain = sentences.filter((x) => x !== proof && !FEELING_CUES.some((c) => c.re.test(x)) && !FEELING_WORDS.test(x) &&
+        !/[!?]/.test(x) && !/["“”]/.test(x)).slice(0, n - 1);
       if (proof && plain.length === n - 1) {
         used.add("bp:evidence");
-        return { question: "Which sentence best shows how a character feels?", options: [shorten(proof, 16), ...plain.map((x) => shorten(x, 16))], correctAnswer: 0,
+        return { question: "Which sentence best shows how a character feels?", options: [shown(proof), ...plain.map(shown)], correctAnswer: 0,
           explanation: `The clue is in the words: ${quote(proof)}`, type: "multiple-choice", skill: "big-picture", evidence: proof };
       }
     }
-    if (!used.has("bp:title")) {
+    if (!used.has("bp:title") && !used.has("bp:about")) {
       used.add("bp:title");
       const title = main && noun ? `${main}'s ${noun[0].toUpperCase()}${noun.slice(1)}` : `The ${noun ?? "Story"}`;
       const wrong = topics.map((t) => t.replace(/^a /, "The ").replace(/^\w/, (c) => c.toUpperCase()));
@@ -608,20 +655,67 @@ function finishQuestion(q: Omit<QuizQuestion, "id">, shape: QuizShape, i: number
  * exactly one right answer.
  */
 export function buildFallbackQuiz(story: string, shape: QuizShape): QuizQuestion[] {
-  const ctx: BuildCtx = { story, sentences: storySentences(story), names: namesIn(story), n: shape.optionCount, shape, pick: rng(story.slice(0, 400)), used: new Set() };
+  const ctx: BuildCtx = { story, sentences: storySentences(story), names: namesIn(story), n: shape.optionCount, shape, pick: rng(story.slice(0, 400)), used: new Set(), seen: new Set() };
   const out: QuizQuestion[] = [];
   const variants = new Map<QuizSkill, number>();
+  const limit = Math.min(shape.count, storyQuestionLimit(ctx.sentences.length, shape.count));
   for (const skill of shape.plan) {
+    if (out.length >= limit) break;
     let built: Omit<QuizQuestion, "id"> | null = null;
     for (const s of [skill, ...STAND_INS]) {
-      const v = variants.get(s) ?? 0;
-      built = BUILDERS[s](ctx, v) ?? BUILDERS[s](ctx, v + 1);
-      variants.set(s, v + 1);
+      // A builder may answer with a question the quiz already asks (same word, same
+      // quoted sentence): it is passed over and the builder asked again, then the next skill.
+      for (let tries = 0; tries < 3 && !built; tries++) {
+        const v = variants.get(s) ?? 0;
+        const b = BUILDERS[s](ctx, v) ?? BUILDERS[s](ctx, v + 1);
+        variants.set(s, v + 1);
+        if (!b) break;
+        if (!repeats(b, ctx.seen)) built = b;
+      }
       if (built) break;
     }
-    if (built) out.push(finishQuestion(built, shape, out.length));
+    if (!built) continue; // the story cannot support another different question
+    for (const k of questionKeys(built)) ctx.seen.add(k);
+    out.push(finishQuestion(built, shape, out.length));
   }
   return spreadAnswers(out);
+}
+
+/**
+ * How many different questions a story of this many sentences can carry: two a
+ * sentence (a 3-sentence story gets 6, not the band's 8), never below 3.
+ */
+export function storyQuestionLimit(sentenceCount: number, bandCount: number): number {
+  return Math.max(Math.min(3, bandCount), sentenceCount * 2);
+}
+
+const norm = (x: string) => x.toLowerCase().replace(/[“”"…]/g, "").replace(/\s+/g, " ").trim();
+
+/**
+ * What a question asks about: the word it tests (its right answer, or the word in
+ * quotes it asks the meaning of) and the story sentence it quotes, if any. Two
+ * questions sharing a key are the same question to a child, or one gives the other away.
+ */
+export function questionKeys(q: Pick<QuizQuestion, "question" | "options" | "correctAnswer" | "skill" | "evidence">): string[] {
+  const keys: string[] = [];
+  const answer = norm(q.options[q.correctAnswer] ?? "");
+  if (answer && !/\s/.test(answer)) keys.push(`w:${answer}`);
+  const asked = q.question.match(/[“"]([\p{L}'-]+)[”"] mean/u)?.[1];
+  if (asked) keys.push(`w:${asked.toLowerCase()}`);
+  const ev = q.evidence ? norm(q.evidence) : "";
+  if (ev) {
+    const head = ev.split(" ").slice(0, 4).join(" ");
+    const qn = norm(q.question).replace(/_+/g, " ");
+    // Quoted in the question (a blank counts) or offered as a choice.
+    if (qn.includes(head) || q.options.some((o) => ev.startsWith(norm(o).split(" ").slice(0, 4).join(" ")) && norm(o).split(" ").length >= 4)) {
+      keys.push(`ev:${q.evidence}`);
+    }
+  }
+  return keys;
+}
+
+function repeats(q: Pick<QuizQuestion, "question" | "options" | "correctAnswer" | "skill" | "evidence">, seen: Set<string>): boolean {
+  return questionKeys(q).some((k) => seen.has(k));
 }
 
 /** True when this question tests one of the practice words (in the question, or as the right answer). */
@@ -632,7 +726,7 @@ export function quizzesPracticeWord(q: QuizQuestion, practiceWords: readonly str
 
 /** A word-meaning question about a practice word in the story, at the band's choices (null if none fits). */
 function practiceWordQuestion(story: string, shape: QuizShape, i: number): QuizQuestion | null {
-  const ctx: BuildCtx = { story, sentences: storySentences(story), names: namesIn(story), n: shape.optionCount, shape, pick: rng(story.slice(0, 400)), used: new Set() };
+  const ctx: BuildCtx = { story, sentences: storySentences(story), names: namesIn(story), n: shape.optionCount, shape, pick: rng(story.slice(0, 400)), used: new Set(), seen: new Set() };
   const built = BUILDERS["word-meaning"](ctx, 0);
   if (!built) return null;
   const q = finishQuestion(built, shape, i);
@@ -651,13 +745,17 @@ export function finalizeQuiz(raw: unknown, story: string, shape: QuizShape): { q
   const fb = [...fallback];
   const out: QuizQuestion[] = [];
   let fromAi = 0;
+  // A backup question never repeats one already chosen (same tested word or quoted sentence).
+  const seen = new Set<string>();
+  const take = (q: QuizQuestion) => { out.push(q); for (const k of questionKeys(q)) seen.add(k); };
   for (const skill of shape.plan) {
     let i = pool.findIndex((q) => q.skill === skill);
-    if (i >= 0) { out.push(pool.splice(i, 1)[0]); fromAi++; continue; }
-    i = fb.findIndex((q) => q.skill === skill);
-    if (i >= 0) { out.push(fb.splice(i, 1)[0]); continue; }
-    if (pool.length) { out.push(pool.shift()!); fromAi++; continue; }
-    if (fb.length) out.push(fb.shift()!);
+    if (i >= 0) { take(pool.splice(i, 1)[0]!); fromAi++; continue; }
+    i = fb.findIndex((q) => q.skill === skill && !repeats(q, seen));
+    if (i >= 0) { take(fb.splice(i, 1)[0]!); continue; }
+    if (pool.length) { take(pool.shift()!); fromAi++; continue; }
+    i = fb.findIndex((q) => !repeats(q, seen));
+    if (i >= 0) take(fb.splice(i, 1)[0]!);
   }
   // A practice word that is in the story gets a word-meaning or spelling question.
   // "Quizzed" means the question is ABOUT the word (asked in the question, or the right

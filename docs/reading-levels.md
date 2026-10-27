@@ -79,6 +79,87 @@ skill; Parent dashboard → Reports shows strengths by skill.
 | 9th-10th | 9, 10 | 8 | 4 | no | tap | spelling 1, word-meaning 2, between-the-lines 2, big-picture 2, sentence-sense 1 | — |
 <!-- quiz-bands:end -->
 
+## Grade-level words (27 Oct 2026)
+
+Every Reads-at grade has a word list, built from three standard lists. The words live
+in ONE file, `supabase/functions/_shared/wordLists.ts`; which grade gets which list is
+`GRADE_LIST_MAP` in `supabase/functions/_shared/gradeWords.ts`. The edge functions and
+the app (`src/lib/readingLevelMap.ts`, `src/constants/educationalWords.ts`) import that
+module; no other copy exists (the guard `src/test/guards/word-lists.test.ts` reads this
+table against the module and fails on a second copy of a list).
+
+The mapping, the usual pacing for each list:
+
+- **Dolch** (220 service words + 95 nouns): pre-primer → Pre-K; primer and nouns → K;
+  then the 1st, 2nd and 3rd grade lists at their grades.
+- **Fry 1,000 Instant Words**: one hundred a year to 2nd grade (1st hundred → K, 2nd →
+  1st, 3rd → 2nd), then 4th–5th hundreds → 3rd, 6th–7th → 4th, 8th–10th → 5th, so all
+  1,000 are covered by the end of 5th grade.
+- **Academic Word List** (Coxhead, 570 headwords): two sublists a year, most frequent
+  first: 1–2 → 6th, 3–4 → 7th, 5–6 → 8th, 7–8 → 9th, 9–10 → 10th.
+
+"New words" are the grade's own lists; "Words known" is every list up to and including
+the grade (what a reader at that grade is expected to know). "Share floor" is the soft
+rule below.
+
+<!-- grade-lists:start -->
+| Grade | Dolch | Fry hundreds | AWL sublists | New words | Words known | Share floor |
+|---|---|---|---|---|---|---|
+| PreK | pre-primer | — | — | 40 | 40 | 0.45 |
+| K | primer, nouns | 1 | — | 216 | 231 | 0.55 |
+| 1 | 1st grade | 2 | — | 128 | 311 | 0.6 |
+| 2 | 2nd grade | 3 | — | 142 | 402 | 0.6 |
+| 3 | 3rd grade | 4, 5 | — | 229 | 577 | 0.6 |
+| 4 | — | 6, 7 | — | 200 | 759 | 0.55 |
+| 5 | — | 8, 9, 10 | — | 300 | 1042 | 0.55 |
+| 6 | — | — | 1, 2 | 120 | 1151 | 0.5 |
+| 7 | — | — | 3, 4 | 120 | 1269 | 0.5 |
+| 8 | — | — | 5, 6 | 120 | 1387 | 0.5 |
+| 9 | — | — | 7, 8 | 120 | 1505 | 0.5 |
+| 10 | — | — | 9, 10 | 90 | 1593 | 0.5 |
+<!-- grade-lists:end -->
+
+**In the story prompt.** `generate-adaptive-story` adds 15 of the child's Reads-at grade
+words (its own lists, rotating by session) to the prompt's "Priority vocabulary" line,
+after any words the parent typed (`gradePromptWords`).
+
+**The soft rule** (`supabase/functions/_shared/gradeWordRule.ts`). Each page of a story
+answer is scored: the share of its distinct words (names, placeholders and numbers left
+out; jumps/jumped/jumping count as jump) that are on the reader's "Words known" list. A
+page below its grade's floor is rewritten **once** by the same provider chain, and the
+better-scoring version is kept. A rewrite that fails, comes back empty or scores no
+better leaves the page as it was; the rule never fails a story and never sends anyone
+to Backup Mode. Pages under 6 distinct words are not judged. Every answer's shares are
+logged to `story_grade_word_shares` (migration `20261027090000_grade_word_shares.sql`;
+no name, no story text) and returned as `metadata.gradeWordShare`. The floors were set
+from sample pages: pages written at the reader's level scored 0.70–0.93 (a literary
+9th-grade page 0.58), pages written far above the reader 0.11–0.29.
+
+### Where the word lists come from
+
+Transcribed 26 Oct 2026 from downloaded copies, checked against each other; nothing was
+filled from memory. Apostrophes are plain ASCII; capitals as the sources print them.
+
+- **Fry 1,000** (10 × 100, 1,000 unique, frequency order). Primary pair: Unique Teaching
+  Resources' numbered 1–1000 lists and K12Reader's lists; they agree on 970 of 1,000
+  positions (all of the 1st hundred). The 30 others were settled by majority with
+  SightWords.com's frequency list, Bismarck Public Schools' copy of Fry, Kress &
+  Fountoukidis, *The Reading Teacher's Book of Lists* (hundreds 1–6) and the Utah
+  Education Network list (hundreds 2–6). Hundreds 2–3 keep base forms (animal, letter,
+  start) except following, beginning and later.
+- **Known edition differences.** More than one Fry list circulates: some copies have
+  *oil, sit* at #88–89 where both primary sources have *am, its* (kept). **#482 = bread
+  rests on one source** (the others put *am* there, which would make *am* appear twice);
+  #545 sit (not site); #579 glass and #719 grass. Hundreds 7–10 had three complete
+  sources, two of them identical.
+- **Academic Word List** (570 headwords; sublists 1–9 have 60, sublist 10 has 30).
+  Victoria University of Wellington's sublist pages and its headword PDF, cross-checked
+  with the EAP Foundation list; every headword has the same sublist in all three. Six
+  markup or spelling differences were settled by majority: *reliability* dropped (a
+  nested family member), *confirm* restored to sublist 7, *administrate / ignorant /
+  intelligent* kept over the -ion/-ce forms, *so-called* hyphenated.
+- **Dolch**: E. W. Dolch (1936/1948), 220 service words in five lists and 95 nouns.
+
 ## Where each value is stored
 
 | Column | Holds | Read by |
@@ -86,6 +167,7 @@ skill; Parent dashboard → Reports shows strengths by skill.
 | `child_profiles.grade_level` | grade | `normalizeGrade()` |
 | `child_profiles.reading_grade` | grade (the ladder's last step; CHECK constraint lists the 12) | `startingReadingGrade()` |
 | `profiles.grade_level` | grade | `normalizeGrade()` |
+| `profiles.reading_grade` | grade: the story page's last step for a grown-up with no child profile (CHECK lists the 12; migration `20261027090000`) | `savedReadingGrade()` → `userInfo.readingGrade` → `startingReadingGrade()` |
 | `profiles.reading_level`, `profiles.difficulty_level` | frontend reading level | `frontendLevelToDifficulty()` (a backend name left by the old guardrail clamp reads as that band) |
 | `user_preferences.reading_preferences.minDifficulty` + `.minExpertGrade` | backend difficulty + expert sub-level | `minimumGradeForGuardrail()` |
 | `stories.reading_level` | legacy library tag (`beginner`, `elementary`), used only by the free-tier RLS policy | not a reading level of any child |
@@ -119,10 +201,10 @@ The guard checks that each line below still holds the named symbol.
 | supabase/functions/_shared/DifficultyLevelMapper.ts:51 | fromBackendValue | delegates to backendDifficultyOf |
 | src/services/NetflixStyleStoryService.ts:79 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
 | src/services/LiveGenerationService.ts:53 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
-| supabase/functions/generate-adaptive-story/streamlined-handler.ts:151 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
+| supabase/functions/generate-adaptive-story/streamlined-handler.ts:154 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
 | supabase/functions/template-service/index.ts:178 | DifficultyLevelMapper.fromBackendValue(difficulty) | `difficulty` read backend-first |
 | src/components/ParentDashboard.tsx:910 | minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade, guardrails.minReadingGrade) | stored minimum → "Never easier than" grade |
-| src/components/CleanStoryDisplay.tsx:1321 | const minGrade = minimumGradeForGuardrail | lock clamp compares grades |
+| src/components/CleanStoryDisplay.tsx:1322 | const minGrade = minimumGradeForGuardrail | lock clamp compares grades |
 | src/lib/readingLevelMap.ts:101 | normalizeStoredLevel | any stored column value → grade |
 <!-- converters:end -->
 

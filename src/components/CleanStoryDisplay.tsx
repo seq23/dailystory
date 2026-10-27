@@ -1,6 +1,7 @@
 import { StoryAudioControls } from "@/components/story/StoryAudioControls";
 import { EXPERT_GRADES, GRADES, minimumGradeForGuardrail, type ExpertGrade, type Grade } from '@/lib/grades';
 import { readingStep, stepReadingGrade, startingReadingGrade, withReadingGrade, type ReadingStep } from '@/lib/readingLadder';
+import { saveReadingGradeWithoutChild } from '@/lib/readingGradeStore';
 import { pagesReadCount, saveLastReadStory } from '@/lib/lastReadStory';
 import { cleanWords, practiceWordsFromRequest } from '../../supabase/functions/_shared/practiceWords';
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
@@ -1328,8 +1329,8 @@ useEffect(() => {
             try {
               const { data: { user } } = await supabase.auth.getUser();
               if (user) {
-                // profiles.difficulty_level holds a FRONTEND reading level.
-                await supabase.from('profiles').update({ difficulty_level: step.readingLevel }).eq('user_id', user.id);
+                // profiles.difficulty_level holds a FRONTEND reading level; reading_grade the exact grade.
+                await saveReadingGradeWithoutChild(supabase, user.id, step);
               }
             } catch (e) {
               DebugLogger.warn('auth', 'Failed to persist clamped difficulty', e);
@@ -3924,7 +3925,8 @@ const handleRestartTimer = () => {
       } else {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          await supabase.from('profiles').update({ difficulty_level: step.readingLevel }).eq('user_id', user.id);
+          // The exact grade too, not only the broad level (src/lib/readingGradeStore.ts).
+          await saveReadingGradeWithoutChild(supabase, user.id, step);
         }
       }
     } catch (e) {

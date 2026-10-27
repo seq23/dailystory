@@ -3,11 +3,14 @@
 // Uses shared validation utilities for consistent page generation
 
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, normalizeGradeFormat, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
-import { expertGradeForGrade, audienceThemesForSystemPrompt } from "../_shared/grades.ts";
+import { expertGradeForGrade, audienceThemesForSystemPrompt, type Grade } from "../_shared/grades.ts";
 import { chatCompletionWithFallback, lastProviderAttempts } from "../_shared/storyTextProvider.ts";
 import { logStoryFailure } from "../_shared/storyFailureLog.ts";
 import { practiceWordsFromPrompt, missingPracticeWords, practiceWordsRequired, weaveMissingWords } from "../_shared/practiceWords.ts";
 import { storyTextProblem } from "../_shared/storyOutputCheck.ts";
+import { readsAtGradeOf, gradePromptWords } from "../_shared/gradeWords.ts";
+import { applyGradeWordRule, type PageRewriter } from "../_shared/gradeWordRule.ts";
+import { logGradeWordShare } from "../_shared/gradeWordShareLog.ts";
 import { 
   parseIntoPages as sharedParseIntoPages, 
   mapDifficultyToLevel,
@@ -172,7 +175,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     try {
       const matches = bundle.storyContent.match(/Character Info: ({.*})/);
       if (matches) {
-        userInfo = JSON.parse(matches[1]);
+        userInfo = JSON.parse(matches[1] ?? '{}');
         // Add avatar data from separate field (clean prompts) - FIXED STRUCTURE
         if (bundle.avatarData?.skinTone) {
           userInfo = { 
@@ -254,7 +257,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     try {
       const ctrlMatch = bundle.storyContent.match(/<CTRL>(.*?)<\/CTRL>/);
       if (ctrlMatch) {
-        ctrlData = JSON.parse(ctrlMatch[1]);
+        ctrlData = JSON.parse(ctrlMatch[1] ?? 'null');
         console.log('🎭 Parsed voice control data:', ctrlData);
       }
     } catch (error) {
@@ -424,7 +427,23 @@ Generate a corrected version that addresses these issues while keeping the story
       bundle.systemSettings.gradeLevel;
     
     // Use service-aware token limits based on difficulty and service type
-    const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, config, bundle.sessionId, bundle);
+    let storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, config, bundle.sessionId, bundle);
+
+    // Soft grade-word rule (../_shared/gradeWordRule.ts): a page below its grade's share
+    // of grade-level words is rewritten ONCE and the better version kept. It never
+    // throws and never fails the story; the measured shares are logged.
+    const readsAt = readsAtGradeOf(userInfo, expertGrade, effectiveDifficulty);
+    let gradeWordReport = null;
+    if (readsAt) {
+      try {
+        const ruled = await applyGradeWordRule(storyText, readsAt, rewritePageWithProvider(userInfo), storySeedOf(bundle.sessionId));
+        storyText = ruled.text;
+        gradeWordReport = ruled.report;
+        void logGradeWordShare(ruled.report, bundle.sessionId ?? null, config?.pageNumber ?? null);
+      } catch (ruleError) {
+        console.warn('⚠️ Grade-word rule skipped:', safeErrorMessage(ruleError));
+      }
+    }
     
     // PHASE 5: Bulk Story Processing - Apply validation, grammar, placeholders to ENTIRE story ONCE
     // Compute validation level first
@@ -598,7 +617,8 @@ Generate a corrected version that addresses these issues while keeping the story
         processingMode: 'streamlined-bulk',
             servedBy: servedBy(), // which tier and model wrote it (../_shared/storyTextProvider.ts)
         gradeLevel: bundle.systemSettings.gradeLevel,
-        vocabularyCompliance: vocabCompliance
+        vocabularyCompliance: vocabCompliance,
+        gradeWordShare: gradeWordReport
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -791,14 +811,16 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   let enhancedUserPrompt = prompt.userPrompt;
   
   // Phase 3: Vocabulary Caching Integration - Inject cached vocabulary BEFORE generation
-  const enhancedPromptWithVocabulary = preprocessVocabularyFromCache(enhancedUserPrompt, gradeLevel);
+  const enhancedPromptWithVocabulary = preprocessVocabularyFromCache(enhancedUserPrompt, readsAtGradeOf(userInfo, difficulty, difficulty), storySeedOf(sessionId));
   enhancedUserPrompt = enhancedPromptWithVocabulary.prompt;
   const vocabCachePerformance = enhancedPromptWithVocabulary.performance;
   
   try {
     // Use userInfo which already contains avatar data from bundle
     const completeAvatarInfo = userInfo;
-    const avatarInfo = processAvatarIdentityFromCache(completeAvatarInfo, bundle.sessionId);
+    // `bundle` is not in scope here (it lives in handleStreamlinedGeneration): the
+    // ReferenceError was swallowed below, so hair colour and pronouns never reached the prompt.
+    const avatarInfo = processAvatarIdentityFromCache(completeAvatarInfo, sessionId);
     
     // Universal hair color enhancement (no language restriction)
     if (avatarInfo && avatarInfo.hairColor && avatarInfo.name) {
@@ -921,7 +943,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           { role: 'system', content: enhancedSystemPrompt },
           { role: 'user', content: finalUserPrompt },
           // Multi-turn conversation for continuation pages
-          ...(config.existingStory ? [
+          ...(config?.existingStory ? [
             { role: 'assistant', content: config.existingStory },
             { role: 'user', content: 'Continue the story from where you left off. If the last sentence was incomplete, complete it first, then continue naturally with the next action.' }
           ] : [])
@@ -1340,7 +1362,7 @@ function extractVocabularyUsage(storyText: string, userPrompt: string): any {
   const vocabMatch = userPrompt.match(/Priority vocabulary to include: ([^\n]+)/);
   if (!vocabMatch) return { hasTargetVocabulary: false };
   
-  const targetWords = vocabMatch[1].split(', ').filter(word => word.trim());
+  const targetWords = (vocabMatch[1] ?? '').split(', ').filter(word => word.trim());
   const usedWords = targetWords.filter(word => 
     storyText.toLowerCase().includes(word.toLowerCase())
   );
@@ -1562,20 +1584,24 @@ function calculateEducationalCompliance(content: string, gradeLevel: number): nu
 }
 
 // Phase 3: Vocabulary Caching Enhancement - Preprocessing Function  
-function preprocessVocabularyFromCache(userPrompt: string, gradeLevel: number): { prompt: string; performance: any } {
+function preprocessVocabularyFromCache(userPrompt: string, readsAt: Grade | null, seed = 0): { prompt: string; performance: any } {
+  const gradeLevel = readsAt;
   const startTime = Date.now();
   let enhancedPrompt = userPrompt;
   
   try {
-    // Get cached system vocabulary for the grade level
-    const systemVocabulary = getVocabularyCache(gradeLevel, 'system');
+    // The child's Reads-at grade words, from the one copy of the standard lists
+    // (../_shared/gradeWords.ts: Dolch, Fry 1,000, Academic Word List). This called
+    // getVocabularyCache, which was never imported: the ReferenceError was caught below,
+    // so no grade word ever reached a prompt.
+    const systemVocabulary = readsAt ? gradePromptWords(readsAt, seed, 15) : [];
     
     // Extract any existing user-specified vocabulary from prompt
     const existingVocabMatch = userPrompt.match(/Priority vocabulary to include: ([^\n]+)/);
     let userSpecifiedWords: string[] = [];
     
     if (existingVocabMatch) {
-      userSpecifiedWords = existingVocabMatch[1].split(', ').map(w => w.trim()).filter(w => w);
+      userSpecifiedWords = (existingVocabMatch[1] ?? '').split(', ').map(w => w.trim()).filter(w => w);
     }
     
     // Combine vocabularies with user words taking priority
@@ -1626,4 +1652,30 @@ function preprocessVocabularyFromCache(userPrompt: string, gradeLevel: number): 
 function servedBy(): string | null {
   const ok = lastProviderAttempts().filter((a) => !a.error).pop();
   return ok ? `${ok.provider} ${ok.model ?? ''}`.trim() : null;
+}
+
+/** A stable number from the session id, so a session's grade words rotate but stay put on a retry. */
+function storySeedOf(sessionId: unknown): number {
+  const t = String(sessionId ?? '');
+  let h = 0;
+  for (let i = 0; i < t.length; i++) h = (Math.imul(h, 31) + t.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+/** One page rewrite through the same provider chain as the story (masked names, real-text check). */
+function rewritePageWithProvider(userInfo: any): PageRewriter {
+  return async (page, request) => {
+    const sent = await chatCompletionWithFallback({
+      model: (getModelChainOptimized(false)?.[0] as any)?.name ?? 'gpt-5-2025-08-07',
+      messages: [{ role: 'system', content: request.system }, { role: 'user', content: request.user }],
+      max_completion_tokens: Math.max(200, Math.ceil(page.split(/\s+/).length * 3)),
+    }, {
+      privateNames: [userInfo?.name, userInfo?.displayName].filter((n): n is string => typeof n === 'string' && !!n),
+      accept: (text, finishReason) => storyTextProblem(text, finishReason, Math.min(80, Math.floor(page.length / 2))),
+    });
+    if (!sent.response.ok) return null;
+    const data = await sent.response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    return typeof content === 'string' ? content : null;
+  };
 }
