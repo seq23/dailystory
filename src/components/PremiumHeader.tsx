@@ -96,8 +96,7 @@ export const PremiumHeader = ({
     };
   }, []);
 
-  const { children, activeChild, setActiveChild, loading: childrenLoading } = useChildProfiles();
-  const [switchingTo, setSwitchingTo] = useState<string | null>(null);
+  const { children, activeChild, setActiveChild, loading: childrenLoading, switchingToId } = useChildProfiles();
 
   return (
     <header ref={headerRef} className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-[70]">
@@ -143,13 +142,15 @@ export const PremiumHeader = ({
                   data-testid="reader-switcher"
                   aria-label={activeChild ? `Reading as ${activeChild.display_name}. Tap to switch child` : "Add a child"}
                 >
-                  {activeChild ? (
+                  {switchingToId ? (
+                    <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ring-2 ring-primary" aria-hidden><Loader2 className="w-4 h-4 animate-spin" /></span>
+                  ) : activeChild ? (
                     <img src={childAvatarUrl(activeChild)} alt="" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover ring-2 ring-primary" />
                   ) : (
                     <span className="w-8 h-8 rounded-full border border-dashed flex items-center justify-center"><Plus className="w-4 h-4" /></span>
                   )}
                   <span className="text-left leading-tight">
-                    <span className="block text-[11px] text-gray-600">{activeChild ? "Reading as" : childrenLoading ? "Loading…" : "Who's reading?"}</span>
+                    <span className="block text-[11px] text-gray-600" aria-live="polite" data-testid="reader-status">{switchingToId ? "Switching…" : activeChild ? "Reading as" : childrenLoading ? "Loading…" : "Who's reading?"}</span>
                     <span className="block text-sm font-semibold text-gray-900 max-w-[5.5rem] sm:max-w-[10rem] truncate" data-testid="reader-name">
                       {activeChild ? activeChild.display_name : childrenLoading ? "" : "Add a child"}
                     </span>
@@ -169,16 +170,14 @@ export const PremiumHeader = ({
                       data-testid="reader-option"
                       onSelect={async (e) => {
                         if (current) return;
-                        e.preventDefault();
-                        setSwitchingTo(c.id);
+                        // The name changes at once and the button says "Switching…" while it
+                        // saves (27 Oct 2026, live: seconds with no sign anything was happening).
+                        setIsDropdownOpen(false);
                         try {
                           await setActiveChild(c.id);
                           toast.success(`${c.display_name} is reading now`);
-                          setIsDropdownOpen(false);
                         } catch (err) {
                           toast.error(err instanceof Error ? err.message : "Please try again.");
-                        } finally {
-                          setSwitchingTo(null);
                         }
                       }}
                     >
@@ -187,7 +186,7 @@ export const PremiumHeader = ({
                         <span className="block font-medium truncate">{c.display_name}</span>
                         {childSummary(c) && <span className="block text-xs text-muted-foreground">{childSummary(c)}</span>}
                       </span>
-                      {switchingTo === c.id ? (
+                      {switchingToId === c.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" aria-label="Switching" />
                       ) : current ? (
                         <span className="text-primary font-bold" aria-label="Reading now">✓</span>

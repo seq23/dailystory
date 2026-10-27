@@ -32,7 +32,9 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
   mode = 'refresh',
 }) => {
   const [value, setValue] = useState(initialValue);
-  const { children, activeChild, setActiveChild } = useChildProfiles();
+  // The select shows the current reader, switched at once (useChildProfiles); it never
+  // reverts while the choice is saved (27 Oct 2026).
+  const { children, activeChild, setActiveChild, switching } = useChildProfiles();
   const [targetVocab, setTargetVocab] = useState<string>("");
   const { validationState, validateFormOnSubmit, resetValidation } = useValidationOnSubmit();
   
@@ -291,6 +293,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg border p-3" data-testid="story-for">
             {activeChild && <img src={childAvatarUrl(activeChild)} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-primary" />}
             <label htmlFor="story-for-child" className="text-sm font-medium shrink-0">Story for:</label>
+            {switching && <span className="text-xs text-muted-foreground shrink-0" aria-live="polite" data-testid="story-for-switching">Switching…</span>}
             <select
               id="story-for-child"
               className="h-10 w-full min-w-0 max-w-full flex-1 basis-40 truncate rounded-md border bg-background px-2 text-base"
