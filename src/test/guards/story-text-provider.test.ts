@@ -316,3 +316,21 @@ describe("Backup Mode stays as designed, and is reported", () => {
     expect(read("src/lib/reportStoryFailure.ts")).toMatch(/from\('story_generation_failures'\)/);
   });
 });
+
+// 26 Oct 2026: nvidia/nemotron-3-super-120b-a12b:free is still listed on OpenRouter but
+// answers 404 on every call. A dead id in the chain costs every story a wasted round trip.
+describe("a free model that answers 404 is not in the chain", () => {
+  it("the dead id is gone and its slot (last) holds the live replacement, tier order unchanged", () => {
+    expect(OPENROUTER_FREE_MODELS).not.toContain("nvidia/nemotron-3-super-120b-a12b:free");
+    expect([...OPENROUTER_FREE_MODELS]).toEqual([
+      "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "google/gemma-4-31b-it:free",
+      "google/gemma-4-26b-a4b-it:free",
+      "nvidia/nemotron-3.5-super-vl:free",
+    ]);
+    const cfg = JSON.parse(read("config/llm_routing.json"));
+    const order = cfg.paid_lanes.find((l: { id: string }) => l.id === "product-inference").text_chain.order[0];
+    expect(order.models).not.toContain("nvidia/nemotron-3-super-120b-a12b:free");
+    expect(order.tested_2026_10_26).toMatch(/nemotron-3\.5-super-vl:free \(200/);
+  });
+});

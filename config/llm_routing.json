@@ -21,7 +21,7 @@
     "filter": "pricing.prompt == \"0\" && pricing.completion == \"0\" && context_length >= 32000",
     "models_listed": 467,
     "free_models_listed": 20,
-    "selection": "strongest general instruct models among the $0 list, largest context first. Excluded: google/lyria-3-* (music, and not :free so it can turn paid silently), nvidia/nemotron-3.5-content-safety:free (safety classifier), poolside/laguna-* and cohere/north-mini-code:free (code-only), liquid/lfm-2.5-2.6b:free (sub-10B), openrouter/free (non-deterministic meta-router), and thinkingmachines/inkling*:free (403 \"only available on agentic harnesses\" on a sibling repo's first live dispatch, 11 Oct 2026)."
+    "selection": "strongest general instruct models among the $0 list, largest context first. Excluded: google/lyria-3-* (music, and not :free so it can turn paid silently), nvidia/nemotron-3.5-content-safety:free (safety classifier), poolside/laguna-* and cohere/north-mini-code:free (code-only), liquid/lfm-2.5-2.6b:free (sub-10B), openrouter/free (non-deterministic meta-router), nvidia/nemotron-3-super-120b-a12b:free (listed but 404 on every call, 26 Oct 2026), and thinkingmachines/inkling*:free (403 \"only available on agentic harnesses\" on a sibling repo's first live dispatch, 11 Oct 2026)."
   },
   "models": [
     {
@@ -110,10 +110,10 @@
               "nvidia/nemotron-3-ultra-550b-a55b:free",
               "google/gemma-4-31b-it:free",
               "google/gemma-4-26b-a4b-it:free",
-              "nvidia/nemotron-3-super-120b-a12b:free"
+              "nvidia/nemotron-3.5-super-vl:free"
             ],
             "rotation": "next model on 429, 5xx, a 20 s timeout or an empty answer; a 401 ends the tier",
-            "tested_2026_10_26": "nemotron-3-ultra: 200, good 2nd-grade prose and valid JSON (~4-5 s). gemma-4-31b and gemma-4-26b: 429 upstream rate limit at test time (kept: free capacity varies by hour). nemotron-3-super: 404 at test time (kept last). Rejected: thinkingmachines/inkling:free (403, agentic harnesses only), nvidia/nemotron-3.5-lightning:free (200 with empty text: reasoning eats the budget).",
+            "tested_2026_10_26": "nemotron-3-ultra: 200, good 2nd-grade prose and valid JSON (~4-5 s). gemma-4-31b and gemma-4-26b: 429 upstream rate limit at test time (kept: free capacity varies by hour). nemotron-3-super: 404 at test time; retested 26 Oct 2026 with the time-2-read key, still 404 (\"Function ... Not Found\" upstream), so replaced in the same last slot by nvidia/nemotron-3.5-super-vl:free (200, ~6 s, warm 2nd-grade prose; needs a few hundred tokens of thinking first, covered by MIN_THIRD_PARTY_TOKENS = 800; same NVIDIA Open Model License). Rejected: thinkingmachines/inkling:free (403, agentic harnesses only), nvidia/nemotron-3.5-lightning:free (200 with empty text: reasoning eats the budget).",
             "terms_check": "OpenRouter terms (openrouter.ai/terms, read 26 Oct 2026): the account holder must be 18+ (the owner is); no clause forbids a service used by children. Model licences: Gemma Terms of Use and NVIDIA Open Model License carry no age restriction on the downstream service. Free endpoints may log prompts, hence the privacy rule."
           },
           {

@@ -12,6 +12,7 @@ import {
   backupPageFrom, livePageFromAnswer, livePageProblem, livePageTokenBudget, minWordsForGrade,
   overlapWithPrevious, repeatedSentence, wholeStoryProblem, wordCount, livePageInstruction, capWords, maxKeptWordsForGrade,
 } from "../../../supabase/functions/_shared/livePage";
+import { midSentenceStart, storyTextProblem } from "../../../supabase/functions/_shared/storyOutputCheck";
 import { weaveMissingWords } from "../../../supabase/functions/_shared/practiceWords";
 
 const ROOT = join(__dirname, "..", "..", "..");
@@ -187,5 +188,34 @@ describe("words read count when the timer ends the session (live: wordsRead 0 wi
     const d = read("src/components/CleanStoryDisplay.tsx");
     expect(d).toMatch(/readProgress: \(\) => readProgressRef\.current\(\),/);
     expect(d).toMatch(/readProgressRef\.current = \(\) => pagesReadCount\(displayedStory, shownPages\(\)\);/);
+  });
+});
+
+// 26 Oct 2026: a 6th-grade page began "and waited…" (the model continued the previous
+// page's last sentence). Such a page is rejected so the chain falls through to the next tier.
+describe("a page that starts mid-sentence is rejected", () => {
+  const SIXTH = "and waited by the old lighthouse while the storm rolled in from the bay. Mara counted the seconds between each flash of lightning and each crash of thunder, the way her grandfather had taught her. The gap grew shorter. She pulled her coat tight and stepped toward the door, knowing that whatever was out there would not wait much longer for her.";
+  it("rejects a lowercase start, a continuation mark and a subjectless connector, on every check", () => {
+    expect(livePageProblem(SIXTH, "stop", { minWords: 10 })).toMatch(/starts mid-sentence/);
+    expect(storyTextProblem(SIXTH, "stop")).toMatch(/starts mid-sentence/);
+    expect(midSentenceStart("…and then the door opened.")).toMatch(/mid-sentence/);
+    expect(midSentenceStart(", said the fox.")).toMatch(/mid-sentence/);
+    expect(midSentenceStart("And waited by the door until dawn.")).toMatch(/connector fragment/);
+    expect(midSentenceStart("Then running, she reached the gate.")).toMatch(/connector fragment/);
+  });
+  it("keeps real starts: capitals, dialogue quotes, a connector with a subject, a number", () => {
+    for (const ok of [
+      "Mara waited by the old lighthouse.",
+      "\u201cWait for me!\u201d Mara called.",
+      "\"and then?\" asked Leo.",
+      "'Look,' said Kiki.",
+      "But Kiki was brave.",
+      "And then the sun came up.",
+      "So the fox ran home.",
+      "3 ducks swam by.",
+      "***\nMara waited.",
+    ]) expect(midSentenceStart(ok), ok).toBeNull();
+    expect(livePageProblem(GOOD_2ND, "stop", { minWords: 24 })).toBeNull();
+    expect(livePageProblem("\u201cLook up!\u201d " + GOOD_2ND, "stop", { minWords: 24 })).toBeNull();
   });
 });

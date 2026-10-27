@@ -50,6 +50,29 @@ const JSON_START = /^\s*[{[]/;
 const ENDS_LIKE_PROSE = /[.!?…]["'”’)\]*_]*\s*$/;
 
 /**
+ * Why this text starts mid-sentence, or null when its start is a real sentence start.
+ * A 6th-grade page once began "and waited…" (26 Oct 2026): a model continued the last
+ * sentence of the page before. Rejected so the chain asks the next model/tier.
+ * Allowed: a capital letter, a digit, an opening quote or bracket (dialogue may start
+ * any way it likes), and a capitalised connector that starts a real sentence
+ * ("But Kiki was brave."). Rejected: a lowercase first letter, leading punctuation
+ * that only continues something ("…", ",", ";", ":", "—", "-"), and a connector
+ * with no subject after it ("And waited by the door.").
+ */
+const OPENS_WITH_QUOTE = /^["'“‘«(\[]/;
+const CONTINUATION_PUNCTUATION = /^(\.\.\.|[…,;:—–-])/;
+const SUBJECTLESS_CONNECTOR = /^(and|or|nor|but|then|so)\s+[a-z]+(ed|ing)\b/i;
+export function midSentenceStart(text: string): string | null {
+  const t = (text ?? "").replace(/^[\s*_#>]+/, "");
+  if (!t) return null;
+  if (OPENS_WITH_QUOTE.test(t)) return null;
+  if (CONTINUATION_PUNCTUATION.test(t)) return `starts mid-sentence: "${t.slice(0, 30)}"`;
+  if (/^[a-z]/.test(t)) return `starts mid-sentence (lowercase): "${t.slice(0, 30)}"`;
+  if (SUBJECTLESS_CONNECTOR.test(t)) return `starts mid-sentence (connector fragment): "${t.slice(0, 30)}"`;
+  return null;
+}
+
+/**
  * Why this answer must not be a story page, or null when it may.
  * @param minChars far shorter than this is rejected (default 80).
  */
@@ -66,6 +89,8 @@ export function storyTextProblem(text: string, finishReason?: string | null, min
   if (MARKDOWN_HEADER.test(t)) return "markdown header";
   if (JSON_START.test(t)) return "JSON, not story text";
   if (!ENDS_LIKE_PROSE.test(t)) return "cut off (no ending punctuation)";
+  const mid = midSentenceStart(t);
+  if (mid) return mid;
   if (t.length < minChars) return `too short (${t.length} < ${minChars} chars)`;
   return null;
 }
