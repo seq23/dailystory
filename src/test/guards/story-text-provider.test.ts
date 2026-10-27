@@ -334,3 +334,25 @@ describe("a free model that answers 404 is not in the chain", () => {
     expect(order.tested_2026_10_26).toMatch(/nemotron-3\.5-super-vl:free \(200/);
   });
 });
+
+// 27 Oct 2026, live: 9th-10th grade pages were rejected as "planning text" on every model
+// for ordinary words ("analyze", "the prompt"), so the request failed (HTTP 500).
+describe("upper-grade words are not mistaken for planning text", () => {
+  it("real prose with analyze / requirements / constraints / the prompt passes", () => {
+    const prose = [
+      "Kiki paused to analyze the strange markings on the lighthouse door, tracing each groove with a careful finger. The keeper had said there were requirements for entering after dark, but the constraints of the tide left her no time to wait.",
+      "Her teacher had called it the prompt for a mystery, and now Kiki stood inside one. Analyzing the clues, she realized the footprints led toward the cliffs, not the town.",
+    ];
+    for (const p of prose) expect(storyTextProblem(p, "stop"), p.slice(0, 40)).toBeNull();
+  });
+  it("planning text is still rejected", () => {
+    for (const bad of [
+      LIVE_BAD_PAGE,
+      "The fog rolled in. Requirements: 300 words, 9th grade.",
+      "Kiki ran to the dock. I should analyze the prompt again before the next page.",
+      "Kiki ran. The prompt asks for a continuous story at 9th grade.",
+      "The waves crashed. Constraints: no violence, ages 5 and up.",
+      "Kiki smiled. Word count: 312.",
+    ]) expect(storyTextProblem(bad, "stop"), bad).toMatch(/planning text/);
+  });
+});

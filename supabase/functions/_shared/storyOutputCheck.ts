@@ -44,7 +44,11 @@ export function wholeStoryTextProblem(text: string, finishReason?: string | null
 }
 
 const META_START = /^\s*(let me\b|let's (analy[sz]e|think|break)|okay[,.]|ok[,.]|alright[,.]|first[,]|i need to\b|i will\b|i'll\b|i'm going to\b|we need to\b|here is\b|here's\b|sure[,!.]|certainly[,!.]|the user\b|thinking\b|analysis\b)/i;
-const META_ANYWHERE = /\b(as an ai|language model|the user (wants|asked|is asking)|word count|requirements?\b|analy[sz]e\b|analy[sz]ing\b|continuous narrative|the prompt|output format|constraints?\b|step \d+:|draft:)/i;
+// Phrases only planning text uses. Bare "analyze", "requirements", "constraints" and "the
+// prompt" were here: they are ordinary upper-grade English ("analyze" is on the Academic
+// Word List the grade rule asks for), and real 9th-10th grade pages were rejected on every
+// model, so the reader got an error or Backup Mode (27 Oct 2026, live).
+const META_ANYWHERE = /\b(as an ai|language model|the user (wants|asked|is asking)|word count|requirements?:|constraints?:|analy[sz](e|ing) (the |these |all )?(prompt|request|requirements|instructions|constraints|task)\b|continuous narrative|the prompt (says|asks|wants|requires|calls for|is asking)|output format|step \d+:|draft:)/i;
 const MARKDOWN_HEADER = /^\s{0,3}#{1,6}\s/m;
 const JSON_START = /^\s*[{[]/;
 const ENDS_LIKE_PROSE = /[.!?…]["'”’)\]*_]*\s*$/;
