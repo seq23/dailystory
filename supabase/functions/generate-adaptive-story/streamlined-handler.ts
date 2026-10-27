@@ -9,7 +9,7 @@ import { logStoryFailure } from "../_shared/storyFailureLog.ts";
 import { practiceWordsFromPrompt, missingPracticeWords, practiceWordsRequired, weaveMissingWords } from "../_shared/practiceWords.ts";
 import { storyTextProblem, wholeStoryTextProblem, completePagesOf } from "../_shared/storyOutputCheck.ts";
 import { gradeProfile } from "../_shared/grades.ts";
-import { capWords, maxKeptWordsForGrade, livePageFromAnswer, livePageInstruction, livePageProblem, livePageTokenBudget, minWordsForGrade, wholeStoryProblem, wordCount } from "../_shared/livePage.ts";
+import { capWords, completeSentencesOf, maxKeptWordsForGrade, maxSentenceWordsForGrade, livePageFromAnswer, livePageInstruction, livePageProblem, livePageTokenBudget, minWordsForGrade, wholeStoryProblem, wordCount } from "../_shared/livePage.ts";
 
 /**
  * One story request answers within this (27 Oct 2026): the site's Supabase client gives
@@ -1039,7 +1039,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
             // story so far (../_shared/livePage.ts). Whole story: the same, averaged.
             accept: (text, finishReason) => isWholeStory
               ? (wholeStoryTextProblem(text, finishReason) ?? wholeStoryProblem(finishReason === 'length' ? (completePagesOf(text) ?? text) : text, null, minWords))
-              : livePageProblem(text, finishReason, { minWords, previous: previousPages }),
+              : livePageProblem(text, finishReason, { minWords, previous: previousPages, maxSentenceWords: maxSentenceWordsForGrade(pageGrade) }),
             deadline: requestDeadline,
           });
           const rejected = sent.attempts.filter((a) => (a.error ?? '').startsWith('rejected:'));
@@ -1154,6 +1154,8 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       
       storyText = data.choices?.[0]?.message?.content || '';
       if (isWholeStory && data.choices?.[0]?.finish_reason === 'length') storyText = completePagesOf(storyText) ?? storyText;
+      // A live page cut by the budget shows only its complete sentences (../_shared/livePage.ts).
+      if (isLivePage && data.choices?.[0]?.finish_reason === 'length') storyText = completeSentencesOf(storyText) ?? storyText;
       // A live call shows ONE page: markers removed, echoed earlier pages dropped.
       if (isLivePage && storyText) storyText = capWords(livePageFromAnswer(storyText, previousPages), maxKeptWordsForGrade(pageGrade));
       

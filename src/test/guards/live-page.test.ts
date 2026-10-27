@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { GRADES, GRADE_PROFILES } from "@/lib/grades";
 import {
-  backupPageFrom, livePageFromAnswer, livePageProblem, livePageTokenBudget, minWordsForGrade,
+  averageSentenceWords, backupPageFrom, completeSentencesOf, maxSentenceWordsForGrade, SENTENCE_LENGTH_SLACK, livePageFromAnswer, livePageProblem, livePageTokenBudget, minWordsForGrade,
   overlapWithPrevious, repeatedSentence, wholeStoryProblem, wordCount, livePageInstruction, capWords, maxKeptWordsForGrade,
 } from "../../../supabase/functions/_shared/livePage";
 import { midSentenceStart, storyTextProblem } from "../../../supabase/functions/_shared/storyOutputCheck";
@@ -84,6 +84,8 @@ describe("a too-short, repeating or copied live page is rejected (the chain then
   it("a live page gets the token room its grade needs (not 60 tokens)", () => {
     expect(livePageTokenBudget("2")).toBeGreaterThanOrEqual(250);
     expect(livePageTokenBudget("6")).toBeGreaterThanOrEqual(800);
+    // Room for the longest page that is kept (30% over the target), at ~1.6 tokens a word.
+    for (const g of GRADES) expect(livePageTokenBudget(g), g).toBeGreaterThanOrEqual(Math.ceil(maxKeptWordsForGrade(g) * 1.6));
     expect(livePageInstruction("2", { ending: true })).toMatch(/never fewer than 24 and never more than 50 words[\s\S]*LAST page/);
   });
 });
@@ -94,7 +96,7 @@ describe("the story handler applies all of it, on every tier", () => {
   it("live pages: instruction, budget, check and one-page answer", () => {
     expect(h).toMatch(/finalSystemPrompt \+= livePageInstruction\(pageGrade, \{ ending: !!config\.isEndingPage \}\);/);
     expect(h).toMatch(/if \(isLivePage\) maxTokens = Math\.max\(maxTokens, livePageTokenBudget\(pageGrade\)\);/);
-    expect(h).toMatch(/: livePageProblem\(text, finishReason, \{ minWords, previous: previousPages \}\),/);
+    expect(h).toMatch(/: livePageProblem\(text, finishReason, \{ minWords, previous: previousPages, maxSentenceWords: maxSentenceWordsForGrade\(pageGrade\) \}\),/);
     expect(h).toMatch(/if \(isLivePage && storyText\) storyText = capWords\(livePageFromAnswer\(storyText, previousPages\), maxKeptWordsForGrade\(pageGrade\)\);/);
     expect(h).toMatch(/wholeStoryProblem\(finishReason === 'length'/);
     // The grade-word rewrite may not drop a page below the floor.
@@ -217,5 +219,43 @@ describe("a page that starts mid-sentence is rejected", () => {
     ]) expect(midSentenceStart(ok), ok).toBeNull();
     expect(livePageProblem(GOOD_2ND, "stop", { minWords: 24 })).toBeNull();
     expect(livePageProblem("\u201cLook up!\u201d " + GOOD_2ND, "stop", { minWords: 24 })).toBeNull();
+  });
+});
+
+// 26 Oct 2026, live: a 6th-grade page (target 200-400) was cut by the token budget after
+// 500+ words, rejected as "truncated", and the request ran out of time: HTTP 500.
+describe("a live page cut by the token budget keeps its complete sentences", () => {
+  const sentence = (i: number) => `Mara counted the waves that rolled toward the old stone pier, number ${i} of many.`;
+  const long = Array.from({ length: 20 }, (_, i) => sentence(i)).join(" ") + " Then the lighthouse beam swung over the";
+  it("accepts the complete part when it meets the floor, and the handler shows only that part", () => {
+    expect(completeSentencesOf(long)).toMatch(/many\.$/);
+    expect(livePageProblem(long, "length", { minWords: minWordsForGrade("6") })).toBeNull();
+    const h = read("supabase/functions/generate-adaptive-story/streamlined-handler.ts");
+    expect(h).toMatch(/if \(isLivePage && data\.choices\?\.\[0\]\?\.finish_reason === 'length'\) storyText = completeSentencesOf\(storyText\) \?\? storyText;/);
+  });
+  it("still rejects a cut answer whose complete part is short, or that has no complete sentence", () => {
+    expect(livePageProblem(sentence(1) + " And then the", "length", { minWords: minWordsForGrade("6") })).toMatch(/^truncated, and its complete part too short/);
+    expect(livePageProblem("Mara counted the waves that rolled toward", "length", { minWords: 4 })).toBe("truncated (finish_reason length)");
+  });
+});
+
+// 26 Oct 2026, live: GRADE_PROFILES.maxSentenceWords was read by no story code; a 5th-grade
+// page averaged 29.6 words a sentence (max 20). The live prompt now says it, and a page
+// averaging more than 1.5x the grade's max is rejected (the chain asks the next model).
+describe("each grade's sentence length is asked for and checked", () => {
+  it("the live prompt gives every grade its own sentence length", () => {
+    for (const g of GRADES) {
+      expect(maxSentenceWordsForGrade(g), g).toBe(GRADE_PROFILES[g].maxSentenceWords);
+      expect(livePageInstruction(g), g).toContain(`Keep every sentence to about ${GRADE_PROFILES[g].maxSentenceWords} words or fewer.`);
+    }
+    expect(SENTENCE_LENGTH_SLACK).toBe(1.5);
+  });
+  it("rejects a page whose sentences run far past the grade, keeps one that fits", () => {
+    const long = "Kiki was rather excited to visit the seaside town where she could smell the salty air and hear the seagulls crying overhead as the old wooden boats rocked gently in the busy little harbor below. As she walked along the beach she noticed a group of children building an enormous sandcastle with towers and a moat that filled up with cold water each time the big waves came rolling in. She decided to join them and soon found herself digging a long tunnel that ran from the moat all the way under the tallest tower of the castle.";
+    expect(averageSentenceWords(long)).toBeGreaterThan(20 * 1.5);
+    expect(livePageProblem(long, "stop", { minWords: 24, maxSentenceWords: maxSentenceWordsForGrade("5") })).toMatch(/sentences too long for the grade/);
+    expect(livePageProblem(long, "stop", { minWords: 24, maxSentenceWords: maxSentenceWordsForGrade("10") })).toBeNull();
+    expect(livePageProblem(GOOD_2ND, "stop", { minWords: 24, maxSentenceWords: maxSentenceWordsForGrade("2") })).toBeNull();
+    expect(livePageProblem("Kiki sees a big red ball. She runs to it. The ball rolls away.", "stop", { minWords: 4, maxSentenceWords: maxSentenceWordsForGrade("PreK") })).toBeNull();
   });
 });
