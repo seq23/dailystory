@@ -49,6 +49,8 @@ export const MIN_THIRD_PARTY_TOKENS = 800;
 /** Sent with every OpenRouter request: no thinking, and none of it in the answer (26 Oct 2026). */
 export const OPENROUTER_NO_REASONING = { enabled: false, exclude: true } as const;
 const PAID_TIMEOUT_MS = 30_000;
+/** With a deadline, no model is started with less time than this left. */
+export const MIN_TRY_MS = 4_000;
 const OPENAI_TIMEOUT_MS = 50_000;
 
 export type Provider = "openrouter-free" | "cloudflare-free" | "openrouter-paid" | "openai";
@@ -167,6 +169,13 @@ export async function chatCompletionWithFallback(
     privateNames?: string[];
     /** Why an answer must not be used (null = use it). A rejected answer moves to the next model. See ./storyOutputCheck.ts. */
     accept?: (content: string, finishReason: string | null) => string | null;
+    /**
+     * Absolute time (ms) by which the chain must answer (27 Oct 2026). The browser gives
+     * up on a request after 30 s, and the chain's own timeouts add up to minutes, so a
+     * guest saw no story at all. No model is started with under MIN_TRY_MS left, and each
+     * try is cut to the time remaining.
+     */
+    deadline?: number;
   } = {},
 ): Promise<ProviderResult> {
   const fetchImpl: FetchLike = opts.fetchImpl ?? ((u, i) => fetch(u, i));
@@ -187,6 +196,14 @@ export async function chatCompletionWithFallback(
   const tryOnce = async (
     provider: Provider, model: string | undefined, url: string, headers: Record<string, string>, body: unknown, timeoutMs: number,
   ): Promise<{ ok: boolean; res?: Response; status: number | null; text: string }> => {
+    if (opts.deadline !== undefined) {
+      const left = opts.deadline - now();
+      if (left < MIN_TRY_MS) {
+        attempts.push({ provider, model, status: null, error: "skipped: request deadline reached" });
+        return { ok: false, status: null, text: "deadline" };
+      }
+      timeoutMs = Math.min(timeoutMs, left);
+    }
     try {
       const res = await fetchImpl(url, {
         method: "POST",

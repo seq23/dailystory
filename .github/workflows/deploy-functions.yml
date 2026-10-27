@@ -358,6 +358,43 @@ jobs:
           done
           exit $failed
 
+      - name: Every function boots (CORS preflight, post-deploy)
+        run: |
+          # 27 Oct 2026: five functions (correct-spelling, clear-character-cache,
+          # check-subscription, confirm-parental-consent, send-coppa-notification) were
+          # deployed "successfully" but answered every request, the browser's CORS
+          # preflight included, with 503 BOOT_ERROR, so the site's calls to them failed.
+          # Redeploying each alone fixed it. So every function's OPTIONS preflight must
+          # answer 2xx; one that does not is redeployed once and probed again, then the
+          # deploy fails. Guard: src/test/guards/guest-story-path.test.ts.
+          BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
+          preflight() {
+            curl -s -o /dev/null -w "%{http_code}" --max-time 30 -X OPTIONS "$BASE_URL/$1" \
+              -H "Origin: https://time-2-read.com" -H "Access-Control-Request-Method: POST" \
+              -H "Access-Control-Request-Headers: authorization, x-client-info, apikey, content-type" || echo 000
+          }
+          failed=""
+          checked=0
+          for dir in supabase/functions/*/; do
+            func=$(basename "$dir")
+            case "$func" in _*) continue ;; esac
+            [ -f "$dir/index.ts" ] || continue
+            checked=$((checked + 1))
+            code=$(preflight "$func")
+            case "$code" in 2*) continue ;; esac
+            echo "$func preflight $code; redeploying it once"
+            supabase functions deploy "$func" --project-ref "$SUPABASE_PROJECT_ID" 2>&1 | tail -2 || true
+            for attempt in 1 2 3; do
+              sleep 10
+              code=$(preflight "$func")
+              case "$code" in 2*) break ;; esac
+            done
+            case "$code" in 2*) echo "$func boots after redeploy" ;; *) failed="$failed $func($code)" ;; esac
+          done
+          echo "preflight checked $checked functions"
+          if [ "$checked" -eq 0 ]; then echo "::error::no functions found to probe"; exit 1; fi
+          if [ -n "$failed" ]; then echo "::error::functions that do not boot:$failed"; exit 1; fi
+
       - name: Post-Deploy Function Warm-Up
         if: success()
         env:

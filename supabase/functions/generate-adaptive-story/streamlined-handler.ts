@@ -7,7 +7,14 @@ import { expertGradeForGrade, audienceThemesForSystemPrompt, type Grade } from "
 import { chatCompletionWithFallback, lastProviderAttempts } from "../_shared/storyTextProvider.ts";
 import { logStoryFailure } from "../_shared/storyFailureLog.ts";
 import { practiceWordsFromPrompt, missingPracticeWords, practiceWordsRequired, weaveMissingWords } from "../_shared/practiceWords.ts";
-import { storyTextProblem } from "../_shared/storyOutputCheck.ts";
+import { storyTextProblem, wholeStoryTextProblem, completePagesOf } from "../_shared/storyOutputCheck.ts";
+import { gradeProfile } from "../_shared/grades.ts";
+
+/**
+ * One story request answers within this (27 Oct 2026): the site's Supabase client gives
+ * up after 30 s (src/integrations/supabase/client.ts), and a guest then saw no story.
+ */
+export const STORY_REQUEST_BUDGET_MS = 26_000;
 import { readsAtGradeOf, gradePromptWords } from "../_shared/gradeWords.ts";
 import { applyGradeWordRule, type PageRewriter } from "../_shared/gradeWordRule.ts";
 import { logGradeWordShare } from "../_shared/gradeWordShareLog.ts";
@@ -94,6 +101,8 @@ function getHairColorForSkinTone(skinTone: string | undefined): string[] | null 
 
 export async function handleStreamlinedGeneration(requestBody: any) {
   const { bundle, config }: { bundle: StreamlinedBundle; config: StreamlinedConfig & { expertGradeLevel?: string; difficulty?: string } } = requestBody;
+  const requestDeadline = Date.now() + STORY_REQUEST_BUDGET_MS;
+  if (config && typeof config === 'object') (config as any).requestDeadline = requestDeadline;
   
   // PHASE 1: Daily Cost Limit Check
   const { canProceed, remaining, currentCost } = checkDailyLimit();
@@ -416,6 +425,14 @@ Generate a corrected version that addresses these issues while keeping the story
       finalUserPrompt = bundle.storyContent + '\n\nPlease repair the content based on the instructions above.';
     }
     
+    // WHOLE STORY (guest): a set number of pages, then stop. The level prompts say
+    // "continue indefinitely", so every model ran to its token budget and was
+    // rejected as cut off; no guest got a story (27 Oct 2026).
+    if (config.sessionType !== 'premium') {
+      const pagesWanted = Math.max(6, Math.min(12, getExpectedPages(effectiveDifficulty as any) || 8));
+      finalSystemPrompt += `\n\nWHOLE STORY (this overrides "continue indefinitely" above): write exactly ${pagesWanted} pages, each separated by *** on its own line, then STOP. Do not write more pages. The story does not end; the last page closes with a gentle hook.`;
+    }
+
     const aiPrompt = {
       systemPrompt: finalSystemPrompt,
       userPrompt: finalUserPrompt // Already resolved by 4-tier system or enhanced for repair
@@ -436,7 +453,7 @@ Generate a corrected version that addresses these issues while keeping the story
     let gradeWordReport = null;
     if (readsAt) {
       try {
-        const ruled = await applyGradeWordRule(storyText, readsAt, rewritePageWithProvider(userInfo), storySeedOf(bundle.sessionId));
+        const ruled = await applyGradeWordRule(storyText, readsAt, rewritePageWithProvider(userInfo, requestDeadline), storySeedOf(bundle.sessionId));
         storyText = ruled.text;
         gradeWordReport = ruled.report;
         void logGradeWordShare(ruled.report, bundle.sessionId ?? null, config?.pageNumber ?? null);
@@ -804,6 +821,16 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     console.warn('⚠️ Token limit calculation failed, using service-specific fallback:', safeErrorMessage(tokenError));
     maxTokens = getServiceSpecificFallback(config);
   }
+
+  // A whole guest story gets room for all its pages at the grade's length; the level
+  // prompts' "15 tokens per page" left 180 tokens for 12 pages.
+  const isWholeStory = config?.sessionType !== 'premium';
+  if (isWholeStory) {
+    const maxWords = Number(gradeProfile(readsAtGradeOf(userInfo, difficulty, difficulty))?.wordsPerPage.match(/(\d+)\s*[-–]\s*(\d+)/)?.[2] ?? 50);
+    const pages = Math.max(6, Math.min(12, getExpectedPages(difficulty as any) || 8));
+    maxTokens = Math.max(maxTokens, Math.ceil((maxWords * 1.6 + 15) * pages));
+  }
+  const requestDeadline: number | undefined = (config as any)?.requestDeadline;
   
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
@@ -991,7 +1018,9 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           const sent = await chatCompletionWithFallback(apiBody, {
             privateNames: [userInfo?.name, userInfo?.displayName],
             // Only real story text reaches a page: no planning text, nothing cut off (../_shared/storyOutputCheck.ts).
-            accept: (text, finishReason) => storyTextProblem(text, finishReason),
+            // A whole story cut by the budget keeps its complete pages.
+            accept: (text, finishReason) => isWholeStory ? wholeStoryTextProblem(text, finishReason) : storyTextProblem(text, finishReason),
+            deadline: requestDeadline,
           });
           const rejected = sent.attempts.filter((a) => (a.error ?? '').startsWith('rejected:'));
           if (rejected.length) {
@@ -1104,6 +1133,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       }
       
       storyText = data.choices?.[0]?.message?.content || '';
+      if (isWholeStory && data.choices?.[0]?.finish_reason === 'length') storyText = completePagesOf(storyText) ?? storyText;
       
       // PHASE 2: Function Call Detection and Execution
       if (storyText && hasFunctionCalls(storyText)) {
@@ -1663,7 +1693,7 @@ function storySeedOf(sessionId: unknown): number {
 }
 
 /** One page rewrite through the same provider chain as the story (masked names, real-text check). */
-function rewritePageWithProvider(userInfo: any): PageRewriter {
+function rewritePageWithProvider(userInfo: any, deadline?: number): PageRewriter {
   return async (page, request) => {
     const sent = await chatCompletionWithFallback({
       model: (getModelChainOptimized(false)?.[0] as any)?.name ?? 'gpt-5-2025-08-07',
@@ -1672,6 +1702,7 @@ function rewritePageWithProvider(userInfo: any): PageRewriter {
     }, {
       privateNames: [userInfo?.name, userInfo?.displayName].filter((n): n is string => typeof n === 'string' && !!n),
       accept: (text, finishReason) => storyTextProblem(text, finishReason, Math.min(80, Math.floor(page.length / 2))),
+      deadline,
     });
     if (!sent.response.ok) return null;
     const data = await sent.response.json();
