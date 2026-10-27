@@ -399,37 +399,8 @@ export const getCulturalGuidanceString = (userInfo: any) => {
 - NEVER: Make culture the plot center, use outdated stereotypes, or over-emphasize differences`;
 };
 
-// Multi-Layer Vocabulary Caching (Phase 3: 90% DB call reduction)
-export const getVocabularyCache = (level: number, type: 'user' | 'system' | 'teacher' = 'system') => {
-  const cacheKey = `vocab_${type}_${level}`;
-  const ttlMap = { user: 60 * 60 * 1000, system: 24 * 60 * 60 * 1000, teacher: 30 * 60 * 1000 };
-  
-  let vocabSet = staticCache.get<string[]>(cacheKey);
-  if (!vocabSet) {
-    // Smart rotation: 50 words per level, 3 daily sets
-    const dailySet = Math.floor(Date.now() / (24 * 60 * 60 * 1000)) % 3;
-    const baseWords = getVocabularyByLevel(level);
-    const setSize = Math.min(50, Math.floor(baseWords.length / 3));
-    const startIdx = dailySet * setSize;
-    
-    vocabSet = baseWords.slice(startIdx, startIdx + setSize);
-    staticCache.set(cacheKey, vocabSet);
-  }
-  
-  return vocabSet;
-};
-
-function getVocabularyByLevel(level: number): string[] {
-  // Simplified vocabulary sets for caching
-  const vocab = {
-    0: ['the', 'a', 'is', 'it', 'in', 'you', 'that', 'he', 'was', 'for', 'on', 'are', 'as', 'with', 'his'],
-    1: ['and', 'to', 'of', 'said', 'have', 'go', 'get', 'do', 'see', 'now', 'way', 'who', 'its', 'did', 'yes'],
-    2: ['all', 'were', 'they', 'we', 'when', 'your', 'can', 'had', 'her', 'what', 'oil', 'sit', 'set', 'run', 'eat'],
-    3: ['about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 'into', 'him'],
-    4: ['people', 'could', 'first', 'water', 'been', 'call', 'who', 'made', 'now', 'find', 'long', 'down', 'day', 'did']
-  };
-  return vocab[level] || vocab[2];
-}
+// Grade vocabulary: the one copy of the standard lists is supabase/functions/_shared/wordLists.ts
+// (grade mapping in ./_shared/gradeWords.ts). The old hand-written level sets here are gone.
 
 // Export singleton instance for direct access if needed
 export const StaticDataCache = {

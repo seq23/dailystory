@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { savedReadingGrade } from '@/lib/readingGradeStore';
 import { DebugLogger } from '@/services/DebugLogger';
 import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
 import { User } from "@supabase/supabase-js";
@@ -366,6 +367,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           // CRITICAL: Load difficultyLevel from reading_preferences JSONB
           const readingPrefs = (preferences.reading_preferences as any) || {};
           const savedDifficulty = readingPrefs.difficultyLevel || 'beginner';
+          // The exact Reads-at grade is kept on profiles (src/lib/readingGradeStore.ts).
+          const { data: gradeRow } = await supabase.from('profiles').select('reading_grade' as any).eq('user_id', user.id).maybeSingle();
+          const savedGrade = savedReadingGrade(gradeRow);
           
           // Convert preferences to UserInfo format with proper defaults
           const userInfoData: UserInfo = {
@@ -376,6 +380,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           nativeLanguage: (preferences.native_language as LanguageCode) || 'en',
           readingLevel: 'beginner',
           difficultyLevel: savedDifficulty as DifficultyLevel, // Load from reading_preferences
+          ...(savedGrade ? { readingGrade: savedGrade } : {}),
           interests: [],
           learningGoal: (preferences.learning_goal as LearningGoal) || 'improve-english-reading',
           avatar: { 
@@ -425,6 +430,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           nativeLanguage: (profile.native_language as LanguageCode) || 'en',
           readingLevel: profile.reading_level || 'beginner',
           difficultyLevel: profile.difficulty_level || profile.reading_level || 'beginner',
+          // The exact Reads-at grade a grown-up with no child profile chose (src/lib/readingGradeStore.ts).
+          ...(savedReadingGrade(profile) ? { readingGrade: savedReadingGrade(profile)! } : {}),
           interests: profile.interests || [],
           learningGoal: 'improve-english-reading' as LearningGoal,
           avatar: typeof profile.avatar === 'string' ? JSON.parse(profile.avatar) : (profile.avatar || { type: 'prefer-not-to-answer', skinTone: 'medium' }),
