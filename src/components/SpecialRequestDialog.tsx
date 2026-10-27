@@ -280,7 +280,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
   };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[100dvh] overflow-y-auto" aria-label={mode === 'new' ? "Start a new story" : "Change this story"} data-testid="new-story-dialog">
+      <DialogContent className="max-h-[100dvh] w-[calc(100vw-2rem)] max-w-lg grid-cols-1 overflow-y-auto overflow-x-hidden" aria-label={mode === 'new' ? "Start a new story" : "Change this story"} data-testid="new-story-dialog">
         <DialogHeader>
           <DialogTitle>{mode === 'new' ? "New story" : "Change this story"}</DialogTitle>
           <DialogDescription>Everything here is optional. Tap the blue button when you're ready.</DialogDescription>
@@ -288,12 +288,12 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
 
         {/* Who the story is for */}
         {children.length > 0 && (
-          <div className="flex items-center gap-3 rounded-lg border p-3" data-testid="story-for">
+          <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg border p-3" data-testid="story-for">
             {activeChild && <img src={childAvatarUrl(activeChild)} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-primary" />}
             <label htmlFor="story-for-child" className="text-sm font-medium shrink-0">Story for:</label>
             <select
               id="story-for-child"
-              className="h-10 min-w-0 flex-1 rounded-md border bg-background px-2 text-base"
+              className="h-10 w-full min-w-0 max-w-full flex-1 basis-40 truncate rounded-md border bg-background px-2 text-base"
               value={activeChild?.id ?? ""}
               disabled={isGenerating}
               onChange={(e) => { setActiveChild(e.target.value).catch(() => {}); }}
@@ -307,16 +307,16 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           </div>
         )}
 
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <label htmlFor="special-requests" className="text-sm font-semibold">
             What should it be about? <span className="font-normal text-muted-foreground">(optional)</span>
           </label>
-          <div className="flex flex-wrap gap-2" aria-label="Ideas: tap to add">
+          <div className="flex min-w-0 flex-wrap gap-2" aria-label="Ideas: tap to add">
             {STORY_IDEAS.map((idea) => (
               <button
                 key={idea}
                 type="button"
-                className="rounded-full border px-3 py-1.5 text-sm hover:border-primary"
+                className="max-w-full whitespace-normal break-words rounded-full border px-3 py-1.5 text-left text-sm hover:border-primary"
                 onClick={() => handleInputChange('specialRequest', value.trim() ? `${value.trim()}, ${idea.toLowerCase()}` : idea)}
               >
                 + {idea}
@@ -376,7 +376,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           )}
           
         </div>
-        <div className="space-y-2 mt-4">
+        <div className="mt-4 min-w-0 space-y-2">
           <label htmlFor="target-vocab" className="text-sm font-semibold">
             Any words to practice? <span className="font-normal text-muted-foreground">(optional)</span>
           </label>
@@ -440,11 +440,11 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           hasCoppaViolation={validationState.hasCoppaViolation}
           onSubmissionAttempt={validationState.hasTriedSubmit}
         />
-        <DialogFooter>
+        <DialogFooter className="flex-wrap gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isGenerating}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isGenerating} className="min-h-11" data-testid="write-story">
+          <Button onClick={handleSubmit} disabled={isGenerating} className="h-auto min-h-11 max-w-full whitespace-normal break-words text-center" data-testid="write-story">
             {isGenerating && <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden />}
             {isGenerating 
               ? (mode === 'new' ? "Writing your story…" : "Refreshing…") 

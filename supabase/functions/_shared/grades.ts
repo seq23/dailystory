@@ -54,6 +54,12 @@ export interface GradeProfile {
   vocabularyTier: VocabularyTier;
   /** Story length per page, as told to the writer. */
   wordsPerPage: string;
+  /**
+   * The fewest words a story page may have (27 Oct 2026): 80% of the low end of
+   * wordsPerPage. A shorter answer is rejected and the next model is asked, on every
+   * tier; Backup Mode joins template pages until a page reaches it. docs/reading-levels.md.
+   */
+  minWordsPerPage: number;
   /** Longest sentence the writer should normally use. */
   maxSentenceWords: number;
   sentenceComplexity: string;
@@ -67,62 +73,62 @@ const P = (p: GradeProfile): GradeProfile => Object.freeze(p);
 export const GRADE_PROFILES: Readonly<Record<Grade, GradeProfile>> = Object.freeze({
   PreK: P({ grade: "PreK", shortLabel: "Pre-K", longLabel: "Pre-K", typicalAge: 4,
     readingLevel: "pre-reader", difficulty: "beginner", expertGrade: null, vocabularyTier: 0,
-    wordsPerPage: "5-15 words per page", maxSentenceWords: 6,
+    wordsPerPage: "5-15 words per page", minWordsPerPage: 4, maxSentenceWords: 6,
     sentenceComplexity: "one very short sentence per page, read aloud by a grown-up",
     voiceTier: "preschool", promptReadingLevel: "Pre-K (about age 4): a read-aloud picture-book level" }),
   K: P({ grade: "K", shortLabel: "K", longLabel: "Kindergarten", typicalAge: 5,
     readingLevel: "pre-reader", difficulty: "beginner", expertGrade: null, vocabularyTier: 0,
-    wordsPerPage: "10-20 words per page", maxSentenceWords: 8,
+    wordsPerPage: "10-20 words per page", minWordsPerPage: 8, maxSentenceWords: 8,
     sentenceComplexity: "one or two short sentences per page with sight words",
     voiceTier: "early_elementary", promptReadingLevel: "Kindergarten (about age 5): an emergent-reader level" }),
   "1": P({ grade: "1", shortLabel: "1st", longLabel: "1st Grade", typicalAge: 6,
     readingLevel: "beginner", difficulty: "easy", expertGrade: null, vocabularyTier: 1,
-    wordsPerPage: "20-40 words per page", maxSentenceWords: 10,
+    wordsPerPage: "20-40 words per page", minWordsPerPage: 16, maxSentenceWords: 10,
     sentenceComplexity: "two or three simple sentences per page",
     voiceTier: "early_elementary", promptReadingLevel: "1st grade (about age 6): an early-reader level" }),
   "2": P({ grade: "2", shortLabel: "2nd", longLabel: "2nd Grade", typicalAge: 7,
     readingLevel: "beginner", difficulty: "easy", expertGrade: null, vocabularyTier: 1,
-    wordsPerPage: "30-50 words per page", maxSentenceWords: 12,
+    wordsPerPage: "30-50 words per page", minWordsPerPage: 24, maxSentenceWords: 12,
     sentenceComplexity: "simple and compound sentences joined with and, but, so",
     voiceTier: "early_elementary", promptReadingLevel: "2nd grade (about age 7): an early-reader level" }),
   "3": P({ grade: "3", shortLabel: "3rd", longLabel: "3rd Grade", typicalAge: 8,
     readingLevel: "developing", difficulty: "medium", expertGrade: null, vocabularyTier: 2,
-    wordsPerPage: "40-70 words per page", maxSentenceWords: 15,
+    wordsPerPage: "40-70 words per page", minWordsPerPage: 32, maxSentenceWords: 15,
     sentenceComplexity: "four or five sentences per page, simple and compound",
     voiceTier: "elementary", promptReadingLevel: "3rd grade (about age 8): a developing-reader level" }),
   "4": P({ grade: "4", shortLabel: "4th", longLabel: "4th Grade", typicalAge: 9,
     readingLevel: "developing", difficulty: "medium", expertGrade: null, vocabularyTier: 2,
-    wordsPerPage: "50-90 words per page", maxSentenceWords: 15,
+    wordsPerPage: "50-90 words per page", minWordsPerPage: 40, maxSentenceWords: 15,
     sentenceComplexity: "varied sentences with some descriptive clauses",
     voiceTier: "elementary", promptReadingLevel: "4th grade (about age 9): a developing-reader level" }),
   "5": P({ grade: "5", shortLabel: "5th", longLabel: "5th Grade", typicalAge: 10,
     readingLevel: "independent", difficulty: "hard", expertGrade: null, vocabularyTier: 3,
-    wordsPerPage: "80-150 words per page", maxSentenceWords: 20,
+    wordsPerPage: "80-150 words per page", minWordsPerPage: 64, maxSentenceWords: 20,
     sentenceComplexity: "complex sentences with dependent clauses",
     voiceTier: "elementary", promptReadingLevel: "5th grade (about age 10): an independent-reader level" }),
   "6": P({ grade: "6", shortLabel: "6th", longLabel: "6th Grade", typicalAge: 11,
     readingLevel: "advanced", difficulty: "expert", expertGrade: "6th", vocabularyTier: 4,
-    wordsPerPage: "200-400 words per page", maxSentenceWords: 25,
+    wordsPerPage: "200-400 words per page", minWordsPerPage: 160, maxSentenceWords: 25,
     sentenceComplexity: "foundational complex sentences and literary vocabulary",
     voiceTier: "middle", promptReadingLevel: "6th grade (about age 11): a middle-school reading level" }),
   "7": P({ grade: "7", shortLabel: "7th", longLabel: "7th Grade", typicalAge: 12,
     readingLevel: "advanced", difficulty: "expert", expertGrade: "7th", vocabularyTier: 4,
-    wordsPerPage: "200-400 words per page", maxSentenceWords: 28,
+    wordsPerPage: "200-400 words per page", minWordsPerPage: 160, maxSentenceWords: 28,
     sentenceComplexity: "increasingly sophisticated sentences and varied literary techniques",
     voiceTier: "middle", promptReadingLevel: "7th grade (about age 12): a middle-school reading level" }),
   "8": P({ grade: "8", shortLabel: "8th", longLabel: "8th Grade", typicalAge: 13,
     readingLevel: "advanced", difficulty: "expert", expertGrade: "8th", vocabularyTier: 4,
-    wordsPerPage: "200-400 words per page", maxSentenceWords: 30,
+    wordsPerPage: "200-400 words per page", minWordsPerPage: 160, maxSentenceWords: 30,
     sentenceComplexity: "layered sentences, subtext and figurative language",
     voiceTier: "teen", promptReadingLevel: "8th grade (about age 13): an upper middle-school reading level" }),
   "9": P({ grade: "9", shortLabel: "9th", longLabel: "9th Grade", typicalAge: 14,
     readingLevel: "advanced", difficulty: "expert", expertGrade: "9th", vocabularyTier: 4,
-    wordsPerPage: "200-400 words per page", maxSentenceWords: 32,
+    wordsPerPage: "200-400 words per page", minWordsPerPage: 160, maxSentenceWords: 32,
     sentenceComplexity: "mature literary prose with multiple perspectives and themes",
     voiceTier: "teen", promptReadingLevel: "9th grade (about age 14): an early high-school reading level" }),
   "10": P({ grade: "10", shortLabel: "10th", longLabel: "10th Grade", typicalAge: 15,
     readingLevel: "advanced", difficulty: "expert", expertGrade: "10th", vocabularyTier: 4,
-    wordsPerPage: "200-400 words per page", maxSentenceWords: 35,
+    wordsPerPage: "200-400 words per page", minWordsPerPage: 160, maxSentenceWords: 35,
     sentenceComplexity: "intricate sentence construction and elevated literary language",
     voiceTier: "teen", promptReadingLevel: "10th grade (about age 15): a high-school reading level" }),
 });
@@ -177,6 +183,11 @@ export function gradeProfile(grade: unknown): GradeProfile | null {
 }
 
 /** "long" for pickers ("Kindergarten", "10th Grade"); "short" for chips ("K", "10th"). */
+/** The fewest words one story page may have for this grade (null for an unknown grade). */
+export function minWordsPerPageForGrade(grade: unknown): number | null {
+  return gradeProfile(grade)?.minWordsPerPage ?? null;
+}
+
 export function gradeLabel(grade: unknown, style: "long" | "short" = "long"): string {
   const p = gradeProfile(grade);
   if (!p) return typeof grade === "string" ? grade : "";
