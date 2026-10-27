@@ -238,10 +238,10 @@ The guard checks that each line below still holds the named symbol.
 | supabase/functions/_shared/DifficultyLevelMapper.ts:51 | fromBackendValue | delegates to backendDifficultyOf |
 | src/services/NetflixStyleStoryService.ts:82 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
 | src/services/LiveGenerationService.ts:71 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
-| supabase/functions/generate-adaptive-story/streamlined-handler.ts:175 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
+| supabase/functions/generate-adaptive-story/streamlined-handler.ts:176 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
 | supabase/functions/template-service/index.ts:178 | DifficultyLevelMapper.fromBackendValue(difficulty) | `difficulty` read backend-first |
 | src/components/ParentDashboard.tsx:910 | minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade, guardrails.minReadingGrade) | stored minimum → "Never easier than" grade |
-| src/components/CleanStoryDisplay.tsx:1323 | const minGrade = minimumGradeForGuardrail | lock clamp compares grades |
+| src/components/CleanStoryDisplay.tsx:1327 | const minGrade = minimumGradeForGuardrail | lock clamp compares grades |
 | src/lib/readingLevelMap.ts:101 | normalizeStoredLevel | any stored column value → grade |
 <!-- converters:end -->
 

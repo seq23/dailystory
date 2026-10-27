@@ -9,13 +9,14 @@ import { logStoryFailure } from "../_shared/storyFailureLog.ts";
 import { practiceWordsFromPrompt, missingPracticeWords, practiceWordsRequired, weaveMissingWords } from "../_shared/practiceWords.ts";
 import { storyTextProblem, wholeStoryTextProblem, completePagesOf } from "../_shared/storyOutputCheck.ts";
 import { gradeProfile } from "../_shared/grades.ts";
-import { livePageFromAnswer, livePageInstruction, livePageProblem, livePageTokenBudget, minWordsForGrade, wholeStoryProblem, wordCount } from "../_shared/livePage.ts";
+import { capWords, maxKeptWordsForGrade, livePageFromAnswer, livePageInstruction, livePageProblem, livePageTokenBudget, minWordsForGrade, wholeStoryProblem, wordCount } from "../_shared/livePage.ts";
 
 /**
  * One story request answers within this (27 Oct 2026): the site's Supabase client gives
- * up after 30 s (src/integrations/supabase/client.ts), and a guest then saw no story.
+ * up on story generation after STORY_FETCH_TIMEOUT_MS (45 s, src/integrations/supabase/client.ts).
+ * 26 s left the free tier's first model too little time on a long live page.
  */
-export const STORY_REQUEST_BUDGET_MS = 26_000;
+export const STORY_REQUEST_BUDGET_MS = 40_000;
 import { readsAtGradeOf, gradePromptWords } from "../_shared/gradeWords.ts";
 import { applyGradeWordRule, type PageRewriter } from "../_shared/gradeWordRule.ts";
 import { logGradeWordShare } from "../_shared/gradeWordShareLog.ts";
@@ -442,7 +443,10 @@ Generate a corrected version that addresses these issues while keeping the story
     // rejected as cut off; no guest got a story (27 Oct 2026).
     if (config.sessionType !== 'premium') {
       const pagesWanted = Math.max(6, Math.min(12, getExpectedPages(effectiveDifficulty as any) || 8));
+      const storyGrade = readsAtGradeOf(userInfo, expertGrade, effectiveDifficulty);
       finalSystemPrompt += `\n\nWHOLE STORY (this overrides "continue indefinitely" above): write exactly ${pagesWanted} pages, each separated by *** on its own line, then STOP. Do not write more pages. The story does not end; the last page closes with a gentle hook.`;
+      // The page length is the reader's grade (../_shared/grades.ts), not the level prompt's token count.
+      finalSystemPrompt += ` Each page: ${gradeProfile(storyGrade)?.wordsPerPage ?? '20-40 words per page'}, never fewer than ${minWordsForGrade(storyGrade)} words.`;
     }
 
     // LIVE PAGE: one page at the reader's grade length, new text, an ending when asked
@@ -1151,7 +1155,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       storyText = data.choices?.[0]?.message?.content || '';
       if (isWholeStory && data.choices?.[0]?.finish_reason === 'length') storyText = completePagesOf(storyText) ?? storyText;
       // A live call shows ONE page: markers removed, echoed earlier pages dropped.
-      if (isLivePage && storyText) storyText = livePageFromAnswer(storyText, previousPages);
+      if (isLivePage && storyText) storyText = capWords(livePageFromAnswer(storyText, previousPages), maxKeptWordsForGrade(pageGrade));
       
       // PHASE 2: Function Call Detection and Execution
       if (storyText && hasFunctionCalls(storyText)) {

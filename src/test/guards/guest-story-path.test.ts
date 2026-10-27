@@ -56,7 +56,14 @@ describe("2. a story request answers inside the browser's 30 s limit", () => {
 
   it("the request budget is under the client's fetch timeout, and the chain gets it", () => {
     const client = read("src/integrations/supabase/client.ts");
-    const clientMs = Number(client.match(/createResilientFetch\((\d+)\)/)![1]);
+    // Story generation has its own, longer client timeout; every other call keeps 30 s.
+    const clientMs = Number(client.match(/export const STORY_FETCH_TIMEOUT_MS = (\d+);/)![1]);
+    expect(client).toMatch(/\/functions\\\/v1\\\/generate-adaptive-story\\b\/\.test\(url\) \? STORY_FETCH_TIMEOUT_MS : defaultTimeout/);
+    expect(client).toMatch(/createResilientFetch\(30000\)/);
+    // Every client-side race waits longer than the fetch, so an answer on its way is used.
+    for (const f of ["src/services/LiveGenerationService.ts", "src/services/NetflixStyleStoryService.ts"]) {
+      for (const m of read(f).matchAll(/reject\(new Error\('[^']*timeout[^']*'\)\), (\d+)\)/g)) expect(Number(m[1]), f).toBeGreaterThan(clientMs);
+    }
     const h = read("supabase/functions/generate-adaptive-story/streamlined-handler.ts");
     const budget = Number(h.match(/STORY_REQUEST_BUDGET_MS = ([\d_]+)/)![1].replace(/_/g, ""));
     expect(budget).toBeLessThanOrEqual(clientMs - 3000);

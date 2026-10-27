@@ -8,10 +8,19 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Global 30s timeout wrapper for all network requests
-const createResilientFetch = (timeout = 30000) => {
+/**
+ * Story generation may take longer than other calls (27 Oct 2026): the server answers
+ * within STORY_REQUEST_BUDGET_MS (40 s, generate-adaptive-story/streamlined-handler.ts),
+ * so a 30 s cut dropped answers that were on their way. Guard: src/test/guards/guest-story-path.test.ts.
+ */
+export const STORY_FETCH_TIMEOUT_MS = 45000;
+
+// Global 30s timeout wrapper for all network requests (story generation: STORY_FETCH_TIMEOUT_MS)
+const createResilientFetch = (defaultTimeout = 30000) => {
   return async (input: RequestInfo | URL, init?: RequestInit) => {
     const controller = new AbortController();
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+    const timeout = /\/functions\/v1\/generate-adaptive-story\b/.test(url) ? STORY_FETCH_TIMEOUT_MS : defaultTimeout;
     const timeoutId = setTimeout(() => controller.abort(), timeout);
     
     try {

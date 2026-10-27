@@ -94,12 +94,34 @@ export function livePageTokenBudget(grade: unknown): number {
   return Math.ceil(maxWordsForGrade(grade) * 1.6) + 200;
 }
 
+/**
+ * Whole sentences up to `max` words (always at least the first sentence). Live, the free
+ * tier's first model wrote 281 words for a 2nd-grade page (target 30-50).
+ */
+export function capWords(text: string, max: number): string {
+  const t = (text || "").trim();
+  if (!max || wordCount(t) <= max) return t;
+  const parts = t.split(/(?<=[.!?…]["'”’)]*)\s+/);
+  let out = "";
+  for (const p of parts) {
+    const next = out ? `${out} ${p}` : p;
+    if (out && wordCount(next) > max) break;
+    out = next;
+  }
+  return out;
+}
+
+/** Longest live page kept for a grade: 30% over the top of its target, whole sentences. */
+export function maxKeptWordsForGrade(grade: unknown): number {
+  return Math.round(maxWordsForGrade(grade) * 1.3);
+}
+
 /** The instruction appended to a live page's system prompt; it overrides the multi-page format. */
 export function livePageInstruction(grade: unknown, opts: { ending?: boolean } = {}): string {
   const p = gradeProfile(grade);
   const target = p?.wordsPerPage ?? "30-50 words per page";
   const min = minWordsForGrade(grade);
-  return `\n\nLIVE PAGE (this overrides any page format above): write exactly ONE page of ${target}, never fewer than ${min} words. ` +
+  return `\n\nLIVE PAGE (this overrides any page format above): write exactly ONE page of ${target}, never fewer than ${min} and never more than ${maxWordsForGrade(grade)} words. ` +
     `Do not write *** or any page marker, and do not write a second page. Never repeat a sentence. ` +
     (opts.ending
       ? `This is the LAST page: continue from the last line of the story so far and bring it to a satisfying ending. Do not retell earlier pages.`
