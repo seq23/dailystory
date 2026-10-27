@@ -65,7 +65,13 @@ describe("nothing sits on top of the last button", () => {
     expect(c).toMatch(/root\.style\.removeProperty\("--cookie-banner-h"\)/);
     expect(c).toMatch(/<div ref=\{bannerRef\} className="fixed bottom-0/);
     expect(read("src/index.css")).toMatch(/body \{[^}]*padding-bottom: var\(--cookie-banner-h, 0px\);/);
-    expect(read("src/components/AuthenticatedApp.tsx")).toMatch(/<main [^>]*style=\{\{ paddingBottom: "calc\(var\(--cookie-banner-h, 0px\) \+ 1rem\)" \}\}>/);
+    // The page's bottom room is one constant now (27 Oct 2026: it also clears the feedback
+    // button, src/test/guards/menu-back.test.ts); it still starts from the banner's height.
+    const app = read("src/components/AuthenticatedApp.tsx");
+    expect(app).toMatch(/<main [^>]*style=\{\{ paddingBottom: MAIN_BOTTOM_CLEARANCE \}\}>/);
+    const room = app.match(/export const MAIN_BOTTOM_CLEARANCE = "calc\(var\(--cookie-banner-h, 0px\) \+ (\d+(?:\.\d+)?)rem\)";/);
+    expect(room).not.toBeNull();
+    expect(Number(room![1])).toBeGreaterThanOrEqual(1);
   });
   it("'Create Your First Story' on the Story Library page opens the form, not just another page", () => {
     const app = read("src/components/AuthenticatedApp.tsx");

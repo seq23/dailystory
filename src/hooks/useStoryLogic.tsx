@@ -50,7 +50,17 @@ export interface UseStoryLogicProps {
    * wordsRead 0 with pagesRead 3). Guard: src/test/guards/live-page.test.ts.
    */
   readProgress?: () => { pagesRead: number; wordsRead: number };
+  /**
+   * True while a new story is being written. Time running out then starts a fresh 20 minutes
+   * for that story instead of ending the session (27 Oct 2026, final live tests: the timer hit
+   * 0:00 while a new story was being written, the app went to /session-ended and the new story
+   * was lost). Guard: src/test/guards/tap-buttons.test.ts.
+   */
+  deferSessionEnd?: () => boolean;
 }
+
+/** One reading session: 20 minutes. */
+export const SESSION_SECONDS = 20 * 60;
 
 export const useStoryLogic = ({
   userInfo,
@@ -59,10 +69,13 @@ export const useStoryLogic = ({
   expertGradeLevel,
   onSessionEnded,
   netflixSessionId,
-  readProgress
+  readProgress,
+  deferSessionEnd
 }: UseStoryLogicProps) => {
   const readProgressRef = useRef(readProgress);
   readProgressRef.current = readProgress;
+  const deferSessionEndRef = useRef(deferSessionEnd);
+  deferSessionEndRef.current = deferSessionEnd;
   // Core story state
   const [story, setStory] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -128,6 +141,7 @@ export const useStoryLogic = ({
     const interval = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
+          if (deferSessionEndRef.current?.()) return SESSION_SECONDS;
           setIsTimerRunning(false);
           if (onSessionEnded) {
             const read = readProgressRef.current?.();
