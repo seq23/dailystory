@@ -4,6 +4,7 @@
 // Security: validated via Stripe webhook signature (STRIPE_WEBHOOK_SECRET)
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { subscriptionEndFrom, subscriptionGivesAccess } from "../_shared/subscriptionEnd.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -86,14 +87,24 @@ serve(async (req) => {
         });
       }
 
-      // Calculate subscription end date
+      // Subscription end: Stripe's own date (the trial's end during a trial); a month or a year
+      // from now only when Stripe cannot be read.
       const now = new Date();
-      const subscriptionEnd = new Date(now);
+      const planEnd = new Date(now);
       if (plan === "annual") {
-        subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1);
+        planEnd.setFullYear(planEnd.getFullYear() + 1);
       } else {
-        subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
+        planEnd.setMonth(planEnd.getMonth() + 1);
       }
+      let stripeSub = null;
+      if (session.subscription) {
+        try {
+          stripeSub = await stripe.subscriptions.retrieve(String(session.subscription));
+        } catch (e) {
+          log("Could not read the subscription; using the plan length", { error: String(e) });
+        }
+      }
+      const subscriptionEnd = subscriptionEndFrom(stripeSub, planEnd);
 
       // Upsert subscriber record — use service role to bypass RLS
       const { error: upsertError } = await supabaseAdmin
@@ -132,6 +143,23 @@ serve(async (req) => {
         if (redemptionError) log("ERROR: Failed to mark access code signup", { error: redemptionError.message });
         else log("Access code signup recorded", { accessCode: session.metadata.access_code });
       }
+    }
+
+    // Renewed, cancelled at period end, or un-cancelled: keep the stored end on Stripe's date.
+    if (event.type === "customer.subscription.updated") {
+      const subscription = event.data.object;
+      const stripeCustomerId = subscription.customer;
+      const subscriptionEnd = subscriptionEndFrom(subscription, new Date());
+      const { error: updError } = await supabaseAdmin
+        .from("subscribers")
+        .update({
+          subscribed: subscriptionGivesAccess(subscription.status),
+          subscription_end: subscriptionEnd.toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("stripe_customer_id", stripeCustomerId);
+      if (updError) log("ERROR: Failed to update subscriber", { error: updError.message });
+      else log("Subscription updated", { stripeCustomerId, status: subscription.status, subscriptionEnd: subscriptionEnd.toISOString() });
     }
 
     // Handle subscription cancelled/deleted

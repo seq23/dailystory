@@ -54,3 +54,27 @@ describe("Pricing and the paywall use the one checkout start", () => {
     expect(s).not.toMatch(/functions\.invoke\("create-checkout"/);
   });
 });
+
+describe("the stored Premium end is Stripe's date", () => {
+  it("a trial ends at its trial end; a cancel date wins; no date falls back", async () => {
+    const { subscriptionEndFrom, subscriptionGivesAccess } = await import("../../../supabase/functions/_shared/subscriptionEnd");
+    const fb = new Date("2030-01-01T00:00:00Z");
+    const nov3 = Date.UTC(2026, 10, 3) / 1000;
+    expect(subscriptionEndFrom({ status: "trialing", current_period_end: nov3, trial_end: nov3 }, fb).toISOString()).toBe("2026-11-03T00:00:00.000Z");
+    expect(subscriptionEndFrom({ cancel_at: nov3 - 86400, current_period_end: nov3 }, fb).toISOString()).toBe("2026-11-02T00:00:00.000Z");
+    expect(subscriptionEndFrom(null, fb)).toBe(fb);
+    expect(subscriptionEndFrom({}, fb)).toBe(fb);
+    expect(subscriptionGivesAccess("trialing")).toBe(true);
+    expect(subscriptionGivesAccess("canceled")).toBe(false);
+  });
+  it("the webhook stores it at checkout and on every subscription update", () => {
+    const w = read("supabase/functions/stripe-webhook/index.ts");
+    const checkout = w.slice(w.indexOf('event.type === "checkout.session.completed"'), w.indexOf('event.type === "customer.subscription.updated"'));
+    expect(checkout).toMatch(/stripeSub = await stripe\.subscriptions\.retrieve\(String\(session\.subscription\)\);/);
+    expect(checkout).toMatch(/const subscriptionEnd = subscriptionEndFrom\(stripeSub, planEnd\);/);
+    expect(checkout).toMatch(/subscription_end: subscriptionEnd\.toISOString\(\),/);
+    const upd = w.slice(w.indexOf('event.type === "customer.subscription.updated"'), w.indexOf('event.type === "customer.subscription.deleted"'));
+    expect(upd).toMatch(/subscribed: subscriptionGivesAccess\(subscription\.status\),\s*subscription_end: subscriptionEnd\.toISOString\(\),/);
+    expect(upd).toMatch(/\.eq\("stripe_customer_id", stripeCustomerId\)/);
+  });
+});
