@@ -15,6 +15,8 @@ import { toast } from '@/hooks/use-toast';
 import { RepairService } from './repairService';
 import { DebugLogger } from '@/services/DebugLogger';
 import { reportBackupModeUsed } from '@/lib/reportStoryFailure';
+import { backupPageFrom, minWordsForGrade } from '../../supabase/functions/_shared/livePage';
+import { readsAtGradeOf } from '../../supabase/functions/_shared/gradeWords';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
@@ -35,6 +37,22 @@ export interface LivePageResult {
 }
 
 export class LiveGenerationService {
+  /**
+   * Backup Mode's page (27 Oct 2026): template pages from this page number on, joined to
+   * the reader's grade floor and never a page already read (../../supabase/functions/_shared/livePage.ts).
+   * Before, every backup page was template page 1, so each Next showed the same short page.
+   * Same shape as a template-service answer: { data: { pages: [page] }, error }.
+   */
+  static async backupTemplatePage(difficulty: unknown, userInfo: any, pageNumber: number, alreadyRead: string[]) {
+    const { data, error } = await supabase.functions.invoke('template-service', {
+      body: { difficulty, userInfo, pageCount: 12, templateIndex: 0 }
+    });
+    if (error || !data?.pages?.length) return { data, error: error ?? new Error('Template service returned no pages') };
+    const minWords = minWordsForGrade(readsAtGradeOf(userInfo, undefined, DifficultyLevelMapper.toBackend(String(difficulty ?? ''))));
+    const page = backupPageFrom(data.pages, pageNumber, minWords, alreadyRead);
+    return { data: { ...data, pages: page ? [page] : [] }, error: page ? null : new Error('No backup page') };
+  }
+
   /**
    * Generate the first page of a story for premium users
    */
@@ -306,14 +324,7 @@ export class LiveGenerationService {
         DebugLogger.error('story', 'Live Generation: 4-tier continuation failed', result.error);
         // On timeout or failure, immediately call template-service fallback
         try {
-          const { data, error } = await supabase.functions.invoke('template-service', {
-            body: {
-              difficulty: DifficultyLevelMapper.toBackend(context.difficulty),
-              userInfo: context.userInfo,
-              pageCount: 1,
-              templateIndex: 0
-            }
-          });
+          const { data, error } = await LiveGenerationService.backupTemplatePage(DifficultyLevelMapper.toBackend(context.difficulty), context.userInfo, nextPageNumber, context.storyContext || []);
 
           if (!error && data?.pages?.length) {
             const fallbackContent = data.pages[0];
@@ -421,7 +432,10 @@ export class LiveGenerationService {
         pageNumber: nextPageNumber,
         existingStory: (context.storyContext || []).join('\n\n'),
         sessionId: actualSessionId,
-        isEndingPage: true
+        isEndingPage: true,
+        // The ending is written at the reader's level too (it was sent with none).
+        difficulty: DifficultyLevelMapper.toBackend(context.difficulty) as DifficultyLevel,
+        expertGradeLevel: context.expertGradeLevel
       });
       
       const result = await Promise.race([generationPromise, timeoutPromise]);
@@ -430,14 +444,7 @@ export class LiveGenerationService {
         DebugLogger.error('story', 'Live Generation: 4-tier ending failed', result.error);
         // On timeout or failure, immediately call template-service fallback
         try {
-          const { data, error } = await supabase.functions.invoke('template-service', {
-            body: {
-              difficulty: DifficultyLevelMapper.toBackend(context.difficulty),
-              userInfo: endingUserInfo,
-              pageCount: 1,
-              templateIndex: 0
-            }
-          });
+          const { data, error } = await LiveGenerationService.backupTemplatePage(DifficultyLevelMapper.toBackend(context.difficulty), endingUserInfo, nextPageNumber, context.storyContext || []);
 
           if (!error && data?.pages?.length) {
             const fallbackContent = data.pages[0];
@@ -516,14 +523,7 @@ export class LiveGenerationService {
     
     try {
       // Use template service for fallback
-      const { data, error } = await supabase.functions.invoke('template-service', {
-        body: {
-          difficulty: difficulty,
-          userInfo: userInfo,
-          pageCount: 1,
-          templateIndex: 0
-        }
-      });
+      const { data, error } = await LiveGenerationService.backupTemplatePage(difficulty, userInfo, 1, []);
 
       if (error || !data?.pages?.length) {
         throw new Error('Template service failed');
@@ -572,7 +572,7 @@ export class LiveGenerationService {
       
       // Emergency fallback with rhyming educational content - ALWAYS returns content
       const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
-      const content = emergencyContent[0] || `${userInfo.name} began a wonderful adventure in a magical place where anything was possible. The sun shone brightly overhead as ${userInfo.name} took the first step into this exciting new world.`;
+      const content = backupPageFrom(emergencyContent || [], 1, minWordsForGrade(readsAtGradeOf(userInfo, undefined, difficulty)), []) || `${userInfo.name} began a wonderful adventure in a magical place where anything was possible. The sun shone brightly overhead as ${userInfo.name} took the first step into this exciting new world.`;
       
       // Set global emergency source tracking
       (globalThis as any).__LAST_STORY_SOURCE__ = 'emergency';
@@ -631,14 +631,7 @@ export class LiveGenerationService {
     
     try {
       // Use template service for fallback continuation
-      const { data, error } = await supabase.functions.invoke('template-service', {
-        body: {
-          difficulty: context.difficulty,
-          userInfo: context.userInfo,
-          pageCount: 1,
-          templateIndex: 0
-        }
-      });
+      const { data, error } = await LiveGenerationService.backupTemplatePage(context.difficulty, context.userInfo, pageNumber, context.storyContext || []);
 
       if (error || !data?.pages?.length) {
         throw new Error('Template service failed');
@@ -673,9 +666,12 @@ export class LiveGenerationService {
       DebugLogger.error('story', 'Fallback failed', error);
       // Emergency fallback with rhyming educational content
       const emergencyContent = await ErrorHandlingManager.getEmergencyContent(context.userInfo);
+      // Same floor and no-repeat rule as every other page (../../supabase/functions/_shared/livePage.ts).
+      const emergencyMin = minWordsForGrade(readsAtGradeOf(context.userInfo, context.expertGradeLevel, DifficultyLevelMapper.toBackend(String(context.difficulty ?? ''))));
+      const emergencyPage = backupPageFrom(emergencyContent || [], pageNumber, emergencyMin, context.storyContext || []);
       const content = isLastPage ? 
-        (emergencyContent[0] || `${context.userInfo.name} had a great day. The end.`) : 
-        (emergencyContent[0] || `${context.userInfo.name} continued the adventure.`);
+        (emergencyPage || `${context.userInfo.name} had a great day. The end.`) : 
+        (emergencyPage || `${context.userInfo.name} continued the adventure.`);
       
       // Set global emergency source tracking
       (globalThis as any).__LAST_STORY_SOURCE__ = 'emergency';

@@ -48,6 +48,43 @@ and a value a client already converted with `backendDifficultyOf()`.
 Words per page, sentence length and vocabulary tier per grade are in
 `GRADE_PROFILES` in the same module.
 
+## Page length (27 Oct 2026)
+
+Every story page, on every tier (the free OpenRouter models, Cloudflare Workers AI, the
+paid lanes, the practice-word weave and Backup Mode), has a floor: `minWordsPerPage` in
+`GRADE_PROFILES` (`supabase/functions/_shared/grades.ts`), 80% of the low end of the
+grade's target so ordinary variation passes. The Reads-at grade decides it.
+
+- A live page answer shorter than the floor, one that says a sentence twice, or one that
+  is a near-copy of the story so far (half its three-word runs already read) is
+  rejected and the next model is asked, the same way cut-off text is
+  (`supabase/functions/_shared/livePage.ts`, `livePageProblem`).
+- A live call shows ONE page: page markers are removed and pages that only repeat
+  earlier pages are dropped (`livePageFromAnswer`). The live prompt says the grade's
+  length and the floor, and on the last page that it is the ending.
+- A whole (guest) story must average the floor over the pages it shows.
+- The practice-word weave only adds a sentence to an accepted page; a grade-word rewrite
+  may not drop a page below the floor.
+- Backup Mode joins template pages from the page number on until the floor is met and
+  skips pages already read (`backupPageFrom`), so Next never shows the same page.
+
+<!-- page-length:start -->
+| Grade | Target words per page | Minimum words |
+|---|---|---|
+| PreK | 5-15 | 4 |
+| K | 10-20 | 8 |
+| 1 | 20-40 | 16 |
+| 2 | 30-50 | 24 |
+| 3 | 40-70 | 32 |
+| 4 | 50-90 | 40 |
+| 5 | 80-150 | 64 |
+| 6 | 200-400 | 160 |
+| 7 | 200-400 | 160 |
+| 8 | 200-400 | 160 |
+| 9 | 200-400 | 160 |
+| 10 | 200-400 | 160 |
+<!-- page-length:end -->
+
 ## Every combination story generation can receive
 
 The reading page, the Make easier/harder ladder and the parent "Minimum level" all
@@ -184,15 +221,15 @@ The guard checks that each line below still holds the named symbol.
 <!-- converters:start -->
 | Where | Symbol | Does |
 |---|---|---|
-| supabase/functions/_shared/grades.ts:140 | normalizeGrade | any grade spelling → grade |
-| supabase/functions/_shared/grades.ts:198 | readingLevelForGrade | grade → frontend level |
-| supabase/functions/_shared/grades.ts:206 | difficultyForGrade | grade → backend difficulty |
-| supabase/functions/_shared/grades.ts:215 | expertGradeForGrade | grade → expert sub-level |
-| supabase/functions/_shared/grades.ts:240 | promptReadingLevelForGrade | grade → prompt wording |
-| supabase/functions/_shared/grades.ts:291 | frontendLevelToDifficulty | UI/profile value → backend (frontend-first) |
-| supabase/functions/_shared/grades.ts:303 | backendDifficultyOf | already-converted value → backend (backend-first) |
-| supabase/functions/_shared/grades.ts:310 | readingLevelForDifficulty | backend → frontend level |
-| supabase/functions/_shared/grades.ts:324 | minimumGradeForGuardrail | guardrail → lowest grade allowed |
+| supabase/functions/_shared/grades.ts:146 | normalizeGrade | any grade spelling → grade |
+| supabase/functions/_shared/grades.ts:209 | readingLevelForGrade | grade → frontend level |
+| supabase/functions/_shared/grades.ts:217 | difficultyForGrade | grade → backend difficulty |
+| supabase/functions/_shared/grades.ts:226 | expertGradeForGrade | grade → expert sub-level |
+| supabase/functions/_shared/grades.ts:251 | promptReadingLevelForGrade | grade → prompt wording |
+| supabase/functions/_shared/grades.ts:302 | frontendLevelToDifficulty | UI/profile value → backend (frontend-first) |
+| supabase/functions/_shared/grades.ts:314 | backendDifficultyOf | already-converted value → backend (backend-first) |
+| supabase/functions/_shared/grades.ts:321 | readingLevelForDifficulty | backend → frontend level |
+| supabase/functions/_shared/grades.ts:335 | minimumGradeForGuardrail | guardrail → lowest grade allowed |
 | src/lib/readingLadder.ts:60 | startingReadingGrade | child → grade the ladder starts at |
 | src/lib/readingLadder.ts:85 | withReadingGrade | grade → userInfo fields a story is written from |
 | src/services/DifficultyLevelMapper.ts:45 | toBackend | delegates to frontendLevelToDifficulty |
@@ -200,8 +237,8 @@ The guard checks that each line below still holds the named symbol.
 | supabase/functions/_shared/DifficultyLevelMapper.ts:46 | toBackend | delegates to frontendLevelToDifficulty |
 | supabase/functions/_shared/DifficultyLevelMapper.ts:51 | fromBackendValue | delegates to backendDifficultyOf |
 | src/services/NetflixStyleStoryService.ts:82 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
-| src/services/LiveGenerationService.ts:53 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
-| supabase/functions/generate-adaptive-story/streamlined-handler.ts:163 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
+| src/services/LiveGenerationService.ts:71 | DifficultyLevelMapper.toBackend(frontendDifficulty) | userInfo level → config.difficulty |
+| supabase/functions/generate-adaptive-story/streamlined-handler.ts:175 | DifficultyLevelMapper.fromBackendValue(originalDifficulty) | config.difficulty read backend-first |
 | supabase/functions/template-service/index.ts:178 | DifficultyLevelMapper.fromBackendValue(difficulty) | `difficulty` read backend-first |
 | src/components/ParentDashboard.tsx:910 | minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade, guardrails.minReadingGrade) | stored minimum → "Never easier than" grade |
 | src/components/CleanStoryDisplay.tsx:1323 | const minGrade = minimumGradeForGuardrail | lock clamp compares grades |
@@ -212,7 +249,7 @@ The guard checks that each line below still holds the named symbol.
 
 - **Pre-K/K stories were written at 1st–2nd grade.** The clients convert the level to
   a backend value before sending (`NetflixStyleStoryService.ts:82`,
-  `LiveGenerationService.ts:53`), and `streamlined-handler.ts` converted it AGAIN as if
+  `LiveGenerationService.ts:71`), and `streamlined-handler.ts` converted it AGAIN as if
   it were a frontend value, so backend `beginner` became `easy`. Same in
   `template-service` for the ending page. Both now read `config.difficulty`
   backend-first.

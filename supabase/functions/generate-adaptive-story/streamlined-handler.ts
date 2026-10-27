@@ -9,6 +9,7 @@ import { logStoryFailure } from "../_shared/storyFailureLog.ts";
 import { practiceWordsFromPrompt, missingPracticeWords, practiceWordsRequired, weaveMissingWords } from "../_shared/practiceWords.ts";
 import { storyTextProblem, wholeStoryTextProblem, completePagesOf } from "../_shared/storyOutputCheck.ts";
 import { gradeProfile } from "../_shared/grades.ts";
+import { livePageFromAnswer, livePageInstruction, livePageProblem, livePageTokenBudget, minWordsForGrade, wholeStoryProblem, wordCount } from "../_shared/livePage.ts";
 
 /**
  * One story request answers within this (27 Oct 2026): the site's Supabase client gives
@@ -28,7 +29,6 @@ import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValid
 import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { classifyError, getRetryEnhancement, ErrorCategory } from './errorClassification.ts';
-import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 import { RequestDeduplicator } from '../_shared/RequestDeduplicator.ts';
 
 // Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
@@ -100,7 +100,19 @@ function getHairColorForSkinTone(skinTone: string | undefined): string[] | null 
 }
 
 export async function handleStreamlinedGeneration(requestBody: any) {
-  const { bundle, config }: { bundle: StreamlinedBundle; config: StreamlinedConfig & { expertGradeLevel?: string; difficulty?: string } } = requestBody;
+  const { bundle, config }: { bundle: StreamlinedBundle; config: StreamlinedConfig & { expertGradeLevel?: string; difficulty?: string } } = requestBody ?? {};
+
+  // A request without a story bundle is a bad request, not a crash: a probe without
+  // systemSettings logged "Cannot read properties of undefined (reading 'gradeLevel')".
+  if (!bundle || typeof bundle.storyContent !== 'string' || !bundle.storyContent.trim() || !config || typeof config !== 'object') {
+    return new Response(JSON.stringify({ success: false, error: 'bundle.storyContent and config are required', errorType: 'bad_request' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+  if (!bundle.systemSettings || typeof bundle.systemSettings !== 'object') {
+    (bundle as any).systemSettings = { gradeLevel: 2 };
+  }
   const requestDeadline = Date.now() + STORY_REQUEST_BUDGET_MS;
   if (config && typeof config === 'object') (config as any).requestDeadline = requestDeadline;
   
@@ -433,6 +445,14 @@ Generate a corrected version that addresses these issues while keeping the story
       finalSystemPrompt += `\n\nWHOLE STORY (this overrides "continue indefinitely" above): write exactly ${pagesWanted} pages, each separated by *** on its own line, then STOP. Do not write more pages. The story does not end; the last page closes with a gentle hook.`;
     }
 
+    // LIVE PAGE: one page at the reader's grade length, new text, an ending when asked
+    // (../_shared/livePage.ts). The level prompts ask for many short *** pages; a live
+    // call shows one, so without this a 2nd grader got a 12-word page.
+    if (config.sessionType === 'premium') {
+      const pageGrade = readsAtGradeOf(userInfo, expertGrade, effectiveDifficulty);
+      finalSystemPrompt += livePageInstruction(pageGrade, { ending: !!config.isEndingPage });
+    }
+
     const aiPrompt = {
       systemPrompt: finalSystemPrompt,
       userPrompt: finalUserPrompt // Already resolved by 4-tier system or enhanced for repair
@@ -453,7 +473,7 @@ Generate a corrected version that addresses these issues while keeping the story
     let gradeWordReport = null;
     if (readsAt) {
       try {
-        const ruled = await applyGradeWordRule(storyText, readsAt, rewritePageWithProvider(userInfo, requestDeadline), storySeedOf(bundle.sessionId));
+        const ruled = await applyGradeWordRule(storyText, readsAt, rewritePageWithProvider(userInfo, requestDeadline, minWordsForGrade(readsAt)), storySeedOf(bundle.sessionId));
         storyText = ruled.text;
         gradeWordReport = ruled.report;
         void logGradeWordShare(ruled.report, bundle.sessionId ?? null, config?.pageNumber ?? null);
@@ -831,6 +851,14 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     maxTokens = Math.max(maxTokens, Math.ceil((maxWords * 1.6 + 15) * pages));
   }
   const requestDeadline: number | undefined = (config as any)?.requestDeadline;
+
+  // The reader's grade sets the page floor and the live page's token budget
+  // (../_shared/livePage.ts, ../_shared/grades.ts minWordsPerPage).
+  const isLivePage = config?.sessionType === 'premium';
+  const pageGrade = readsAtGradeOf(userInfo, difficulty, difficulty);
+  const minWords = minWordsForGrade(pageGrade);
+  if (isLivePage) maxTokens = Math.max(maxTokens, livePageTokenBudget(pageGrade));
+  const previousPages = config?.existingStory ?? '';
   
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
@@ -875,26 +903,10 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     console.warn('⚠️ Avatar processing failed:', safeErrorMessage(avatarError));
   }
 
-  // PHASE 1A: Check LKG Cache before expensive OpenAI calls
-  const requestHash = UniversalLKGCache.createRequestHash({
-    sessionId: sessionId || 'unknown',
-    storyContent: enhancedUserPrompt.substring(0, 200),
-    pageNumber: config?.pageNumber || 1,
-    templateComplexity: difficulty || 'medium'
-  });
-  
-  const cachedStory = UniversalLKGCache.getLKG(requestHash, 'generate-adaptive-story');
-  if (cachedStory && cachedStory.story) {
-    console.log('♻️ [STORY_LKG] Cache HIT - returning cached story', {
-      age: cachedStory.lkgAge ? Math.round(cachedStory.lkgAge / 1000) : 0,
-      quality: cachedStory.lkgQuality,
-      useCount: cachedStory.lkgUseCount
-    });
-    
-    return cachedStory.story;
-  }
-  
-  console.log('🔄 [STORY_LKG] Cache MISS - proceeding with OpenAI generation');
+  // No cache for story text (27 Oct 2026). The old last-known-good cache keyed a page by
+  // page number and level ONLY (UniversalLKGCache.createRequestHash ignores sessionId and
+  // storyContent), so one child's page could be served to another, and a page could come
+  // back again. Every page is written fresh. Guard: src/test/guards/live-page.test.ts.
 
   // Enhanced AI Generation with Intelligent Circuit Breaker
   let storyText = '';
@@ -1019,7 +1031,11 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
             privateNames: [userInfo?.name, userInfo?.displayName],
             // Only real story text reaches a page: no planning text, nothing cut off (../_shared/storyOutputCheck.ts).
             // A whole story cut by the budget keeps its complete pages.
-            accept: (text, finishReason) => isWholeStory ? wholeStoryTextProblem(text, finishReason) : storyTextProblem(text, finishReason),
+            // Live: long enough for the grade, no repeated sentence, not a copy of the
+            // story so far (../_shared/livePage.ts). Whole story: the same, averaged.
+            accept: (text, finishReason) => isWholeStory
+              ? (wholeStoryTextProblem(text, finishReason) ?? wholeStoryProblem(finishReason === 'length' ? (completePagesOf(text) ?? text) : text, null, minWords))
+              : livePageProblem(text, finishReason, { minWords, previous: previousPages }),
             deadline: requestDeadline,
           });
           const rejected = sent.attempts.filter((a) => (a.error ?? '').startsWith('rejected:'));
@@ -1134,6 +1150,8 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       
       storyText = data.choices?.[0]?.message?.content || '';
       if (isWholeStory && data.choices?.[0]?.finish_reason === 'length') storyText = completePagesOf(storyText) ?? storyText;
+      // A live call shows ONE page: markers removed, echoed earlier pages dropped.
+      if (isLivePage && storyText) storyText = livePageFromAnswer(storyText, previousPages);
       
       // PHASE 2: Function Call Detection and Execution
       if (storyText && hasFunctionCalls(storyText)) {
@@ -1374,16 +1392,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     throw new Error(`All AI generation attempts failed after ${maxAttempts} attempts with models: ${modelProgression.map(m => m.model).join(', ')}`);
   }
 
-  // PHASE 1A: Warm LKG cache after successful generation
   const cleanedStory = cleanStoryText(storyText);
-  UniversalLKGCache.warmFromSuccess(
-    requestHash,
-    { story: cleanedStory },
-    'AI_GENERATION',
-    'generate-adaptive-story'
-  );
-  console.log('💾 [STORY_LKG] Cache warmed with successful generation');
-
   return cleanedStory;
 }
 
@@ -1693,7 +1702,7 @@ function storySeedOf(sessionId: unknown): number {
 }
 
 /** One page rewrite through the same provider chain as the story (masked names, real-text check). */
-function rewritePageWithProvider(userInfo: any, deadline?: number): PageRewriter {
+function rewritePageWithProvider(userInfo: any, deadline?: number, minWords = 0): PageRewriter {
   return async (page, request) => {
     const sent = await chatCompletionWithFallback({
       model: (getModelChainOptimized(false)?.[0] as any)?.name ?? 'gpt-5-2025-08-07',
@@ -1701,7 +1710,9 @@ function rewritePageWithProvider(userInfo: any, deadline?: number): PageRewriter
       max_completion_tokens: Math.max(200, Math.ceil(page.split(/\s+/).length * 3)),
     }, {
       privateNames: [userInfo?.name, userInfo?.displayName].filter((n): n is string => typeof n === 'string' && !!n),
-      accept: (text, finishReason) => storyTextProblem(text, finishReason, Math.min(80, Math.floor(page.length / 2))),
+      // A rewrite may not drop the page below its grade's floor (../_shared/livePage.ts).
+      accept: (text, finishReason) => storyTextProblem(text, finishReason, Math.min(80, Math.floor(page.length / 2)))
+        ?? (wordCount(text) < Math.min(minWords, wordCount(page)) ? `too short (${wordCount(text)} words)` : null),
       deadline,
     });
     if (!sent.response.ok) return null;

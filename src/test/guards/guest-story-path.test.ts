@@ -46,7 +46,7 @@ describe("1. a finished story is never rejected as cut off", () => {
   it("the guest prompt asks for a set number of pages and the budget fits them", () => {
     const h = read("supabase/functions/generate-adaptive-story/streamlined-handler.ts");
     expect(h).toMatch(/WHOLE STORY \(this overrides "continue indefinitely" above\): write exactly \$\{pagesWanted\} pages/);
-    expect(h).toMatch(/accept: \(text, finishReason\) => isWholeStory \? wholeStoryTextProblem\(text, finishReason\)/);
+    expect(h).toMatch(/accept: \(text, finishReason\) => isWholeStory\s*\? \(wholeStoryTextProblem\(text, finishReason\) \?\? wholeStoryProblem\(/);
     expect(h).toMatch(/maxTokens = Math\.max\(maxTokens, Math\.ceil\(\(maxWords \* 1\.6 \+ 15\) \* pages\)\)/);
   });
 });

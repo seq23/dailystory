@@ -123,9 +123,9 @@ PAGE TEXT
 Continue in this exact format, using *** to separate each story page.
 
 SENTENCE CONSTRUCTION:
-- Use 2-3 sentences per page
-- 4-8 word sentences (max 12 words)
-- 15-24 words per page total (NO PAGE OVER 30 WORDS. BEFORE GENERATING COUNT TOTAL WORDS. MUST BE LESS THAN 30 WORDS)  
+- Use 3-5 sentences per page
+- 4-10 word sentences (max 12 words)
+- 20-50 words per page total: 1st grade about 20-40, 2nd grade about 30-50 (NO PAGE UNDER 16 WORDS, NO PAGE OVER 55 WORDS; ../_shared/grades.ts wordsPerPage and minWordsPerPage)
 - Simple present/past tense, subject-verb-object structure
 - Mix simple sentences with compound sentences using "and," "but," "so"
 
@@ -146,7 +146,7 @@ CHARACTER DESCRIPTION GUIDELINES:
 - Use hair color and gender information when provided, but avoid skin tone descriptions
 
 TOKEN LIMITS:
-60 tokens per page. Target 15-24 words per page.
+100 tokens per page. Target 20-50 words per page.
 
 Use seed={seed} to control randomized story variation.`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Use {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} DIRECTLY and explicitly in the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',

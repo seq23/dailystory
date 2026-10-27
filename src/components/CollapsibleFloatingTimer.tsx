@@ -183,9 +183,12 @@ useEffect(() => {
   const getPositionClasses = () => {
     return cn(
       "fixed z-[60]",
+      // Clear of the left sidebar (16rem wide when open, ui/sidebar.tsx SIDEBAR_WIDTH) so the
+      // timer never covers "Reading page options" (27 Oct 2026). Below 900px (phone and
+      // tablet, use-mobile.tsx) the sidebar is a drawer, so the corner is free.
       isMobile ? "bottom-28 left-4" : 
       isTablet ? "bottom-24 left-6" : 
-      "bottom-16 left-8"
+      "bottom-16 left-[calc(16rem+2rem)]"
     );
   };
 
