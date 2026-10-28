@@ -77,6 +77,24 @@ describe("the routing config is a $0-only policy", () => {
     expect(cfg.pricing_snapshot.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
+  it("keeps the subscriber-funded product manifest outside the automation routing config", () => {
+    const cfg = readConfig();
+    expect(cfg).not.toHaveProperty("paid_lanes");
+    expect(cfg.product_inference_manifest).toBe("config/product_inference.json");
+    const product = JSON.parse(read(cfg.product_inference_manifest));
+    expect(product.scope).toMatch(/Subscriber-funded product inference only/);
+    expect(product.paid_lanes.find((l: { id: string }) => l.id === "product-inference")).toBeTruthy();
+    const ids: string[] = [];
+    const visit = (value: unknown, key = "") => {
+      if (Array.isArray(value)) value.forEach((v) => visit(v, key));
+      else if (value && typeof value === "object") Object.entries(value).forEach(([k, v]) => visit(v, k));
+      else if (typeof value === "string" && /^(model|models|id|primary|fallback|fallbacks|order)$/i.test(key) && value.includes("/")) ids.push(value);
+    };
+    visit(cfg);
+    expect(ids.length).toBeGreaterThanOrEqual(3);
+    expect(ids.filter((id) => !id.endsWith(":free"))).toEqual([]);
+  });
+
   it("refuses a config that names a paid model, a non-zero cap or a priced model", () => {
     const base = readConfig();
     const withPaidModel = structuredClone(base);
@@ -106,7 +124,7 @@ describe("the two lanes stay separate", () => {
   });
 
   it("every paid provider endpoint in the product is recorded in the paid lane", () => {
-    const lane = readConfig().paid_lanes.find((l: { id: string }) => l.id === "product-inference");
+    const lane = JSON.parse(read(readConfig().product_inference_manifest)).paid_lanes.find((l: { id: string }) => l.id === "product-inference");
     expect(lane, "config must record the product-inference paid lane").toBeTruthy();
     const declared: string[] = lane.provider_endpoints;
     const used = new Set<string>();

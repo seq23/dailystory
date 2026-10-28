@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 const Terms = () => {
   useEffect(() => {
-    const title = "Terms of Service | Spry VSL LLC";
+    const title = "Terms of Service | Time-2-Read by Spry VSL LLC";
     const desc = "The Terms of Service for Time-2-Read, run by Spry VSL LLC: the rules for using our stories and services, your account, and what each side agrees to.";
     document.title = title;
 

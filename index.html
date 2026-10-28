@@ -134,22 +134,6 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
-    <!-- Microsoft Clarity (project z3erswoh8e, time-2-read.com). Signed-out visitors only: it never
-         records a signed-in family or a child reading (25 Oct 2026). -->
-    <script>
-      (function () {
-        // Arriving from a sign-in or confirmation link: the session is in the URL, not yet stored.
-        if (/access_token=|type=(magiclink|signup|recovery|invite)/.test(location.hash + location.search)) return;
-        try {
-          for (var i = 0; i < localStorage.length; i++) {
-            if (/^sb-.*-auth-token$/.test(localStorage.key(i))) return;
-          }
-        } catch (e) {}
-        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","z3erswoh8e");
-      })();
-    </script>
 </head>
 
   <body>

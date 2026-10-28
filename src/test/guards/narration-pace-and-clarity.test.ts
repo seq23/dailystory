@@ -25,9 +25,9 @@ describe("Clarity never records a signed-in family", () => {
     expect(read("src/main.tsx")).toMatch(/onAuthStateChange\([\s\S]{0,200}session && typeof clarity === 'function'\) clarity\('stop'\)/);
   });
   it("arriving from a sign-in link never starts Clarity", () => {
-    const html = read("index.html");
-    const tag = html.indexOf("clarity.ms/tag");
-    const skip = html.indexOf("access_token=|type=(magiclink|signup|recovery|invite)");
+    const loader = read("src/hooks/useParentFormClarity.ts");
+    const tag = loader.indexOf("clarity.ms/tag");
+    const skip = loader.indexOf("access_token=|type=(magiclink|signup|recovery|invite)");
     expect(skip).toBeGreaterThan(0);
     expect(skip).toBeLessThan(tag);
   });

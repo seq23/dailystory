@@ -32,8 +32,8 @@ function Booted() {
   return null;
 }
 
-// Clarity records signed-out visitors only (index.html skips it when a session is stored at
-// load). Someone who signs in during a visit must stop being recorded at that moment.
+// Clarity is scoped to the signed-out parent's account form (useParentFormClarity).
+// Someone who signs in during that visit must stop being recorded at that moment.
 supabase.auth.onAuthStateChange((_event, session) => {
   const clarity = (window as any).clarity;
   if (session && typeof clarity === 'function') clarity('stop');

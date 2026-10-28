@@ -13,6 +13,7 @@ import type { UserInfo } from "@/types";
 import { DebugLogger } from "@/services/DebugLogger";
 import { PasswordReset } from "@/components/PasswordReset";
 import { parentAuthMessage } from "@/lib/authMessages";
+import { useParentFormClarity } from "@/hooks/useParentFormClarity";
 import { PAYMENT_TROUBLE, checkoutBody, checkoutErrorMessage, codeFromUrl, normalizeAccessCode, premiumUntilLabel, redeemAccessCode } from "@/lib/accessCode";
 
 interface LoginScreenProps {
@@ -61,6 +62,8 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
   });
   const [loading, setLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  // The reset flow can end on a confirmation screen with no form.
+  useParentFormClarity(!showPasswordReset);
   // Two-step signup wizard: 1 = your details, 2 = choose how to start
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   // Each step starts at the top: after "Continue" the parent sees step 2, not the

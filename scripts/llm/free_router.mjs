@@ -11,7 +11,7 @@
 //
 // Scope: scripts and workflows in this repository. The Time2Read product's own
 // inference in supabase/functions is a separate lane, funded by subscriptions
-// and recorded in paid_lanes; it does not come through here.
+// and recorded in config/product_inference.json; it does not come through here.
 //
 // CLI:
 //   node scripts/llm/free_router.mjs --check          live pricing still $0 for every configured model

@@ -228,8 +228,8 @@ describe("a child's name never leaves on the free or third-party routes", () => 
 });
 
 describe("free models: $0 only, recorded in config", () => {
-  it("every free id is :free, equals config/llm_routing.json, and the chain is recorded with a terms check per provider", () => {
-    const cfg = JSON.parse(read("config/llm_routing.json"));
+  it("every free id is :free, equals config/product_inference.json, and the chain is recorded with a terms check per provider", () => {
+    const cfg = JSON.parse(read("config/product_inference.json"));
     const lane = cfg.paid_lanes.find((l: { id: string }) => l.id === "product-inference");
     const chain = lane.text_chain;
     expect(chain.order.map((t: { tier: string }) => t.tier)).toEqual(["openrouter-free", "cloudflare-free", "openrouter-paid", "openai", "backup-content"]);
@@ -328,7 +328,7 @@ describe("a free model that answers 404 is not in the chain", () => {
       "google/gemma-4-26b-a4b-it:free",
       "nvidia/nemotron-3.5-super-vl:free",
     ]);
-    const cfg = JSON.parse(read("config/llm_routing.json"));
+    const cfg = JSON.parse(read("config/product_inference.json"));
     const order = cfg.paid_lanes.find((l: { id: string }) => l.id === "product-inference").text_chain.order[0];
     expect(order.models).not.toContain("nvidia/nemotron-3-super-120b-a12b:free");
     expect(order.tested_2026_10_26).toMatch(/nemotron-3\.5-super-vl:free \(200/);
