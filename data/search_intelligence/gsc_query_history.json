@@ -245,6 +245,135 @@
           "position": 97
         }
       }
+    },
+    {
+      "start_date": "2026-09-28",
+      "end_date": "2026-10-25",
+      "days": 28,
+      "collected_at": "2026-10-28T06:49:12.746Z",
+      "totals": {
+        "clicks": 0,
+        "impressions": 124,
+        "ctr": 0,
+        "position": 19.48
+      },
+      "queries": {
+        "personalized books for 2 year olds": {
+          "impressions": 16,
+          "clicks": 0,
+          "position": 53.81
+        },
+        "2 read": {
+          "impressions": 8,
+          "clicks": 0,
+          "position": 8.88
+        },
+        "time read": {
+          "impressions": 6,
+          "clicks": 0,
+          "position": 8.5
+        },
+        "time to read": {
+          "impressions": 6,
+          "clicks": 0,
+          "position": 8.17
+        },
+        "time2read": {
+          "impressions": 6,
+          "clicks": 0,
+          "position": 4.83
+        },
+        "reading time 2": {
+          "impressions": 4,
+          "clicks": 0,
+          "position": 8.25
+        },
+        "time 2 read": {
+          "impressions": 4,
+          "clicks": 0,
+          "position": 6
+        },
+        "2read": {
+          "impressions": 3,
+          "clicks": 0,
+          "position": 12.67
+        },
+        "toddler books online": {
+          "impressions": 3,
+          "clicks": 0,
+          "position": 57
+        },
+        "online books for toddlers": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 48
+        },
+        "time2read login": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 6.5
+        },
+        "2 year old books online": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 63
+        },
+        "30 second short story": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 67
+        },
+        "ferpa compliance school emergency notification": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 39
+        },
+        "kindergarten sight words": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 56
+        },
+        "read along books for toddlers": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 37
+        },
+        "sight word generator": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 56
+        },
+        "sight words for kg2": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 47
+        },
+        "stories for 2 year olds book": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 52
+        },
+        "story time for 2 year olds": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 48
+        },
+        "time to read books": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 6
+        },
+        "tiny read": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 22
+        },
+        "very short bedtime stories": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 97
+        }
+      }
     }
   ]
 }

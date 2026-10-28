@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-10-27T07:03:59.552Z",
+  "collected_at": "2026-10-28T06:49:44.947Z",
   "sitemap_url": "https://time-2-read.com/sitemap.xml",
   "state": "REGISTERED",
   "submitted_this_run": false,
@@ -11,14 +11,14 @@
     {
       "path": "https://time-2-read.com/sitemap.xml",
       "lastSubmitted": "2026-10-16T21:07:24.032Z",
-      "lastDownloaded": "2026-10-21T20:52:55.175Z",
+      "lastDownloaded": "2026-10-28T03:29:10.616Z",
       "isPending": false,
       "errors": 0,
       "warnings": 0,
       "contents": [
         {
           "type": "web",
-          "submitted": "25",
+          "submitted": "36",
           "indexed": "0"
         }
       ],
