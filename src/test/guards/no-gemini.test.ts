@@ -1,7 +1,7 @@
 // Guard (26 Oct 2026): no Gemini anywhere in the product. The Gemini API terms forbid
 // services likely to be used by under-18s, and the Lovable AI gateway serves Gemini
 // models. Every edge function's text goes through ../_shared/storyTextProvider.ts
-// (config/llm_routing.json text_chain). Fails on any code (comments aside) under
+// (config/product_inference.json text_chain). Fails on any code (comments aside) under
 // supabase/functions that names the gateway, a Gemini model, or their keys.
 //
 // Scoped out, by owner decision (26 Oct 2026, "the image prompts should remain runware"):

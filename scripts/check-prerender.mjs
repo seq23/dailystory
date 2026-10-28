@@ -47,6 +47,7 @@ for (const loc of locs) {
   if (isLanding && !types.includes("FAQPage")) fails.push(`${path}: no FAQPage JSON-LD`);
   if (types.includes("Article") && /<(form|input|textarea)\b/i.test(root?.[2] ?? "")) fails.push(`${path}: guide page collects data`);
   const title = decode(html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "");
+  if (!title.includes("Time-2-Read")) fails.push(`${path}: title does not name Time-2-Read`);
   if (title.length < 30 || title.length > 65) fails.push(`${path}: title is ${title.length} chars (30-65): "${title}"`);
   if (titles.has(title)) fails.push(`${path}: title "${title}" is also on ${titles.get(title)}`);
   titles.set(title, path);
@@ -55,9 +56,10 @@ for (const loc of locs) {
   else if (descs[0].length < 120 || descs[0].length > 160) fails.push(`${path}: description is ${descs[0].length} chars (120-160)`);
   const ogImage = html.match(/<meta property="og:image" content="([^"]+)"/)?.[1] ?? "";
   if (!ogImage.startsWith(`${SITE}/`)) fails.push(`${path}: og:image is not on ${SITE}: ${ogImage || "missing"}`);
-  // Clarity (search-readiness e6/i8): the per-host project, loaded for signed-out visitors only.
-  if (!html.includes('clarity.ms/tag/"+i') || !html.includes('"z3erswoh8e"') || !/sb-\.\*-auth-token/.test(html)) fails.push(`${path}: Clarity tag z3erswoh8e (signed-out only) missing`);
-  else if (!existsSync(join("public", new URL(ogImage).pathname.slice(1)))) fails.push(`${path}: og:image ${ogImage} is not in public/`);
+  if (!existsSync(join("public", new URL(ogImage).pathname.slice(1)))) fails.push(`${path}: og:image ${ogImage} is not in public/`);
+  // e9: public pages have no account/checkout form. The tag is mounted by
+  // LoginScreen at runtime, never by the shared shell or a guide page.
+  if (/clarity\.ms|clarity\.js|\/clarity[-.]|microsoft clarity/i.test(html)) fails.push(`${path}: public page loads Clarity outside the parent form`);
   const nodes = lds.flatMap((b) => b["@graph"] ?? [b]);
   const org = nodes.find((n) => /Organization/.test(n["@type"]));
   for (const k of ["name", "url", "logo", "sameAs"]) {

@@ -42,9 +42,10 @@ dictionary lookups and illustration.
 | `supabase/functions/*` | `api.openai.com`, `api.runware.ai` | Story generation, TTS, Whisper, image generation |
 
 This is cost of goods, not an unattended probe: it runs when a paying reader
-opens a story, never on a schedule. It is recorded in `config/llm_routing.json`
+opens a story, never on a schedule. It is recorded in `config/product_inference.json`
 under `paid_lanes[].id = "product-inference"` with its endpoints and model ids,
-and the guard below keeps that record honest.
+and the guard below keeps that record honest. The automation config points to
+this manifest but never reads its models as fallbacks.
 
 ## The guard
 

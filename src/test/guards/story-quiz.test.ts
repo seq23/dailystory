@@ -183,7 +183,7 @@ describe("generate-quiz runs the story text chain, never Gemini", () => {
     expect(code.length).toBeGreaterThan(500);
   });
   it("is recorded in the text chain policy", () => {
-    const chain = JSON.parse(read("config/llm_routing.json")).paid_lanes[0].text_chain;
+    const chain = JSON.parse(read("config/product_inference.json")).paid_lanes[0].text_chain;
     expect(chain.applies_to).toMatch(/generate-quiz/);
   });
 });

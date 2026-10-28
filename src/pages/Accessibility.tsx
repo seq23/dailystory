@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Accessibility = () => {
   useEffect(() => {
-    const title = "Accessibility Statement | Spry VSL LLC";
+    const title = "Accessibility Statement | Time-2-Read by Spry VSL LLC";
     const desc = "Our commitment to digital accessibility: the accessibility features Time-2-Read offers, the standards we work to, and how to tell us about a barrier.";
     document.title = title;
 

@@ -15,7 +15,7 @@ returns a named stop rather than reaching for a model that costs money.
 
 The product's own inference in `supabase/functions` (story generation, narration,
 speech-to-text, translation, illustration) is paid and funded by subscriptions.
-It is a separate, named lane, recorded in `config/llm_routing.json` under
+It is a separate, named lane, recorded in `config/product_inference.json` under
 `paid_lanes`. Adding a paid call site means recording it there.
 
 The rule, both lanes and how to refresh the free list: `docs/cost/zero-paid-llm.md`.

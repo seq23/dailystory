@@ -17,7 +17,7 @@
 // under-18s. The Lovable AI gateway (Gemini models) is therefore not in this chain.
 // Every request on tiers 1–3 is de-identified first (./deidentify.ts): the child's
 // name never leaves on those routes, and comes back into the text on return.
-// The order, models and the per-provider terms check: config/llm_routing.json
+// The order, models and the per-provider terms check: config/product_inference.json
 // paid_lanes[product-inference].text_chain. Guard: src/test/guards/story-text-provider.test.ts.
 import { deidentify, namesFromCharacterInfo } from "./deidentify.ts";
 import { stripReasoning } from "./storyOutputCheck.ts";
