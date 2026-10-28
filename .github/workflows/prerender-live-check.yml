@@ -1,20 +1,31 @@
 name: Prerender live check
 
-# Lovable publishes outside GitHub Actions (someone clicks Publish), so this lane
-# checks the LIVE host, not the build: the homepage and one guide page must serve
-# prerendered HTML (#root carries data-prerendered for that path). A miss is a
-# named error: PRERENDER_NOT_LIVE (not published yet) or PRERENDER_NOT_SERVED
-# (published, but the host does not serve dist/<page>/index.html).
+# Lovable publishes outside GitHub Actions (someone clicks Share -> Publish), so
+# this lane checks the LIVE host, not the build. Two things, both named:
+#
+#   1. Every public page serves prerendered HTML. PRERENDER_NOT_LIVE (not
+#      published yet) or PRERENDER_NOT_SERVED (published, but the host does not
+#      serve dist/<page>/index.html).
+#   2. The search-readiness rules this site keeps failing hold on the live host:
+#      TITLE_NOT_LIVE (b10) and CLARITY_STILL_LIVE (e9). A stale publish passes
+#      step 1 and fails step 2 -- which is exactly the gap that let the 28 Oct
+#      fixes sit merged, green and unpublished while the audit re-reported them.
+#
+# Every failure here has one action: publish the newest main, or fix the
+# regression at source. The check clears itself once that is done.
 on:
   schedule:
-    - cron: "17 11 * * *"
+    - cron: "17 */4 * * *"
   workflow_dispatch:
 permissions: { contents: read }
 jobs:
   live:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
       - name: Homepage and a guide page serve real HTML
         run: |
           home="$(curl -fsS https://time-2-read.com/)"
@@ -22,3 +33,5 @@ jobs:
           page="$(curl -fsS https://time-2-read.com/my-child-hates-reading)"
           echo "$page" | grep -q 'data-prerendered="/my-child-hates-reading"' || { echo "::error::PRERENDER_NOT_SERVED /my-child-hates-reading served the SPA shell, not dist/my-child-hates-reading/index.html"; exit 1; }
           echo "live: homepage and guide page serve prerendered HTML"
+      - name: Live search readiness (b10 titles, e9 Clarity)
+        run: node scripts/check-live-readiness.mjs
