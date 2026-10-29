@@ -2,33 +2,41 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-10-28T06:49:12.746Z",
+  "collected_at": "2026-10-29T06:49:28.610Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-09-28",
-    "end_date": "2026-10-25",
+    "start_date": "2026-09-29",
+    "end_date": "2026-10-26",
     "days": 28
   },
   "totals": {
-    "clicks": 0,
-    "impressions": 124,
-    "ctr": 0,
-    "position": 19.48
+    "clicks": 1,
+    "impressions": 144,
+    "ctr": 0.0069,
+    "position": 18.38
   },
-  "row_count": 24,
-  "query_count": 23,
+  "row_count": 25,
+  "query_count": 24,
   "page_count": 7,
-  "attributed_impressions": 72,
+  "attributed_impressions": 80,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
       "query": "personalized books for 2 year olds",
       "page": "https://time-2-read.com/books-for-toddlers",
       "clicks": 0,
-      "impressions": 16,
+      "impressions": 17,
       "ctr": 0,
-      "position": 53.81
+      "position": 54.12
+    },
+    {
+      "query": "time2read",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 9,
+      "ctr": 0,
+      "position": 5.67
     },
     {
       "query": "2 read",
@@ -41,34 +49,26 @@
     {
       "query": "time read",
       "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 6,
-      "ctr": 0,
-      "position": 8.5
+      "clicks": 1,
+      "impressions": 7,
+      "ctr": 0.1429,
+      "position": 8.43
     },
     {
       "query": "time to read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 6,
+      "impressions": 7,
       "ctr": 0,
-      "position": 8.17
-    },
-    {
-      "query": "time2read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 6,
-      "ctr": 0,
-      "position": 4.83
+      "position": 8.57
     },
     {
       "query": "reading time 2",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 4,
+      "impressions": 5,
       "ctr": 0,
-      "position": 8.25
+      "position": 8.6
     },
     {
       "query": "time 2 read",
@@ -181,6 +181,14 @@
       "impressions": 1,
       "ctr": 0,
       "position": 6
+    },
+    {
+      "query": "time2read app",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 48
     },
     {
       "query": "time2read login",
