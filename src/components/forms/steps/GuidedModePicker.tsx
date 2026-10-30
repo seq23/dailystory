@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -77,19 +78,18 @@ export const GuidedModePicker: React.FC<GuidedModePickerProps> = ({
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
           <div>
-            <Label className="text-sm font-medium text-foreground">Guided Mode</Label>
+            <Label className="text-sm font-medium text-foreground"> {uiText("Guided Mode")} </Label>
             <p className="text-xs text-muted-foreground">
-              Tap-to-pick presets for young or ESL learners. No typing required.
-            </p>
+               {uiText("Tap-to-pick presets for young or ESL learners. No typing required.")} </p>
           </div>
         </div>
-        <Switch checked={enabled} onCheckedChange={onToggle} aria-label="Toggle Guided Mode" />
+        <Switch checked={enabled} onCheckedChange={onToggle} aria-label={uiText("Toggle Guided Mode")} />
       </div>
 
       {enabled && (
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-foreground">Theme (pick up to 2)</Label>
+            <Label className="text-xs font-medium text-foreground"> {uiText("Theme (pick up to 2)")} </Label>
             <ChipRow
               chips={GUIDED_THEMES}
               selectedIds={selected.themes}
@@ -98,7 +98,7 @@ export const GuidedModePicker: React.FC<GuidedModePickerProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-foreground">Character (pick up to 2)</Label>
+            <Label className="text-xs font-medium text-foreground"> {uiText("Character (pick up to 2)")} </Label>
             <ChipRow
               chips={GUIDED_CHARACTERS}
               selectedIds={selected.characters}
@@ -109,7 +109,7 @@ export const GuidedModePicker: React.FC<GuidedModePickerProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-foreground">Setting (pick 1)</Label>
+            <Label className="text-xs font-medium text-foreground"> {uiText("Setting (pick 1)")} </Label>
             <ChipRow
               chips={GUIDED_SETTINGS}
               selectedIds={selected.settings}
@@ -118,7 +118,7 @@ export const GuidedModePicker: React.FC<GuidedModePickerProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-foreground">Vocabulary Pack (optional)</Label>
+            <Label className="text-xs font-medium text-foreground"> {uiText("Vocabulary Pack (optional)")} </Label>
             <ChipRow
               chips={GUIDED_VOCAB_PACKS}
               selectedIds={selected.vocabPack ? [selected.vocabPack] : []}
@@ -128,8 +128,7 @@ export const GuidedModePicker: React.FC<GuidedModePickerProps> = ({
               multi={false}
             />
             <p className="text-xs text-muted-foreground">
-              A teacher word-list (if set) still takes priority over the pack.
-            </p>
+               {uiText("A teacher word-list (if set) still takes priority over the pack.")} </p>
           </div>
         </div>
       )}

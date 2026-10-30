@@ -147,7 +147,7 @@ describe("marketing copy", () => {
     for (const f of ["src/components/WelcomeHero.tsx", "src/components/AccountDeletion.tsx", "src/components/CookieConsent.tsx", "src/components/SubscriptionManager.tsx"]) {
       expect(read(f), f).not.toMatch(/time2read\.(app|com|example)/);
     }
-    expect(src).toMatch(/Schools: <a href="mailto:hello@time-2-read\.com[^"]*"[^>]*>contact us<\/a>/);
+    expect(src).toMatch(/uiText\("\. Schools:"\)\} <a href="mailto:hello@time-2-read\.com[^"]*"[^>]*>\s*\{uiText\("contact us"\)\}\s*<\/a>/);
   });
 
   it("pricing page includes the HeyGetOnMyLevel bonus", () => {

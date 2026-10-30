@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -94,7 +95,7 @@ export function AutomatedImprovementsDashboard() {
 
   return (
     <div className="space-y-6 p-4">
-      <SkipLink href="#main-content">Skip to main content</SkipLink>
+      <SkipLink href="#main-content"> {uiText("Skip to main content")} </SkipLink>
       
       <Card>
         <CardHeader>

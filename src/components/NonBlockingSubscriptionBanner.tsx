@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
@@ -20,7 +21,7 @@ export const NonBlockingSubscriptionBanner = ({ userId }: NonBlockingSubscriptio
     <Alert variant="destructive" className="mb-4 border-red-500 bg-red-50">
       <AlertTriangle className="h-4 w-4" />
       <AlertDescription className="flex items-center justify-between">
-        <span>Your subscription is inactive. Please update your billing to continue.</span>
+        <span> {uiText("Your subscription is inactive. Please update your billing to continue.")} </span>
         <div className="flex gap-2 ml-4">
           <Button 
             variant="outline" 
@@ -30,15 +31,13 @@ export const NonBlockingSubscriptionBanner = ({ userId }: NonBlockingSubscriptio
               window.location.reload();
             }}
           >
-            Refresh Status
-          </Button>
+             {uiText("Refresh Status")} </Button>
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => window.location.href = '/account'}
           >
-            Manage Billing
-          </Button>
+             {uiText("Manage Billing")} </Button>
         </div>
       </AlertDescription>
     </Alert>

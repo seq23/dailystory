@@ -77,7 +77,7 @@ describe("the code charges and shows what PRICING.md says", () => {
     const mgr = read("src/components/SubscriptionManager.tsx");
     expect(mgr).toContain(`${doc.monthly_label}<span`);
     expect(mgr).toContain(`${doc.annual_label}<span`);
-    expect(mgr).toContain(`>Save ${doc.annual_savings}<`);
+    expect(mgr).toContain(`uiText("Save ${doc.annual_savings}")`);
   });
 
   it("every locale's plan prices and savings carry the doc's numbers", () => {

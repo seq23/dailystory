@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { globalResizeService } from '@/services/GlobalResizeService';
 import { DebugLogger } from '@/services/DebugLogger';
@@ -61,6 +62,7 @@ export const PremiumHeader = ({
   onProfileClick,
   onGrownUpSettings = onProfileClick,
 }: PremiumHeaderProps) => {
+  useUiLanguage();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
 
@@ -111,21 +113,21 @@ export const PremiumHeader = ({
               size="sm"
               onClick={toggleSidebar}
               aria-expanded={isSidebarOpen}
-              aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
+              aria-label={isSidebarOpen ? uiText("Close menu") : uiText("Open menu")}
               className="h-10 px-2 sm:px-3 shrink-0 gap-0"
               data-testid="menu-button"
             >
               <span aria-hidden className="text-lg leading-none">☰</span>
-              <span className="ml-1 text-xs sm:text-sm">Menu</span>
+              <span className="ml-1 text-xs sm:text-sm">{uiText("Menu")}</span>
             </Button>
-            <a href="/" className="flex items-center gap-1 sm:gap-2 min-w-0" aria-label="Time-2-Read home">
+            <a href="/" className="flex items-center gap-1 sm:gap-2 min-w-0" aria-label={uiText("Time-2-Read home")}>
               <img src="/icon-192.png" alt="" className="h-8 w-8 sm:h-9 sm:w-9 shrink-0" />
-              <span className="text-sm sm:text-xl font-bold text-gray-900 whitespace-nowrap">Time-2-Read</span>
+              <span className="text-sm sm:text-xl font-bold text-gray-900 whitespace-nowrap">{uiText("Time-2-Read")}</span>
             </a>
             {showDevTools && devTestMode && (
               <Badge variant="outline" className="border-orange-500 text-orange-600 text-xs">
                 <Bug className="w-3 h-3 mr-1" />
-                Test Mode
+                {uiText("Test Mode")}
               </Badge>
             )}
           </div>
@@ -140,7 +142,7 @@ export const PremiumHeader = ({
                   variant="ghost"
                   className="flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-3 py-1.5 sm:py-2 h-auto rounded-lg border hover:bg-gray-100 shrink-0"
                   data-testid="reader-switcher"
-                  aria-label={activeChild ? `Reading as ${activeChild.display_name}. Tap to switch child` : "Add a child"}
+                  aria-label={activeChild ? `Reading as ${activeChild.display_name}. Tap to switch child` : uiText("Add a child")}
                 >
                   {switchingToId ? (
                     <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ring-2 ring-primary" aria-hidden><Loader2 className="w-4 h-4 animate-spin" /></span>
@@ -150,9 +152,9 @@ export const PremiumHeader = ({
                     <span className="w-8 h-8 rounded-full border border-dashed flex items-center justify-center"><Plus className="w-4 h-4" /></span>
                   )}
                   <span className="text-left leading-tight">
-                    <span className="block text-[11px] text-gray-600" aria-live="polite" data-testid="reader-status">{switchingToId ? "Switching…" : activeChild ? "Reading as" : childrenLoading ? "Loading…" : "Who's reading?"}</span>
+                    <span className="block text-[11px] text-gray-600" aria-live="polite" data-testid="reader-status">{switchingToId ? uiText("Switching…") : activeChild ? uiText("Reading as") : childrenLoading ? uiText("Loading…") : uiText("Who's reading?")}</span>
                     <span className="block text-sm font-semibold text-gray-900 max-w-[5.5rem] sm:max-w-[10rem] truncate" data-testid="reader-name">
-                      {activeChild ? activeChild.display_name : childrenLoading ? "" : "Add a child"}
+                      {activeChild ? activeChild.display_name : childrenLoading ? "" : uiText("Add a child")}
                     </span>
                   </span>
                   <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" aria-hidden />
@@ -163,7 +165,7 @@ export const PremiumHeader = ({
                   "Grown-up settings" fell below a phone screen and could not be reached).
                   Guard: src/test/guards/menu-back.test.ts. */}
               <DropdownMenuContent align="end" collisionPadding={8} className="w-72 z-[75] bg-popover shadow-md max-h-[var(--radix-dropdown-menu-content-available-height)] overflow-y-auto overscroll-contain" data-testid="reader-menu">
-                <DropdownMenuLabel>Who's reading?</DropdownMenuLabel>
+                <DropdownMenuLabel>{uiText("Who's reading?")}</DropdownMenuLabel>
                 {children.map((c) => {
                   const current = activeChild?.id === c.id;
                   return (
@@ -190,38 +192,38 @@ export const PremiumHeader = ({
                         {childSummary(c) && <span className="block text-xs text-muted-foreground">{childSummary(c)}</span>}
                       </span>
                       {switchingToId === c.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" aria-label="Switching" />
+                        <Loader2 className="w-4 h-4 animate-spin" aria-label={uiText("Switching")} />
                       ) : current ? (
-                        <span className="text-primary font-bold" aria-label="Reading now">✓</span>
+                        <span className="text-primary font-bold" aria-label={uiText("Reading now")}>✓</span>
                       ) : null}
                     </DropdownMenuItem>
                   );
                 })}
                 <DropdownMenuItem className="cursor-pointer" onSelect={() => openChildDialog()} data-testid="header-add-child">
                   <Plus className="w-4 h-4 mr-2" />
-                  {children.length ? "Add another child" : "Add a child"}
+                  {children.length ? uiText("Add another child") : uiText("Add a child")}
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                  Grown-up{(hasPremium ?? isPremium) ? " · Premium" : ""}
+                  {uiText("Grown-up")}{(hasPremium ?? isPremium) ? uiText(" · Premium") : ""}
                 </DropdownMenuLabel>
                 <DropdownMenuItem onSelect={onGrownUpSettings} className="cursor-pointer">
                   <Settings className="w-4 h-4 mr-2" />
-                  Grown-up settings (plan, code, children)
+                  {uiText("Grown-up settings (plan, code, children)")}
                 </DropdownMenuItem>
 
                 {showDevTools && (
                   <DropdownMenuItem onClick={onToggleDevMode} className="cursor-pointer">
                     <Bug className="w-4 h-4 mr-2" />
-                    {devTestMode ? 'Disable' : 'Enable'} Test Mode
+                    {devTestMode ? uiText("Disable") : uiText("Enable")} {uiText("Test Mode")}
                   </DropdownMenuItem>
                 )}
 
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onSignOut} className="cursor-pointer text-red-600">
                   <LogOut className="w-4 h-4 mr-2" />
-                  Sign out
+                  {uiText("Sign out")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

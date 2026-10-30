@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useState, useEffect, useRef } from "react";
 import { performanceManager } from '@/services/PerformanceManager';
 import { DebugLogger } from '@/services/DebugLogger';
@@ -243,7 +244,7 @@ useEffect(() => {
           onClick={() => setIsCollapsed(false)}
           id="timer-display"
           role="button"
-          aria-label="Timer: tap to show timer buttons"
+          aria-label={uiText("Timer: tap to show timer buttons")}
         >
           {/* Time display with enhanced styling for free users */}
           <div className={cn(
@@ -259,15 +260,13 @@ useEffect(() => {
           {/* Free user upgrade hint when time is low */}
           {!isPremium && timeRemaining <= 300 && (
             <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-xs px-2 py-1 rounded-full shadow-lg whitespace-nowrap">
-              🚨 Time Low!
-            </div>
+               {uiText("🚨 Time Low!")} </div>
           )}
           
           {/* Upgrade hint for free users */}
           {!isPremium && (
             <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-lg opacity-70 whitespace-nowrap">
-              ⏱️ Try Premium
-            </div>
+               {uiText("⏱️ Try Premium")} </div>
           )}
           
 
@@ -421,11 +420,11 @@ useEffect(() => {
                     onToggleReading();
                   }}
                  className="min-h-[44px] min-w-[44px] px-2.5 rounded-full bg-background/95 backdrop-blur-sm"
-                 aria-label={isReading ? t("floatingTimer.pauseTimer", "Pause Timer") : startedOnce ? "Resume Timer" : t("floatingTimer.startTimer", "Start Timer")}
+                 aria-label={isReading ? t("floatingTimer.pauseTimer", "Pause Timer") : startedOnce ? uiText("Resume Timer") : t("floatingTimer.startTimer", "Start Timer")}
                  id="timer-play-button"
                >
                 {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                <span className="ml-1 text-xs">{isReading ? "Pause" : startedOnce ? "Resume" : "Start"}</span>
+                <span className="ml-1 text-xs">{isReading ? uiText("Pause") : startedOnce ? uiText("Resume") : uiText("Start")}</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -452,7 +451,7 @@ useEffect(() => {
                 id="timer-reduce-button"
               >
                 <Minus className="w-4 h-4" />
-                <span className="ml-0.5 text-xs">5 min</span>
+                <span className="ml-0.5 text-xs"> {uiText("5 min")} </span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -479,7 +478,7 @@ useEffect(() => {
                   id="timer-increase-button"
                 >
                   <Plus className="w-4 h-4" />
-                  <span className="ml-0.5 text-xs">15 min</span>
+                  <span className="ml-0.5 text-xs"> {uiText("15 min")} </span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -508,7 +507,7 @@ useEffect(() => {
                 id="timer-dismiss-x-button"
               >
                 <X className="w-4 h-4" />
-                <span className="ml-1 text-xs">No timer</span>
+                <span className="ml-1 text-xs"> {uiText("No timer")} </span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -535,7 +534,7 @@ useEffect(() => {
                 id="timer-collapse-button"
               >
                 <ChevronDown className="w-4 h-4" />
-                <span className="ml-1 text-xs">Hide</span>
+                <span className="ml-1 text-xs"> {uiText("Hide")} </span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">

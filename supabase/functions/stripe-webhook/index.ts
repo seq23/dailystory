@@ -4,7 +4,9 @@
 // Security: validated via Stripe webhook signature (STRIPE_WEBHOOK_SECRET)
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { subscriptionEndFrom, subscriptionGivesAccess } from "../_shared/subscriptionEnd.ts";
+import { subscriptionEndFrom } from "../_shared/subscriptionEnd.ts";
+
+import { syncSubscriptionEvent } from "../_shared/subscriptionUpdate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -145,46 +147,8 @@ serve(async (req) => {
       }
     }
 
-    // Renewed, cancelled at period end, or un-cancelled: keep the stored end on Stripe's date.
-    if (event.type === "customer.subscription.updated") {
-      const subscription = event.data.object;
-      const stripeCustomerId = subscription.customer;
-      const subscriptionEnd = subscriptionEndFrom(subscription, new Date());
-      const { error: updError } = await supabaseAdmin
-        .from("subscribers")
-        .update({
-          subscribed: subscriptionGivesAccess(subscription.status),
-          subscription_end: subscriptionEnd.toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("stripe_customer_id", stripeCustomerId);
-      if (updError) log("ERROR: Failed to update subscriber", { error: updError.message });
-      else log("Subscription updated", { stripeCustomerId, status: subscription.status, subscriptionEnd: subscriptionEnd.toISOString() });
-    }
-
-    // Handle subscription cancelled/deleted
-    if (event.type === "customer.subscription.deleted") {
-      const subscription = event.data.object;
-      const stripeCustomerId = subscription.customer;
-
-      log("Subscription cancelled", { stripeCustomerId });
-
-      // Find subscriber by stripe_customer_id and deactivate
-      const { error: updateError } = await supabaseAdmin
-        .from("subscribers")
-        .update({
-          subscribed: false,
-          subscription_tier: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("stripe_customer_id", stripeCustomerId);
-
-      if (updateError) {
-        log("ERROR: Failed to deactivate subscriber", { error: updateError.message });
-      } else {
-        log("Subscriber deactivated", { stripeCustomerId });
-      }
-    }
+    // Keep cancellations, renewals and plan changes in sync. Throw on DB errors so Stripe retries.
+    await syncSubscriptionEvent(event, supabaseAdmin);
 
     // Handle invoice payment failed
     if (event.type === "invoice.payment_failed") {

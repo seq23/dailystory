@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -25,8 +26,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       <div className={`flex items-center gap-2 ${className}`}>
         <Crown className="h-4 w-4 text-amber-500" />
         <Badge variant="secondary" className="bg-gradient-to-r from-amber-100 to-amber-50 text-amber-800 border-amber-200">
-          Unlimited Pages
-        </Badge>
+           {uiText("Unlimited Pages")} </Badge>
       </div>
     );
   }
@@ -38,18 +38,17 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
     <div className={`space-y-2 ${className}`}>
       <div className="flex items-center justify-between text-sm">
         <span className="text-muted-foreground">
-          Pages explored: {pagesViewed}/{maxPages}
+           {uiText("Pages explored:")} {pagesViewed}/{maxPages}
         </span>
         {isNearLimit && !hasReachedLimit && (
           <div className="flex items-center gap-1 text-amber-600">
             <AlertTriangle className="h-3 w-3" />
-            <span className="text-xs">{remainingPages} remaining</span>
+            <span className="text-xs">{remainingPages}  {uiText("remaining")} </span>
           </div>
         )}
         {hasReachedLimit && (
           <Badge variant="destructive" className="text-xs">
-            Limit Reached
-          </Badge>
+             {uiText("Limit Reached")} </Badge>
         )}
       </div>
       
@@ -66,14 +65,12 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       
       {isNearLimit && !hasReachedLimit && (
         <p className="text-xs text-amber-600">
-          You're approaching the free trial limit. Consider upgrading for unlimited reading!
-        </p>
+           {uiText("You're approaching the free trial limit. Consider upgrading for unlimited reading!")} </p>
       )}
       
       {hasReachedLimit && (
         <p className="text-xs text-destructive">
-          Free trial session ended. Upgrade to premium for unlimited reading!
-        </p>
+           {uiText("Free trial session ended. Upgrade to premium for unlimited reading!")} </p>
       )}
     </div>
   );

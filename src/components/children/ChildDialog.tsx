@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,6 +15,7 @@ export function openChildDialog(childId?: string) {
 
 /** The one add/edit-child form, as a focused dialog (never a long dashboard). */
 export function ChildDialog() {
+  useUiLanguage();
   const { children, deleteChild } = useChildProfiles();
   const [open, setOpen] = useState(false);
   const [childId, setChildId] = useState<string | null>(null);
@@ -36,9 +38,9 @@ export function ChildDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[100dvh] overflow-y-auto sm:max-w-lg" data-testid="child-dialog">
         <DialogHeader>
-          <DialogTitle>{child ? `Edit ${child.display_name}` : "Add a child"}</DialogTitle>
+          <DialogTitle>{child ? `Edit ${child.display_name}` : uiText("Add a child")}</DialogTitle>
           <DialogDescription>
-            {child ? "Change their name, grade, age or picture." : "Each child gets stories at their own level."}
+            {child ? uiText("Change their name, grade, age or picture.") : uiText("Each child gets stories at their own level.")}
           </DialogDescription>
         </DialogHeader>
         <ChildForm
@@ -55,11 +57,11 @@ export function ChildDialog() {
           <div className="border-t pt-4" data-testid="child-remove-area">
             {!confirmRemove ? (
               <Button type="button" variant="ghost" className="min-h-11 text-destructive" onClick={() => setConfirmRemove(true)} data-testid="child-remove">
-                Remove {child.display_name}
+                {uiText("Remove")} {child.display_name}
               </Button>
             ) : (
               <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
-                <p className="text-sm">Remove {child.display_name}? Their profile goes away. You can add them again any time.</p>
+                <p className="text-sm">{uiText("Remove")} {child.display_name}{uiText("? Their profile goes away. You can add them again any time.")}</p>
                 <div className="flex gap-2">
                   <Button
                     type="button"
@@ -81,10 +83,10 @@ export function ChildDialog() {
                       }
                     }}
                   >
-                    Yes, remove
+                    {uiText("Yes, remove")}
                   </Button>
                   <Button type="button" variant="outline" className="min-h-11" onClick={() => setConfirmRemove(false)}>
-                    Keep {child.display_name}
+                    {uiText("Keep")} {child.display_name}
                   </Button>
                 </div>
               </div>

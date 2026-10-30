@@ -1,3 +1,5 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
+import { useScreenHistory } from "@/hooks/useScreenHistory";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,49 +37,10 @@ interface SessionEndedProps {
 }
 
 const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: SessionEndedProps) => {
+  useUiLanguage();
   const { t, i18n } = useTranslation();
 const location = useLocation();
   const navigate = useNavigate();
-
-  // Clear any remaining caches and URL params on component mount as fallback
-  React.useEffect(() => {
-    const clearRemainingCaches = async () => {
-      try {
-        const { SessionCacheManager } = await import('@/services/SessionCacheManager');
-        const urlParams = new URLSearchParams(location.search);
-        const statsParam = urlParams.get('stats');
-        let avatarInfo = null;
-        
-        if (statsParam) {
-          try {
-            const parsedStats = JSON.parse(decodeURIComponent(statsParam));
-            avatarInfo = parsedStats.avatar;
-          } catch {}
-        }
-        
-        SessionCacheManager.clearAllSessionCaches({
-          userId: userIsPremium ? 'authenticated' : 'guest',
-          avatarType: avatarInfo?.type,
-          skinTone: avatarInfo?.skinTone,
-          reason: 'session-end'
-        });
-      } catch (error) {
-        DebugLogger.warn('ui', 'Fallback cache clearing failed', { error });
-      }
-    };
-
-    // Clear story session URL parameters from browser history
-    const clearUrlHistory = () => {
-      const urlParams = new URLSearchParams(location.search);
-      if (urlParams.has('session') || urlParams.has('page') || urlParams.has('total') || urlParams.has('title')) {
-        DebugLogger.log('ui', 'SessionEnded: Clearing story URL parameters from history');
-        window.history.replaceState(null, '', '/');
-      }
-    };
-    
-    clearRemainingCaches();
-    clearUrlHistory();
-  }, [location.search]);
 
   // Ensure language is properly loaded from localStorage on component mount
   React.useEffect(() => {
@@ -137,10 +100,15 @@ const location = useLocation();
     }
   } catch {}
 
-  const [quizVisible, setQuizVisible] = React.useState(false);
-  const [voiceQuizVisible, setVoiceQuizVisible] = React.useState(false);
-  const [vocabVisible, setVocabVisible] = React.useState(false);
-  const [gamesVisible, setGamesVisible] = React.useState(false);
+  const [activity, setActivity] = useScreenHistory<'summary' | 'quiz' | 'voice' | 'vocab' | 'games'>('activity', 'summary');
+  const quizVisible = activity === 'quiz';
+  const setQuizVisible = (open: boolean) => setActivity(open ? 'quiz' : 'summary');
+  const voiceQuizVisible = activity === 'voice';
+  const setVoiceQuizVisible = (open: boolean) => setActivity(open ? 'voice' : 'summary');
+  const vocabVisible = activity === 'vocab';
+  const setVocabVisible = (open: boolean) => setActivity(open ? 'vocab' : 'summary');
+  const gamesVisible = activity === 'games';
+  const setGamesVisible = (open: boolean) => setActivity(open ? 'games' : 'summary');
 
   // Check if we should start voice quiz immediately
   React.useEffect(() => {
@@ -215,7 +183,7 @@ const handleHome = async () => {
       });
     } catch {}
     // Clear URL history and navigate to clean home
-    window.history.replaceState(null, '', '/');
+    // Router owns history; preserve the summary and reading entries.
     navigate('/');
   };
 
@@ -229,7 +197,7 @@ const handleHome = async () => {
       });
     } catch {}
     // Clear URL history and navigate to new story
-    window.history.replaceState(null, '', '/');
+    // Router owns history; preserve the summary and reading entries.
     navigate('/?action=new-story');
   };
 
@@ -624,7 +592,7 @@ const getDifficultyLabel = (level: ReadingLevel | null) => {
               
               {sessionAchievements.length > 4 && (
                 <div className="text-center text-sm text-yellow-600">
-                  + {sessionAchievements.length - 4} more achievements unlocked!
+                  + {sessionAchievements.length - 4} {uiText("more achievements unlocked!")}
                 </div>
               )}
             </div>
@@ -642,7 +610,7 @@ const getDifficultyLabel = (level: ReadingLevel | null) => {
               </Button>
           </div>
         {/* Modals */}
-        {quizVisible && (
+        {isQuizAllowed && (
           <ComprehensionQuiz
             userInfo={userInfoFromState ?? ({ age: 7 } as UserInfo)}
             storyText={storyText || ''}

@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, Loader2, CheckCircle2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -124,7 +125,7 @@ export const VoiceHUD: React.FC = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                aria-label="Expand voice HUD"
+                aria-label={uiText("Expand voice HUD")}
                 className="rounded-full border border-border bg-card/95 backdrop-blur shadow-lg w-11 h-11 flex items-center justify-center active:scale-[0.98]"
                 onClick={toggleCollapse}
               >
@@ -132,7 +133,7 @@ export const VoiceHUD: React.FC = () => {
               </button>
             </TooltipTrigger>
             <TooltipContent side="top">
-              <p>Expand voice assistant</p>
+              <p> {uiText("Expand voice assistant")} </p>
             </TooltipContent>
           </Tooltip>
         ) : (
@@ -143,24 +144,23 @@ export const VoiceHUD: React.FC = () => {
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium truncate">
                 {status === 'listening' && 'Listening...'}
-                {status === 'processing' && 'Processing...'}
+                {status === 'processing' && uiText("Processing...")}
                 {status === 'speaking' && 'Speaking...'}
                 {status === 'connected' && 'Voice Assistant Ready'}
-                {status === 'connecting' && 'Connecting...'}
+                {status === 'connecting' && uiText("Connecting...")}
               </div>
               {status === 'listening' ? (
                 <div className="h-2 mt-1 rounded-full bg-muted overflow-hidden">
                   <div
                     className="h-full rounded-full bg-primary transition-[width] duration-100"
                     style={{ width: `${meterWidth}%` }}
-                    aria-label="Microphone level"
+                    aria-label={uiText("Microphone level")}
                   />
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Processing your command
-                </div>
+                   {uiText("Processing your command")} </div>
               )}
             </div>
             <div className="flex items-center gap-1.5">
@@ -170,7 +170,7 @@ export const VoiceHUD: React.FC = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    aria-label="Collapse voice HUD"
+                    aria-label={uiText("Collapse voice HUD")}
                     className="p-2 rounded-md hover:bg-muted text-muted-foreground"
                     onClick={toggleCollapse}
                   >
@@ -178,13 +178,13 @@ export const VoiceHUD: React.FC = () => {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  <p>Collapse voice assistant</p>
+                  <p> {uiText("Collapse voice assistant")} </p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    aria-label="Stop listening"
+                    aria-label={uiText("Stop listening")}
                     className="p-2 rounded-md hover:bg-muted text-muted-foreground"
                     onClick={handleStop}
                   >
@@ -192,7 +192,7 @@ export const VoiceHUD: React.FC = () => {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  <p>Stop voice assistant</p>
+                  <p> {uiText("Stop voice assistant")} </p>
                 </TooltipContent>
               </Tooltip>
             </div>

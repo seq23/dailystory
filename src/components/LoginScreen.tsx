@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ function goToAppIfOnAuthPage(keepCode = false) {
 }
 
 export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
+  useUiLanguage();
   const { t } = useTranslation();
   const [signUpData, setSignUpData] = useState({
     email: "",
@@ -104,11 +106,11 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       return false;
     }
     if (!isGuardian) {
-      toast.error("Please tick the box to confirm you're the parent or guardian.");
+      toast.error(uiText("Please tick the box to confirm you're the parent or guardian."));
       return false;
     }
     if (isUnder13 && (!parentEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(parentEmail))) {
-      toast.error("Please provide a valid parent/guardian email address for accounts under 13.");
+      toast.error(uiText("Please provide a valid parent/guardian email address for accounts under 13."));
       return false;
     }
     return true;
@@ -154,7 +156,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       setDiscountValidation(prev => ({
         ...prev,
         isValid: false,
-        message: "Error validating code",
+        message: uiText("Error validating code"),
         isValidating: false,
         kind: undefined
       }));
@@ -170,7 +172,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
 
     // COPPA validation: require parent email if under 13
     if (isUnder13 && (!parentEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(parentEmail))) {
-      toast.error("Please provide a valid parent/guardian email address for accounts under 13.");
+      toast.error(uiText("Please provide a valid parent/guardian email address for accounts under 13."));
       return false;
     }
 
@@ -237,22 +239,22 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       if (isAccessCode && authData.session) {
         const redeemed = await redeemAccessCode(signUpData.discountCode);
         if (redeemed.ok) {
-          toast.success(`Account made. ${premiumUntilLabel(redeemed.premiumUntil) ?? "Premium is on"}.`);
+          toast.success(uiText("Account made. {{premium}}.", { premium: premiumUntilLabel(redeemed.premiumUntil) ?? uiText("Premium is on") }));
         } else {
-          toast.error(`Account made, but the code didn't go through: ${redeemed.message} You can try it again in My Account.`);
+          toast.error(uiText("Account made, but the code didn't go through: {{message}} You can try it again in My Account.", { message: uiText(redeemed.message) }));
         }
         goToAppIfOnAuthPage();
         return true;
       }
       if (isAccessCode) {
-        toast.success("Account made. Your code turns Premium on the first time you sign in.");
+        toast.success(uiText("Account made. Your code turns Premium on the first time you sign in."));
         return true;
       }
 
       toast.success(discountActivated
-        ? "Your free premium access is now active. Enjoy!"
+        ? uiText("Your free premium access is now active. Enjoy!")
         : isFreeDiscount 
-          ? "Account created! Your discount code will be activated when you first log in."
+          ? uiText("Account created! Your discount code will be activated when you first log in.")
           : t("loginScreen.form.success.accountCreated"));
       if (isFreeDiscount) goToAppIfOnAuthPage();
       return true;
@@ -336,7 +338,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         // which left the parent on a free account with nothing on screen.
         window.location.href = data.url;
       } else {
-        toast.error("Checkout didn't open. Please try again.");
+        toast.error(uiText("Checkout didn't open. Please try again."));
       }
     } catch (error) {
       toast.error(PAYMENT_TROUBLE);
@@ -379,7 +381,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         className="absolute top-4 left-4 z-50 text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm bg-black/20 rounded-lg px-3 py-2 shadow-lg transition-all duration-200 hover:scale-105"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          {uiText("Back")}
         </Button>
 
       {/* Close button (X) in top-right corner */}
@@ -411,11 +413,11 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       </Button>
       
       <Card className="w-full max-w-2xl mx-auto bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
-        <h1 className="sr-only">Sign in or sign up for Time-2-Read</h1>
+        <h1 className="sr-only">{uiText("Sign in or sign up for Time-2-Read")}</h1>
         <CardHeader className="text-center">
-          <img src="/icon-192.png" alt="Time-2-Read logo" className="mx-auto h-14 w-14" />
+          <img src="/icon-192.png" alt={uiText("Time-2-Read logo")} className="mx-auto h-14 w-14" />
           <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900">
-            {userInfo ? "Keep reading with Time-2-Read" : "Join Time-2-Read"}
+            {userInfo ? uiText("Keep reading with Time-2-Read") : uiText("Join Time-2-Read")}
           </CardTitle>
           <CardDescription className="text-lg">
             {userInfo 
@@ -472,13 +474,13 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   </p>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">Your name (parent or guardian)</Label>
+                    <Label htmlFor="signup-name">{uiText("Your name (parent or guardian)")}</Label>
                     <Input
                       id="signup-name"
                       type="text"
                       value={signUpData.displayName}
                       onChange={(e) => setSignUpData(prev => ({ ...prev, displayName: e.target.value }))}
-                      placeholder="For example, Sam"
+                      placeholder={uiText("For example, Sam")}
                       required
                     />
                   </div>
@@ -508,7 +510,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   {/* "Have a code?" — always visible on Step 1, pre-filled from ?code= */}
                   <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-4">
                     <Label htmlFor="discount-code" className="font-medium">
-                      Have a code? <span className="font-normal text-muted-foreground">(optional)</span>
+                      {uiText("Have a code?")} <span className="font-normal text-muted-foreground">{uiText("(optional)")}</span>
                     </Label>
                     <div className="relative">
                       <Input
@@ -517,7 +519,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                         type="text"
                         autoCapitalize="characters"
                         autoComplete="off"
-                        placeholder="For example, from a school or group"
+                        placeholder={uiText("For example, from a school or group")}
                         value={signUpData.discountCode}
                         onChange={(e) => {
                           const code = e.target.value;
@@ -536,7 +538,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                         }`}
                       />
                       {discountValidation.isValidating && (
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2" aria-label="Checking code">
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2" aria-label={uiText("Checking code")}>
                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
                         </div>
                       )}
@@ -547,12 +549,12 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                       )}
                     </div>
                     {discountValidation.isValidating && (
-                      <p className="text-xs text-muted-foreground">Checking your code…</p>
+                      <p className="text-xs text-muted-foreground">{uiText("Checking your code…")}</p>
                     )}
                     {discountValidation.message && !discountValidation.isValidating && (
                       <p role={discountValidation.isValid ? "status" : "alert"} className={`text-sm ${discountValidation.isValid ? 'text-green-700' : 'text-red-600'}`} data-testid="signup-code-message">
                         {isAccessCode
-                          ? `✓ Code accepted: ${discountValidation.trialDays ? `${discountValidation.trialDays} days of Premium` : "Premium"}, free. No card needed.`
+                          ? uiText("✓ Code accepted: {{days}} days of Premium, free. No card needed.", { days: discountValidation.trialDays })
                           : discountValidation.message}
                       </p>
                     )}
@@ -567,9 +569,8 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                       onChange={(e) => setIsGuardian(e.target.checked)}
                     />
                     <span>
-                      I'm the parent or guardian (18 or older). My children read under this account, and I agree to the{" "}
-                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">privacy policy</a>.
-                      We never ask children for an email address.
+                      {uiText("I'm the parent or guardian (18 or older). My children read under this account, and I agree to the")}{" "}
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">{uiText("privacy policy")}</a>{uiText(". We never ask children for an email address.")}
                     </span>
                   </label>
 
@@ -601,8 +602,8 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                     </h2>
                     <p className="text-sm text-muted-foreground">
                       {isAccessCode || isFreeDiscount
-                        ? "Your code is ready. Create your account to start."
-                        : "Pick a plan. Have a code? Go back one step and type it in."}
+                        ? uiText("Your code is ready. Create your account to start.")
+                        : uiText("Pick a plan. Have a code? Go back one step and type it in.")}
                     </p>
                   </div>
 
@@ -610,10 +611,10 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   {isAccessCode && (
                     <div className="p-4 bg-green-50 border border-green-300 rounded-lg" data-testid="signup-code-accepted">
                       <h3 className="font-semibold text-green-900 mb-1">
-                        ✓ Code {normalizeAccessCode(signUpData.discountCode)} accepted
+                        {uiText("✓ Code")} {normalizeAccessCode(signUpData.discountCode)} {uiText("accepted")}
                       </h3>
                       <p className="text-sm text-green-900">
-                        {discountValidation.trialDays ? `${discountValidation.trialDays} days` : "Your free days"} of Premium start as soon as you create your account. No card needed.
+                        {uiText("{{days}} days of Premium start as soon as you create your account. No card needed.", { days: discountValidation.trialDays })}
                       </p>
                     </div>
                   )}
@@ -621,9 +622,9 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   {/* Discount Success Message */}
                   {isFreeDiscount && (
                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <h3 className="font-semibold text-green-800 mb-1">🎉 No Payment Required!</h3>
+                      <h3 className="font-semibold text-green-800 mb-1">{uiText("🎉 No Payment Required!")}</h3>
                       <p className="text-sm text-green-700">
-                        Your discount code will give you 90 days of free premium access starting when you first log in.
+                        {uiText("Your discount code will give you 90 days of free premium access starting when you first log in.")}
                       </p>
                     </div>
                   )}
@@ -660,11 +661,11 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                             </li>
                             <li className="flex items-center gap-2">
                               <Volume2 className="w-4 h-4 text-purple-500" />
-                              Voice personalization & commands
+                              {uiText("Voice personalization & commands")}
                             </li>
                             <li className="flex items-center gap-2">
                               <BookOpen className="w-4 h-4 text-green-500" />
-                              Reading assessment & feedback
+                              {uiText("Reading assessment & feedback")}
                             </li>
                           </ul>
                         </CardContent>
@@ -702,11 +703,11 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                             </li>
                             <li className="flex items-center gap-2">
                               <Volume2 className="w-4 h-4 text-purple-500" />
-                              Voice personalization & commands
+                              {uiText("Voice personalization & commands")}
                             </li>
                             <li className="flex items-center gap-2">
                               <BookOpen className="w-4 h-4 text-green-500" />
-                              Reading assessment & feedback
+                              {uiText("Reading assessment & feedback")}
                             </li>
                           </ul>
                         </CardContent>
@@ -724,8 +725,8 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                       data-testid="signup-create-with-code"
                     >
                       {loading ? (
-                        <><span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden />Creating your account…</>
-                      ) : isAccessCode ? "Create my account and start Premium" : t("loginScreen.steps.createFree", "Create Free Account")}
+                        <><span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden />{uiText("Creating your account…")}</>
+                      ) : isAccessCode ? uiText("Create my account and start Premium") : t("loginScreen.steps.createFree", "Create Free Account")}
                     </Button>
                   ) : (
                     <div>
@@ -740,7 +741,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                       <p className="text-xs text-gray-500 text-center mt-2">
                         {t("loginScreen.payment.instruction")}
                       </p>
-                      <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">🔒 Secure checkout in US dollars, by Stripe.</p>
+                      <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">{uiText("🔒 Secure checkout in US dollars, by Stripe.")}</p>
                     </div>
                   )}
                 </div>
@@ -782,7 +783,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                     onClick={() => setShowPasswordReset(true)}
                     className="text-sm text-primary hover:underline"
                   >
-                    Forgot your password?
+                    {uiText("Forgot your password?")}
                   </button>
                 </div>
               </form>

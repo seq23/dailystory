@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React from "react";
 import { globalResizeService } from '@/services/GlobalResizeService';
 import { performanceManager } from '@/services/PerformanceManager';
@@ -200,7 +201,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
           <span className={cn("relative inline-flex items-center")}
           >
             {isGeneratingRewrite ? (
-              <div className="animate-spin rounded-full border-2 border-current border-t-transparent" style={{ width: iconPx, height: iconPx }} aria-label="Refreshing story" />
+              <div className="animate-spin rounded-full border-2 border-current border-t-transparent" style={{ width: iconPx, height: iconPx }} aria-label={uiText("Refreshing story")} />
             ) : (
               <MagicRefreshIcon
                 size={iconPx}
@@ -222,7 +223,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
           <span className="relative inline-grid grid-cols-[auto,1fr] items-center w-full min-w-0">
             <span className="col-span-1 flex items-center justify-start md:justify-center pr-1 md:pr-2" style={{ width: iconPx }}>
               {isGeneratingRewrite ? (
-                <div className="animate-spin rounded-full border-2 border-current border-t-transparent" style={{ width: iconPx, height: iconPx }} aria-label="Refreshing story" />
+                <div className="animate-spin rounded-full border-2 border-current border-t-transparent" style={{ width: iconPx, height: iconPx }} aria-label={uiText("Refreshing story")} />
               ) : (
                 <MagicRefreshIcon
                   size={iconPx}

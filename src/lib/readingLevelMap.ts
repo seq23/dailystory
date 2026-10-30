@@ -1,3 +1,5 @@
+import i18n from "@/i18n/config";
+import { uiGradeLabel } from "@/i18n/gradeLabel";
 // The reading-level map, as code (26 Oct 2026). Everything here is DERIVED from the
 // one source, supabase/functions/_shared/grades.ts (GRADE_PROFILES): no level list is
 // written by hand. docs/reading-levels.md shows the same table; the guard
@@ -132,11 +134,12 @@ function gradeWords(g: Grade): string {
  */
 export function readsAtLabel(readingGrade: unknown, legacyLevel?: unknown): string {
   const g = normalizeGrade(readingGrade);
-  if (g) return `Reads at ${gradeWords(g)}`;
+  if (g) return i18n.resolvedLanguage === "en" ? `Reads at ${gradeWords(g)}` : String(i18n.t("ui.child_reads_at", { grade: uiGradeLabel(g) }));
   const d = frontendLevelToDifficulty(legacyLevel);
   if (!d) return "";
   const band = GRADES.filter((x) => GRADE_PROFILES[x].difficulty === d);
   const lo = band[0], hi = band[band.length - 1];
+  if (i18n.resolvedLanguage !== "en") return String(i18n.t("ui.child_reads_at", { grade: lo === hi ? uiGradeLabel(lo) : `${uiGradeLabel(lo)}–${uiGradeLabel(hi)}` }));
   if (lo === hi) return `Reads at ${gradeWords(lo)}`;
   const short = (x: Grade) => (x === "PreK" ? "Pre-K" : x === "K" ? "K" : GRADE_PROFILES[x].shortLabel);
   return `Reads at ${short(lo)}–${short(hi)}${hi === "K" ? "" : " grade"}`;

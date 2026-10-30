@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, X } from "lucide-react";
@@ -11,6 +12,7 @@ interface DiscountActivationDetail {
 }
 
 export const DiscountActivationBanner = () => {
+  useUiLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [discountDetails, setDiscountDetails] = useState<DiscountActivationDetail | null>(null);
 
@@ -45,8 +47,8 @@ export const DiscountActivationBanner = () => {
       <AlertDescription className="text-green-800 pr-8">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <span className="font-medium">🎉 Welcome to Premium!</span> {discountDetails.description} activated successfully. 
-            <span className="text-green-700"> Your {discountDetails.durationDays} days of premium access expires on {formattedEndDate}.</span>
+            <span className="font-medium">{uiText("🎉 Welcome to Premium!")}</span> {discountDetails.description} {uiText("activated successfully.")}
+            <span className="text-green-700"> {uiText("Your")} {discountDetails.durationDays} {uiText("days of premium access expires on")} {formattedEndDate}.</span>
           </div>
           <Button
             variant="ghost"

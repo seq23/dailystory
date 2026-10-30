@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ interface EmailVerificationBannerProps {
 }
 
 export const EmailVerificationBanner = ({ user, onDismiss, accountCreatedAt }: EmailVerificationBannerProps) => {
+  useUiLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
@@ -68,10 +70,10 @@ export const EmailVerificationBanner = ({ user, onDismiss, accountCreatedAt }: E
       if (error) {
         toast.error(`Failed to resend verification email: ${error.message}`);
       } else {
-        toast.success("Verification email sent! Check your inbox and spam folder.");
+        toast.success(uiText("Verification email sent! Check your inbox and spam folder."));
       }
     } catch (error) {
-      toast.error("An error occurred while sending the email");
+      toast.error(uiText("An error occurred while sending the email"));
     } finally {
       setIsResending(false);
     }
@@ -95,13 +97,13 @@ export const EmailVerificationBanner = ({ user, onDismiss, accountCreatedAt }: E
           <div className="flex-1">
             {graceExpired ? (
               <>
-                <span className="font-medium text-red-600">Email verification required:</span> Your 90-day grace period has expired. Please verify your email to continue accessing your account.
+                <span className="font-medium text-red-600">{uiText("Email verification required:")}</span> {uiText("Your 90-day grace period has expired. Please verify your email to continue accessing your account.")}
               </>
             ) : (
               <>
-                <span className="font-medium">Email verification pending:</span> Please verify your email to secure your account. 
+                <span className="font-medium">{uiText("Email verification pending:")}</span> {uiText("Please verify your email to secure your account.")}
                 {daysRemaining !== null && (
-                  <span className="text-amber-700"> You have {daysRemaining} days remaining in your grace period.</span>
+                  <span className="text-amber-700"> {uiText("You have")} {daysRemaining} {uiText("days remaining in your grace period.")}</span>
                 )}
               </>
             )}
@@ -117,12 +119,12 @@ export const EmailVerificationBanner = ({ user, onDismiss, accountCreatedAt }: E
               {isResending ? (
                 <>
                   <RefreshCw className="w-3 h-3 animate-spin mr-1" />
-                  Sending...
+                  {uiText("Sending...")}
                 </>
               ) : (
                 <>
                   <Mail className="w-3 h-3 mr-1" />
-                  Resend
+                  {uiText("Resend")}
                 </>
               )}
             </Button>

@@ -1,3 +1,4 @@
+import { uiGradeLabel } from "@/i18n/gradeLabel";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
@@ -80,7 +81,7 @@ export const FormStep2ReadingPrefs = ({
             <SelectContent>
               {GRADES.map((g) => (
                 <SelectItem key={g} value={g}>
-                  <span className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" />{gradeLabel(g, "long")}</span>
+                  <span className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" />{uiGradeLabel(g)}</span>
                 </SelectItem>
               ))}
             </SelectContent>

@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState } from "react";
 import { Check, CreditCard, Crown, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -28,6 +29,7 @@ interface MyAccountProps {
 
 
 export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMode, userEmail, accountStatus: initialStatus }: MyAccountProps) {
+  useUiLanguage();
   const [accountStatus, setAccountStatus] = useState(initialStatus || 'active');
   
   return (
@@ -39,20 +41,20 @@ export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMod
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-foreground">Grown-up settings</h1>
+            <h1 className="text-2xl font-bold text-foreground">{uiText("Grown-up settings")}</h1>
             <Badge variant={isPremium ? 'premium' : 'guest'} className="text-xs">
-              {isPremium ? 'Premium' : 'Free'}
+              {isPremium ? uiText("Premium") : uiText("Free")}
             </Badge>
           </div>
           <p className="text-muted-foreground">
-            Your plan, codes and sign-in. {userEmail ? <>Signed in as <strong>{userEmail}</strong>.</> : null}
+            {uiText("Your plan, codes and sign-in.")} {userEmail ? <>{uiText("Signed in as")} <strong>{userEmail}</strong>.</> : null}
           </p>
           <p className="text-sm mt-1" data-testid="account-plan-line">
             {isPremium
-              ? (premiumUntilLabel(premiumUntil) ?? "Premium is on")
+              ? (premiumUntilLabel(premiumUntil) ?? uiText("Premium is on"))
               : typeof freeStoriesLeft === "number"
                 ? `Free account: ${freeStoriesLeft} of ${FREE_STORY_LIMIT} free stories left.`
-                : "Free account."}
+                : uiText("Free account.")}
           </p>
         </div>
       </div>
@@ -71,15 +73,15 @@ export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMod
         <CardHeader>
           <div className="flex items-center gap-2">
             <Download className="w-5 h-5 text-primary" />
-            <CardTitle className="text-base">Your Data</CardTitle>
+            <CardTitle className="text-base">{uiText("Your Data")}</CardTitle>
           </div>
-          <CardDescription>Download or manage your personal data (GDPR/CCPA)</CardDescription>
+          <CardDescription>{uiText("Download or manage your personal data (GDPR/CCPA)")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <DataExportButton />
             <p className="text-xs text-muted-foreground">
-              Export all your data including profiles, reading history, saved stories, and preferences as a JSON file.
+              {uiText("Export all your data including profiles, reading history, saved stories, and preferences as a JSON file.")}
             </p>
           </div>
         </CardContent>
@@ -94,15 +96,15 @@ export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMod
       {/* Subscription Details */}
       <Card className="border-muted/40">
         <CardHeader>
-          <CardTitle className="text-base">Subscription Details</CardTitle>
-          <CardDescription>Your current plan and billing status</CardDescription>
+          <CardTitle className="text-base">{uiText("Subscription Details")}</CardTitle>
+          <CardDescription>{uiText("Your current plan and billing status")}</CardDescription>
         </CardHeader>
         <CardContent className="text-sm">
           <p>
-            <strong>Plan:</strong> {isPremium ? (premiumUntilLabel(premiumUntil) ?? "Premium") : "Free"}
+            <strong>{uiText("Plan:")}</strong> {isPremium ? (premiumUntilLabel(premiumUntil) ?? uiText("Premium")) : uiText("Free")}
           </p>
           {devTestMode && (
-            <p className="text-orange-600 font-medium mt-2">Developer Test Mode Active</p>
+            <p className="text-orange-600 font-medium mt-2">{uiText("Developer Test Mode Active")}</p>
           )}
         </CardContent>
       </Card>
@@ -110,15 +112,15 @@ export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMod
       {/* Free vs Premium Comparison */}
       <section aria-labelledby="comparison-heading" className="space-y-4">
         <header>
-          <h2 id="comparison-heading" className="text-xl font-semibold">Free vs Premium</h2>
-          <p className="text-muted-foreground">See everything included with Premium at a glance</p>
+          <h2 id="comparison-heading" className="text-xl font-semibold">{uiText("Free vs Premium")}</h2>
+          <p className="text-muted-foreground">{uiText("See everything included with Premium at a glance")}</p>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Free */}
           <Card>
             <CardHeader>
-              <CardTitle>Free</CardTitle>
+              <CardTitle>{uiText("Free")}</CardTitle>
               
             </CardHeader>
             <CardContent>
@@ -126,7 +128,7 @@ export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMod
                 {freeFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
-                    <span>{f}</span>
+                    <span>{uiText(f)}</span>
                   </li>
                 ))}
               </ul>
@@ -138,9 +140,9 @@ export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMod
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-yellow-500" />
-                <CardTitle>Premium</CardTitle>
+                <CardTitle>{uiText("Premium")}</CardTitle>
               </div>
-              <CardDescription>Best for families and serious readers</CardDescription>
+              <CardDescription>{uiText("Best for families and serious readers")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -149,18 +151,18 @@ export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMod
                   {topPremiumFeatures.map((f) => (
                     <li key={f} className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
-                      <span>{f}</span>
+                      <span>{uiText(f)}</span>
                     </li>
                   ))}
                 </ul>
               </div>
               <div>
-                <h4 className="font-medium text-sm text-muted-foreground">Additional offerings</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">{uiText("Additional offerings")}</h4>
                 <ul className="mt-2 space-y-2">
                   {additionalOfferings.map((f) => (
                     <li key={f} className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1" />
-                      <span>{f}</span>
+                      <span>{uiText(f)}</span>
                     </li>
                   ))}
                 </ul>
@@ -173,8 +175,8 @@ export function MyAccount({ isPremium, premiumUntil, freeStoriesLeft, devTestMod
       {/* Account Deletion Section */}
       <section aria-labelledby="danger-zone-heading" className="space-y-4 mt-8 pt-8 border-t border-destructive/20">
         <header>
-          <h2 id="danger-zone-heading" className="text-xl font-semibold text-destructive">Danger Zone</h2>
-          <p className="text-muted-foreground">Irreversible actions for your account</p>
+          <h2 id="danger-zone-heading" className="text-xl font-semibold text-destructive">{uiText("Danger Zone")}</h2>
+          <p className="text-muted-foreground">{uiText("Irreversible actions for your account")}</p>
         </header>
         <AccountDeletion userEmail={userEmail} />
       </section>

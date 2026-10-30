@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ interface AccountDeletionProps {
 }
 
 export const AccountDeletion = ({ userEmail }: AccountDeletionProps) => {
+  useUiLanguage();
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +41,7 @@ export const AccountDeletion = ({ userEmail }: AccountDeletionProps) => {
     try {
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
-        toast.error("You must be logged in to delete your account");
+        toast.error(uiText("You must be logged in to delete your account"));
         return;
       }
 
@@ -57,7 +59,7 @@ export const AccountDeletion = ({ userEmail }: AccountDeletionProps) => {
       }
 
       if (data?.success) {
-        toast.success("Your account has been deleted. You will be signed out.");
+        toast.success(uiText("Your account has been deleted. You will be signed out."));
         // Sign out the user
         await supabase.auth.signOut();
         // Redirect to home page
@@ -67,7 +69,7 @@ export const AccountDeletion = ({ userEmail }: AccountDeletionProps) => {
       }
     } catch (err) {
       DebugLogger.error("auth", "Account deletion error", err);
-      toast.error("An unexpected error occurred. Please try again.");
+      toast.error(uiText("An unexpected error occurred. Please try again."));
     } finally {
       setIsDeleting(false);
       setIsOpen(false);
@@ -80,23 +82,23 @@ export const AccountDeletion = ({ userEmail }: AccountDeletionProps) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-destructive">
           <Trash2 className="w-5 h-5" />
-          Delete Account
+          {uiText("Delete Account")}
         </CardTitle>
         <CardDescription>
-          Permanently delete your account and all associated data
+          {uiText("Permanently delete your account and all associated data")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert variant="destructive" className="bg-destructive/10 border-destructive/30">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Warning:</strong> This action cannot be undone. All your data will be permanently deleted, including:
+            <strong>{uiText("Warning:")}</strong> {uiText("This action cannot be undone. All your data will be permanently deleted, including:")}
             <ul className="list-disc list-inside mt-2 text-sm space-y-1">
-              <li>Your profile and preferences</li>
-              <li>All child profiles</li>
-              <li>Saved stories and reading progress</li>
-              <li>Quiz and game history</li>
-              <li>Subscription information</li>
+              <li>{uiText("Your profile and preferences")}</li>
+              <li>{uiText("All child profiles")}</li>
+              <li>{uiText("Saved stories and reading progress")}</li>
+              <li>{uiText("Quiz and game history")}</li>
+              <li>{uiText("Subscription information")}</li>
             </ul>
           </AlertDescription>
         </Alert>
@@ -105,27 +107,27 @@ export const AccountDeletion = ({ userEmail }: AccountDeletionProps) => {
           <AlertDialogTrigger asChild>
             <Button variant="destructive" className="w-full sm:w-auto">
               <Trash2 className="w-4 h-4 mr-2" />
-              Delete My Account
+              {uiText("Delete My Account")}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="w-5 h-5" />
-                Confirm Account Deletion
+                {uiText("Confirm Account Deletion")}
               </AlertDialogTitle>
               <AlertDialogDescription className="space-y-4">
                 <p>
-                  You are about to permanently delete your account
+                  {uiText("You are about to permanently delete your account")}
                   {userEmail && (
                     <span className="font-medium"> ({userEmail})</span>
                   )}
-                  . This action cannot be reversed.
+                  {uiText(". This action cannot be reversed.")}
                 </p>
                 
                 <div className="space-y-2">
                   <Label htmlFor="confirm-delete">
-                    Type <strong>{CONFIRM_PHRASE}</strong> to confirm:
+                    {uiText("Type")} <strong>{CONFIRM_PHRASE}</strong> {uiText("to confirm:")}
                   </Label>
                   <Input
                     id="confirm-delete"
@@ -140,7 +142,7 @@ export const AccountDeletion = ({ userEmail }: AccountDeletionProps) => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={isDeleting}>{uiText("Cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={(e) => {
                   e.preventDefault();
@@ -152,12 +154,12 @@ export const AccountDeletion = ({ userEmail }: AccountDeletionProps) => {
                 {isDeleting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Deleting...
+                    {uiText("Deleting...")}
                   </>
                 ) : (
                   <>
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Forever
+                    {uiText("Delete Forever")}
                   </>
                 )}
               </AlertDialogAction>
@@ -166,10 +168,9 @@ export const AccountDeletion = ({ userEmail }: AccountDeletionProps) => {
         </AlertDialog>
 
         <p className="text-xs text-muted-foreground">
-          If you have an active subscription, please cancel it before deleting your account.
-          Need help?{" "}
+          {uiText("If you have an active subscription, please cancel it before deleting your account. Need help?")}{" "}
           <a href="mailto:hello@time-2-read.com" className="text-primary hover:underline">
-            Contact us
+            {uiText("Contact us")}
           </a>
         </p>
       </CardContent>

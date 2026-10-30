@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Square, RotateCcw } from 'lucide-react';
@@ -225,7 +226,7 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
       }));
       
       toast({
-        title: "Audio Error",
+        title: uiText("Audio Error"),
         description: "Could not play audio. Trying device voice...",
         variant: "destructive",
         duration: 3000,
@@ -315,7 +316,7 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
   return (
     <div className="story-audio-controls">
       {isLoading ? (
-        <Button size={size} variant="outline" disabled aria-label="Loading audio">
+        <Button size={size} variant="outline" disabled aria-label={uiText("Loading audio")}>
           <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent mr-2"></div>
           {t("audioReading.loadingAudio", "Loading Audio...")}
         </Button>
@@ -325,7 +326,7 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
           variant="outline" 
           onClick={onRetry} 
           disabled={retryCount >= 3} 
-          aria-label="Retry audio"
+          aria-label={uiText("Retry audio")}
           className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50"
         >
           <RotateCcw className="w-4 h-4" />
@@ -340,7 +341,7 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
           className={`gap-2 ${
             !isPremium && hasPlayedAudio ? 'opacity-50 cursor-not-allowed' : ''
           } ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`}
-          aria-label={isPlaying ? "Stop narration" : "Read to me"}
+          aria-label={isPlaying ? uiText("Stop narration") : uiText("Read to me")}
         >
           <Play className="w-4 h-4" />
           {isPlaying ? t("audioReading.stop", "Stop") : t("audioReading.readToMe", "Read to Me")}

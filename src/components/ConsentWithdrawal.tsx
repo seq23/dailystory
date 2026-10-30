@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { ShieldOff, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 export function ConsentWithdrawal() {
+  useUiLanguage();
   const [isProcessing, setIsProcessing] = useState(false);
   const [withdrawn, setWithdrawn] = useState(false);
 
@@ -34,9 +36,9 @@ export function ConsentWithdrawal() {
       }));
 
       setWithdrawn(true);
-      toast.success("Consent withdrawn. Non-essential data processing has been stopped.");
+      toast.success(uiText("Consent withdrawn. Non-essential data processing has been stopped."));
     } catch (err: any) {
-      toast.error("Failed to withdraw consent. Please try again.");
+      toast.error(uiText("Failed to withdraw consent. Please try again."));
     } finally {
       setIsProcessing(false);
     }
@@ -51,17 +53,16 @@ export function ConsentWithdrawal() {
           ) : (
             <ShieldCheck className="w-5 h-5 text-muted-foreground" />
           )}
-          <CardTitle className="text-base">Consent Management</CardTitle>
+          <CardTitle className="text-base">{uiText("Consent Management")}</CardTitle>
         </div>
         <CardDescription>
-          Under GDPR Article 7(3), you can withdraw consent for non-essential data processing at any time.
-          This stops analytics and marketing data collection.
+          {uiText("Under GDPR Article 7(3), you can withdraw consent for non-essential data processing at any time. This stops analytics and marketing data collection.")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {withdrawn && (
           <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-sm text-amber-700 dark:text-amber-300">
-            Consent has been withdrawn. Only essential processing (authentication, core features) continues.
+            {uiText("Consent has been withdrawn. Only essential processing (authentication, core features) continues.")}
           </div>
         )}
 
@@ -69,29 +70,27 @@ export function ConsentWithdrawal() {
           <AlertDialogTrigger asChild>
             <Button variant="outline" disabled={isProcessing || withdrawn}>
               <ShieldOff className="w-4 h-4 mr-2" />
-              {withdrawn ? "Consent Already Withdrawn" : "Withdraw Non-Essential Consent"}
+              {withdrawn ? uiText("Consent Already Withdrawn") : uiText("Withdraw Non-Essential Consent")}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Withdraw Consent?</AlertDialogTitle>
+              <AlertDialogTitle>{uiText("Withdraw Consent?")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This will stop all non-essential data processing including analytics and marketing cookies.
-                Essential processing (login, core reading features) will continue.
-                You can re-grant consent anytime via the cookie settings banner.
+                {uiText("This will stop all non-essential data processing including analytics and marketing cookies. Essential processing (login, core reading features) will continue. You can re-grant consent anytime via the cookie settings banner.")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{uiText("Cancel")}</AlertDialogCancel>
               <AlertDialogAction onClick={handleWithdrawConsent} disabled={isProcessing}>
-                {isProcessing ? "Processing..." : "Withdraw Consent"}
+                {isProcessing ? uiText("Processing...") : uiText("Withdraw Consent")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
 
         <p className="text-xs text-muted-foreground">
-          To update cookie preferences, use the cookie settings in the banner at the bottom of the page.
+          {uiText("To update cookie preferences, use the cookie settings in the banner at the bottom of the page.")}
         </p>
       </CardContent>
     </Card>

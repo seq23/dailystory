@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState, useEffect } from "react";
 import { DebugLogger } from '@/services/DebugLogger';
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +21,7 @@ interface SubscriptionData {
 }
 
 export const SubscriptionManager = ({ showComparison = true }: { showComparison?: boolean }) => {
+  useUiLanguage();
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -31,7 +33,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
       setRefreshing(true);
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
-        toast.error("Please sign in to check subscription status");
+        toast.error(uiText("Please sign in to check subscription status"));
         return;
       }
 
@@ -46,7 +48,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
         if (error.message?.includes("STRIPE_SECRET_KEY")) {
           toast.info(PAYMENT_TROUBLE);
         } else {
-          toast.error("Failed to check subscription status");
+          toast.error(uiText("Failed to check subscription status"));
         }
         return;
       }
@@ -54,7 +56,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
       setSubscriptionData(data);
     } catch (error) {
       DebugLogger.error('error', 'Subscription check operation failed', { error });
-      toast.error("Failed to check subscription status");
+      toast.error(uiText("Failed to check subscription status"));
     } finally {
       setRefreshing(false);
     }
@@ -65,7 +67,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
       setLoading(true);
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
-        toast.error("Please sign in to manage subscription");
+        toast.error(uiText("Please sign in to manage subscription"));
         return;
       }
 
@@ -87,10 +89,10 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        toast.error("Billing page didn't open. Please try again.");
+        toast.error(uiText("Billing page didn't open. Please try again."));
       }
     } catch (error) {
-      toast.error("Failed to open customer portal");
+      toast.error(uiText("Failed to open customer portal"));
       DebugLogger.error('error', 'Customer portal operation failed', { error });
     } finally {
       setLoading(false);
@@ -102,7 +104,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
       setLoading(true);
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
-        toast.error("Please sign in to subscribe");
+        toast.error(uiText("Please sign in to subscribe"));
         return;
       }
 
@@ -129,10 +131,10 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
         // Same tab: a new tab opened after an await is blocked on iPhone and iPad.
         window.location.href = data.url;
       } else {
-        toast.error("Checkout didn't open. Please try again.");
+        toast.error(uiText("Checkout didn't open. Please try again."));
       }
     } catch (error) {
-      toast.error("Checkout didn't open. Please try again.");
+      toast.error(uiText("Checkout didn't open. Please try again."));
       DebugLogger.error('error', 'Stripe checkout operation failed', { error });
     } finally {
       setLoading(false);
@@ -150,7 +152,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Your plan</h2>
+        <h2 className="text-2xl font-bold">{uiText("Your plan")}</h2>
         <Button 
           variant="outline" 
           size="sm" 
@@ -158,7 +160,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
           disabled={refreshing}
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Check again
+          {uiText("Check again")}
         </Button>
       </div>
 
@@ -170,12 +172,12 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                 {subscriptionData.subscribed ? (
                   <>
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    Premium is on
+                    {uiText("Premium is on")}
                   </>
                 ) : (
                   <>
                     <XCircle className="w-5 h-5 text-muted-foreground" />
-                    Free account
+                    {uiText("Free account")}
                   </>
                 )}
               </CardTitle>
@@ -187,8 +189,8 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
             </div>
             <CardDescription>
               {subscriptionData.subscribed
-                ? "Every Premium feature is on for all your children."
-                : "Use a code, or pick a plan, for unlimited stories."}
+                ? uiText("Every Premium feature is on for all your children.")
+                : uiText("Use a code, or pick a plan, for unlimited stories.")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -197,24 +199,24 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                 {subscriptionData.via_code && subscriptionData.premium_until ? (
                   <div className="flex items-center gap-2 text-sm text-green-800" data-testid="premium-until">
                     <Calendar className="w-4 h-4" />
-                    <span>{premiumUntilLabel(subscriptionData.premium_until)} (from your code). No card on file.</span>
+                    <span>{premiumUntilLabel(subscriptionData.premium_until)} {uiText("(from your code). No card on file.")}</span>
                   </div>
                 ) : subscriptionData.subscription_end && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Calendar className="w-4 h-4" />
-                    <span>Renews on {formatDate(subscriptionData.subscription_end)}</span>
+                    <span>{uiText("Renews on")} {formatDate(subscriptionData.subscription_end)}</span>
                   </div>
                 )}
                 {!subscriptionData.via_code && <div className="flex gap-3 flex-wrap">
                   <Button onClick={openCustomerPortal} disabled={loading}>
                     <CreditCard className="w-4 h-4 mr-2" />
-                    {loading ? "Opening..." : "Manage Subscription"}
+                    {loading ? uiText("Opening...") : uiText("Manage Subscription")}
                   </Button>
                   <Button variant="outline" onClick={() => setCancelOpen(true)}>
-                    Cancel Subscription
+                    {uiText("Cancel Subscription")}
                   </Button>
                   <Button variant="secondary" onClick={() => window.open('mailto:hello@time-2-read.com?subject=School%20or%20family%20plan','_blank')}>
-                    Ask about school plans
+                    {uiText("Ask about school plans")}
                   </Button>
                 </div>}
               </div>
@@ -224,39 +226,39 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
               <div className="grid md:grid-cols-2 gap-4">
                 <Card className="border-primary/20">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold mb-2">Monthly Plan</h3>
+                    <h3 className="font-semibold mb-2">{uiText("Monthly Plan")}</h3>
                     <div className="text-2xl font-bold text-primary mb-4">
-                      $12.99<span className="text-sm text-gray-500">/month</span>
+                      $12.99<span className="text-sm text-gray-500">{uiText("/month")}</span>
                     </div>
                     <Button 
                       onClick={() => startCheckout("monthly")} 
                       disabled={loading}
                       className="w-full"
                     >
-                      Subscribe Monthly
+                      {uiText("Subscribe Monthly")}
                     </Button>
                   </CardContent>
                 </Card>
                 <Card className="border-green-500/20 bg-green-50/50">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold">Annual Plan</h3>
-                      <Badge className="bg-green-500">Save $57 (36%)</Badge>
+                      <h3 className="font-semibold">{uiText("Annual Plan")}</h3>
+                      <Badge className="bg-green-500">{uiText("Save $57 (36%)")}</Badge>
                     </div>
                     <div className="text-2xl font-bold text-primary mb-4">
-                      $99<span className="text-sm text-gray-500">/year</span>
+                      $99<span className="text-sm text-gray-500">{uiText("/year")}</span>
                     </div>
                     <Button 
                       onClick={() => startCheckout("annual")} 
                       disabled={loading}
                       className="w-full bg-green-600 hover:bg-green-700"
                     >
-                      Subscribe Annually
+                      {uiText("Subscribe Annually")}
                     </Button>
                   </CardContent>
                 </Card>
               </div>
-              <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">🔒 Secure checkout in US dollars, by Stripe.</p>
+              <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">{uiText("🔒 Secure checkout in US dollars, by Stripe.")}</p>
               </div>
             )}
           </CardContent>
@@ -266,16 +268,16 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
 {showComparison && (
         <Card className="border-dashed">
           <CardHeader>
-            <CardTitle>Free vs Premium</CardTitle>
-            <CardDescription>What you get with Premium compared to Free</CardDescription>
+            <CardTitle>{uiText("Free vs Premium")}</CardTitle>
+            <CardDescription>{uiText("What you get with Premium compared to Free")}</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="grid md:grid-cols-2 gap-2 text-sm">
-              <li>• Unlimited stories vs. daily limit</li>
-              <li>• Live page-by-page generation</li>
-              <li>• Save stories to your library</li>
-              <li>• Vocabulary tracking and progress</li>
-              <li>• Parent / Teacher dashboard insights</li>
+              <li>{uiText("• Unlimited stories vs. daily limit")}</li>
+              <li>{uiText("• Live page-by-page generation")}</li>
+              <li>{uiText("• Save stories to your library")}</li>
+              <li>{uiText("• Vocabulary tracking and progress")}</li>
+              <li>{uiText("• Parent / Teacher dashboard insights")}</li>
             </ul>
           </CardContent>
         </Card>
@@ -284,16 +286,16 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
       <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Why are you cancelling?</DialogTitle>
+            <DialogTitle>{uiText("Why are you cancelling?")}</DialogTitle>
           </DialogHeader>
           <Textarea
-            placeholder="Optional: Your feedback helps us improve"
+            placeholder={uiText("Optional: Your feedback helps us improve")}
             value={cancelReason}
             onChange={(e) => setCancelReason(e.target.value)}
             rows={4}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCancelOpen(false)}>Back</Button>
+            <Button variant="outline" onClick={() => setCancelOpen(false)}>{uiText("Back")}</Button>
             <Button
               onClick={async () => {
                 try {
@@ -313,7 +315,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                 }
               }}
             >
-              Continue to Cancel
+              {uiText("Continue to Cancel")}
             </Button>
           </DialogFooter>
         </DialogContent>

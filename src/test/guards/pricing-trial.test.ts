@@ -69,12 +69,17 @@ describe("the stored Premium end is Stripe's date", () => {
   });
   it("the webhook stores it at checkout and on every subscription update", () => {
     const w = read("supabase/functions/stripe-webhook/index.ts");
-    const checkout = w.slice(w.indexOf('event.type === "checkout.session.completed"'), w.indexOf('event.type === "customer.subscription.updated"'));
+    const checkout = w.slice(w.indexOf('event.type === "checkout.session.completed"'), w.indexOf("await syncSubscriptionEvent"));
     expect(checkout).toMatch(/stripeSub = await stripe\.subscriptions\.retrieve\(String\(session\.subscription\)\);/);
     expect(checkout).toMatch(/const subscriptionEnd = subscriptionEndFrom\(stripeSub, planEnd\);/);
     expect(checkout).toMatch(/subscription_end: subscriptionEnd\.toISOString\(\),/);
-    const upd = w.slice(w.indexOf('event.type === "customer.subscription.updated"'), w.indexOf('event.type === "customer.subscription.deleted"'));
-    expect(upd).toMatch(/subscribed: subscriptionGivesAccess\(subscription\.status\),\s*subscription_end: subscriptionEnd\.toISOString\(\),/);
-    expect(upd).toMatch(/\.eq\("stripe_customer_id", stripeCustomerId\)/);
+    expect(w).toContain("await syncSubscriptionEvent(event, supabaseAdmin)");
+    const upd = read("supabase/functions/_shared/subscriptionUpdate.ts");
+    expect(upd).toContain('"customer.subscription.updated"');
+    expect(upd).toContain('"customer.subscription.deleted"');
+    expect(upd).toContain('subscriptionEndFrom(sub, now).toISOString()');
+    expect(upd).toContain('subscriptionGivesAccess(sub.status)');
+    expect(upd).toContain('.eq("stripe_customer_id", customer)');
+    expect(upd).toContain('if (error) throw new Error');
   });
 });

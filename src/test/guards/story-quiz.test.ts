@@ -229,7 +229,8 @@ describe("quiz results reach Progress and the parent dashboard", () => {
   it("the quiz is never greyed out on the session-ended page", () => {
     const ended = read("src/pages/SessionEnded.tsx");
     expect(ended).not.toMatch(/disabled=\{!canLaunchActivities \|\| !isQuizAllowed\}/);
-    expect(ended).toMatch(/\{quizVisible && \(\s*<ComprehensionQuiz/);
+    expect(ended).toMatch(/\{isQuizAllowed && \(\s*<ComprehensionQuiz/);
+    expect(ended).toContain("isVisible={quizVisible}");
   });
   it("the written quiz waits for the child: no auto-advance timer after an answer", () => {
     const src = read("src/components/ComprehensionQuiz.tsx");

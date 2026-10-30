@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { DebugLogger } from '@/services/DebugLogger';
 import { useState, useEffect } from 'react';
 import { AlertTriangle, Zap } from 'lucide-react';
@@ -103,13 +104,13 @@ export const StoryStatusIndicator = () => {
         {currentMode === 'backup' && (
           <>
             <AlertTriangle className="w-3 h-3" />
-            <span className="text-xs font-medium">Backup Mode</span>
+            <span className="text-xs font-medium"> {uiText("Backup Mode")} </span>
           </>
         )}
         {currentMode === 'emergency' && (
           <>
             <Zap className="w-3 h-3" />
-            <span className="text-xs font-medium">Emergency</span>
+            <span className="text-xs font-medium"> {uiText("Emergency")} </span>
           </>
         )}
       </Button>

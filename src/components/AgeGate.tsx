@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -38,11 +39,9 @@ export const AgeGate = ({
         <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
         <div className="text-sm">
           <p className="font-medium text-blue-900 dark:text-blue-100">
-            Children's Privacy Protection
-          </p>
+             {uiText("Children's Privacy Protection")} </p>
           <p className="text-blue-700 dark:text-blue-300 mt-1">
-            We comply with COPPA (Children's Online Privacy Protection Act) to keep young readers safe.
-          </p>
+             {uiText("We comply with COPPA (Children's Online Privacy Protection Act) to keep young readers safe.")} </p>
         </div>
       </div>
 
@@ -59,11 +58,9 @@ export const AgeGate = ({
             htmlFor="under13"
             className="font-medium cursor-pointer leading-tight"
           >
-            This account is for a child under 13 years old
-          </Label>
+             {uiText("This account is for a child under 13 years old")} </Label>
           <p className="text-xs text-muted-foreground mt-1">
-            If checked, we'll need a parent or guardian's email address for verification.
-          </p>
+             {uiText("If checked, we'll need a parent or guardian's email address for verification.")} </p>
         </div>
       </div>
 
@@ -72,8 +69,7 @@ export const AgeGate = ({
         <div className="space-y-2 pl-7 animate-in slide-in-from-top-2 duration-200">
           <Label htmlFor="parent-email" className="flex items-center gap-2">
             <Mail className="w-4 h-4" />
-            Parent/Guardian Email Address
-            <span className="text-destructive">*</span>
+             {uiText("Parent/Guardian Email Address")} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="parent-email"
@@ -89,15 +85,12 @@ export const AgeGate = ({
           {showEmailError && (
             <p className="text-xs text-destructive flex items-center gap-1">
               <Info className="w-3 h-3" />
-              Please enter a valid parent/guardian email address
-            </p>
+               {uiText("Please enter a valid parent/guardian email address")} </p>
           )}
 
           <Alert className="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
             <AlertDescription className="text-xs text-amber-800 dark:text-amber-200">
-              <strong>Important:</strong> We will send a verification email to this address. 
-              Your child's account features may be limited until a parent/guardian provides consent.
-            </AlertDescription>
+              <strong> {uiText("Important:")} </strong>  {uiText("We will send a verification email to this address. Your child's account features may be limited until a parent/guardian provides consent.")} </AlertDescription>
           </Alert>
         </div>
       )}

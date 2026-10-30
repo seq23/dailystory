@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { Link } from "react-router-dom";
 import { MADE_BY_LINE } from "@/seo/schema";
 
@@ -23,16 +24,16 @@ export const SITE_LINKS: { to: string; label: string }[] = [
 
 export const SiteFooterNav = () => (
   <footer className="border-t border-border bg-background py-6">
-    <nav className="mx-auto max-w-6xl px-4" aria-label="Site">
+    <nav className="mx-auto max-w-6xl px-4" aria-label={uiText("Site")}>
       <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
         {SITE_LINKS.map((l) => (
           <li key={l.to}>
-            <Link to={l.to} className="hover:text-primary transition-colors">{l.label}</Link>
+            <Link to={l.to} className="hover:text-primary transition-colors">{uiText(l.label)}</Link>
           </li>
         ))}
       </ul>
       <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground" data-testid="made-by">
-        <img src="/icon-192.png" alt="Time-2-Read logo" width={24} height={24} className="h-6 w-6" />
+        <img src="/icon-192.png" alt={uiText("Time-2-Read logo")} width={24} height={24} className="h-6 w-6" />
         {MADE_BY_LINE}
       </p>
     </nav>

@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { WandSparkles, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -12,7 +13,7 @@ export function ImageMixingLoading({ className }: ImageMixingLoadingProps) {
         <WandSparkles className="w-8 h-8 text-primary animate-spin" />
         <Palette className="w-6 h-6 text-accent animate-bounce" />
       </div>
-      <p className="text-sm text-muted-foreground font-medium">Mixing up the perfect image...</p>
+      <p className="text-sm text-muted-foreground font-medium"> {uiText("Mixing up the perfect image...")} </p>
     </div>
   );
 }

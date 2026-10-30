@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { DebugLogger } from '@/services/DebugLogger';
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
   onBack,
   onSubscribe,
 }) => {
+  useUiLanguage();
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<string>('monthly');
   const [isLoading, setIsLoading] = useState(false);
@@ -112,11 +114,11 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
           <div className="flex items-center justify-center gap-3 mb-4">
             <Crown className="w-12 h-12 text-yellow-500" />
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Unlock Premium Reading
+              {uiText("Unlock Premium Reading")}
             </h1>
           </div>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Give your child unlimited access to personalized stories and advanced learning features
+            {uiText("Give your child unlimited access to personalized stories and advanced learning features")}
           </p>
           <div className="mt-2">
             <a
@@ -125,7 +127,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
               rel="noopener noreferrer"
               className="text-sm text-primary underline hover:opacity-90"
             >
-              See full Premium feature list
+              {uiText("See full Premium feature list")}
             </a>
           </div>
         </div>
@@ -135,24 +137,24 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
           <Card className="text-center hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <BookOpen className="w-12 h-12 text-blue-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold mb-2">Unlimited Stories</h3>
-              <p className="text-gray-600">Access to thousands of age-appropriate stories that grow with your child</p>
+              <h3 className="text-xl font-bold mb-2">{uiText("Unlimited Stories")}</h3>
+              <p className="text-gray-600">{uiText("Access to thousands of age-appropriate stories that grow with your child")}</p>
             </CardContent>
           </Card>
           
           <Card className="text-center hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <TrendingUp className="w-12 h-12 text-green-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold mb-2">Smart Learning</h3>
-              <p className="text-gray-600">AI-powered personalization adapts to your child's reading level and interests</p>
+              <h3 className="text-xl font-bold mb-2">{uiText("Smart Learning")}</h3>
+              <p className="text-gray-600">{uiText("AI-powered personalization adapts to your child's reading level and interests")}</p>
             </CardContent>
           </Card>
           
           <Card className="text-center hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <Award className="w-12 h-12 text-purple-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold mb-2">Progress Tracking</h3>
-              <p className="text-gray-600">Detailed analytics and achievements to celebrate your child's growth</p>
+              <h3 className="text-xl font-bold mb-2">{uiText("Progress Tracking")}</h3>
+              <p className="text-gray-600">{uiText("Detailed analytics and achievements to celebrate your child's growth")}</p>
             </CardContent>
           </Card>
         </div>
@@ -169,12 +171,12 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
               {plan.popular && (
                 <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1">
                   <Star className="w-4 h-4 mr-1" />
-                  Most Popular
+                  {uiText("Most Popular")}
                 </Badge>
               )}
               
               <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                <CardTitle className="text-2xl">{uiText(plan.name)}</CardTitle>
                 <div className="flex items-baseline justify-center gap-2">
                   <span className="text-4xl font-bold text-primary">{plan.price}</span>
                   <span className="text-gray-600">{plan.period}</span>
@@ -185,7 +187,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
                   </Badge>
                 )}
                 <CardDescription className="mt-2">
-                  Perfect for growing readers
+                  {uiText("Perfect for growing readers")}
                 </CardDescription>
               </CardHeader>
 
@@ -194,7 +196,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span className="text-gray-700">{feature}</span>
+                      <span className="text-gray-700">{uiText(feature)}</span>
                     </li>
                   ))}
                 </ul>
@@ -211,17 +213,17 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
                   {isLoading && selectedPlan === plan.id ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Processing...
+                      {uiText("Processing...")}
                     </>
                   ) : plan.popular ? (
                     <>
                       <Crown className="w-5 h-5 mr-2" />
-                      Start Premium Trial
+                      {uiText("Start Premium Trial")}
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5 mr-2" />
-                      Choose This Plan
+                      {uiText("Choose This Plan")}
                     </>
                   )}
                 </Button>
@@ -233,13 +235,13 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
         {checkoutError && (
           <p role="alert" className="text-center text-sm text-destructive mb-4">{checkoutError}</p>
         )}
-        <p className="text-xs text-muted-foreground text-center mb-6" data-testid="secure-checkout">🔒 Secure checkout in US dollars, by Stripe.</p>
+        <p className="text-xs text-muted-foreground text-center mb-6" data-testid="secure-checkout">{uiText("🔒 Secure checkout in US dollars, by Stripe.")}</p>
         <RedeemCodeCard className="max-w-xl mx-auto mb-8" />
 
         {/* Back Button */}
         <div className="text-center">
           <Button onClick={onBack} variant="ghost" className="text-gray-600 hover:text-gray-800">
-            ← Back to Reading Session
+            {uiText("← Back to Reading Session")}
           </Button>
         </div>
       </div>

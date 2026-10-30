@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ interface RedeemCodeCardProps {
  * "Premium active until …", or the server's plain reason with "Try again".
  */
 export function RedeemCodeCard({ className, onRedeemed }: RedeemCodeCardProps) {
+  useUiLanguage();
   const [code, setCode] = useState(() => codeFromUrl());
   const [state, setState] = useState<"idle" | "working" | "done" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export function RedeemCodeCard({ className, onRedeemed }: RedeemCodeCardProps) {
     return (
       <div className={`rounded-lg border border-green-300 bg-green-50 p-4 text-green-900 ${className ?? ""}`} role="status" data-testid="redeem-code-done">
         <p className="font-semibold flex items-center gap-2">
-          <Check className="w-5 h-5" aria-hidden /> {premiumUntilLabel(until) ?? "Premium is on"}
+          <Check className="w-5 h-5" aria-hidden /> {premiumUntilLabel(until) ?? uiText("Premium is on")}
         </p>
         <p className="text-sm mt-1">{message}</p>
       </div>
@@ -62,8 +64,8 @@ export function RedeemCodeCard({ className, onRedeemed }: RedeemCodeCardProps) {
       }}
       data-testid="redeem-code-card"
     >
-      <Label htmlFor="redeem-code" className="font-medium">Have a code?</Label>
-      <p className="text-sm text-muted-foreground">Type it here. Premium starts right away, no card needed.</p>
+      <Label htmlFor="redeem-code" className="font-medium">{uiText("Have a code?")}</Label>
+      <p className="text-sm text-muted-foreground">{uiText("Type it here. Premium starts right away, no card needed.")}</p>
       <div className="flex flex-col sm:flex-row gap-2">
         <Input
           id="redeem-code"
@@ -71,7 +73,7 @@ export function RedeemCodeCard({ className, onRedeemed }: RedeemCodeCardProps) {
           value={code}
           autoCapitalize="characters"
           autoComplete="off"
-          placeholder="Your code"
+          placeholder={uiText("Your code")}
           disabled={state === "working"}
           aria-invalid={state === "error"}
           aria-describedby={state === "error" ? "redeem-code-error" : undefined}
@@ -83,10 +85,10 @@ export function RedeemCodeCard({ className, onRedeemed }: RedeemCodeCardProps) {
         <Button type="submit" disabled={state === "working"} className="sm:w-auto min-h-11">
           {state === "working" ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden /> Checking…
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden /> {uiText("Checking…")}
             </>
           ) : state === "error" ? (
-            "Try again"
+            uiText("Try again")
           ) : (
             "Use code"
           )}

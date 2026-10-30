@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 // Premium Story Library Component
 import React, { useState, useEffect } from 'react';
 import { GRADES, gradeLabel, type Grade } from "@/lib/grades";
@@ -32,6 +33,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
   currentStory,
   pageImages = {} // CRITICAL: Extract pageImages prop
 }) => {
+  useUiLanguage();
   const [savedStories, setSavedStories] = useState<SavedStory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,8 +61,8 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
     } catch (error) {
       DebugLogger.error('story', 'Error loading saved stories', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load your saved stories.',
+        title: uiText("Error"),
+        description: uiText("Failed to load your saved stories."),
         variant: 'destructive'
       });
     } finally {
@@ -92,8 +94,8 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
     } catch (error) {
       DebugLogger.error('story', 'Error searching stories', error);
       toast({
-        title: 'Error',
-        description: 'Failed to search stories.',
+        title: uiText("Error"),
+        description: uiText("Failed to search stories."),
         variant: 'destructive'
       });
     } finally {
@@ -112,14 +114,14 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
         )
       );
       toast({
-        title: 'Success',
-        description: 'Story favorite status updated.',
+        title: uiText("Success"),
+        description: uiText("Story favorite status updated."),
       });
     } catch (error) {
       DebugLogger.error('story', 'Error toggling favorite', error);
       toast({
-        title: 'Error',
-        description: 'Failed to update favorite status.',
+        title: uiText("Error"),
+        description: uiText("Failed to update favorite status."),
         variant: 'destructive'
       });
     }
@@ -131,14 +133,14 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
       setSavedStories(prev => prev.filter(story => story.id !== storyId));
       setDeleteDialogOpen(null);
       toast({
-        title: 'Success',
-        description: 'Story deleted successfully.',
+        title: uiText("Success"),
+        description: uiText("Story deleted successfully."),
       });
     } catch (error) {
       DebugLogger.error('story', 'Error deleting story', error);
       toast({
-        title: 'Error',
-        description: 'Failed to delete story.',
+        title: uiText("Error"),
+        description: uiText("Failed to delete story."),
         variant: 'destructive'
       });
     }
@@ -147,8 +149,8 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
   const handleSaveCurrentStory = async () => {
     if (!currentStory) {
       toast({
-        title: 'No Story',
-        description: 'No current story to save.',
+        title: uiText("No Story"),
+        description: uiText("No current story to save."),
         variant: 'destructive'
       });
       return;
@@ -178,16 +180,16 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
       await PremiumStoryManager.saveStory(storyToSave, userInfo, ['recent'], false);
       
       toast({
-        title: 'Success',
-        description: 'Story saved to your library!',
+        title: uiText("Success"),
+        description: uiText("Story saved to your library!"),
       });
       
       loadSavedStories();
     } catch (error) {
       DebugLogger.error('story', 'Error saving story', error);
       toast({
-        title: 'Error',
-        description: 'Failed to save story.',
+        title: uiText("Error"),
+        description: uiText("Failed to save story."),
         variant: 'destructive'
       });
     }
@@ -240,16 +242,16 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
       DebugLogger.log('image', 'Generated images for library story', updatedImages);
 
       toast({
-        title: 'Success',
-        description: 'Images generated successfully!',
+        title: uiText("Success"),
+        description: uiText("Images generated successfully!"),
       });
 
       loadSavedStories();
     } catch (error) {
       DebugLogger.error('image', 'Error generating missing images', error);
       toast({
-        title: 'Error',
-        description: 'Failed to generate images.',
+        title: uiText("Error"),
+        description: uiText("Failed to generate images."),
         variant: 'destructive'
       });
     } finally {
@@ -270,7 +272,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-2">Loading your story library...</span>
+        <span className="ml-2">{uiText("Loading your story library...")}</span>
       </div>
     );
   }
@@ -282,7 +284,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
         <div className="flex justify-end gap-2">
           <Button onClick={handleSaveCurrentStory} variant="outline">
             <BookOpen className="w-4 h-4 mr-2" />
-            Save Current Story
+            {uiText("Save Current Story")}
           </Button>
         </div>
       )}
@@ -291,14 +293,14 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <CardTitle className="text-lg">Find Your Stories</CardTitle>
+            <CardTitle className="text-lg">{uiText("Find Your Stories")}</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 items-stretch lg:items-end">
             <div className="flex-1">
               <Input
-                placeholder="Search stories by title..."
+                placeholder={uiText("Search stories by title...")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -306,12 +308,12 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
             </div>
             <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value)}>
               <SelectTrigger className="w-full lg:w-44" data-testid="library-reads-at">
-                <SelectValue placeholder="Reads at" />
+                <SelectValue placeholder={uiText("Reads at")} />
               </SelectTrigger>
               <SelectContent className="z-50">
-                <SelectItem value="all">Reads at: any grade</SelectItem>
+                <SelectItem value="all">{uiText("Reads at: any grade")}</SelectItem>
                 {GRADES.map((g) => (
-                  <SelectItem key={g} value={g}>Reads at {gradeLabel(g, 'long')}</SelectItem>
+                  <SelectItem key={g} value={g}>{uiText("Reads at")} {gradeLabel(g, 'long')}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -321,11 +323,11 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
               className="w-full lg:w-auto"
             >
               <Heart className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`} />
-              Favorites
+              {uiText("Favorites")}
             </Button>
             <Button onClick={handleSearch} className="w-full lg:w-auto">
               <Search className="w-4 h-4 mr-2" />
-              Search
+              {uiText("Search")}
             </Button>
           </div>
         </CardContent>
@@ -336,12 +338,12 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
         <Card>
           <CardContent className="flex flex-col items-center justify-center p-12">
             <BookOpen className="w-16 h-16 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Stories Yet</h3>
+            <h3 className="text-xl font-semibold mb-2">{uiText("No Stories Yet")}</h3>
             <p className="text-muted-foreground text-center mb-4">
-              Start creating amazing stories to build your personal library!
+              {uiText("Start creating amazing stories to build your personal library!")}
             </p>
             <Button onClick={onStartNewStory}>
-              Create Your First Story
+              {uiText("Create Your First Story")}
             </Button>
           </CardContent>
         </Card>
@@ -363,7 +365,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleToggleFavorite(story.id)}
-                          aria-label={story.isFavorite ? 'Unfavorite' : 'Favorite'}
+                          aria-label={story.isFavorite ? uiText("Unfavorite") : uiText("Favorite")}
                         >
                           <Heart 
                             className={`w-4 h-4 ${
@@ -386,7 +388,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                           </div>
                           <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                             <BookOpen className="w-3 h-3 mr-1" />
-                            {story.wordCount} words
+                            {story.wordCount} {uiText("words")}
                           </div>
                         </div>
                       </div>
@@ -398,7 +400,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                         className="flex-1"
                       >
                         <Play className="w-4 h-4 mr-2" />
-                        Read Story
+                        {uiText("Read Story")}
                       </Button>
                       
                       {hasPartialImages(story) && (
@@ -409,21 +411,21 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                           disabled={generatingImages[story.id]}
                           className="text-xs"
                         >
-                          {generatingImages[story.id] ? 'Generating...' : 'Fix Images'}
+                          {generatingImages[story.id] ? uiText("Generating...") : uiText("Fix Images")}
                         </Button>
                       )}
 
                       <Dialog open={deleteDialogOpen === story.id} onOpenChange={(open) => setDeleteDialogOpen(open ? story.id : null)}>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="icon" aria-label="Delete story">
+                          <Button variant="outline" size="icon" aria-label={uiText("Delete story")}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Delete Story</DialogTitle>
+                            <DialogTitle>{uiText("Delete Story")}</DialogTitle>
                             <DialogDescription>
-                              Are you sure you want to delete "{story.title}"? This action cannot be undone.
+                              {uiText("Are you sure you want to delete \"")}{story.title}{uiText("\"? This action cannot be undone.")}
                             </DialogDescription>
                           </DialogHeader>
                           <DialogFooter>
@@ -431,13 +433,13 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                               variant="outline" 
                               onClick={() => setDeleteDialogOpen(null)}
                             >
-                              Cancel
+                              {uiText("Cancel")}
                             </Button>
                             <Button 
                               variant="destructive" 
                               onClick={() => handleDeleteStory(story.id)}
                             >
-                              Delete
+                              {uiText("Delete")}
                             </Button>
                           </DialogFooter>
                         </DialogContent>
@@ -493,7 +495,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                             </div>
                             <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                               <BookOpen className="w-3 h-3 mr-1" />
-                              {story.wordCount} words
+                              {story.wordCount} {uiText("words")}
                             </div>
                           </div>
                           
@@ -507,7 +509,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                               ))}
                               {story.tags.length > 3 && (
                                 <Badge variant="secondary" className="text-xs">
-                                  +{story.tags.length - 3} more
+                                  +{story.tags.length - 3} {uiText("more")}
                                 </Badge>
                               )}
                             </div>
@@ -521,7 +523,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                           className="flex-1 mr-2"
                         >
                           <Play className="w-4 h-4 mr-2" />
-                          Read Story
+                          {uiText("Read Story")}
                         </Button>
                         
                         <Dialog open={deleteDialogOpen === story.id} onOpenChange={(open) => setDeleteDialogOpen(open ? story.id : null)}>
@@ -532,9 +534,9 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Delete Story</DialogTitle>
+                              <DialogTitle>{uiText("Delete Story")}</DialogTitle>
                               <DialogDescription>
-                                Are you sure you want to delete "{story.title}"? This action cannot be undone.
+                                {uiText("Are you sure you want to delete \"")}{story.title}{uiText("\"? This action cannot be undone.")}
                               </DialogDescription>
                             </DialogHeader>
                             <DialogFooter>
@@ -542,13 +544,13 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                                 variant="outline" 
                                 onClick={() => setDeleteDialogOpen(null)}
                               >
-                                Cancel
+                                {uiText("Cancel")}
                               </Button>
                               <Button 
                                 variant="destructive" 
                                 onClick={() => handleDeleteStory(story.id)}
                               >
-                                Delete
+                                {uiText("Delete")}
                               </Button>
                             </DialogFooter>
                           </DialogContent>
@@ -559,11 +561,11 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
                   {/* Pagination Controls */}
                   <div className="col-span-full flex items-center justify-center gap-2 mt-2">
                     <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                      Prev
+                      {uiText("Prev")}
                     </Button>
-                    <span className="text-sm text-muted-foreground">Page {page} of {Math.max(1, Math.ceil(savedStories.length / pageSize))}</span>
+                    <span className="text-sm text-muted-foreground">{uiText("Page")} {page} {uiText("of")} {Math.max(1, Math.ceil(savedStories.length / pageSize))}</span>
                     <Button variant="outline" size="sm" disabled={page >= Math.ceil(savedStories.length / pageSize)} onClick={() => setPage((p) => Math.min(Math.ceil(savedStories.length / pageSize), p + 1))}>
-                      Next
+                      {uiText("Next")}
                     </Button>
                   </div>
                 </>

@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useCallback, useRef, useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -287,21 +288,19 @@ return (
   <Card>
   
       <CardHeader>
-        <CardTitle className="text-base">Voice commands</CardTitle>
-        <CardDescription>Say things like “Start reading”, “Next page”</CardDescription>
+        <CardTitle className="text-base"> {uiText("Voice commands")} </CardTitle>
+        <CardDescription> {uiText("Say things like “Start reading”, “Next page”")} </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center gap-3">
           {!isRecording ? (
             <Button size="sm" onClick={startRecording} className="gap-2">
-              <Mic className="w-4 h-4" /> Listen
-            </Button>
+              <Mic className="w-4 h-4" />  {uiText("Listen")} </Button>
           ) : (
             <Button size="sm" variant="destructive" onClick={stopRecording} className="gap-2">
-              <StopCircle className="w-4 h-4" /> Stop
-            </Button>
+              <StopCircle className="w-4 h-4" />  {uiText("Stop")} </Button>
           )}
-          <div className="text-xs text-muted-foreground">Commands: {KNOWN_COMMANDS.join(", ")}</div>
+          <div className="text-xs text-muted-foreground"> {uiText("Commands:")} {KNOWN_COMMANDS.join(", ")}</div>
         </div>
 
         {/* Live status + VU meter */}
@@ -328,7 +327,7 @@ return (
 
         {lastCommand && (
           <div className="flex items-center gap-2 text-sm">
-            <Bot className="w-4 h-4" /> <span>Heard:</span>
+            <Bot className="w-4 h-4" /> <span> {uiText("Heard:")} </span>
             <span className="font-medium">{lastCommand}</span>
           </div>
         )}

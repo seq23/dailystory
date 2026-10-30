@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState } from "react";
 import { Download, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function DataExportButton() {
+  useUiLanguage();
   const [isExporting, setIsExporting] = useState(false);
   const [exportComplete, setExportComplete] = useState(false);
 
@@ -15,7 +17,7 @@ export function DataExportButton() {
     try {
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
-        toast.error("Please sign in to export your data");
+        toast.error(uiText("Please sign in to export your data"));
         return;
       }
 
@@ -41,7 +43,7 @@ export function DataExportButton() {
       URL.revokeObjectURL(url);
 
       setExportComplete(true);
-      toast.success("Your data has been exported successfully!");
+      toast.success(uiText("Your data has been exported successfully!"));
 
       // Reset the complete state after 3 seconds
       setTimeout(() => setExportComplete(false), 3000);
@@ -63,17 +65,17 @@ export function DataExportButton() {
       {isExporting ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin" />
-          Exporting...
+          {uiText("Exporting...")}
         </>
       ) : exportComplete ? (
         <>
           <CheckCircle className="w-4 h-4 text-[hsl(var(--green))]" />
-          Downloaded!
+          {uiText("Downloaded!")}
         </>
       ) : (
         <>
           <Download className="w-4 h-4" />
-          Download My Data
+          {uiText("Download My Data")}
         </>
       )}
     </Button>

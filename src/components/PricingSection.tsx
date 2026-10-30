@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { Check, Crown, Building2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,6 +20,7 @@ interface PricingSectionProps {
 }
 
 export function PricingSection({ compact }: PricingSectionProps) {
+  useUiLanguage();
   // A signed-in parent starts the trial here (Stripe checkout); everyone else signs up first.
   // Guard: src/test/guards/pricing-trial.test.ts.
   const [signedIn, setSignedIn] = useState(false);
@@ -44,10 +46,10 @@ export function PricingSection({ compact }: PricingSectionProps) {
       <div className="container mx-auto px-4">
         <header className="text-center max-w-3xl mx-auto mb-10">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Simple, transparent pricing
+            {uiText("Simple, transparent pricing")}
           </h1>
           <p className="text-muted-foreground mt-3">
-            Built for families with children ages 3 to 15, Pre-K to 10th grade. Try {FREE_STORY_LIMIT} stories free, then {TRIAL_DAYS} days of Premium free.
+            {uiText("Built for families with children ages 3 to 15, Pre-K to 10th grade. Try")} {FREE_STORY_LIMIT} {uiText("stories free, then")} {TRIAL_DAYS} {uiText("days of Premium free.")}
           </p>
         </header>
 
@@ -56,25 +58,25 @@ export function PricingSection({ compact }: PricingSectionProps) {
           {/* Free */}
           <Card>
             <CardHeader>
-              <CardTitle>Free</CardTitle>
-              <CardDescription>Try it out</CardDescription>
+              <CardTitle>{uiText("Free")}</CardTitle>
+              <CardDescription>{uiText("Try it out")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
                 <div className="text-3xl font-bold">$0</div>
-                <div className="text-muted-foreground">{FREE_STORY_LIMIT} free stories</div>
+                <div className="text-muted-foreground">{FREE_STORY_LIMIT} {uiText("free stories")}</div>
               </div>
               <ul className="space-y-2 mb-6">
                 {freeFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1 shrink-0" />
-                    <span>{f}</span>
+                    <span>{uiText(f)}</span>
                   </li>
                 ))}
               </ul>
               <Link to="/?action=new-story">
                 <Button variant="outline" className="w-full">
-                  Start Free
+                  {uiText("Start Free")}
                 </Button>
               </Link>
             </CardContent>
@@ -85,40 +87,40 @@ export function PricingSection({ compact }: PricingSectionProps) {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-yellow-500" />
-                <CardTitle>Premium</CardTitle>
+                <CardTitle>{uiText("Premium")}</CardTitle>
               </div>
-              <CardDescription>For families with readers ages 3 to 15</CardDescription>
+              <CardDescription>{uiText("For families with readers ages 3 to 15")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
                 <div className="text-3xl font-bold">{PLAN_PRICES.monthly.label}</div>
-                <div className="text-muted-foreground">per month, or {PLAN_PRICES.annual.label} per year</div>
-                <div className="text-sm font-medium text-primary mt-1">{TRIAL_DAYS}-day free trial</div>
-                <div className="text-xs text-muted-foreground mt-1" data-testid="secure-checkout">🔒 Secure checkout in US dollars, by Stripe. Have a code? Use it when you sign up.</div>
+                <div className="text-muted-foreground">{uiText("per month, or")} {PLAN_PRICES.annual.label} {uiText("per year")}</div>
+                <div className="text-sm font-medium text-primary mt-1">{TRIAL_DAYS}{uiText("-day free trial")}</div>
+                <div className="text-xs text-muted-foreground mt-1" data-testid="secure-checkout">{uiText("🔒 Secure checkout in US dollars, by Stripe. Have a code? Use it when you sign up.")}</div>
               </div>
               <p className="mb-4 rounded-md bg-primary/5 border border-primary/20 px-3 py-2 text-sm" data-testid="heygetonmylevel-bonus">
-                Includes{" "}
+                {uiText("Includes")}{" "}
                 <a href={HEYGETONMYLEVEL_URL} target="_blank" rel="noopener noreferrer" className="font-medium underline">
-                  HeyGetOnMyLevel
+                  {uiText("HeyGetOnMyLevel")}
                 </a>{" "}
-                reading practice free
+                {uiText("reading practice free")}
               </p>
               <div className="space-y-4 mb-6">
                 <ul className="space-y-2">
                   {premiumFeatures.map((f) => (
                     <li key={f} className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1 shrink-0" />
-                      <span>{f}</span>
+                      <span>{uiText(f)}</span>
                     </li>
                   ))}
                 </ul>
                 <div>
-                  <h4 className="font-medium text-sm text-muted-foreground">Additional offerings</h4>
+                  <h4 className="font-medium text-sm text-muted-foreground">{uiText("Additional offerings")}</h4>
                   <ul className="mt-2 space-y-2">
                     {additionalOfferings.map((f) => (
                       <li key={f} className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1 shrink-0" />
-                        <span>{f}</span>
+                        <span>{uiText(f)}</span>
                       </li>
                     ))}
                   </ul>
@@ -137,15 +139,15 @@ export function PricingSection({ compact }: PricingSectionProps) {
                       data-testid={`pricing-trial-${plan}`}
                     >
                       {pending === plan
-                        ? "Opening checkout…"
+                        ? uiText("Opening checkout…")
                         : `Start ${TRIAL_DAYS}-day free trial · ${PLAN_PRICES[plan].label}${PLAN_PRICES[plan].period}`}
                     </Button>
                   ))}
-                  {error && <p role="alert" className="text-sm text-destructive">{error} Tap a plan to try again.</p>}
+                  {error && <p role="alert" className="text-sm text-destructive">{error} {uiText("Tap a plan to try again.")}</p>}
                 </div>
               ) : (
                 <Link to="/auth">
-                  <Button className="w-full">Start {TRIAL_DAYS}-day free trial</Button>
+                  <Button className="w-full">{uiText("Start")} {TRIAL_DAYS}{uiText("-day free trial")}</Button>
                 </Link>
               )}
             </CardContent>
@@ -156,27 +158,27 @@ export function PricingSection({ compact }: PricingSectionProps) {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-primary" />
-                <CardTitle>Schools</CardTitle>
+                <CardTitle>{uiText("Schools")}</CardTitle>
               </div>
-              <CardDescription>For schools, classrooms &amp; organizations</CardDescription>
+              <CardDescription>{uiText("For schools, classrooms & organizations")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
-                <div className="text-3xl font-bold">Contact us</div>
-                <div className="text-muted-foreground">Classroom and district pricing</div>
+                <div className="text-3xl font-bold">{uiText("Contact us")}</div>
+                <div className="text-muted-foreground">{uiText("Classroom and district pricing")}</div>
               </div>
               <ul className="space-y-2 mb-6">
                 {enterpriseFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-[hsl(var(--green))] mt-1 shrink-0" />
-                    <span>{f}</span>
+                    <span>{uiText(f)}</span>
                   </li>
                 ))}
               </ul>
               <a href="mailto:hello@time-2-read.com?subject=School%20pricing">
                 <Button variant="outline" className="w-full gap-2">
                   <Mail className="w-4 h-4" />
-                  Contact Us
+                  {uiText("Contact Us")}
                 </Button>
               </a>
             </CardContent>
@@ -185,29 +187,29 @@ export function PricingSection({ compact }: PricingSectionProps) {
 
         {/* ── A look inside the app ── */}
         <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-2">A look inside Time-2-Read</h2>
+          <h2 className="text-2xl font-bold mb-2">{uiText("A look inside Time-2-Read")}</h2>
           <p className="text-muted-foreground mb-6">
-            See what the reading experience looks like for free and premium users.
+            {uiText("See what the reading experience looks like for free and premium users.")}
           </p>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {/* Reading experience – all users */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Interactive reading sessions</CardTitle>
-                <CardDescription>Available to all users</CardDescription>
+                <CardTitle className="text-base">{uiText("Interactive reading sessions")}</CardTitle>
+                <CardDescription>{uiText("Available to all users")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <img
                   src={readingScreenshot}
-                  alt="A reading session in Time-2-Read with illustrated story, interactive word highlighting, and floating timer"
+                  alt={uiText("A reading session in Time-2-Read with illustrated story, interactive word highlighting, and floating timer")}
                   loading="lazy"
                   width={1280}
                   height={720}
                   className="rounded-md w-full h-44 object-cover"
                 />
                 <p className="text-sm text-muted-foreground mt-3">
-                  Every session features AI-generated illustrations, interactive word highlighting, text-to-speech, and a floating reading timer.
+                  {uiText("Every session features AI-generated illustrations, interactive word highlighting, text-to-speech, and a floating reading timer.")}
                 </p>
               </CardContent>
             </Card>
@@ -217,21 +219,21 @@ export function PricingSection({ compact }: PricingSectionProps) {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Crown className="w-4 h-4 text-yellow-500" />
-                  <CardTitle className="text-base">Story library &amp; profiles</CardTitle>
+                  <CardTitle className="text-base">{uiText("Story library & profiles")}</CardTitle>
                 </div>
-                <CardDescription>Premium feature</CardDescription>
+                <CardDescription>{uiText("Premium feature")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <img
                   src={libraryScreenshot}
-                  alt="Premium story library showing saved stories, reading stats, and child profile"
+                  alt={uiText("Premium story library showing saved stories, reading stats, and child profile")}
                   loading="lazy"
                   width={1280}
                   height={720}
                   className="rounded-md w-full h-44 object-cover"
                 />
                 <p className="text-sm text-muted-foreground mt-3">
-                  Save unlimited stories, track reading streaks, manage multiple child profiles, and pick up right where you left off.
+                  {uiText("Save unlimited stories, track reading streaks, manage multiple child profiles, and pick up right where you left off.")}
                 </p>
               </CardContent>
             </Card>
@@ -241,21 +243,21 @@ export function PricingSection({ compact }: PricingSectionProps) {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Crown className="w-4 h-4 text-yellow-500" />
-                  <CardTitle className="text-base">Vocabulary &amp; quizzes</CardTitle>
+                  <CardTitle className="text-base">{uiText("Vocabulary & quizzes")}</CardTitle>
                 </div>
-                <CardDescription>Premium feature</CardDescription>
+                <CardDescription>{uiText("Premium feature")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <img
                   src={vocabScreenshot}
-                  alt="Vocabulary word bank, comprehension quiz, achievement badges, and parent insights dashboard"
+                  alt={uiText("Vocabulary word bank, comprehension quiz, achievement badges, and parent insights dashboard")}
                   loading="lazy"
                   width={1280}
                   height={720}
                   className="rounded-md w-full h-44 object-cover"
                 />
                 <p className="text-sm text-muted-foreground mt-3">
-                  Build a personal word bank, test comprehension with quizzes, earn achievement badges, and view parent insights.
+                  {uiText("Build a personal word bank, test comprehension with quizzes, earn achievement badges, and view parent insights.")}
                 </p>
               </CardContent>
             </Card>
@@ -269,9 +271,9 @@ export function PricingSection({ compact }: PricingSectionProps) {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Crown className="w-4 h-4 text-yellow-500" />
-                  <CardTitle className="text-base">Read‑aloud coach</CardTitle>
+                  <CardTitle className="text-base">{uiText("Read‑aloud coach")}</CardTitle>
                 </div>
-                <CardDescription>Speech‑to‑text feedback — Premium</CardDescription>
+                <CardDescription>{uiText("Speech‑to‑text feedback — Premium")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ReadAloudCoach autoIntroduce={false} />

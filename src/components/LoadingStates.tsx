@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React from 'react';
 import { Loader2, BookOpen, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -47,7 +48,7 @@ export const StoryGenerationLoading = ({
         <p className="text-lg font-medium text-foreground">{message}</p>
         <div className="flex items-center gap-2 justify-center">
           <LoadingSpinner size="sm" />
-          <span className="text-sm text-muted-foreground">This might take a moment...</span>
+          <span className="text-sm text-muted-foreground"> {uiText("This might take a moment...")} </span>
         </div>
       </div>
     </div>

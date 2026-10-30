@@ -48,18 +48,15 @@ i18n
     },
   });
 
-// Update document direction and language attributes when language changes
-i18n.on('languageChanged', (lng) => {
-  const isRTL = lng === 'ar' || lng === 'ur';
-  document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
-  document.documentElement.lang = lng;
-  
-  // Apply language-specific font classes to body
+// Apply on startup as well as changes, including regional language tags.
+export function applyDocumentLanguage(lng: string): void {
+  const language = lng.toLowerCase().split(/[-_]/)[0];
+  document.documentElement.dir = language === 'ar' || language === 'ur' ? 'rtl' : 'ltr';
+  document.documentElement.lang = language;
   document.body.className = document.body.className.replace(/\blang-\w+\b/g, '');
-  document.body.classList.add(`lang-${lng}`);
-  
-  // Note: Story content and navigation components can override RTL/LTR via CSS classes
-  // This ensures global UI changes while preserving story display consistency
-});
+  document.body.classList.add(`lang-${language}`);
+}
+i18n.on('languageChanged', applyDocumentLanguage);
+applyDocumentLanguage(i18n.resolvedLanguage || i18n.language || 'en');
 
 export default i18n;

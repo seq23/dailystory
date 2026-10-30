@@ -1,3 +1,5 @@
+import { uiGradeLabel } from "@/i18n/gradeLabel";
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState, useEffect } from "react";
 import { DebugLogger } from '@/services/DebugLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +30,7 @@ interface ParentDashboardProps {
 }
 
 export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboardProps) => {
+  useUiLanguage();
   const { t } = useTranslation();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
@@ -159,9 +162,9 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
         await supabase.from('user_preferences').insert({ user_id: user.id, story_preferences: nextPrefs });
       }
       setStoryPrefs(nextPrefs);
-      toast({ title: 'Saved word list' });
+      toast({ title: uiText("Saved word list") });
     } catch (e) {
-      toast({ title: 'Could not save word list', variant: 'destructive' });
+      toast({ title: uiText("Could not save word list"), variant: 'destructive' });
     } finally {
       setTwSaving(false);
     }
@@ -179,7 +182,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
   const LoadingOverlay = () => (
     <div className="flex items-center justify-center py-12 text-muted-foreground">
       <Loader2 className="w-5 h-5 animate-spin mr-2" />
-      <span>Loading data...</span>
+      <span>{uiText("Loading data...")}</span>
     </div>
   );
 
@@ -195,10 +198,10 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
     <Card className="w-full max-w-6xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-2xl">{childLabel}'s Learning Dashboard</CardTitle>
+          <CardTitle className="text-2xl">{childLabel}{uiText("'s Learning Dashboard")}</CardTitle>
           <CardDescription>
             {showingAllChildren
-              ? "Showing data across all children. Select a child in Controls to filter."
+              ? uiText("Showing data across all children. Select a child in Controls to filter.")
               : `Showing data for ${childLabel}`}
           </CardDescription>
         </div>
@@ -206,18 +209,18 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
       
       <CardContent>
         <div className="w-full flex flex-wrap items-center justify-end gap-2 mb-4">
-          <Label className="text-sm text-muted-foreground">Show section (tap to choose):</Label>
+          <Label className="text-sm text-muted-foreground">{uiText("Show section (tap to choose):")}</Label>
           <Select value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select section" />
+              <SelectValue placeholder={uiText("Select section")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="overview">Overview</SelectItem>
-              <SelectItem value="progress">Progress</SelectItem>
-              <SelectItem value="goals">Goals</SelectItem>
-              <SelectItem value="insights">Reports</SelectItem>
-              <SelectItem value="controls">Controls</SelectItem>
-              <SelectItem value="quizzes">Quizzes</SelectItem>
+              <SelectItem value="overview">{uiText("Overview")}</SelectItem>
+              <SelectItem value="progress">{uiText("Progress")}</SelectItem>
+              <SelectItem value="goals">{uiText("Goals")}</SelectItem>
+              <SelectItem value="insights">{uiText("Reports")}</SelectItem>
+              <SelectItem value="controls">{uiText("Controls")}</SelectItem>
+              <SelectItem value="quizzes">{uiText("Quizzes")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -232,28 +235,28 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     <CardContent className="p-4 text-center">
                       <BookOpen className="w-8 h-8 text-primary mx-auto mb-2" />
                       <div className="text-2xl font-bold">{progress.storiesRead}</div>
-                      <div className="text-sm text-muted-foreground">Stories Read</div>
+                      <div className="text-sm text-muted-foreground">{uiText("Stories Read")}</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
                       <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
                       <div className="text-2xl font-bold">{formatTime(progress.totalReadingTimeMinutes)}</div>
-                      <div className="text-sm text-muted-foreground">Reading Time</div>
+                      <div className="text-sm text-muted-foreground">{uiText("Reading Time")}</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
                       <Star className="w-8 h-8 text-primary mx-auto mb-2" />
                       <div className="text-2xl font-bold">{progress.wordsLearned}</div>
-                      <div className="text-sm text-muted-foreground">Words Learned</div>
+                      <div className="text-sm text-muted-foreground">{uiText("Words Learned")}</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
                       <Award className="w-8 h-8 text-primary mx-auto mb-2" />
                       <div className="text-2xl font-bold">{progress.currentStreak}</div>
-                      <div className="text-sm text-muted-foreground">Day Streak</div>
+                      <div className="text-sm text-muted-foreground">{uiText("Day Streak")}</div>
                     </CardContent>
                   </Card>
                 </div>
@@ -263,74 +266,74 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <TrendingUp className="w-5 h-5" />
-                        Performance Summary
+                        {uiText("Performance Summary")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
                         <div className="flex justify-between text-sm mb-2">
-                          <span>Comprehension (Quizzes)</span>
+                          <span>{uiText("Comprehension (Quizzes)")}</span>
                           <span>{progress.averageComprehensionScore}%</span>
                         </div>
                         <Progress value={progress.averageComprehensionScore} />
                       </div>
                       <div>
                         <div className="flex justify-between text-sm mb-2">
-                          <span>Game Performance</span>
+                          <span>{uiText("Game Performance")}</span>
                           <span>{progress.averageGameScore}%</span>
                         </div>
                         <Progress value={progress.averageGameScore} />
                       </div>
                       <div className="text-xs text-muted-foreground pt-2">
-                        {progress.quizzesTaken} quizzes taken • {progress.gamesPlayed} games played • {progress.savedStories} stories saved
+                        {progress.quizzesTaken} {uiText("quizzes taken •")} {progress.gamesPlayed} {uiText("games played •")} {progress.savedStories} {uiText("stories saved")}
                       </div>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardHeader>
-                      <CardTitle>Milestones</CardTitle>
+                      <CardTitle>{uiText("Milestones")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
                         {progress.storiesRead >= 1 && (
                           <Badge variant="secondary" className="mr-2">
-                            <Award className="w-3 h-3 mr-1" /> First Story
+                            <Award className="w-3 h-3 mr-1" /> {uiText("First Story")}
                           </Badge>
                         )}
                         {progress.storiesRead >= 5 && (
                           <Badge variant="secondary" className="mr-2">
-                            <Award className="w-3 h-3 mr-1" /> 5 Stories
+                            <Award className="w-3 h-3 mr-1" /> {uiText("5 Stories")}
                           </Badge>
                         )}
                         {progress.storiesRead >= 10 && (
                           <Badge variant="secondary" className="mr-2">
-                            <Award className="w-3 h-3 mr-1" /> 10 Stories
+                            <Award className="w-3 h-3 mr-1" /> {uiText("10 Stories")}
                           </Badge>
                         )}
                         {progress.wordsLearned >= 10 && (
                           <Badge variant="secondary" className="mr-2">
-                            <Star className="w-3 h-3 mr-1" /> Word Explorer (10+)
+                            <Star className="w-3 h-3 mr-1" /> {uiText("Word Explorer (10+)")}
                           </Badge>
                         )}
                         {progress.wordsLearned >= 50 && (
                           <Badge variant="secondary" className="mr-2">
-                            <Star className="w-3 h-3 mr-1" /> Vocabulary Master (50+)
+                            <Star className="w-3 h-3 mr-1" /> {uiText("Vocabulary Master (50+)")}
                           </Badge>
                         )}
                         {progress.currentStreak >= 3 && (
                           <Badge variant="secondary" className="mr-2">
-                            <Award className="w-3 h-3 mr-1" /> 3-Day Streak
+                            <Award className="w-3 h-3 mr-1" /> {uiText("3-Day Streak")}
                           </Badge>
                         )}
                         {progress.currentStreak >= 7 && (
                           <Badge variant="secondary" className="mr-2">
-                            <Award className="w-3 h-3 mr-1" /> Week Warrior
+                            <Award className="w-3 h-3 mr-1" /> {uiText("Week Warrior")}
                           </Badge>
                         )}
                         {progress.quizzesTaken >= 5 && progress.averageComprehensionScore >= 80 && (
                           <Badge variant="secondary" className="mr-2">
-                            <Award className="w-3 h-3 mr-1" /> Quiz Star (80%+)
+                            <Award className="w-3 h-3 mr-1" /> {uiText("Quiz Star (80%+)")}
                           </Badge>
                         )}
                         {progress.storiesRead === 0 && progress.wordsLearned === 0 && (
@@ -352,8 +355,8 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
               <>
                 <Card>
                   <CardHeader>
-                    <CardTitle>This Week's Reading</CardTitle>
-                    <CardDescription>Minutes read each day (Mon–Sun)</CardDescription>
+                    <CardTitle>{uiText("This Week's Reading")}</CardTitle>
+                    <CardDescription>{uiText("Minutes read each day (Mon–Sun)")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-7 gap-2 text-center">
@@ -381,25 +384,25 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Overall Stats</CardTitle>
+                    <CardTitle>{uiText("Overall Stats")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                       <div>
                         <div className="text-2xl font-bold">{progress.longestStreak}</div>
-                        <div className="text-xs text-muted-foreground">Longest Streak</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Longest Streak")}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold">{progress.quizzesTaken}</div>
-                        <div className="text-xs text-muted-foreground">Quizzes Taken</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Quizzes Taken")}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold">{progress.gamesPlayed}</div>
-                        <div className="text-xs text-muted-foreground">Games Played</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Games Played")}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold">{progress.savedStories}</div>
-                        <div className="text-xs text-muted-foreground">Saved Stories</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Saved Stories")}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -419,17 +422,17 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Target className="w-5 h-5" />
-                        Weekly Story Goal
+                        {uiText("Weekly Story Goal")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span>Stories to read this week:</span>
-                        <Badge variant="secondary">{weeklyGoal} stories</Badge>
+                        <span>{uiText("Stories to read this week:")}</span>
+                        <Badge variant="secondary">{weeklyGoal} {uiText("stories")}</Badge>
                       </div>
                       <Progress value={Math.min(progress.storiesRead, weeklyGoal) / weeklyGoal * 100} />
                       <div className="text-sm text-muted-foreground">
-                        {progress.storiesRead} of {weeklyGoal} completed
+                        {progress.storiesRead} {uiText("of")} {weeklyGoal} {uiText("completed")}
                         {progress.storiesRead >= weeklyGoal && " ✅ Goal reached!"}
                       </div>
                       <div className="flex gap-2">
@@ -443,17 +446,17 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Calendar className="w-5 h-5" />
-                        Daily Reading Goal
+                        {uiText("Daily Reading Goal")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span>Minutes to read daily:</span>
-                        <Badge variant="secondary">{dailyTimeGoal} minutes</Badge>
+                        <span>{uiText("Minutes to read daily:")}</span>
+                        <Badge variant="secondary">{dailyTimeGoal} {uiText("minutes")}</Badge>
                       </div>
                       <Progress value={Math.min(todayMinutes, dailyTimeGoal) / dailyTimeGoal * 100} />
                       <div className="text-sm text-muted-foreground">
-                        {todayMinutes} of {dailyTimeGoal} minutes today
+                        {todayMinutes} {uiText("of")} {dailyTimeGoal} {uiText("minutes today")}
                         {todayMinutes >= dailyTimeGoal && " ✅ Goal reached!"}
                       </div>
                       <div className="flex gap-2">
@@ -467,8 +470,8 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                 {/* Weekly breakdown with goal line */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>This Week at a Glance</CardTitle>
-                    <CardDescription>Daily reading minutes vs. your {dailyTimeGoal}-minute goal</CardDescription>
+                    <CardTitle>{uiText("This Week at a Glance")}</CardTitle>
+                    <CardDescription>{uiText("Daily reading minutes vs. your")} {dailyTimeGoal}{uiText("-minute goal")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-7 gap-2 text-center">
@@ -491,7 +494,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                       })}
                     </div>
                     <div className="text-xs text-muted-foreground mt-3 text-center">
-                      {progress.weeklyMinutes.filter(m => m >= dailyTimeGoal).length} of 7 days met your daily goal this week
+                      {progress.weeklyMinutes.filter(m => m >= dailyTimeGoal).length} {uiText("of 7 days met your daily goal this week")}
                     </div>
                   </CardContent>
                 </Card>
@@ -502,19 +505,19 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Award className="w-5 h-5" />
-                        Quiz Mastery
+                        {uiText("Quiz Mastery")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">Target: 70% average</span>
+                        <span className="text-sm">{uiText("Target: 70% average")}</span>
                         <Badge variant={progress.averageComprehensionScore >= 70 ? "default" : "secondary"}>
                           {progress.averageComprehensionScore}%
                         </Badge>
                       </div>
                       <Progress value={Math.min(progress.averageComprehensionScore, 100)} />
                       <div className="text-sm text-muted-foreground">
-                        {progress.quizzesTaken} quizzes completed
+                        {progress.quizzesTaken} {uiText("quizzes completed")}
                         {progress.quizzesTaken === 0 && " — take a quiz after reading!"}
                         {progress.averageComprehensionScore >= 70 && progress.quizzesTaken > 0 && " ✅ Above target"}
                       </div>
@@ -525,19 +528,19 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Gamepad2 className="w-5 h-5" />
-                        Learning Games
+                        {uiText("Learning Games")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">Target: 70% average</span>
+                        <span className="text-sm">{uiText("Target: 70% average")}</span>
                         <Badge variant={progress.averageGameScore >= 70 ? "default" : "secondary"}>
                           {progress.averageGameScore}%
                         </Badge>
                       </div>
                       <Progress value={Math.min(progress.averageGameScore, 100)} />
                       <div className="text-sm text-muted-foreground">
-                        {progress.gamesPlayed} games played
+                        {progress.gamesPlayed} {uiText("games played")}
                         {progress.gamesPlayed === 0 && " — try a learning game!"}
                         {progress.averageGameScore >= 70 && progress.gamesPlayed > 0 && " ✅ Above target"}
                       </div>
@@ -550,26 +553,26 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="w-5 h-5" />
-                      Streak Progress
+                      {uiText("Streak Progress")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                       <div>
                         <div className="text-2xl font-bold">{progress.currentStreak}</div>
-                        <div className="text-xs text-muted-foreground">Current Streak</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Current Streak")}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold">{progress.longestStreak}</div>
-                        <div className="text-xs text-muted-foreground">Longest Streak</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Longest Streak")}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold">{progress.totalReadingTimeMinutes}</div>
-                        <div className="text-xs text-muted-foreground">Total Minutes</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Total Minutes")}</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold">{progress.wordsLearned}</div>
-                        <div className="text-xs text-muted-foreground">Words Learned</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Words Learned")}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -596,49 +599,49 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                       <Card><CardContent className="p-3 text-center">
                         <div className="text-xl font-bold">{progress.storiesRead}</div>
-                        <div className="text-xs text-muted-foreground">Stories</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Stories")}</div>
                       </CardContent></Card>
                       <Card><CardContent className="p-3 text-center">
                         <div className="text-xl font-bold">{formatTime(progress.totalReadingTimeMinutes)}</div>
-                        <div className="text-xs text-muted-foreground">Total Time</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Total Time")}</div>
                       </CardContent></Card>
                       <Card><CardContent className="p-3 text-center">
                         <div className="text-xl font-bold">{progress.wordsLearned}</div>
-                        <div className="text-xs text-muted-foreground">Words</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Words")}</div>
                       </CardContent></Card>
                       <Card><CardContent className="p-3 text-center">
                         <div className="text-xl font-bold">{progress.quizzesTaken}</div>
-                        <div className="text-xs text-muted-foreground">Quizzes</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Quizzes")}</div>
                       </CardContent></Card>
                       <Card><CardContent className="p-3 text-center">
                         <div className="text-xl font-bold">{progress.gamesPlayed}</div>
-                        <div className="text-xs text-muted-foreground">Games</div>
+                        <div className="text-xs text-muted-foreground">{uiText("Games")}</div>
                       </CardContent></Card>
                     </div>
 
                     {/* Reading Habit */}
                     <Card>
-                      <CardHeader><CardTitle>📖 Reading Habit</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{uiText("📖 Reading Habit")}</CardTitle></CardHeader>
                       <CardContent className="space-y-3">
                         {progress.currentStreak >= 7 ? (
                           <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary">
-                            <h4 className="font-semibold text-foreground">🔥 Outstanding Streak!</h4>
-                            <p className="text-muted-foreground">{childLabel} has read for {progress.currentStreak} days straight (longest ever: {progress.longestStreak}). This consistency builds strong literacy foundations.</p>
+                            <h4 className="font-semibold text-foreground">{uiText("🔥 Outstanding Streak!")}</h4>
+                            <p className="text-muted-foreground">{childLabel} {uiText("has read for")} {progress.currentStreak} {uiText("days straight (longest ever:")} {progress.longestStreak}{uiText("). This consistency builds strong literacy foundations.")}</p>
                           </div>
                         ) : progress.currentStreak >= 3 ? (
                           <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary">
-                            <h4 className="font-semibold text-foreground">📈 Good Momentum!</h4>
-                            <p className="text-muted-foreground">{childLabel} has a {progress.currentStreak}-day streak going (best: {progress.longestStreak} days). Try to beat the record!</p>
+                            <h4 className="font-semibold text-foreground">{uiText("📈 Good Momentum!")}</h4>
+                            <p className="text-muted-foreground">{childLabel} {uiText("has a")} {progress.currentStreak}{uiText("-day streak going (best:")} {progress.longestStreak} {uiText("days). Try to beat the record!")}</p>
                           </div>
                         ) : progress.currentStreak > 0 ? (
                           <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary/60">
-                            <h4 className="font-semibold text-foreground">🌱 Getting Started</h4>
-                            <p className="text-muted-foreground">{childLabel} read {progress.currentStreak === 1 ? 'yesterday or today' : `${progress.currentStreak} days in a row`}. Encourage reading at the same time each day to build a habit.</p>
+                            <h4 className="font-semibold text-foreground">{uiText("🌱 Getting Started")}</h4>
+                            <p className="text-muted-foreground">{childLabel} {uiText("read")} {progress.currentStreak === 1 ? uiText("yesterday or today") : `${progress.currentStreak} days in a row`}{uiText(". Encourage reading at the same time each day to build a habit.")}</p>
                           </div>
                         ) : (
                           <div className="p-4 bg-muted rounded-lg border-l-4 border-muted-foreground/40">
-                            <h4 className="font-semibold text-foreground">⏰ No Active Streak</h4>
-                            <p className="text-muted-foreground">{childLabel} hasn't read recently. Even 10 minutes today can restart their streak!</p>
+                            <h4 className="font-semibold text-foreground">{uiText("⏰ No Active Streak")}</h4>
+                            <p className="text-muted-foreground">{childLabel} {uiText("hasn't read recently. Even 10 minutes today can restart their streak!")}</p>
                           </div>
                         )}
                         {(() => {
@@ -647,9 +650,9 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                           const avgPerDay = activeDays > 0 ? Math.round(totalWeekMin / activeDays) : 0;
                           return (
                             <div className="p-4 bg-muted/50 rounded-lg">
-                              <h4 className="font-semibold text-foreground text-sm">This Week</h4>
+                              <h4 className="font-semibold text-foreground text-sm">{uiText("This Week")}</h4>
                               <p className="text-muted-foreground text-sm mt-1">
-                                {totalWeekMin} total minutes across {activeDays} active day{activeDays !== 1 ? 's' : ''}.
+                                {totalWeekMin} {uiText("total minutes across")} {activeDays} {uiText("active day")}{activeDays !== 1 ? 's' : ''}.
                                 {activeDays > 0 && ` Average: ${avgPerDay} min/day.`}
                                 {activeDays === 0 && ' No reading sessions recorded this week yet.'}
                               </p>
@@ -661,17 +664,17 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
 
                     {/* Comprehension */}
                     <Card>
-                      <CardHeader><CardTitle>🧠 Comprehension Analysis</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{uiText("🧠 Comprehension Analysis")}</CardTitle></CardHeader>
                       <CardContent className="space-y-3">
                         {progress.quizzesTaken === 0 ? (
                           <div className="p-4 bg-muted rounded-lg">
-                            <p className="text-muted-foreground text-sm">No quizzes taken yet. After reading a story, try the comprehension quiz to track understanding!</p>
+                            <p className="text-muted-foreground text-sm">{uiText("No quizzes taken yet. After reading a story, try the comprehension quiz to track understanding!")}</p>
                           </div>
                         ) : (
                           <>
                             <div className={`p-4 rounded-lg border-l-4 ${progress.averageComprehensionScore >= 80 ? 'bg-accent/30 border-primary' : progress.averageComprehensionScore >= 60 ? 'bg-accent/20 border-primary/60' : 'bg-muted border-muted-foreground/40'}`}>
                               <h4 className="font-semibold text-foreground">
-                                Average: {progress.averageComprehensionScore}% across {progress.quizzesTaken} quiz{progress.quizzesTaken !== 1 ? 'zes' : ''}
+                                {uiText("Average:")} {progress.averageComprehensionScore}{uiText("% across")} {progress.quizzesTaken} {uiText("quiz")}{progress.quizzesTaken !== 1 ? 'zes' : ''}
                               </h4>
                               <p className="text-muted-foreground">
                                 {progress.averageComprehensionScore >= 90
@@ -685,7 +688,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                             </div>
                             {/* Strengths by skill: each quiz answer is saved with its skill. */}
                             <div className="p-4 bg-muted/50 rounded-lg space-y-2" data-testid="quiz-skills">
-                              <h4 className="font-semibold text-foreground text-sm">Reading skills</h4>
+                              <h4 className="font-semibold text-foreground text-sm">{uiText("Reading skills")}</h4>
                               <p className="text-sm text-foreground">
                                 {progress.skillsSummary || `Skills show here after a few more quizzes (3 answers per skill).`}
                               </p>
@@ -710,9 +713,9 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                               const trend = olderAvg !== null ? recentAvg - olderAvg : null;
                               return (
                                 <div className="p-4 bg-muted/50 rounded-lg">
-                                  <h4 className="font-semibold text-foreground text-sm">Recent Trend</h4>
+                                  <h4 className="font-semibold text-foreground text-sm">{uiText("Recent Trend")}</h4>
                                   <p className="text-muted-foreground text-sm mt-1">
-                                    Last 3 quizzes: {recentAvg}%.
+                                    {uiText("Last 3 quizzes:")} {recentAvg}%.
                                     {trend !== null && (
                                       trend > 5 ? ` 📈 Up ${trend} pts — great improvement!`
                                       : trend < -5 ? ` 📉 Down ${Math.abs(trend)} pts — may need easier content.`
@@ -730,19 +733,19 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     {/* Vocabulary & Games */}
                     <div className="grid md:grid-cols-2 gap-6">
                       <Card>
-                        <CardHeader><CardTitle>📚 Vocabulary</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>{uiText("📚 Vocabulary")}</CardTitle></CardHeader>
                         <CardContent>
                           {progress.wordsLearned === 0 ? (
-                            <p className="text-muted-foreground text-sm">No vocabulary words tracked yet. Tap highlighted words while reading to start!</p>
+                            <p className="text-muted-foreground text-sm">{uiText("No vocabulary words tracked yet. Tap highlighted words while reading to start!")}</p>
                           ) : (
                             <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary/60">
-                              <h4 className="font-semibold text-foreground">{progress.wordsLearned} Words Encountered</h4>
+                              <h4 className="font-semibold text-foreground">{progress.wordsLearned} {uiText("Words Encountered")}</h4>
                               <p className="text-muted-foreground text-sm">
                                 {progress.wordsLearned >= 100
-                                  ? "Impressive vocabulary growth! This will help with more advanced stories."
+                                  ? uiText("Impressive vocabulary growth! This will help with more advanced stories.")
                                   : progress.wordsLearned >= 30
-                                  ? "Good progress! Each new word improves reading fluency."
-                                  : "Every new word counts. Encourage tapping unfamiliar words during reading."}
+                                  ? uiText("Good progress! Each new word improves reading fluency.")
+                                  : uiText("Every new word counts. Encourage tapping unfamiliar words during reading.")}
                               </p>
                             </div>
                           )}
@@ -750,19 +753,19 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                       </Card>
 
                       <Card>
-                        <CardHeader><CardTitle>🎮 Game Performance</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>{uiText("🎮 Game Performance")}</CardTitle></CardHeader>
                         <CardContent>
                           {progress.gamesPlayed === 0 ? (
-                            <p className="text-muted-foreground text-sm">No games played yet. Learning games reinforce vocabulary and comprehension!</p>
+                            <p className="text-muted-foreground text-sm">{uiText("No games played yet. Learning games reinforce vocabulary and comprehension!")}</p>
                           ) : (
                             <div className={`p-4 rounded-lg border-l-4 ${progress.averageGameScore >= 70 ? 'bg-accent/30 border-primary' : 'bg-muted border-muted-foreground/40'}`}>
-                              <h4 className="font-semibold text-foreground">{progress.averageGameScore}% avg across {progress.gamesPlayed} game{progress.gamesPlayed !== 1 ? 's' : ''}</h4>
+                              <h4 className="font-semibold text-foreground">{progress.averageGameScore}{uiText("% avg across")} {progress.gamesPlayed} {uiText("game")}{progress.gamesPlayed !== 1 ? 's' : ''}</h4>
                               <p className="text-muted-foreground text-sm">
                                 {progress.averageGameScore >= 80
-                                  ? "Excellent! Learning reinforcement is working well."
+                                  ? uiText("Excellent! Learning reinforcement is working well.")
                                   : progress.averageGameScore >= 60
-                                  ? "Solid scores. Games are helping reinforce content."
-                                  : "Keep playing! Repeated practice locks in new words and concepts."}
+                                  ? uiText("Solid scores. Games are helping reinforce content.")
+                                  : uiText("Keep playing! Repeated practice locks in new words and concepts.")}
                               </p>
                             </div>
                           )}
@@ -773,57 +776,57 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     {/* Actionable Recommendations */}
                     <Card>
                       <CardHeader>
-                        <CardTitle>💡 Recommendations</CardTitle>
-                        <CardDescription>Personalized suggestions for {childLabel}</CardDescription>
+                        <CardTitle>{uiText("💡 Recommendations")}</CardTitle>
+                        <CardDescription>{uiText("Personalized suggestions for")} {childLabel}</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2">
                           {progress.currentStreak === 0 && (
                             <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                               <span className="text-lg">📅</span>
-                              <p className="text-sm text-muted-foreground">Set a daily reading reminder. Even 10 minutes builds long-term literacy.</p>
+                              <p className="text-sm text-muted-foreground">{uiText("Set a daily reading reminder. Even 10 minutes builds long-term literacy.")}</p>
                             </div>
                           )}
                           {progress.quizzesTaken < 3 && progress.storiesRead > 0 && (
                             <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                               <span className="text-lg">✅</span>
-                              <p className="text-sm text-muted-foreground">Try the comprehension quiz after each story — it helps with recall and understanding.</p>
+                              <p className="text-sm text-muted-foreground">{uiText("Try the comprehension quiz after each story — it helps with recall and understanding.")}</p>
                             </div>
                           )}
                           {progress.gamesPlayed === 0 && progress.storiesRead > 0 && (
                             <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                               <span className="text-lg">🎮</span>
-                              <p className="text-sm text-muted-foreground">Learning games are available after reading! They reinforce new vocabulary in a fun way.</p>
+                              <p className="text-sm text-muted-foreground">{uiText("Learning games are available after reading! They reinforce new vocabulary in a fun way.")}</p>
                             </div>
                           )}
                           {progress.averageComprehensionScore > 0 && progress.averageComprehensionScore < 60 && (
                             <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                               <span className="text-lg">📖</span>
-                              <p className="text-sm text-muted-foreground">Consider lowering reading difficulty. Building confidence at an easier level helps long-term growth.</p>
+                              <p className="text-sm text-muted-foreground">{uiText("Consider lowering reading difficulty. Building confidence at an easier level helps long-term growth.")}</p>
                             </div>
                           )}
                           {progress.averageComprehensionScore >= 90 && progress.quizzesTaken >= 5 && (
                             <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                               <span className="text-lg">🚀</span>
-                              <p className="text-sm text-muted-foreground">{childLabel} is excelling! Consider raising the difficulty level for more challenge.</p>
+                              <p className="text-sm text-muted-foreground">{childLabel} {uiText("is excelling! Consider raising the difficulty level for more challenge.")}</p>
                             </div>
                           )}
                           {progress.wordsLearned >= 20 && (
                             <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                               <span className="text-lg">📝</span>
-                              <p className="text-sm text-muted-foreground">Use the Teacher Word List (in Controls) to add specific vocabulary for stories.</p>
+                              <p className="text-sm text-muted-foreground">{uiText("Use the Teacher Word List (in Controls) to add specific vocabulary for stories.")}</p>
                             </div>
                           )}
                           {progress.storiesRead >= 5 && progress.savedStories === 0 && (
                             <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                               <span className="text-lg">💾</span>
-                              <p className="text-sm text-muted-foreground">Save favorite stories to the library so {childLabel} can re-read them anytime!</p>
+                              <p className="text-sm text-muted-foreground">{uiText("Save favorite stories to the library so")} {childLabel} {uiText("can re-read them anytime!")}</p>
                             </div>
                           )}
                           {progress.currentStreak >= 7 && progress.averageComprehensionScore >= 70 && progress.gamesPlayed >= 3 && (
                             <div className="flex items-start gap-3 p-3 rounded-lg bg-accent/20">
                               <span className="text-lg">⭐</span>
-                              <p className="text-sm text-foreground font-medium">{childLabel} is doing great across the board! Keep up the excellent work.</p>
+                              <p className="text-sm text-foreground font-medium">{childLabel} {uiText("is doing great across the board! Keep up the excellent work.")}</p>
                             </div>
                           )}
                         </div>
@@ -844,65 +847,65 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
 
             <Card>
               <CardHeader>
-                <CardTitle>Teacher Word List</CardTitle>
+                <CardTitle>{uiText("Teacher Word List")}</CardTitle>
                 <CardDescription>
-                  Add vocabulary words you'd like the AI to weave into your child's stories. 
+                  {uiText("Add vocabulary words you'd like the AI to weave into your child's stories.")}
                   {activeChild ? (
-                    <> This list is specific to <strong>{activeChild.display_name}</strong> — switch children above to manage a different list.</>
+                    <> {uiText("This list is specific to")} <strong>{activeChild.display_name}</strong> {uiText("— switch children above to manage a different list.")}</>
                   ) : (
-                    <> You're editing the <strong>default list</strong>, which applies to <strong>all child profiles</strong>. To set words for a specific child, select them above first.</>
+                    <> {uiText("You're editing the")} <strong>{uiText("default list")}</strong>{uiText(", which applies to")} <strong>{uiText("all child profiles")}</strong>{uiText(". To set words for a specific child, select them above first.")}</>
                   )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {!isPremiumUser && (
-                  <div className="text-sm text-muted-foreground">Premium feature — upgrade to enable.</div>
+                  <div className="text-sm text-muted-foreground">{uiText("Premium feature — upgrade to enable.")}</div>
                 )}
                 <TagInput
                   value={teacherWords}
                   onChange={setTeacherWords}
-                  placeholder="Add a word, then press Enter"
+                  placeholder={uiText("Add a word, then press Enter")}
                   disabled={!isPremiumUser || twLoading || twSaving}
                 />
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="text-xs text-muted-foreground">
-                    {teacherWordCount}/50 words • Changes apply after you Save.
+                    {teacherWordCount}{uiText("/50 words • Changes apply after you Save.")}
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" disabled={!isPremiumUser || twLoading || twSaving} onClick={() => setTeacherWords('')}>
-                      Clear list
+                      {uiText("Clear list")}
                     </Button>
                     <Button onClick={saveTeacherWords} disabled={!isPremiumUser || twLoading || twSaving}>
-                      {twSaving ? 'Saving...' : 'Save list'}
+                      {twSaving ? uiText("Saving...") : uiText("Save list")}
                     </Button>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  📝 Currently editing: <strong>{activeChild ? activeChild.display_name : 'Default (all children)'}</strong> • Up to 50 words saved, 20 used per story.
+                  {uiText("📝 Currently editing:")} <strong>{activeChild ? activeChild.display_name : uiText("Default (all children)")}</strong> {uiText("• Up to 50 words saved, 20 used per story.")}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Parent Controls</CardTitle>
-                <CardDescription>Set reading guardrails for your child's story experience</CardDescription>
+                <CardTitle>{uiText("Parent Controls")}</CardTitle>
+                <CardDescription>{uiText("Set reading guardrails for your child's story experience")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="lockDifficulty" className="text-sm font-medium">Lock reading difficulty</Label>
+                    <Label htmlFor="lockDifficulty" className="text-sm font-medium">{uiText("Lock reading difficulty")}</Label>
                     <Switch id="lockDifficulty" checked={guardrails.lockDifficulty} onCheckedChange={(v) => setGuardrails({ ...guardrails, lockDifficulty: v })} />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    When turned on, your child cannot change the reading difficulty level themselves.
+                    {uiText("When turned on, your child cannot change the reading difficulty level themselves.")}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="never-easier" className="text-sm font-medium">Never easier than</Label>
+                  <Label htmlFor="never-easier" className="text-sm font-medium">{uiText("Never easier than")}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Stories will never be written below this grade.
+                    {uiText("Stories will never be written below this grade.")}
                   </p>
                   {(() => {
                     // Shown and saved as a grade; the older stored fields are kept in step
@@ -911,11 +914,11 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     return (
                       <Select value={selected} onValueChange={(v) => setGuardrails({ ...guardrails, ...guardrailForGrade(v) })}>
                         <SelectTrigger id="never-easier" data-testid="never-easier-than">
-                          <SelectValue placeholder="Choose a grade" />
+                          <SelectValue placeholder={uiText("Choose a grade")} />
                         </SelectTrigger>
                         <SelectContent>
                           {GRADES.map((g) => (
-                            <SelectItem key={g} value={g}>{gradeLabel(g, 'long')}</SelectItem>
+                            <SelectItem key={g} value={g}>{uiGradeLabel(g)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -925,11 +928,11 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="allowDecr" className="text-sm font-medium">Allow decreasing below minimum</Label>
+                    <Label htmlFor="allowDecr" className="text-sm font-medium">{uiText("Allow decreasing below minimum")}</Label>
                     <Switch id="allowDecr" checked={guardrails.allowDecreaseBelowMin} onCheckedChange={(v) => setGuardrails({ ...guardrails, allowDecreaseBelowMin: v })} />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    When on, the system may occasionally generate slightly easier content if your child is struggling.
+                    {uiText("When on, the system may occasionally generate slightly easier content if your child is struggling.")}
                   </p>
                 </div>
 
@@ -943,13 +946,13 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                         ...guardrailForGrade(minimumGradeForGuardrail(guardrails.minDifficulty, guardrails.minExpertGrade, guardrails.minReadingGrade)),
                       };
                       await ParentGuardrailsService.saveGuardrails(backendGuardrails);
-                      toast({ title: 'Settings saved' });
+                      toast({ title: uiText('Settings saved') });
                     } catch (e) {
-                      toast({ title: 'Could not save settings', variant: 'destructive' });
+                      toast({ title: uiText('Could not save settings'), variant: 'destructive' });
                     } finally {
                       setSaving(false);
                     }
-                  }}>Save</Button>
+                  }}>{uiText("Save")}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -962,9 +965,9 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
             {progress.loading ? <LoadingOverlay /> : (
               <Card>
                 <CardHeader>
-                  <CardTitle>Quiz & Game Results</CardTitle>
+                  <CardTitle>{uiText("Quiz & Game Results")}</CardTitle>
                   <CardDescription>
-                    {activeChild ? `Results for ${activeChild.display_name}` : 'Results across all children'}
+                    {activeChild ? `Results for ${activeChild.display_name}` : uiText("Results across all children")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -976,25 +979,25 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <Card>
                           <CardContent className="p-4 text-center">
-                            <div className="text-xs text-muted-foreground">Quiz Average</div>
+                            <div className="text-xs text-muted-foreground">{uiText("Quiz Average")}</div>
                             <div className="text-2xl font-bold">{progress.averageComprehensionScore}%</div>
                           </CardContent>
                         </Card>
                         <Card>
                           <CardContent className="p-4 text-center">
-                            <div className="text-xs text-muted-foreground">Quizzes Taken</div>
+                            <div className="text-xs text-muted-foreground">{uiText("Quizzes Taken")}</div>
                             <div className="text-2xl font-bold">{progress.quizzesTaken}</div>
                           </CardContent>
                         </Card>
                         <Card>
                           <CardContent className="p-4 text-center">
-                            <div className="text-xs text-muted-foreground">Game Average</div>
+                            <div className="text-xs text-muted-foreground">{uiText("Game Average")}</div>
                             <div className="text-2xl font-bold">{progress.averageGameScore}%</div>
                           </CardContent>
                         </Card>
                         <Card>
                           <CardContent className="p-4 text-center">
-                            <div className="text-xs text-muted-foreground">Games Played</div>
+                            <div className="text-xs text-muted-foreground">{uiText("Games Played")}</div>
                             <div className="text-2xl font-bold">{progress.gamesPlayed}</div>
                           </CardContent>
                         </Card>
@@ -1003,7 +1006,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                       {/* Recent quizzes */}
                       {progress.recentQuizzes.length > 0 && (
                         <div className="space-y-2">
-                          <div className="text-sm font-medium">Recent Quizzes</div>
+                          <div className="text-sm font-medium">{uiText("Recent Quizzes")}</div>
                           <div className="space-y-2">
                             {progress.recentQuizzes.slice(0, 10).map((q, idx) => (
                               <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
@@ -1026,7 +1029,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                       {progress.recentGames.length > 0 && (
                         <div className="space-y-2">
                           <div className="text-sm font-medium flex items-center gap-2">
-                            <Gamepad2 className="w-4 h-4" /> Recent Games
+                            <Gamepad2 className="w-4 h-4" /> {uiText("Recent Games")}
                           </div>
                           <div className="space-y-2">
                             {progress.recentGames.slice(0, 10).map((g, idx) => (

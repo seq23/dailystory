@@ -1,9 +1,10 @@
 import React from "react";
+import { useUiLanguage } from "@/i18n/uiText";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { MobileWrapper } from "@/components/MobileWrapper";
 import { FloatingFeedback } from "@/components/FloatingFeedback";
 import Index from "./pages/Index";
@@ -55,7 +56,16 @@ const queryClient = new QueryClient({
   },
 });
 
+// Keep the reading tree alive while the summary/quiz occupies the screen.
+const ReadingRoutes = () => {
+  const location = useLocation();
+  const hasReader = React.useRef(location.pathname === '/');
+  if (location.pathname === '/') hasReader.current = true;
+  return <>{hasReader.current && <div hidden={location.pathname !== '/'}><Index /></div>}<Outlet /></>;
+};
+
 const App = () => {
+  useUiLanguage();
   // Initialize development tools conditionally for performance
   React.useEffect(() => {
     // Migrate console logging to DebugLogger
@@ -94,7 +104,7 @@ const App = () => {
             <Sonner />
             
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route element={<ReadingRoutes />}><Route path="/" element={null} /><Route path="/session-ended" element={<SessionEnded />} /></Route>
               <Route path="/style-preview" element={<StylePreview />} />
               
               <Route path="/pricing" element={<Pricing />} />
@@ -105,7 +115,6 @@ const App = () => {
               <Route path="/prompt-testing" element={<PromptTesting />} />
               <Route path="/template-testing" element={<TemplateTestingPage />} />
               <Route path="/prompt-studio" element={<PromptStudio />} />
-              <Route path="/session-ended" element={<SessionEnded />} />
               <Route path="/ccpa" element={<CCPA />} />
               <Route path="/accessibility" element={<Accessibility />} />
               <Route path="/vendors" element={<Vendors />} />

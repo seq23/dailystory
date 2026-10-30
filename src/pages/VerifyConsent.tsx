@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft } from "lucide-react";
@@ -58,15 +59,15 @@ export default function VerifyConsent() {
   const getStatusTitle = () => {
     switch (status) {
       case "loading":
-        return "Verifying Consent...";
+        return uiText("Verifying Consent...");
       case "success":
-        return "Consent Verified!";
+        return uiText("Consent Verified!");
       case "already_verified":
-        return "Already Verified";
+        return uiText("Already Verified");
       case "expired":
-        return "Link Expired";
+        return uiText("Link Expired");
       case "error":
-        return "Verification Failed";
+        return uiText("Verification Failed");
     }
   };
 
@@ -83,20 +84,17 @@ export default function VerifyConsent() {
         <CardContent className="text-center">
           {status === "loading" && (
             <p className="text-muted-foreground">
-              Please wait while we verify your parental consent...
-            </p>
+               {uiText("Please wait while we verify your parental consent...")} </p>
           )}
           
           {(status === "success" || status === "already_verified") && (
             <div className="space-y-4">
               <p className="text-muted-foreground">
-                Thank you! Your child can now use Time-2-Read with full features.
-              </p>
+                 {uiText("Thank you! Your child can now use Time-2-Read with full features.")} </p>
               <Link to="/">
                 <Button className="gap-2">
                   <ArrowLeft className="w-4 h-4" />
-                  Go to Time-2-Read
-                </Button>
+                   {uiText("Go to Time-2-Read")} </Button>
               </Link>
             </div>
           )}
@@ -104,13 +102,11 @@ export default function VerifyConsent() {
           {status === "expired" && (
             <div className="space-y-4">
               <p className="text-muted-foreground">
-                This verification link has expired. Please contact the account holder to request a new verification email.
-              </p>
+                 {uiText("This verification link has expired. Please contact the account holder to request a new verification email.")} </p>
               <Link to="/">
                 <Button variant="outline" className="gap-2">
                   <ArrowLeft className="w-4 h-4" />
-                  Back to Home
-                </Button>
+                   {uiText("Back to Home")} </Button>
               </Link>
             </div>
           )}
@@ -118,13 +114,11 @@ export default function VerifyConsent() {
           {status === "error" && (
             <div className="space-y-4">
               <p className="text-muted-foreground">
-                We couldn't verify your consent. The link may be invalid or there was a technical issue.
-              </p>
+                 {uiText("We couldn't verify your consent. The link may be invalid or there was a technical issue.")} </p>
               <Link to="/">
                 <Button variant="outline" className="gap-2">
                   <ArrowLeft className="w-4 h-4" />
-                  Back to Home
-                </Button>
+                   {uiText("Back to Home")} </Button>
               </Link>
             </div>
           )}

@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { AlertCircle, Loader2, CheckCircle, Wifi, WifiOff } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -48,8 +49,7 @@ export const ImageGenerationStatusIndicator = ({
       <Alert className="border-orange-200 bg-orange-50">
         <WifiOff className="h-4 w-4" />
         <AlertDescription>
-          No internet connection. Images will be generated when connection is restored.
-        </AlertDescription>
+           {uiText("No internet connection. Images will be generated when connection is restored.")} </AlertDescription>
       </Alert>
     );
   }
@@ -75,8 +75,7 @@ export const ImageGenerationStatusIndicator = ({
       <Alert className="border-yellow-200 bg-yellow-50">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          Image generation temporarily unavailable. Your story continues without illustrations.
-        </AlertDescription>
+           {uiText("Image generation temporarily unavailable. Your story continues without illustrations.")} </AlertDescription>
       </Alert>
     );
   }
@@ -95,8 +94,7 @@ export const ImageGenerationStatusIndicator = ({
           {message}
           {showLayoutInfo && isClassicLayout && (
             <div className="mt-1 text-xs text-muted-foreground">
-              Switch to Modern layout for automatic image generation.
-            </div>
+               {uiText("Switch to Modern layout for automatic image generation.")} </div>
           )}
         </AlertDescription>
       </Alert>

@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useState, KeyboardEvent } from "react";
 import { X, AlertTriangle, Shield, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -132,7 +133,7 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
                 type="button"
                 onClick={() => removeItem(index)}
                 className="hover:bg-primary/20 rounded-full p-0.5 transition-colors touch-target-small"
-                aria-label="remove"
+                aria-label={uiText("remove")}
                 disabled={disabled}
               >
                 <X className="w-3 h-3" />
@@ -147,7 +148,7 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
-                <p className="text-xs font-medium text-destructive">Content not suitable for children</p>
+                <p className="text-xs font-medium text-destructive"> {uiText("Content not suitable for children")} </p>
                 {validationError.map((error, index) => (
                   <p key={index} className="text-xs text-muted-foreground">{error}</p>
                 ))}
@@ -159,8 +160,7 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
                     rel="noopener noreferrer"
                     className="text-primary hover:text-primary/80 underline"
                   >
-                    Learn about child safety
-                  </a>
+                     {uiText("Learn about child safety")} </a>
                 </div>
               </div>
             </div>
@@ -194,7 +194,7 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
         {hasCurrentInputErrors && currentInput.trim() && (
           <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
             <Shield className="h-3 w-3 text-amber-500" />
-            <span>This content cannot be added - try different words</span>
+            <span> {uiText("This content cannot be added - try different words")} </span>
           </div>
         )}
       </div>

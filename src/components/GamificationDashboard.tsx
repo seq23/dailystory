@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,9 +65,9 @@ export const GamificationDashboard = ({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold text-blue-900">Level {userStats.currentLevel}</span>
+                <span className="font-semibold text-blue-900"> {uiText("Level")} {userStats.currentLevel}</span>
               </div>
-              <span className="text-sm text-blue-700">{userStats.totalPoints} points</span>
+              <span className="text-sm text-blue-700">{userStats.totalPoints}  {uiText("points")} </span>
             </div>
             <Progress 
               value={levelProgress.progressPercentage} 
@@ -85,7 +86,7 @@ export const GamificationDashboard = ({
             <CardContent className="p-3 text-center">
               <Flame className="w-6 h-6 text-orange-600 mx-auto mb-1" />
               <div className="text-lg font-bold text-orange-900">{userStats.streak.currentStreak}</div>
-              <div className="text-xs text-orange-700">Day Streak</div>
+              <div className="text-xs text-orange-700"> {uiText("Day Streak")} </div>
             </CardContent>
           </Card>
           
@@ -93,7 +94,7 @@ export const GamificationDashboard = ({
             <CardContent className="p-3 text-center">
               <Trophy className="w-6 h-6 text-green-600 mx-auto mb-1" />
               <div className="text-lg font-bold text-green-900">{unlockedAchievements.length}</div>
-              <div className="text-xs text-green-700">Achievements</div>
+              <div className="text-xs text-green-700"> {uiText("Achievements")} </div>
             </CardContent>
           </Card>
         </div>
@@ -117,10 +118,9 @@ export const GamificationDashboard = ({
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-3 text-blue-900">
             <Crown className="w-6 h-6 text-blue-600" />
-            Reading Level {userStats.currentLevel}
+             {uiText("Reading Level")} {userStats.currentLevel}
             <Badge className="bg-blue-100 text-blue-800 ml-auto">
-              {userStats.totalPoints} points
-            </Badge>
+              {userStats.totalPoints}  {uiText("points")} </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -130,8 +130,8 @@ export const GamificationDashboard = ({
               className="h-4 bg-blue-100"
             />
             <div className="flex justify-between text-sm text-blue-700">
-              <span>{levelProgress.currentLevelPoints} points</span>
-              <span>Level {userStats.currentLevel + 1}: {levelProgress.nextLevelPoints} points</span>
+              <span>{levelProgress.currentLevelPoints}  {uiText("points")} </span>
+              <span> {uiText("Level")} {userStats.currentLevel + 1}: {levelProgress.nextLevelPoints}  {uiText("points")} </span>
             </div>
             <div className="text-center">
               <p className="text-lg font-semibold text-blue-900">
@@ -148,10 +148,9 @@ export const GamificationDashboard = ({
           <CardContent className="p-4 text-center">
             <Flame className="w-8 h-8 text-orange-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-orange-900">{userStats.streak.currentStreak}</div>
-            <div className="text-sm text-orange-700">Day Streak</div>
+            <div className="text-sm text-orange-700"> {uiText("Day Streak")} </div>
             <div className="text-xs text-orange-600 mt-1">
-              Best: {userStats.streak.longestStreak} days
-            </div>
+               {uiText("Best:")} {userStats.streak.longestStreak}  {uiText("days")} </div>
           </CardContent>
         </Card>
         
@@ -159,7 +158,7 @@ export const GamificationDashboard = ({
           <CardContent className="p-4 text-center">
             <BookOpen className="w-8 h-8 text-green-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-green-900">{userStats.totalStoriesCompleted}</div>
-            <div className="text-sm text-green-700">Stories Read</div>
+            <div className="text-sm text-green-700"> {uiText("Stories Read")} </div>
           </CardContent>
         </Card>
         
@@ -167,7 +166,7 @@ export const GamificationDashboard = ({
           <CardContent className="p-4 text-center">
             <Zap className="w-8 h-8 text-purple-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-purple-900">{userStats.totalWordsRead.toLocaleString()}</div>
-            <div className="text-sm text-purple-700">Words Read</div>
+            <div className="text-sm text-purple-700"> {uiText("Words Read")} </div>
           </CardContent>
         </Card>
         
@@ -175,7 +174,7 @@ export const GamificationDashboard = ({
           <CardContent className="p-4 text-center">
             <Trophy className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-yellow-900">{unlockedAchievements.length}</div>
-            <div className="text-sm text-yellow-700">Achievements</div>
+            <div className="text-sm text-yellow-700"> {uiText("Achievements")} </div>
           </CardContent>
         </Card>
       </div>
@@ -185,17 +184,16 @@ export const GamificationDashboard = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="w-5 h-5" />
-            Achievements
-          </CardTitle>
+             {uiText("Achievements")} </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
             <TabsList className="grid w-full grid-cols-5 mb-4">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="reading">Reading</TabsTrigger>
-              <TabsTrigger value="streak">Streaks</TabsTrigger>
-              <TabsTrigger value="vocabulary">Words</TabsTrigger>
-              <TabsTrigger value="special">Special</TabsTrigger>
+              <TabsTrigger value="all"> {uiText("All")} </TabsTrigger>
+              <TabsTrigger value="reading"> {uiText("Reading")} </TabsTrigger>
+              <TabsTrigger value="streak"> {uiText("Streaks")} </TabsTrigger>
+              <TabsTrigger value="vocabulary"> {uiText("Words")} </TabsTrigger>
+              <TabsTrigger value="special"> {uiText("Special")} </TabsTrigger>
             </TabsList>
             
             <TabsContent value={selectedCategory} className="space-y-3">
@@ -215,8 +213,7 @@ export const GamificationDashboard = ({
                           <p className="text-sm text-gray-600 mb-2">{achievement.description}</p>
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-green-600 font-medium">
-                              +{achievement.points} points
-                            </span>
+                              +{achievement.points}  {uiText("points")} </span>
                             {achievement.unlockedAt && (
                               <span className="text-gray-500">
                                 {achievement.unlockedAt.toLocaleDateString()}
@@ -233,7 +230,7 @@ export const GamificationDashboard = ({
               {/* In Progress Achievements */}
               {selectedCategory === "all" && inProgressAchievements.length > 0 && (
                 <>
-                  <h4 className="font-semibold text-gray-900 mt-6 mb-3">In Progress</h4>
+                  <h4 className="font-semibold text-gray-900 mt-6 mb-3"> {uiText("In Progress")} </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {inProgressAchievements.slice(0, 4).map((achievement) => (
                       <Card key={achievement.id} className="border border-gray-200 opacity-75">
@@ -250,7 +247,7 @@ export const GamificationDashboard = ({
                                 />
                                 <div className="flex justify-between text-xs text-gray-500">
                                   <span>{achievement.currentProgress} / {achievement.requirement}</span>
-                                  <span>+{achievement.points} points</span>
+                                  <span>+{achievement.points}  {uiText("points")} </span>
                                 </div>
                               </div>
                             </div>

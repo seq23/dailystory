@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -392,9 +393,9 @@ useEffect(() => {
     <div className="flex items-center gap-2">
       {/* Input removed: backend will use the default agent from Supabase secrets */}
       {!connected ? (
-        <Button onClick={start} disabled={connecting}>{connecting ? 'Connecting…' : 'Talk to Buddy'}</Button>
+        <Button onClick={start} disabled={connecting}>{connecting ? 'Connecting…' : uiText("Talk to Buddy")}</Button>
       ) : (
-        <Button variant="secondary" onClick={stop}>Stop Talking</Button>
+        <Button variant="secondary" onClick={stop}> {uiText("Stop Talking")} </Button>
       )}
     </div>
   );

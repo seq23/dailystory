@@ -1,3 +1,5 @@
+import { useScreenHistory } from "@/hooks/useScreenHistory";
+import { useNavigate } from "react-router-dom";
 /*
  * ============================================================================
  * BUSINESS MODEL DOCUMENTATION - GUEST EXPERIENCE
@@ -58,7 +60,10 @@ import { APP_CONFIG } from "@/config/appConfig";
 type GuestState = "welcome" | "form" | "reading" | "upgrade" | "login";
 
 export const GuestExperience = () => {
-  const [currentState, setCurrentState] = useState<GuestState>("welcome");
+  const navigate = useNavigate();
+  const [currentState, setCurrentState] = useScreenHistory<GuestState>("guest", "welcome");
+  const [hasOpenedStory, setHasOpenedStory] = useState(false);
+  useEffect(() => { if (currentState === "reading") setHasOpenedStory(true); }, [currentState]);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   
   // Initialize security monitoring for guests
@@ -82,14 +87,14 @@ useEffect(() => {
     try { guestSession.clearAll(); } catch {}
     try { StorySessionCache.clearCachedSession('guest'); } catch {}
     // Clean URL
-    window.history.replaceState({}, '', '/');
+    window.history.replaceState(window.history.state, '', '/');
   }
   
   if (action === 'new-story') {
     // User came from session ended page wanting to start new story
     setCurrentState("form");
     // Clean up the URL
-    window.history.replaceState({}, '', '/');
+    window.history.replaceState(window.history.state, '', '/');
     // Clear any previous guest session
     try { guestSession.clearAll(); } catch {}
     try { StorySessionCache.clearCachedSession('guest'); } catch {}
@@ -190,9 +195,7 @@ const handleFormSubmit = (info: UserInfo) => {
 
 const handleBackToWelcome = () => {
   setCurrentState("welcome");
-  setUserInfo(null);
-  try { guestSession.clearAll(); } catch {}
-  try { StorySessionCache.clearCachedSession('guest'); } catch {}
+  // Keep the in-progress story when returning to welcome.
 };
 
   const handleUpgrade = () => {
@@ -212,7 +215,7 @@ const handleBackToWelcome = () => {
     setCurrentState("reading");
   };
 
-  switch (currentState) {
+  const screenContent = (() => { switch (currentState) {
     case "welcome":
       return (
         <div className="animate-fade-in min-h-[100dvh]">
@@ -232,31 +235,7 @@ const handleBackToWelcome = () => {
       );
     
     case "reading":
-      return userInfo ? (
-        <div className="animate-fade-in min-h-[100dvh]">
-          <FreeReadingSession 
-            userInfo={userInfo}
-            onUpgrade={handleUpgrade}
-            onCreateAccount={handleCreateAccount}
-            onHome={() => setCurrentState("welcome")}
-            onNewStory={() => setCurrentState("form")}
-            isPremium={false}
-onSessionEnded={async (stats) => {
-  // Clear guest session state FIRST so refresh can't auto-resume
-  try { guestSession.clearAll(); } catch {}
-  try { StorySessionCache.clearCachedSession('guest'); } catch {}
-  // Then clear ALL session caches comprehensively
-  try {
-    const { SessionCacheManager } = await import('@/services/SessionCacheManager');
-    SessionCacheManager.clearOnSessionEnd('guest', userInfo?.avatar?.type);
-  } catch (error) {
-    DebugLogger.warn('performance', 'Failed to clear session caches, using fallback', error);
-  }
-  window.location.href = `/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium: false}))}`
-}}
-          />
-        </div>
-      ) : null;
+      return null;
     
     case "upgrade":
       return (
@@ -284,5 +263,19 @@ onSessionEnded={async (stats) => {
           <WelcomeHero onGetStarted={handleGetStarted} />
         </div>
       );
-  }
+  } })();
+  return <>{screenContent}{hasOpenedStory && userInfo && (        <div hidden={currentState !== "reading"} className="animate-fade-in min-h-[100dvh]">
+          <FreeReadingSession
+            isActive={currentState === "reading"}
+            userInfo={userInfo}
+            onUpgrade={handleUpgrade}
+            onCreateAccount={handleCreateAccount}
+            onHome={() => setCurrentState("welcome")}
+            onNewStory={() => setCurrentState("form")}
+            isPremium={false}
+onSessionEnded={async (stats) => {
+  navigate(`/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium: false}))}`);
+}}
+          />
+        </div>)}</>;
 };

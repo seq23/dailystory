@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -63,8 +64,7 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
             </div>
             <Progress value={(category.used / category.total) * 100} className="mb-2" />
             <div className="text-xs text-muted-foreground">
-              {category.used}/{category.total} words
-            </div>
+              {category.used}/{category.total}  {uiText("words")} </div>
           </Card>
         ))}
       </div>
@@ -83,8 +83,7 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
             </div>
             <Progress value={(category.used / category.total) * 100} className="mb-2" />
             <div className="text-xs text-muted-foreground">
-              {category.used}/{category.total} words
-            </div>
+              {category.used}/{category.total}  {uiText("words")} </div>
           </Card>
         ))}
       </div>
@@ -102,7 +101,7 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
             <h3 className="text-lg font-semibold">Progressive Learning</h3>
           </div>
           <p className="text-muted-foreground mb-4">
-            Your {difficulty} level uses progressive revelation to gradually unveil story elements.
+             {uiText("Your")} {difficulty} level uses progressive revelation to gradually unveil story elements.
           </p>
           <Button onClick={onStartProgressiveSession} className="w-full">
             Start Progressive Session
@@ -137,8 +136,7 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
                 ))}
                 {nextSession.targetVocabulary.length > 8 && (
                   <Badge variant="outline" className="text-xs">
-                    +{nextSession.targetVocabulary.length - 8} more
-                  </Badge>
+                    +{nextSession.targetVocabulary.length - 8}  {uiText("more")} </Badge>
                 )}
               </div>
             </div>
@@ -154,7 +152,7 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
               onClick={() => onStartThemedSession?.(nextSession.theme)} 
               className="w-full"
             >
-              Start {nextSession.theme} Session
+               {uiText("Start")} {nextSession.theme} Session
             </Button>
           </>
         )}
@@ -172,7 +170,7 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
             <p className="text-muted-foreground mb-4">
               Unlock personalized vocabulary tracking, advanced phonetics, and cultural adaptations.
             </p>
-            <Button variant="outline">Upgrade to Premium</Button>
+            <Button variant="outline"> {uiText("Upgrade to Premium")} </Button>
           </div>
         </Card>
       );
@@ -291,7 +289,7 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
               <div className="text-2xl font-bold">
                 {vocabularyStats?.totalWordsEncountered || 0}
               </div>
-              <div className="text-xs text-muted-foreground">Words Encountered</div>
+              <div className="text-xs text-muted-foreground"> {uiText("Words Encountered")} </div>
             </div>
           </div>
         </Card>
@@ -327,7 +325,7 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
               <div className="text-2xl font-bold">
                 {userInfo.difficultyLevel?.toUpperCase() || 'EASY'}
               </div>
-              <div className="text-xs text-muted-foreground">Current Level</div>
+              <div className="text-xs text-muted-foreground"> {uiText("Current Level")} </div>
             </div>
           </div>
         </Card>
@@ -336,10 +334,10 @@ export const VocabularyDashboard: React.FC<VocabularyDashboardProps> = ({
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="progress">Progress</TabsTrigger>
+          <TabsTrigger value="overview"> {uiText("Overview")} </TabsTrigger>
+          <TabsTrigger value="progress"> {uiText("Progress")} </TabsTrigger>
           <TabsTrigger value="sessions">Sessions</TabsTrigger>
-          <TabsTrigger value="premium">Premium</TabsTrigger>
+          <TabsTrigger value="premium"> {uiText("Premium")} </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">

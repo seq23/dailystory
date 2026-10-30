@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -212,11 +213,11 @@ export const SimpleVoiceCommands: React.FC = () => {
   const getStatusBadge = () => {
     if (status === 'connected') {
       return isSpeaking ? 
-        <Badge variant="default" className="bg-blue-500">Speaking</Badge> :
-        <Badge variant="outline" className="border-green-500 text-green-500">Listening</Badge>;
+        <Badge variant="default" className="bg-blue-500"> {uiText("Speaking")} </Badge> :
+        <Badge variant="outline" className="border-green-500 text-green-500"> {uiText("Listening")} </Badge>;
     }
     if (status === 'connecting') {
-      return <Badge variant="secondary">Connecting</Badge>;
+      return <Badge variant="secondary"> {uiText("Connecting")} </Badge>;
     }
     return null;
   };
@@ -235,8 +236,7 @@ export const SimpleVoiceCommands: React.FC = () => {
       
       {status === 'connected' && (
         <div className="text-xs text-muted-foreground max-w-xs">
-          Say: "play story", "stop reading", "next page", "previous page", or "help with [word]"
-        </div>
+           {uiText("Say: \"play story\", \"stop reading\", \"next page\", \"previous page\", or \"help with [word]\"")} </div>
       )}
     </div>
   );

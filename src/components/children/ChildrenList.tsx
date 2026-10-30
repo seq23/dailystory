@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState } from "react";
 import { Loader2, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -12,13 +13,14 @@ import { openChildDialog } from "./ChildDialog";
  * reading now is marked; "+ Add another child" is always at the end.
  */
 export function ChildrenList({ className }: { className?: string }) {
+  useUiLanguage();
   const { children, activeChild, setActiveChild, loading, error, refresh } = useChildProfiles();
   const [switching, setSwitching] = useState<string | null>(null);
 
   if (loading) {
     return (
       <p className={cn("text-sm text-muted-foreground flex items-center gap-2", className)}>
-        <Loader2 className="w-4 h-4 animate-spin" aria-hidden /> Loading your children…
+        <Loader2 className="w-4 h-4 animate-spin" aria-hidden /> {uiText("Loading your children…")}
       </p>
     );
   }
@@ -26,15 +28,15 @@ export function ChildrenList({ className }: { className?: string }) {
     return (
       <div className={cn("text-sm", className)} role="alert">
         {error}{" "}
-        <button type="button" className="underline font-medium" onClick={() => refresh()}>Try again</button>
+        <button type="button" className="underline font-medium" onClick={() => refresh()}>{uiText("Try again")}</button>
       </div>
     );
   }
 
   return (
     <section className={cn("space-y-3", className)} aria-labelledby="children-heading" data-testid="children-list">
-      <h2 id="children-heading" className="text-lg font-semibold">Your children</h2>
-      {children.length === 0 && <p className="text-sm text-muted-foreground">No children yet. Add the first one to start reading.</p>}
+      <h2 id="children-heading" className="text-lg font-semibold">{uiText("Your children")}</h2>
+      {children.length === 0 && <p className="text-sm text-muted-foreground">{uiText("No children yet. Add the first one to start reading.")}</p>}
       <ul className="grid gap-3 sm:grid-cols-2">
         {children.map((c) => {
           const reading = activeChild?.id === c.id;
@@ -53,7 +55,7 @@ export function ChildrenList({ className }: { className?: string }) {
                 <p className="font-semibold truncate">{c.display_name}</p>
                 {childSummary(c) && <p className="text-sm text-muted-foreground">{childSummary(c)}</p>}
                 {reading ? (
-                  <p className="text-sm font-medium text-primary">✓ Reading now</p>
+                  <p className="text-sm font-medium text-primary">{uiText("✓ Reading now")}</p>
                 ) : (
                   <button
                     type="button"
@@ -71,19 +73,19 @@ export function ChildrenList({ className }: { className?: string }) {
                       }
                     }}
                   >
-                    {switching === c.id ? "Switching…" : `Read as ${c.display_name}`}
+                    {switching === c.id ? uiText("Switching…") : `Read as ${c.display_name}`}
                   </button>
                 )}
               </div>
               <Button variant="outline" size="sm" className="min-h-10" onClick={() => openChildDialog(c.id)} aria-label={`Edit ${c.display_name}`}>
-                <Pencil className="w-4 h-4 mr-1" aria-hidden /> Edit
+                <Pencil className="w-4 h-4 mr-1" aria-hidden /> {uiText("Edit")}
               </Button>
             </li>
           );
         })}
       </ul>
       <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => openChildDialog()} data-testid="add-child-button">
-        <Plus className="w-4 h-4 mr-2" aria-hidden /> {children.length ? "Add another child" : "Add a child"}
+        <Plus className="w-4 h-4 mr-2" aria-hidden /> {children.length ? uiText("Add another child") : uiText("Add a child")}
       </Button>
     </section>
   );

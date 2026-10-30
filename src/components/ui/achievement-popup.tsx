@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { X, Star, Trophy, Target, Sparkles } from 'lucide-react';
@@ -210,8 +211,7 @@ export const AchievementPopup: React.FC<AchievementPopupProps> = ({
             <div className="flex items-center justify-center gap-2 mb-6">
               <Star className="w-4 h-4 text-amber-500" />
               <span className="font-bold text-amber-600">
-                +{achievement.points} points
-              </span>
+                +{achievement.points}  {uiText("points")} </span>
             </div>
 
             {/* Action button */}
@@ -224,8 +224,7 @@ export const AchievementPopup: React.FC<AchievementPopupProps> = ({
                 "transform hover:scale-105"
               )}
             >
-              Awesome! 🎉
-            </button>
+               {uiText("Awesome! 🎉")} </button>
           </div>
         </CardContent>
 

@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
@@ -25,7 +26,7 @@ export function DialogAccessibilityFix({
           <DialogTitle>{title}</DialogTitle>
         ) : (
           <VisuallyHidden>
-            <DialogTitle>Dialog</DialogTitle>
+            <DialogTitle> {uiText("Dialog")} </DialogTitle>
           </VisuallyHidden>
         )}
         
@@ -34,8 +35,7 @@ export function DialogAccessibilityFix({
         ) : (
           <VisuallyHidden>
             <DialogDescription id="dialog-description">
-              Dialog content
-            </DialogDescription>
+               {uiText("Dialog content")} </DialogDescription>
           </VisuallyHidden>
         )}
         

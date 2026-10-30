@@ -57,6 +57,8 @@ describe("Reads at: a picker on the child form, saved per child", () => {
     expect(form).toMatch(/legend="School grade"/);
     expect(form).toMatch(/legend="Reads at"/);
     expect(form).toMatch(/testIdPrefix="child-reads-at"/);
+    expect(form).toContain("{uiText(legend)}");
+    expect(form).toContain("{uiText(help)}");
     expect(form).toMatch(/if \(!readsAtChosen\) setReadsAt\(g\);/);
     expect(form).toMatch(/reading_grade: readsAt \|\| grade,/);
   });
@@ -65,7 +67,7 @@ describe("Reads at: a picker on the child form, saved per child", () => {
     expect(hook).toMatch(/\.\.\.\(input\.reading_grade !== undefined \? \{ reading_grade: normalizeGrade\(input\.reading_grade\) \} : \{\}\)/);
   });
   it("the children list shows both", () => {
-    expect(read("src/components/children/childInfo.ts")).toMatch(/`Reads at \$\{reads\}`/);
+    expect(read("src/components/children/childInfo.ts")).toMatch(/i18n\.t\("ui\.child_reads_at", \{ grade: reads \}\)/);
   });
   it("the first-run form asks Reads at as a grade", () => {
     const step = read("src/components/forms/steps/FormStep2ReadingPrefs.tsx");
@@ -74,7 +76,7 @@ describe("Reads at: a picker on the child form, saved per child", () => {
     expect(read("src/components/forms/hooks/useMultiStepForm.tsx")).toMatch(/readingGrade: readsAt,\s*schoolGrade: formData\.grade,/);
   });
   it("Never easier than is a grade", () => {
-    expect(read("src/components/ParentDashboard.tsx")).toMatch(/>Never easier than</);
+    expect(read("src/components/ParentDashboard.tsx")).toMatch(/>\{uiText\("Never easier than"\)\}</);
   });
 });
 

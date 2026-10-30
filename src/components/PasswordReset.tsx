@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { DebugLogger } from '@/services/DebugLogger';
 import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,14 +54,12 @@ export const PasswordReset = ({ onBack }: PasswordResetProps) => {
         className="absolute top-4 left-4 z-50 text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm bg-black/20 rounded-lg px-3 py-2 shadow-lg transition-all duration-200 hover:scale-105"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to Sign In
-      </Button>
+         {uiText("Back to Sign In")} </Button>
 
       <Card className="w-full max-w-md mx-auto bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Reset Password
-          </CardTitle>
+             {uiText("Reset Password")} </CardTitle>
           <CardDescription>
             {sent 
               ? "Check your email for reset instructions"
@@ -76,29 +75,27 @@ export const PasswordReset = ({ onBack }: PasswordResetProps) => {
                 <Mail className="w-8 h-8 text-green-600" />
               </div>
               <p className="text-sm text-muted-foreground">
-                We've sent a password reset link to <strong>{email}</strong>
+                 {uiText("We've sent a password reset link to")} <strong>{email}</strong>
               </p>
               <p className="text-xs text-muted-foreground">
-                Don't see the email? Check your spam folder or try again in a few minutes.
-              </p>
+                 {uiText("Don't see the email? Check your spam folder or try again in a few minutes.")} </p>
               <Button 
                 variant="outline" 
                 onClick={() => setSent(false)}
                 className="w-full"
               >
-                Send to Different Email
-              </Button>
+                 {uiText("Send to Different Email")} </Button>
             </div>
           ) : (
             <form onSubmit={handlePasswordReset} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="reset-email">Email Address</Label>
+                <Label htmlFor="reset-email"> {uiText("Email Address")} </Label>
                 <Input
                   id="reset-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
+                  placeholder={uiText("Enter your email address")}
                   required
                 />
               </div>
@@ -108,7 +105,7 @@ export const PasswordReset = ({ onBack }: PasswordResetProps) => {
                 className="w-full" 
                 disabled={loading}
               >
-                {loading ? "Sending..." : "Send Reset Link"}
+                {loading ? uiText("Sending...") : "Send Reset Link"}
               </Button>
             </form>
           )}

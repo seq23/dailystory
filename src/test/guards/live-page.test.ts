@@ -152,7 +152,7 @@ describe("layout: the New story dialog fits; the timer never covers the sidebar"
     expect(d).toMatch(/<DialogContent className="[^"]*\bgrid-cols-1\b[^"]*\boverflow-x-hidden\b/);
     expect(d).toMatch(/<DialogContent className="[^"]*w-\[calc\(100vw-2rem\)\]/);
     expect(d).toMatch(/id="story-for-child"\s*className="[^"]*\bw-full\b[^"]*\bmin-w-0\b[^"]*\btruncate\b/);
-    expect(d).toMatch(/className="flex min-w-0 flex-wrap gap-2" aria-label="Ideas: tap to add"/);
+    expect(d).toMatch(/className="flex min-w-0 flex-wrap gap-2" aria-label=\{uiText\("Ideas: tap to add"\)\}/);
     expect(d).toMatch(/<DialogFooter className="flex-wrap gap-2">/);
     expect(d).toMatch(/className="[^"]*whitespace-normal[^"]*" data-testid="write-story"/);
   });
