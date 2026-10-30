@@ -2,33 +2,33 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-10-29T06:49:28.610Z",
+  "collected_at": "2026-10-30T06:49:41.503Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-09-29",
-    "end_date": "2026-10-26",
+    "start_date": "2026-09-30",
+    "end_date": "2026-10-27",
     "days": 28
   },
   "totals": {
     "clicks": 1,
-    "impressions": 144,
-    "ctr": 0.0069,
-    "position": 18.38
+    "impressions": 156,
+    "ctr": 0.0064,
+    "position": 18.17
   },
-  "row_count": 25,
-  "query_count": 24,
+  "row_count": 26,
+  "query_count": 25,
   "page_count": 7,
-  "attributed_impressions": 80,
+  "attributed_impressions": 85,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
       "query": "personalized books for 2 year olds",
       "page": "https://time-2-read.com/books-for-toddlers",
       "clicks": 0,
-      "impressions": 17,
+      "impressions": 18,
       "ctr": 0,
-      "position": 54.12
+      "position": 54.5
     },
     {
       "query": "time2read",
@@ -47,20 +47,20 @@
       "position": 8.88
     },
     {
+      "query": "time to read",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 8,
+      "ctr": 0,
+      "position": 8.75
+    },
+    {
       "query": "time read",
       "page": "https://time-2-read.com/",
       "clicks": 1,
       "impressions": 7,
       "ctr": 0.1429,
       "position": 8.43
-    },
-    {
-      "query": "time to read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 7,
-      "ctr": 0,
-      "position": 8.57
     },
     {
       "query": "reading time 2",
@@ -74,9 +74,9 @@
       "query": "time 2 read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 4,
+      "impressions": 5,
       "ctr": 0,
-      "position": 6
+      "position": 5.4
     },
     {
       "query": "2read",
@@ -101,6 +101,14 @@
       "impressions": 2,
       "ctr": 0,
       "position": 48
+    },
+    {
+      "query": "sight word generator",
+      "page": "https://time-2-read.com/kindergarten-sight-words",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 51.5
     },
     {
       "query": "2 year old books online",
@@ -143,12 +151,12 @@
       "position": 37
     },
     {
-      "query": "sight word generator",
+      "query": "sight words 2 year olds",
       "page": "https://time-2-read.com/kindergarten-sight-words",
       "clicks": 0,
       "impressions": 1,
       "ctr": 0,
-      "position": 56
+      "position": 42
     },
     {
       "query": "sight words for kg2",
