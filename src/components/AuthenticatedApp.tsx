@@ -2,7 +2,7 @@ import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useScreenHistory } from "@/hooks/useScreenHistory";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { popView, pushView, showsBack } from "@/lib/viewTrail";
+import { pushView, showsBack } from "@/lib/viewTrail";
 import { savedReadingGrade } from '@/lib/readingGradeStore';
 import { DebugLogger } from '@/services/DebugLogger';
 import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
