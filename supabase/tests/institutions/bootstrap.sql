@@ -1,7 +1,11 @@
 -- Disposable PostgreSQL only. No production configuration or real identities.
--- Supabase PostgreSQL image supplies anon/authenticated roles. The postgres
--- login is not a superuser on Linux; normalize that fact across image platforms.
-revoke authenticated from postgres;
+-- Model Supabase's application roles, permissive legacy table defaults, and a
+-- restricted postgres login on stock PostgreSQL. Assertions run by SET ROLE,
+-- never as the image administrator or with BYPASSRLS.
+create role anon nologin;
+create role authenticated nologin;
+create role postgres login noinherit;
+alter default privileges in schema public grant all on tables to anon, authenticated;
 create schema auth;
 create table auth.users (id uuid primary key);
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;

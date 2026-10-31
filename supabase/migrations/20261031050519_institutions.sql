@@ -207,17 +207,38 @@ declare s uuid; r jsonb; student uuid; n integer := 0;
 begin
   if not institution_private.can_read_class(p_class) then raise exception 'Class access required' using errcode = '42501'; end if;
   if jsonb_typeof(p_rows) is distinct from 'array' or jsonb_array_length(p_rows) not between 1 and 1000 then raise exception 'Expected 1–1000 roster rows'; end if;
+  -- Validate again at the RPC boundary: callers can bypass the CSV preview.
+  -- Reject ambiguous identifiers instead of silently enrolling the first child.
+  for r in select value from jsonb_array_elements(p_rows) loop
+    if jsonb_typeof(r) is distinct from 'object' then
+      raise exception 'Expected a roster object' using errcode = '23514';
+    end if;
+    if jsonb_typeof(r->'external_id') is distinct from 'string'
+      or jsonb_typeof(r->'display_name') is distinct from 'string'
+      or length(trim(r->>'external_id')) not between 1 and 120
+      or length(trim(r->>'display_name')) not between 1 and 100
+      or (r->>'external_id') !~ '[^[:space:]]'
+      or (r->>'display_name') !~ '[^[:space:]]'
+      or exists (select 1 from jsonb_object_keys(r) as k where k not in ('external_id','display_name','school_grade','reading_grade'))
+      or (r->>'school_grade' is not null and r->>'school_grade' not in ('','PreK','K','1','2','3','4','5','6','7','8','9','10'))
+      or (r->>'reading_grade' is not null and r->>'reading_grade' not in ('','PreK','K','1','2','3','4','5','6','7','8','9','10')) then
+      raise exception 'Invalid roster row: use only roster ID, display name and supported grades' using errcode = '23514';
+    end if;
+  end loop;
+  if exists (select 1 from jsonb_array_elements(p_rows) as row_data group by trim(row_data->>'external_id') having count(*) > 1) then
+    raise exception 'Duplicate roster ID' using errcode = '23514';
+  end if;
   select school_id into strict s from public.institution_classes where id = p_class;
   -- Serialize concurrent imports within a school (including external-id claims).
   perform 1 from public.institution_schools where id = s for update;
   for r in select value from jsonb_array_elements(p_rows) loop
-    select id into student from public.institution_students where school_id = s and external_id = r->>'external_id';
+    select id into student from public.institution_students where school_id = s and external_id = trim(r->>'external_id');
     if student is not null and not institution_private.can_read_student(student) then
       raise exception 'Roster identifier unavailable; ask your school admin' using errcode = '42501';
     end if;
     if student is null then
       insert into public.institution_students (school_id, external_id, display_name, school_grade, reading_grade)
-      values (s, r->>'external_id', r->>'display_name', nullif(r->>'school_grade',''), nullif(r->>'reading_grade','')) returning id into student;
+      values (s, trim(r->>'external_id'), trim(r->>'display_name'), nullif(r->>'school_grade',''), nullif(r->>'reading_grade','')) returning id into student;
     end if;
     insert into public.institution_enrollments (class_id, student_id, school_id) values (p_class, student, s) on conflict do nothing;
     if found then n := n + 1; end if;

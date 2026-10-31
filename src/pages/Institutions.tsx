@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, type FormEvent } from "react";
+import { useEffect, useState, useRef, type FormEvent, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,14 @@ const gradeLabel = (value: string | null) =>
     : "Not recorded";
 const date = (value: string) =>
   new Date(`${value}T12:00:00`).toLocaleDateString();
+function changeObservationStudent(event: ChangeEvent<HTMLSelectElement>) {
+  const select = event.currentTarget;
+  const student = select.value;
+  // Draft observations belong to one child. Keep the new selection, clear the
+  // previous child's unsaved scores, grades, story and date.
+  select.form?.reset();
+  select.value = student;
+}
 function GradeSelect({
   name,
   label,
@@ -603,7 +611,7 @@ export default function Institutions() {
                   workspace={reportWorkspace}
                 />
               )}
-              <section className="school-panel">
+              <section className="school-panel" key={`entry:${schoolId}:${selectedClass?.id ?? "all"}`}>
                 <h2>Manage classroom records</h2>
                 <details>
                   <summary>Create a class</summary>
@@ -754,7 +762,7 @@ export default function Institutions() {
                           >
                             <label>
                               Student
-                              <select name="student">
+                              <select name="student" onChange={changeObservationStudent}>
                                 {students.map((s) => (
                                   <option key={s.id} value={s.id}>
                                     {s.display_name}
@@ -824,7 +832,7 @@ export default function Institutions() {
                           >
                             <label>
                               Student
-                              <select name="student">
+                              <select name="student" onChange={changeObservationStudent}>
                                 {students.map((s) => (
                                   <option key={s.id} value={s.id}>
                                     {s.display_name}

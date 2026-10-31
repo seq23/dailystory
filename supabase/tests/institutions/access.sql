@@ -23,6 +23,10 @@ do $$ begin
   begin insert into public.institution_readings(school_id,class_id,student_id,story_title,minutes,read_at,recorded_by) select school_id,'20000000-0000-0000-0000-000000000001',id,'Fixture',1,current_date,'00000000-0000-0000-0000-000000000002' from public.institution_students; raise exception 'FAIL spoofed author'; exception when insufficient_privilege then null; end;
   begin perform public.institution_import_roster('20000000-0000-0000-0000-000000000001','[{"external_id":"rolled-back","display_name":"Reader R"},{"external_id":"invalid","display_name":""}]'); raise exception 'FAIL invalid import'; exception when check_violation then null; end;
   perform public.test_assert(not exists(select 1 from public.institution_students where external_id='rolled-back'), 'import all-or-nothing');
+  begin perform public.institution_import_roster('20000000-0000-0000-0000-000000000001','[{"external_id":"duplicate-fixture","display_name":"Reader D"},{"external_id":"duplicate-fixture","display_name":"Different child"}]'); raise exception 'FAIL duplicate identifiers silently merge children'; exception when check_violation then null; end;
+  perform public.test_assert(not exists(select 1 from public.institution_students where external_id='duplicate-fixture'), 'duplicate identifiers roll back the whole import');
+  begin perform public.institution_import_roster('20000000-0000-0000-0000-000000000001','[{"external_id":"   ","display_name":"Reader W"}]'); raise exception 'FAIL blank roster identifier accepted'; exception when check_violation then null; end;
+  begin perform public.institution_import_roster('20000000-0000-0000-0000-000000000001','[{"external_id":"extra-fixture","display_name":"Reader E","unrequested_field":"fixture"}]'); raise exception 'FAIL nonminimal direct roster accepted'; exception when check_violation then null; end;
   begin perform public.institution_record_assessment('20000000-0000-0000-0000-000000000001',(select id from public.institution_students limit 1),current_date,'2','1','[{"skill":"context","correct":3,"total":2}]'); raise exception 'FAIL invalid quiz score'; exception when check_violation then null; end;
   perform public.test_assert((select count(*) = 1 from public.institution_assessments), 'invalid assessment rolls back');
 end $$;
@@ -33,6 +37,8 @@ select public.test_assert((select count(*) = 0 from public.institution_assessmen
 select public.test_assert((select count(*) = 0 from public.institution_quiz_results), 'other teacher cannot read quiz');
 do $$ begin
   begin perform public.institution_import_roster('20000000-0000-0000-0000-000000000002','[{"external_id":"fixture-a","display_name":"Claimed"}]'); raise exception 'FAIL guessed identifier claims child'; exception when insufficient_privilege then null; end;
+  begin insert into public.institution_readings(school_id,class_id,student_id,story_title,minutes,read_at) values ('10000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001',(select id from public.institution_students where external_id='fixture-a'),'Guessed fixture',1,current_date); raise exception 'FAIL cross-class reading'; exception when insufficient_privilege then null; end;
+  begin perform public.institution_record_assessment('20000000-0000-0000-0000-000000000001','30000000-0000-0000-0000-000000000001',current_date,'2','1','[]'); raise exception 'FAIL cross-class assessment'; exception when insufficient_privilege then null; end;
 end $$;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000003';
 select public.test_assert((select count(*) = 2 from public.institution_classes), 'school admin sees all school classes only');
@@ -41,6 +47,10 @@ select public.test_assert((select count(*) = 1 from public.institution_quiz_resu
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000004';
 select public.test_assert((select count(*) = 0 from public.institution_students), 'other school admin cannot read child');
 select public.test_assert((select count(*) = 0 from public.institution_quiz_results), 'other school admin cannot read quiz');
+do $$ begin
+  begin perform public.institution_assign_teacher('10000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000004'); raise exception 'FAIL foreign school assignment'; exception when insufficient_privilege then null; end;
+  begin perform public.institution_import_roster('20000000-0000-0000-0000-000000000001','[{"external_id":"foreign-fixture","display_name":"Reader F"}]'); raise exception 'FAIL foreign school import'; exception when insufficient_privilege then null; end;
+end $$;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000099';
 select public.test_assert((select count(*) = 0 from public.institution_classes), 'nonmember cannot read classes');
 set request.jwt.claim.sub = '';
