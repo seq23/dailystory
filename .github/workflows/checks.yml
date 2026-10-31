@@ -16,8 +16,12 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - name: Typecheck application and build configuration
+        run: npx tsc --noEmit -p tsconfig.app.json && npx tsc --noEmit -p tsconfig.node.json
       # Fast merge gate: the edge-function import guard and the public-URL guard.
       - run: npx vitest run src/test/guards
+      - name: Institutional RLS and transaction checks (disposable local PostgreSQL)
+        run: bash scripts/test-institutions-db.sh
       # Build-time prerender: real HTML for every public page (crawlers see text).
       - run: npm run build
       - run: node scripts/check-prerender.mjs

@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
@@ -208,6 +208,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
       </div>
 
       <SidebarContent className="p-2">
+        <Link to="/schools" className="px-4 py-2 text-sm underline">School workspace</Link>
         {/* Who is reading now */}
         {!effectiveCollapsed && activeChild && (
           <div className="px-3 py-3 mb-2 flex items-center gap-3">
