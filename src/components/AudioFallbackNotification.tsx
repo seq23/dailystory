@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Volume2 } from 'lucide-react';
@@ -65,8 +66,7 @@ export const AudioFallbackNotification: React.FC = () => {
                   onClick={() => setNotification(null)}
                   className="text-xs text-orange-700 hover:text-orange-900 underline"
                 >
-                  Retry with network
-                </button>
+                   {uiText("Retry with network")} </button>
               </div>
             )}
           </div>

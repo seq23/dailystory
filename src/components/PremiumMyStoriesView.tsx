@@ -1,3 +1,5 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
+import { useScreenHistory } from "@/hooks/useScreenHistory";
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,19 +37,24 @@ interface PremiumMyStoriesViewProps {
   onSessionEnded: (stats: SessionStats) => void;
   /** Open the new-story form on arrival (e.g. "Create Your First Story" on the Story Library page). */
   openNewStoryOnArrival?: boolean;
+  isActive?: boolean;
 }
 
-export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive, onSessionEnded, openNewStoryOnArrival = false }: PremiumMyStoriesViewProps) => {
-  const [currentView, setCurrentView] = useState<'library' | 'reading'>('library');
-  const [currentStory, setCurrentStory] = useState<Story | null>(null);
+export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive, onSessionEnded, openNewStoryOnArrival = false, isActive = true }: PremiumMyStoriesViewProps) => {
+  useUiLanguage();
+  const [currentView, setCurrentView] = useScreenHistory<'library' | 'reading'>('stories', 'library');
+  const [storyVersion, setStoryVersion] = useState(0);
+  const [currentStory, setCurrentStory] = useState<(Story & { isFromSavedStory?: boolean }) | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
   const [requestDialogOpen, setRequestDialogOpen] = useState(openNewStoryOnArrival);
   const [specialRequest, setSpecialRequest] = useState("");
+  useEffect(() => {
+    if (openNewStoryOnArrival && isActive) setRequestDialogOpen(true);
+  }, [openNewStoryOnArrival, isActive]);
   const { activeChild, setChildReadingGrade } = useChildProfiles();
 
   // Move useMemo hooks to top level to fix hooks ordering violation
   const effectiveUserInfo: UserInfo = useMemo(() => {
-    if (currentView === 'reading') {
       if (!activeChild) return { ...userInfo, specialRequest };
       // The story is written at the child's reading level: the one chosen on the story
       // page (reading_grade), else their school grade (src/lib/readingLadder.ts).
@@ -69,18 +76,11 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive
         avatar: (activeChild.avatar as any) || userInfo.avatar,
         specialRequest,
       }, readingGrade);
-    }
-    return userInfo;
-  }, [currentView, activeChild?.display_name, activeChild?.grade_level, activeChild?.avatar /* reading_grade is read when a story opens; the story page keeps it live from there */, userInfo, specialRequest]);
+  }, [storyVersion, activeChild?.display_name, activeChild?.grade_level, activeChild?.avatar /* reading_grade is read when a story opens; the story page keeps it live from there */, userInfo, specialRequest]);
 
-  const readingAsName = useMemo(() => {
-    if (currentView === 'reading') {
-      return activeChild?.display_name && activeChild.display_name !== userInfo.name
-        ? activeChild.display_name
-        : undefined;
-    }
-    return undefined;
-  }, [currentView, activeChild?.display_name, userInfo.name]);
+  const readingAsName = activeChild?.display_name && activeChild.display_name !== userInfo.name
+    ? activeChild.display_name
+    : undefined;
 
 
   // Check if user has read stories before to prevent auto-tutorial
@@ -115,7 +115,7 @@ useEffect(() => {
           sessionStorage.removeItem(`premium.timer.remaining.${id}`);
           StorySessionCache.clearCachedSession(id);
         } catch {}
-        window.history.replaceState({}, '', window.location.pathname);
+        window.history.replaceState(window.history.state, '', window.location.pathname);
         return;
       }
 
@@ -130,6 +130,9 @@ useEffect(() => {
   })();
 }, [userInfo?.name, isSubscriptionActive]);
 
+  const [hasOpenedStory, setHasOpenedStory] = useState(false);
+  useEffect(() => { if (currentView === 'reading') setHasOpenedStory(true); }, [currentView]);
+
   // Hard-block entire premium display if subscription is inactive
   if (!isSubscriptionActive) {
     return (
@@ -138,7 +141,8 @@ useEffect(() => {
   }
 
   const handleLoadStory = (story: Story) => {
-    setCurrentStory(story);
+    setStoryVersion(v => v + 1);
+    setCurrentStory({ ...story, isFromSavedStory: true });
     setCurrentView('reading');
     
     // Mark user as having read stories
@@ -152,17 +156,19 @@ useEffect(() => {
 
   const handleBackToLibrary = () => {
     setCurrentView('library');
-    setCurrentStory(null);
   };
 
-  if (currentView === 'reading') {
-    return (
+  return (<>
+    <div hidden={currentView !== 'reading'}>
+    {hasOpenedStory && (
       <CleanStoryDisplay
+        key={storyVersion}
+        isActive={isActive && currentView === 'reading'}
+        currentStory={currentStory}
         userInfo={effectiveUserInfo}
         onReadingGradeChange={activeChild ? (grade) => setChildReadingGrade(activeChild.id, grade).then(() => undefined) : undefined}
         isPremium={isPremium}
         onSessionEnded={(stats) => {
-          setCurrentView('library');
           onSessionEnded(stats);
         }}
         onHome={handleBackToLibrary}
@@ -170,18 +176,16 @@ useEffect(() => {
         onNewStory={handleStartNewStory}
         readingAsName={readingAsName}
       />
-    );
-  }
-
-  return (
-    <div className="space-y-6">
+    )}
+    </div>
+    <div hidden={currentView !== 'library'} className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-gradient-primary/20 rounded-full">
             <BookOpen className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">My Stories</h1>
+          <h1 className="text-2xl font-bold text-foreground">{uiText("My Stories")}</h1>
         </div>
         
         <div className="flex items-center gap-2 -ml-11 sm:-ml-2">
@@ -193,7 +197,7 @@ useEffect(() => {
             className="rounded-full pl-2 pr-3 sm:pl-3 sm:pr-4 md:px-6 hover-scale justify-start text-left shrink-0"
             size="md"
             wandPulse
-            labelOverride="New Story"
+            labelOverride={uiText("New Story")}
           />
         </div>
       </div>
@@ -226,6 +230,7 @@ useEffect(() => {
           } catch (e) {
             DebugLogger.warn('story', 'Clearing the last story before a new one failed', e);
           }
+          setStoryVersion(v => v + 1);
           setSpecialRequest(composed);
           setRequestDialogOpen(false);
           setCurrentStory(null);
@@ -236,5 +241,5 @@ useEffect(() => {
         mode="new"
       />
     </div>
-  );
+  </>);
 };

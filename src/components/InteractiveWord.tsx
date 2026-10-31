@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
@@ -263,7 +264,7 @@ export const InteractiveWord = ({
     } catch (error) {
       DebugLogger.error('audio', 'Charlotte hear word failed', error);
       toast({
-        title: "Audio Error", 
+        title: uiText("Audio Error"),
         description: `Failed to pronounce "${cleanWord}"`,
         variant: "destructive"
       });
@@ -923,7 +924,7 @@ export const InteractiveWord = ({
               >
                 <Languages className="w-3 h-3" />
                 <span className="hidden xs:inline">{isLoadingWordData ? userLanguageT("interactiveWord.loading", "Loading...") : userLanguageT("interactiveWord.translate", "Translate")}</span>
-                <span className="xs:hidden">Trans</span>
+                <span className="xs:hidden"> {uiText("Trans")} </span>
               </button>
             )}
 
@@ -940,7 +941,7 @@ export const InteractiveWord = ({
               >
                 {isPremium ? <Plus className="w-3 h-3" /> : <Crown className="w-3 h-3" />}
                 <span className="hidden xs:inline">{userLanguageT("interactiveWord.addToVocabulary", "Save Word")}</span>
-                <span className="xs:hidden">Save</span>
+                <span className="xs:hidden"> {uiText("Save")} </span>
               </button>
               
               {/* Premium tooltip for free users - mobile optimized */}
@@ -948,7 +949,7 @@ export const InteractiveWord = ({
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg max-w-[200px]">
                   <div className="flex items-center gap-1">
                     <Crown className="w-3 h-3" />
-                    <span>Premium Feature</span>
+                    <span> {uiText("Premium Feature")} </span>
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-2 border-r-2 border-t-2 border-transparent border-t-purple-600"></div>
                 </div>
@@ -968,7 +969,7 @@ export const InteractiveWord = ({
                  } catch (error) {
                    DebugLogger.error('audio', 'Charlotte syllables failed', error);
                    toast({
-                     title: "Error",
+                     title: uiText("Error"),
                      description: "Could not play syllable breakdown. Please try again.",
                      variant: "destructive",
                    });
@@ -980,7 +981,7 @@ export const InteractiveWord = ({
                className="flex items-center gap-1 text-xs bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border border-purple-200 px-2.5 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-purple-700 shadow-sm disabled:opacity-50"
              >
                <Layers className="w-3 h-3" />
-               <span className="hidden xs:inline">{isPlayingPhonetics ? "Playing..." : "Syllables"}</span>
+               <span className="hidden xs:inline">{isPlayingPhonetics ? "Playing..." : uiText("Syllables")}</span>
                <span className="xs:hidden">{isPlayingPhonetics ? "..." : "Syl"}</span>
              </button>
            </div>
@@ -1690,7 +1691,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     } catch (error) {
       DebugLogger.error('audio', 'Charlotte syllables failed', error);
       toast({
-        title: "Error",
+        title: uiText("Error"),
         description: "Could not play syllable breakdown. Please try again.",
         variant: "destructive",
       });
@@ -1832,7 +1833,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
                  >
                    <Layers className="w-5 h-5" />
                    <span className="text-sm">
-                     {isPlayingPhonetics ? "Playing Syllables..." : "Break Down Pronunciation"}
+                     {isPlayingPhonetics ? uiText("Playing Syllables...") : uiText("Break Down Pronunciation")}
                    </span>
                  </button>
                </div>
@@ -1874,8 +1875,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
               onClick={() => setShowMobileTTS(false)}
               className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 rounded-xl transition-colors"
             >
-              Close
-            </button>
+               {uiText("Close")} </button>
           </div>
         </div>
       )}

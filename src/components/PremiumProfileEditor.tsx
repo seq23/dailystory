@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ interface PremiumProfileEditorProps {
 }
 
 export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChildren }: PremiumProfileEditorProps) => {
+  useUiLanguage();
   const { toast } = useToast();
   // Ensure default values to prevent persistence issues
   const [formData, setFormData] = useState<UserInfo>({
@@ -52,8 +54,8 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChild
       });
       await onSave(formData);
       toast({
-        title: "Saved: reading settings",
-        description: "Language and reading level are saved for your children's stories.",
+        title: uiText("Saved: reading settings"),
+        description: uiText("Language and reading level are saved for your children's stories."),
         duration: 4000,
       });
       setHasChanges(false);
@@ -61,8 +63,8 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChild
     } catch (error) {
       DebugLogger.error('auth', 'PremiumProfileEditor: Save failed', error);
       toast({
-        title: "Save Failed",
-        description: "Unable to save your changes. Please try again in a moment.",
+        title: uiText("Save Failed"),
+        description: uiText("Unable to save your changes. Please try again in a moment."),
         variant: "destructive",
       });
     } finally {
@@ -89,8 +91,8 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChild
             <User className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Reading settings</h1>
-            <p className="text-muted-foreground">Language and reading level for stories. Each child's name, grade and picture are under "Your children".</p>
+            <h1 className="text-2xl font-bold text-foreground">{uiText("Reading settings")}</h1>
+            <p className="text-muted-foreground">{uiText("Language and reading level for stories. Each child's name, grade and picture are under \"Your children\".")}</p>
           </div>
         </div>
       </div>
@@ -101,12 +103,12 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChild
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5" />
-              Language
+              {uiText("Language")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="language">Native Language</Label>
+              <Label htmlFor="language">{uiText("Native Language")}</Label>
               <Select
                 value={formData.nativeLanguage}
                 onValueChange={(value) => {
@@ -117,20 +119,21 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChild
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select language" />
+                  <SelectValue placeholder={uiText("Select language")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Spanish</SelectItem>
-                  <SelectItem value="fr">French</SelectItem>
-                  <SelectItem value="ar">Arabic</SelectItem>
-                  <SelectItem value="zh">Chinese</SelectItem>
-                  <SelectItem value="hi">Hindi</SelectItem>
-                  <SelectItem value="pt">Portuguese</SelectItem>
+                  <SelectItem value="en">{uiText("English")}</SelectItem>
+                  <SelectItem value="es">{uiText("Spanish")}</SelectItem>
+                  <SelectItem value="fr">{uiText("French")}</SelectItem>
+                  <SelectItem value="ar">{uiText("Arabic")}</SelectItem>
+                  <SelectItem value="zh">{uiText("Chinese")}</SelectItem>
+                  <SelectItem value="hi">{uiText("Hindi")}</SelectItem>
+                  <SelectItem value="pt">{uiText("Portuguese")}</SelectItem>
+                  <SelectItem value="ur">{uiText("Urdu")}</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Changing your native language will update the interface language. Story content and navigation will remain in their original format.
+                {uiText("Changing your native language will update the interface language. Story content and navigation will remain in their original format.")}
               </p>
             </div>
 
@@ -142,32 +145,31 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChild
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="w-5 h-5" />
-              Reading & Story Preferences
+              {uiText("Reading & Story Preferences")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1 rounded-md border border-muted/60 p-3">
-              <p className="font-medium">Reading level: set for each child</p>
+              <p className="font-medium">{uiText("Reading level: set for each child")}</p>
               <p className="text-sm text-muted-foreground">
-                Each child starts at their school grade. While reading, tap "Make it easier" or "Make it harder" on the story page;
-                the next page changes and that child's level is remembered for their next story.
+                {uiText("Each child starts at their school grade. While reading, tap \"Make it easier\" or \"Make it harder\" on the story page; the next page changes and that child's level is remembered for their next story.")}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="storyLanguage">Story Language Preference</Label>
+              <Label htmlFor="storyLanguage">{uiText("Story Language Preference")}</Label>
               <Select
                 value={"en"}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, storyLanguagePreference: value as LanguageCode }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select story language" />
+                  <SelectValue placeholder={uiText("Select story language")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="en">English Stories</SelectItem>
+                  <SelectItem value="en">{uiText("English Stories")}</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">Only English is supported for stories at this time.</p>
+              <p className="text-xs text-muted-foreground">{uiText("Only English is supported for stories at this time.")}</p>
             </div>
           </CardContent>
         </Card>
@@ -176,10 +178,10 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChild
         <Card className="border-muted/60 lg:col-span-2">
           <CardContent className="pt-6 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="font-medium">Your children</p>
-              <p className="text-sm text-muted-foreground">Names, grades and pictures are kept on each child.</p>
+              <p className="font-medium">{uiText("Your children")}</p>
+              <p className="text-sm text-muted-foreground">{uiText("Names, grades and pictures are kept on each child.")}</p>
             </div>
-            <Button variant="outline" onClick={onManageChildren}>Manage your children →</Button>
+            <Button variant="outline" onClick={onManageChildren}>{uiText("Manage your children →")}</Button>
           </CardContent>
         </Card>
       </div>
@@ -191,13 +193,13 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChild
           onClick={handleCancel}
           disabled={isSaving}
         >
-          Cancel
+          {uiText("Cancel")}
         </Button>
         
         <div className="flex items-center gap-3">
           {hasChanges && (
             <Badge variant="secondary" className="animate-pulse">
-              Unsaved changes
+              {uiText("Unsaved changes")}
             </Badge>
           )}
           <Button
@@ -208,12 +210,12 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel, onManageChild
             {isSaving ? (
               <>
                 <Save className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
+                {uiText("Saving...")}
               </>
             ) : (
               <>
                 <CheckCircle className="w-4 h-4 mr-2" />
-                Save settings
+                {uiText("Save settings")}
               </>
             )}
           </Button>

@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Shield, FileText, Trash2, Eye, Ban, Edit } from "lucide-react";
@@ -48,7 +49,7 @@ const CCPA = () => {
         <Link to="/">
           <Button variant="ghost" size="sm" className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            {uiText("Back to Home")}
           </Button>
         </Link>
         <div className="flex items-center gap-3 mb-2">
@@ -144,7 +145,7 @@ const CCPA = () => {
             <table className="w-full">
               <thead>
                 <tr>
-                  <th>Category</th>
+                  <th>{uiText("Category")}</th>
                   <th>Examples</th>
                   <th>Collected</th>
                   <th>Purpose</th>
@@ -218,7 +219,7 @@ const CCPA = () => {
             Online Privacy Protection Act) requirements.
           </p>
 
-          <h2>Contact Us</h2>
+          <h2>{uiText("Contact Us")}</h2>
           <p>
             If you have questions about this notice or your California privacy rights, please contact us:
           </p>
@@ -247,7 +248,7 @@ const CCPA = () => {
           <Link to="/terms">
             <Button variant="outline">
               <FileText className="w-4 h-4 mr-2" />
-              Terms of Service
+              {uiText("Terms of Service")}
             </Button>
           </Link>
         </div>

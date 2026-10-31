@@ -1,3 +1,5 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
+import { useLocation } from "react-router-dom";
 import { StoryAudioControls } from "@/components/story/StoryAudioControls";
 import { EXPERT_GRADES, GRADES, minimumGradeForGuardrail, type ExpertGrade, type Grade } from '@/lib/grades';
 import { readingStep, stepReadingGrade, startingReadingGrade, withReadingGrade, type ReadingStep } from '@/lib/readingLadder';
@@ -164,6 +166,7 @@ interface CleanStoryDisplayProps {
   userInfo: UserInfo;
   isPremium: boolean;
   onSessionEnded: (stats: SessionStats) => void;
+  isActive?: boolean;
   onHome: () => void;
   onUpgrade: () => void;
   onNewStory?: () => void;
@@ -178,6 +181,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   userInfo,
   isPremium,
   onSessionEnded,
+  isActive = true,
   onHome,
   onUpgrade,
   onNewStory,
@@ -186,6 +190,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   onPageImagesUpdate, // CRITICAL: Extract callback for image updates
   onReadingGradeChange,
 }) => {
+  useUiLanguage();
   // ERROR-023 FIX: Defensive userInfo validation with complete fallback
   // Create stable reference to prevent infinite re-renders
   const safeUserInfo: UserInfo = useMemo(() => userInfo || {
@@ -487,6 +492,21 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     });
   }, [safeStory, isPremium, currentPage, storyTitle, readingGrade, pagesCompleted]);
   
+  const readerLocation = useLocation();
+  const readerVisible = isActive && readerLocation.pathname === '/';
+  const resumeTimerRef = useRef(false);
+  useEffect(() => {
+    if (!readerVisible) {
+      resumeTimerRef.current = isTimerRunning;
+      setIsTimerRunning(false);
+      charlotteVoiceService.stop();
+      window.speechSynthesis?.cancel();
+    } else if (resumeTimerRef.current) {
+      setIsTimerRunning(true);
+      resumeTimerRef.current = false;
+    }
+  }, [readerVisible]);
+
   // Ensure currentPage is within valid bounds
   const safeCurrentPage = Math.max(0, Math.min(currentPage, displayedStory.length - 1));
   const currentPageContent = displayedStory[safeCurrentPage] || '';
@@ -736,7 +756,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           try { sessionStorage.removeItem(`premium.timer.remaining.${id}`); } catch {}
           try { StorySessionCache.clearCachedSession(id); } catch {}
         }
-        window.history.replaceState({}, '', window.location.pathname);
+        window.history.replaceState(window.history.state, '', window.location.pathname);
       }
 
       // If resume is disabled, proactively clear any cached session to avoid loops
@@ -758,13 +778,13 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
   // Track reading state to pause non-essential intervals
   useEffect(() => {
-    const isActivelyReading = story.length > 0 && !isLoading && !error;
+    const isActivelyReading = readerVisible && story.length > 0 && !isLoading && !error;
     ReadingStateManager.setReadingState(isActivelyReading);
     
     return () => {
       ReadingStateManager.setReadingState(false);
     };
-  }, [story.length, isLoading, error]);
+  }, [readerVisible, story.length, isLoading, error]);
 
   // Monitor network status for image generation
   useEffect(() => {
@@ -1055,7 +1075,7 @@ useEffect(() => {
 // Direct URL management for story sessions (more reliable than hook-based approach)
 const navigate = useNavigate();
 useEffect(() => {
-  if (story.length > 0) {
+  if (readerVisible && story.length > 0) {
     const params = new URLSearchParams();
     params.set('session', 'story');
     params.set('page', (currentPage + 1).toString());
@@ -1066,9 +1086,9 @@ useEffect(() => {
     }
 
     const newUrl = `/?${params.toString()}`;
-    navigate(newUrl, { replace: true });
+    navigate(newUrl, { replace: true, state: readerLocation.state });
   }
-}, [story.length, currentPage, storyTitle, navigate]);
+}, [story.length, currentPage, storyTitle, navigate, readerVisible]);
 
 // Handle browser back/forward navigation
 useEffect(() => {
@@ -1235,13 +1255,13 @@ useEffect(() => {
   // FIXED: Start timer immediately when story is stable (Phase 2)
   useEffect(() => {
     // Start timer immediately when story is stable and not manually paused
-    if (isStoryStable && story.length > 0 && !isTimerRunning && !isTimerCanceled && !userPausedTimer && !hasChosenUntimed && timerEnabled) {
+    if (readerVisible && isStoryStable && story.length > 0 && !isTimerRunning && !isTimerCanceled && !userPausedTimer && !hasChosenUntimed && timerEnabled) {
       DebugLogger.log('performance', 'FIXED: Auto-starting timer at 20:00 - story is now stable');
       setIsTimerRunning(true);
     } else if (isStoryStable && story.length > 0 && userPausedTimer) {
       DebugLogger.log('performance', 'Timer auto-start blocked - user has manually paused');
     }
-  }, [isStoryStable, story.length, isTimerRunning, isTimerCanceled, userPausedTimer, timerEnabled]);
+  }, [readerVisible, isStoryStable, story.length, isTimerRunning, isTimerCanceled, userPausedTimer, timerEnabled]);
 
   // Long-press instruction removed (Gate A3) — single-tap is now the dismiss action on dialogs/buttons
 
@@ -1705,7 +1725,7 @@ useEffect(() => {
 // Timer countdown effect
 useEffect(() => {
   let intervalId: string;
-  if (isTimerRunning && timeRemaining > 0 && !isTimerCanceled) {
+  if (readerVisible && isTimerRunning && timeRemaining > 0 && !isTimerCanceled) {
     intervalId = ManagedTimers.setInterval(() => {
       setTimeRemaining(prev => {
         if (prev <= 1) {
@@ -1721,7 +1741,7 @@ useEffect(() => {
   return () => {
     if (intervalId) ManagedTimers.clearTimer(intervalId);
   };
-}, [isTimerRunning, timeRemaining, isTimerCanceled]);
+}, [readerVisible, isTimerRunning, timeRemaining, isTimerCanceled]);
 
 // Persist timer remaining periodically for both tiers
 const timeRef = useRef(timeRemaining);
@@ -1946,6 +1966,9 @@ const startBackupStory = () => {
 };
 
 const initializeStory = async () => {
+  // Saved content is loaded by the saved-story effect. Never start a competing live
+  // request: a late response would replace the child's retained story after Back.
+  if (currentStory?.isFromSavedStory) return;
   // Prevent multiple simultaneous initializations
   if (isInitializingRef.current) {
     DebugLogger.log('story', 'initializeStory: Already initializing, skipping');
@@ -2117,7 +2140,7 @@ const initializeStory = async () => {
       if (currentDifficulty === 'expert' || currentDifficulty === 'advanced') {
         const gradeToShow = ExpertDifficultyManager.getCurrentGradeLevel(userInfo);
         toast({
-          title: "Reading Level",
+          title: uiText("Reading Level"),
           description: `Reading at ${gradeToShow} Grade Level`,
           duration: 3000,
         });
@@ -2195,7 +2218,7 @@ const initializeStory = async () => {
           if (currentDifficulty === 'expert' || currentDifficulty === 'advanced') {
             const randomGrade = ExpertDifficultyManager.getRandomGradeLevel();
             toast({
-              title: "Reading Level",
+              title: uiText("Reading Level"),
               description: `You're reading a ${randomGrade} Grade story today!`,
               duration: 4000,
             });
@@ -2365,7 +2388,7 @@ const initializeStory = async () => {
       if (currentDifficulty === 'expert' || currentDifficulty === 'advanced') {
         const randomGrade = ExpertDifficultyManager.getRandomGradeLevel();
         toast({
-          title: "Reading Level",
+          title: uiText("Reading Level"),
           description: `You're reading a ${randomGrade} Grade story today!`,
           duration: 4000,
         });
@@ -3873,7 +3896,7 @@ const handleRestartTimer = () => {
           throw new Error('Template fallback failed');
         }
       } catch (fallbackError) {
-        toast({ title: "Ending failed", description: "Please try again.", variant: "destructive" });
+        toast({ title: "Ending failed", description: uiText("Please try again."), variant: "destructive" });
       }
     } finally {
       setIsGeneratingEnding(false);
@@ -4023,7 +4046,7 @@ const handleRestartTimer = () => {
         currentImage,
         hasCurrentImage,
         allPageImages: pageImages,
-        imageSource: currentImage ? 'Found in pageImages' : 'No image available',
+        imageSource: currentImage ? 'Found in pageImages' : uiText("No image available"),
         storyStable: isStoryStable,
         timestamp: new Date().toISOString()
       });
@@ -4129,7 +4152,7 @@ const handleRestartTimer = () => {
             })()}
           </p>
           <p className="text-white/70 text-sm">
-            This may take a moment for the best experience
+            {uiText("This may take a moment for the best experience")}
           </p>
         </div>
       </div>
@@ -4146,14 +4169,14 @@ const handleRestartTimer = () => {
       <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
         <div className="text-center max-w-4xl w-full">
           <div className="text-6xl mb-4">🎭</div>
-          <h2 className="text-2xl font-bold text-white mb-4">Restarting Story Magic...</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">{uiText("Restarting Story Magic...")}</h2>
           
           <div className="mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-6">
             <p className="text-white/90 text-lg leading-relaxed mb-4">
-              {safeUserInfo.name}'s adventure is loading with special backup content!
+              {safeUserInfo.name}{uiText("'s adventure is loading with special backup content!")}
             </p>
             <p className="text-white/70 text-sm">
-              Click below to start your magical journey.
+              {uiText("Click below to start your magical journey.")}
             </p>
           </div>
           
@@ -4169,7 +4192,7 @@ const handleRestartTimer = () => {
           )}
           
           <MobileOptimizedButton onClick={() => (!isPremium ? startBackupStory() : onNewStory ? onNewStory() : window.location.reload())} className="bg-white text-primary" data-testid="start-backup-story">
-            Start Adventure
+            {uiText("Start Adventure")}
           </MobileOptimizedButton>
         </div>
       </div>
@@ -4299,10 +4322,10 @@ const handleRestartTimer = () => {
                         isConnected && "ring-2 ring-primary/40",
                         isSpeaking && "bg-warning text-warning-foreground"
                       )}
-                      aria-label={isConnected ? "Stop talking to Buddy" : "Talk to Buddy"}
+                      aria-label={isConnected ? uiText("Stop talking to Buddy") : uiText("Talk to Buddy")}
                     >
                       <Mic className={cn("w-4 h-4 mr-2", isSpeaking && "animate-pulse")} />
-                      {isConnecting ? "Connecting..." : isConnected ? "Buddy Listening" : "Talk to Buddy"}
+                      {isConnecting ? uiText("Connecting...") : isConnected ? uiText("Buddy Listening") : uiText("Talk to Buddy")}
                     </Button>
                     <Button onClick={handleSaveStoryNow} size="lg" variant={highlightSave ? "secondary" : "outline"} disabled={isSaving} aria-label={t('nav.save','Save')} className={cn(highlightSave ? 'ring-2 ring-primary/40' : '')}>
                       {isSaving ? (
@@ -4316,7 +4339,7 @@ const handleRestartTimer = () => {
                   {!isMobileOrTablet && isAudioPlaying && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                      Playing Audio
+                      {uiText("Playing Audio")}
                     </div>
                   )}
                 </div>
@@ -4324,7 +4347,7 @@ const handleRestartTimer = () => {
 
               {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
               <div className="bg-gradient-card rounded-2xl p-2 md:p-4 lg:p-6 mb-6 flex-1 min-h-0 flex flex-col shadow-xl mt-2" 
-                   dir="ltr" lang="en" role="main" aria-label="Story content">
+                   role="main" aria-label={uiText("Story content")}>
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image - Dynamic aspect ratio to prevent whitespace */}
@@ -4336,9 +4359,9 @@ const handleRestartTimer = () => {
                       >
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && !isGeneratingImage && !isPreparingImage && !imageLoadingStates[currentPage] && (
                           <div className="absolute top-3 right-3 z-20">
-                              <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
+                              <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label={uiText("Fix missing illustrations")}>
                               <Sparkles className="w-4 h-4 mr-1" />
-                              Fix Images
+                              {uiText("Fix Images")}
                             </Button>
                           </div>
                         )}
@@ -4367,7 +4390,7 @@ const handleRestartTimer = () => {
                       <div className="relative w-full h-[120px] rounded-2xl overflow-hidden shadow-md bg-muted/20">
                         <img 
                           src={IMAGES_DISABLED_PLACEHOLDER} 
-                          alt="Reading corner for serious readers"
+                          alt={uiText("Reading corner for serious readers")}
                           className="w-full h-full object-cover transition-opacity duration-300"
                         />
                       </div>
@@ -4389,13 +4412,14 @@ const handleRestartTimer = () => {
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                           <div className="flex items-center gap-2">
                             <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                            <span className="text-sm text-muted-foreground">Generating next page...</span>
+                            <span className="text-sm text-muted-foreground">{uiText("Generating next page...")}</span>
                           </div>
                         </div>
                       </div>
                     )}
                     <div className={cn(isLongPage ? "px-4 md:px-6 pb-4" : "flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4")} data-testid="story-text-scroll-mobile">
                       <div 
+                        dir="ltr" lang="en"
                         className={cn("story-content storybook-frame story-content--difficulty-aware w-full", justAdvanced && "animate-enter", difficultyBasedContainerConfig)}
                         data-difficulty={currentDifficulty}
                         style={{
@@ -4420,7 +4444,7 @@ const handleRestartTimer = () => {
                           <div className="flex items-center justify-center h-32">
                             <div className="text-center">
                               <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
-                              <p className="text-sm text-muted-foreground">Weaving more story magic...</p>
+                              <p className="text-sm text-muted-foreground">{uiText("Weaving more story magic...")}</p>
                             </div>
                           </div>
                         )}
@@ -4449,9 +4473,9 @@ const handleRestartTimer = () => {
                       )} style={imagesEnabled ? heightStyle : undefined}>
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && !isGeneratingImage && !isPreparingImage && !imageLoadingStates[currentPage] && (
                           <div className="absolute top-3 right-3 z-20">
-                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
+                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label={uiText("Fix missing illustrations")}>
                               <Sparkles className="w-4 h-4 mr-1" />
-                              Fix Images
+                              {uiText("Fix Images")}
                             </Button>
                           </div>
                         )}
@@ -4498,13 +4522,14 @@ const handleRestartTimer = () => {
                           <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                             <div className="flex items-center gap-2">
                               <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                              <span className="text-sm text-muted-foreground">Generating next page...</span>
+                              <span className="text-sm text-muted-foreground">{uiText("Generating next page...")}</span>
                             </div>
                           </div>
                         </div>
                       )}
                       <div className={cn(isLongPage ? "overflow-x-hidden p-3 md:p-6" : "h-full overflow-y-auto overflow-x-hidden p-3 md:p-4", isShortPage && "flex items-center justify-center")} data-testid="story-text-scroll"> 
                         <div 
+                          dir="ltr" lang="en"
                           className={cn("story-content story-content--compact story-content--difficulty-aware w-full", (isPremium && isShortPage || currentDifficulty === 'easy') && "text-center", justAdvanced && "animate-enter", difficultyBasedContainerConfig)}
                           data-difficulty={currentDifficulty}
                           style={{
@@ -4529,7 +4554,7 @@ const handleRestartTimer = () => {
                              <div className="flex items-center justify-center h-32">
                                <div className="text-center">
                                  <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
-                                  <p className="text-sm text-muted-foreground">Weaving more story magic...</p>
+                                  <p className="text-sm text-muted-foreground">{uiText("Weaving more story magic...")}</p>
                                </div>
                              </div>
                             )}
@@ -4587,7 +4612,7 @@ const handleRestartTimer = () => {
                     <p className="text-lg font-bold mb-4 px-4 py-2 rounded-full animate-pulse leading-tight" aria-live="polite">
                       <span className="inline-flex items-center gap-2">
                         <FriendlyUpArrowIcon size={22} className="text-destructive shrink-0 align-middle -translate-y-[1px]" />
-                        {"Here's how this one ends! Don't forget to save 😊"}
+                        {uiText("Here's how this one ends! Don't forget to save 😊")}
                       </span>
                     </p>
 
@@ -4640,7 +4665,7 @@ const handleRestartTimer = () => {
                         ) : (
                           <>
                             <Sparkles className="w-5 h-5 mr-2" />
-                            {"Finish Story!"}
+                            {uiText("Finish Story!")}
                             <Sparkles className="w-5 h-5 absolute top-2 right-2 animate-pulse" />
                           </>
                         )}
@@ -4648,7 +4673,7 @@ const handleRestartTimer = () => {
                     </div>
 
                     <p className="text-sm mt-3 opacity-80">
-                      {"Want more? Go to the next page to add new parts to this story!"}
+                      {uiText("Want more? Go to the next page to add new parts to this story!")}
                     </p>
                   </div>
                 )}
@@ -4714,7 +4739,7 @@ const handleRestartTimer = () => {
                           <>
                             <Loader2 className="w-6 h-6 mr-3 animate-spin" />
                             <Sparkles className="w-5 h-5 absolute top-2 right-2 text-purple-200 animate-pulse" />
-                            Creating Magic...
+                            {uiText("Creating Magic...")}
                           </>
                         ) : (
                           <>
@@ -4734,7 +4759,7 @@ const handleRestartTimer = () => {
                                 <Sparkles className="w-3 h-3 absolute bottom-1 right-1 text-green-300 animate-ping" />
                               </>
                             )}
-                            Get the next story!
+                            {uiText("Get the next story!")}
                           </>
                         )}
                       </MobileOptimizedButton>
@@ -4742,7 +4767,7 @@ const handleRestartTimer = () => {
                     
                     {/* Upgrade prompt under button */}
                     <p className="text-sm text-muted-foreground mt-3">
-                      <button type="button" onClick={onUpgrade} className="story-link">Upgrade</button> to premium for unlimited stories and to craft your perfect ending.
+                      <button type="button" onClick={onUpgrade} className="story-link">{uiText("Upgrade")}</button> {uiText("to premium for unlimited stories and to craft your perfect ending.")}
                     </p>
                   </div>
                 )}
@@ -4854,8 +4879,8 @@ const handleRestartTimer = () => {
           <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
           <div className="relative z-[101] bg-background border border-border rounded-2xl shadow-2xl p-6 text-center animate-scale-in">
             <div className="text-5xl mb-3">🎉</div>
-            <h3 className="text-xl font-bold text-primary">Great job!</h3>
-            <p className="text-sm text-muted-foreground">You can save your story or just view your stats next.</p>
+            <h3 className="text-xl font-bold text-primary">{uiText("Great job!")}</h3>
+            <p className="text-sm text-muted-foreground">{uiText("You can save your story or just view your stats next.")}</p>
           </div>
         </div>
       )}
@@ -4971,7 +4996,7 @@ const handleRestartTimer = () => {
       }}>
         <DialogContent className="w-[min(96vw,720px)] max-h-[85vh] overflow-y-auto p-0">
           <DialogHeader>
-            <DialogTitle>Help Me Read</DialogTitle>
+            <DialogTitle>{uiText("Help Me Read")}</DialogTitle>
           </DialogHeader>
           {/* @ts-ignore */}
           <ReadAloudCoach targetText={currentStoryText || ""} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />

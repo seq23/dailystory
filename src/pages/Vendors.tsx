@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Building2, Database, Brain, Image, Volume2, CreditCard, Mail, Shield } from "lucide-react";
@@ -145,7 +146,7 @@ const Vendors = () => {
         <Link to="/">
           <Button variant="ghost" size="sm" className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            {uiText("Back to Home")}
           </Button>
         </Link>
         <div className="flex items-center gap-3 mb-2">
@@ -265,10 +266,10 @@ const Vendors = () => {
 
         <div className="mt-8 flex gap-4">
           <Link to="/privacy">
-            <Button variant="outline">Privacy Policy</Button>
+            <Button variant="outline">{uiText("Privacy Policy")}</Button>
           </Link>
           <Link to="/terms">
-            <Button variant="outline">Terms of Service</Button>
+            <Button variant="outline">{uiText("Terms of Service")}</Button>
           </Link>
         </div>
       </section>

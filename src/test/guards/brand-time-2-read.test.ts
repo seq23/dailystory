@@ -33,7 +33,7 @@ describe("the name is Time-2-Read", () => {
     expect(shell).toMatch(/<title>Time-2-Read /);
     expect(shell).toMatch(/og:site_name" content="Time-2-Read"/);
     expect(read("public/site.webmanifest")).toMatch(/"name": "Time-2-Read"/);
-    expect(read("src/components/PremiumHeader.tsx")).toMatch(/>Time-2-Read<\/span>/);
+    expect(read("src/components/PremiumHeader.tsx")).toMatch(/>\{uiText\("Time-2-Read"\)\}<\/span>/);
   });
 });
 

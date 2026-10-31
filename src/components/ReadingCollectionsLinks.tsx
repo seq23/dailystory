@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { Link } from "react-router-dom";
 import { landingPages } from "@/data/landingPages";
 
@@ -7,8 +8,8 @@ import { landingPages } from "@/data/landingPages";
  */
 export const ReadingCollectionsLinks = () => (
   <footer className="border-t border-border bg-background/80 py-8">
-    <nav className="mx-auto max-w-6xl px-4" aria-label="Reading collections">
-      <h2 className="font-fun text-base text-foreground mb-3">Reading collections</h2>
+    <nav className="mx-auto max-w-6xl px-4" aria-label={uiText("Reading collections")}>
+      <h2 className="font-fun text-base text-foreground mb-3"> {uiText("Reading collections")} </h2>
       <ul className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
         {landingPages.map((p) => (
           <li key={p.slug}>

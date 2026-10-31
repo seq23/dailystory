@@ -1,3 +1,5 @@
+import i18n from "@/i18n/config";
+import { uiGradeLabel } from "@/i18n/gradeLabel";
 // Small helpers for showing a child the same way everywhere (header, lists, story form).
 import type { ChildProfile } from "@/hooks/useChildProfiles";
 import { avatarImageFor } from "@/components/ui/avatar-picker";
@@ -11,6 +13,7 @@ export const CHILD_MAX_AGE = MAX_AGE;
 export function gradeText(grade: string | null | undefined): string | null {
   const g = normalizeGrade(grade);
   if (!g) return grade ? String(grade) : null;
+  if (i18n.resolvedLanguage !== "en") return uiGradeLabel(g);
   if (g === "PreK") return "Pre-K";
   if (g === "K") return "Kindergarten";
   return `${gradeLabel(g, "short")} grade`;
@@ -33,9 +36,9 @@ export function childSummary(child: ChildProfile): string {
   const school = gradeText(child.grade_level);
   const reads = gradeText(readsAtGrade(child as ChildProfile & { reading_grade?: string | null }));
   const parts = [
-    school ? `School: ${school}` : null,
-    reads ? `Reads at ${reads}` : null,
-    childAge(child) != null ? `${childAge(child)} years old` : null,
+    school ? String(i18n.t("ui.child_school", { grade: school })) : null,
+    reads ? String(i18n.t("ui.child_reads_at", { grade: reads })) : null,
+    childAge(child) != null ? String(i18n.t("ui.child_age", { age: childAge(child) })) : null,
   ].filter(Boolean);
   return parts.join(" · ");
 }

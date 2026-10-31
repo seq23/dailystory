@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -448,7 +449,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
           ) : (
             <Play className="w-4 h-4" />
           )}
-          {isLoading ? t("audioReading.generating", "Generating...") : isPlaying ? (isMobileOrTablet ? t("audioReading.stop", "Stop") : "Stop Reading") : (isMobileOrTablet ? t("audioReading.playAudio", "Play Audio") : "Read Story")}
+          {isLoading ? t("audioReading.generating", "Generating...") : isPlaying ? (isMobileOrTablet ? t("audioReading.stop", "Stop") : "Stop Reading") : (isMobileOrTablet ? t("audioReading.playAudio", "Play Audio") : uiText("Read Story"))}
         </Button>
         {shouldShowCrown && (
           <Crown className="w-4 h-4 absolute -top-1 -right-1 text-[hsl(var(--warning))]" />
@@ -475,7 +476,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
               <Loader2 className="w-3.5 h-3.5 absolute -right-3 -top-2 animate-spin text-muted-foreground" />
             )}
           </span>
-          {voiceConnected ? 'Stop Talking' : voiceConnecting ? 'Connecting...' : 'Talk to Buddy'}
+          {voiceConnected ? uiText("Stop Talking") : voiceConnecting ? uiText("Connecting...") : uiText("Talk to Buddy")}
         </Button>
       ) : (
         <TooltipProvider>
@@ -490,13 +491,11 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
                   className={`gap-2 ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`}
                 >
                   <Mic className="w-4 h-4" />
-                  Talk to Buddy
-                </Button>
+                   {uiText("Talk to Buddy")} </Button>
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              Voice Commands are a Premium feature
-            </TooltipContent>
+               {uiText("Voice Commands are a Premium feature")} </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
@@ -516,8 +515,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                Upgrade to Premium for unlimited audio plays per page
-              </p>
+                 {uiText("Upgrade to Premium for unlimited audio plays per page")} </p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +19,7 @@ const CONSENT_KEY = "cookie-consent-status";
 const PREFERENCES_KEY = "cookie-preferences";
 
 export const CookieConsent = () => {
+  useUiLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [showCustomize, setShowCustomize] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>({
@@ -96,18 +98,18 @@ export const CookieConsent = () => {
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
               <p className="text-sm text-foreground flex-1">
                 <Cookie className="inline w-4 h-4 mr-1 text-primary align-[-2px]" aria-hidden />
-                We use cookies to run the site and, if you allow, to see what helps.{" "}
-                <Link to="/privacy" className="text-primary underline">Privacy</Link>
+                {uiText("We use cookies to run the site and, if you allow, to see what helps.")}{" "}
+                <Link to="/privacy" className="text-primary underline">{uiText("Privacy")}</Link>
               </p>
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" variant="outline" onClick={() => setShowCustomize(true)} className="min-h-10">
-                  Choices
+                  {uiText("Choices")}
                 </Button>
                 <Button size="sm" variant="outline" onClick={handleEssentialOnly} className="min-h-10">
-                  Only needed
+                  {uiText("Only needed")}
                 </Button>
                 <Button size="sm" onClick={handleAcceptAll} className="min-h-10">
-                  OK, allow all
+                  {uiText("OK, allow all")}
                 </Button>
               </div>
             </div>
@@ -117,14 +119,14 @@ export const CookieConsent = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Shield className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-foreground">Cookie Preferences</h3>
+                  <h3 className="font-semibold text-foreground">{uiText("Cookie Preferences")}</h3>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowCustomize(false)}
                 >
-                  ← Back
+                  {uiText("← Back")}
                 </Button>
               </div>
 
@@ -132,9 +134,9 @@ export const CookieConsent = () => {
                 {/* Essential Cookies */}
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex-1">
-                    <Label className="font-medium">Essential Cookies</Label>
+                    <Label className="font-medium">{uiText("Essential Cookies")}</Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Required for the website to function properly. Cannot be disabled.
+                      {uiText("Required for the website to function properly. Cannot be disabled.")}
                     </p>
                   </div>
                   <Switch checked={true} disabled className="opacity-50" />
@@ -143,9 +145,9 @@ export const CookieConsent = () => {
                 {/* Analytics Cookies */}
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex-1">
-                    <Label className="font-medium">Analytics Cookies</Label>
+                    <Label className="font-medium">{uiText("Analytics Cookies")}</Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Help us understand how visitors interact with our website.
+                      {uiText("Help us understand how visitors interact with our website.")}
                     </p>
                   </div>
                   <Switch
@@ -159,9 +161,9 @@ export const CookieConsent = () => {
                 {/* Marketing Cookies */}
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex-1">
-                    <Label className="font-medium">Marketing Cookies</Label>
+                    <Label className="font-medium">{uiText("Marketing Cookies")}</Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Used to deliver personalized advertisements.
+                      {uiText("Used to deliver personalized advertisements.")}
                     </p>
                   </div>
                   <Switch
@@ -179,10 +181,10 @@ export const CookieConsent = () => {
                 </a>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={handleEssentialOnly}>
-                    Reject All
+                    {uiText("Reject All")}
                   </Button>
                   <Button size="sm" onClick={handleSaveCustom}>
-                    Save Preferences
+                    {uiText("Save Preferences")}
                   </Button>
                 </div>
               </div>

@@ -4,6 +4,39 @@ import '@/i18n/config';
 // Mock fetch by default to avoid hitting external APIs in tests
 import { vi } from 'vitest';
 
+// JSDOM has no media-query API; responsive components still need the browser contract.
+if (typeof window !== 'undefined' && !window.matchMedia) {
+  window.matchMedia = vi.fn((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(() => true),
+  }));
+}
+
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+if (typeof globalThis.IntersectionObserver === 'undefined') {
+  globalThis.IntersectionObserver = class {
+    root = null;
+    rootMargin = '0px';
+    thresholds = [0];
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() { return []; }
+  };
+}
+
 if (!(global as any).fetch) {
   (global as any).fetch = vi.fn();
 }

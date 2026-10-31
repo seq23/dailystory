@@ -1,3 +1,5 @@
+import { uiGradeLabel } from "@/i18n/gradeLabel";
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,7 @@ interface ChildFormProps {
  * sees the saved child (or a plain error with "Try again").
  */
 export function ChildForm({ child, onSaved, onCancel, submitLabel }: ChildFormProps) {
+  useUiLanguage();
   const { addChild, updateChild } = useChildProfiles();
   const existingAvatar = (child?.avatar ?? null) as { type?: AvatarType; skinTone?: SkinTone } | null;
   const [name, setName] = useState(child?.display_name ?? "");
@@ -41,7 +44,7 @@ export function ChildForm({ child, onSaved, onCancel, submitLabel }: ChildFormPr
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const missing = !name.trim() ? "Please type the child's first name." : !grade ? "Please pick a grade." : null;
+  const missing = !name.trim() ? uiText("Please type the child's first name.") : !grade ? uiText("Please pick a grade.") : null;
 
   const save = async () => {
     if (missing) {
@@ -62,7 +65,7 @@ export function ChildForm({ child, onSaved, onCancel, submitLabel }: ChildFormPr
       const saved = child ? await updateChild(child.id, input) : await addChild(input);
       onSaved?.(saved);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "We couldn't save that just now.");
+      setError(e instanceof Error ? e.message : uiText("We couldn't save that just now."));
     } finally {
       setSaving(false);
     }
@@ -78,17 +81,17 @@ export function ChildForm({ child, onSaved, onCancel, submitLabel }: ChildFormPr
       data-testid="child-form"
     >
       <div className="space-y-2">
-        <Label htmlFor="child-name" className="text-base font-semibold">Child's first name</Label>
+        <Label htmlFor="child-name" className="text-base font-semibold">{uiText("Child's first name")}</Label>
         <Input
           id="child-name"
           data-testid="child-name"
           value={name}
           autoComplete="off"
-          placeholder="For example, Maya"
+          placeholder={uiText("For example, Maya")}
           onChange={(e) => setName(e.target.value)}
           className="text-base"
         />
-        <p className="text-xs text-muted-foreground">First name only. It goes into their stories.</p>
+        <p className="text-xs text-muted-foreground">{uiText("First name only. It goes into their stories.")}</p>
       </div>
 
       <GradeChoice
@@ -115,7 +118,7 @@ export function ChildForm({ child, onSaved, onCancel, submitLabel }: ChildFormPr
 
       <div className="space-y-2">
         <Label htmlFor="child-age" className="text-base font-semibold">
-          Age <span className="font-normal text-muted-foreground">(optional)</span>
+          {uiText("Age")} <span className="font-normal text-muted-foreground">{uiText("(optional)")}</span>
         </Label>
         <select
           id="child-age"
@@ -124,9 +127,9 @@ export function ChildForm({ child, onSaved, onCancel, submitLabel }: ChildFormPr
           onChange={(e) => setAge(e.target.value ? Number(e.target.value) : null)}
           className="h-11 w-full max-w-[12rem] rounded-md border bg-background px-3 text-base"
         >
-          <option value="">Choose age</option>
+          <option value="">{uiText("Choose age")}</option>
           {AGES.map((a) => (
-            <option key={a} value={a}>{a} years old</option>
+            <option key={a} value={a}>{a} {uiText("years old")}</option>
           ))}
         </select>
       </div>
@@ -140,16 +143,16 @@ export function ChildForm({ child, onSaved, onCancel, submitLabel }: ChildFormPr
       <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel} disabled={saving} className="min-h-11">
-            Cancel
+            {uiText("Cancel")}
           </Button>
         )}
         <Button type="submit" disabled={saving} className="min-h-11" data-testid="child-save">
           {saving ? (
-            <><Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden /> Saving…</>
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden /> {uiText("Saving…")}</>
           ) : error ? (
-            "Try again"
+            uiText("Try again")
           ) : (
-            submitLabel ?? (child ? "Save changes" : "Add child")
+            submitLabel ?? (child ? uiText("Save changes") : uiText("Add child"))
           )}
         </Button>
       </div>
@@ -161,11 +164,12 @@ export function ChildForm({ child, onSaved, onCancel, submitLabel }: ChildFormPr
 function GradeChoice({ legend, help, testIdPrefix, value, onChange }: {
   legend: string; help: string; testIdPrefix: string; value: string; onChange: (g: string) => void;
 }) {
+  useUiLanguage();
   return (
     <fieldset className="space-y-2">
-      <legend className="text-base font-semibold">{legend}</legend>
-      <p className="text-xs text-muted-foreground">{help}</p>
-      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2" role="radiogroup" aria-label={legend}>
+      <legend className="text-base font-semibold">{uiText(legend)}</legend>
+      <p className="text-xs text-muted-foreground">{uiText(help)}</p>
+      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2" role="radiogroup" aria-label={uiText(legend)}>
         {CHILD_GRADES.map((g) => {
           const selected = value === g.value;
           return (
@@ -181,13 +185,13 @@ function GradeChoice({ legend, help, testIdPrefix, value, onChange }: {
                 selected ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2" : "bg-background hover:border-primary/60",
               )}
             >
-              {selected ? `✓ ${g.label}` : g.label}
+              {selected ? `✓ ${uiGradeLabel(g.value)}` : uiGradeLabel(g.value)}
             </button>
           );
         })}
       </div>
       <p className="text-sm" aria-live="polite">
-        {value ? <>Selected: <strong>{CHILD_GRADES.find((g) => g.value === value)?.label}</strong></> : <span className="text-muted-foreground">Pre-K to 10th grade.</span>}
+        {value ? <>{uiText("Selected:")} <strong>{uiGradeLabel(value)}</strong></> : <span className="text-muted-foreground">{uiText("Pre-K to 10th grade.")}</span>}
       </p>
     </fieldset>
   );

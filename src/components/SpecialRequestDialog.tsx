@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
   isGenerating = false,
   mode = 'refresh',
 }) => {
+  useUiLanguage();
   const [value, setValue] = useState(initialValue);
   // The select shows the current reader, switched at once (useChildProfiles); it never
   // reverts while the choice is saved (27 Oct 2026).
@@ -282,18 +284,18 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
   };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[100dvh] w-[calc(100vw-2rem)] max-w-lg grid-cols-1 overflow-y-auto overflow-x-hidden" aria-label={mode === 'new' ? "Start a new story" : "Change this story"} data-testid="new-story-dialog">
+      <DialogContent className="max-h-[100dvh] w-[calc(100vw-2rem)] max-w-lg grid-cols-1 overflow-y-auto overflow-x-hidden" aria-label={mode === 'new' ? uiText("Start a new story") : uiText("Change this story")} data-testid="new-story-dialog">
         <DialogHeader>
-          <DialogTitle>{mode === 'new' ? "New story" : "Change this story"}</DialogTitle>
-          <DialogDescription>Everything here is optional. Tap the blue button when you're ready.</DialogDescription>
+          <DialogTitle>{mode === 'new' ? uiText("New story") : uiText("Change this story")}</DialogTitle>
+          <DialogDescription>{uiText("Everything here is optional. Tap the blue button when you're ready.")}</DialogDescription>
         </DialogHeader>
 
         {/* Who the story is for */}
         {children.length > 0 && (
           <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg border p-3" data-testid="story-for">
             {activeChild && <img src={childAvatarUrl(activeChild)} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-primary" />}
-            <label htmlFor="story-for-child" className="text-sm font-medium shrink-0">Story for:</label>
-            {switching && <span className="text-xs text-muted-foreground shrink-0" aria-live="polite" data-testid="story-for-switching">Switching…</span>}
+            <label htmlFor="story-for-child" className="text-sm font-medium shrink-0">{uiText("Story for:")}</label>
+            {switching && <span className="text-xs text-muted-foreground shrink-0" aria-live="polite" data-testid="story-for-switching">{uiText("Switching…")}</span>}
             <select
               id="story-for-child"
               className="h-10 w-full min-w-0 max-w-full flex-1 basis-40 truncate rounded-md border bg-background px-2 text-base"
@@ -312,9 +314,9 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
 
         <div className="min-w-0 space-y-2">
           <label htmlFor="special-requests" className="text-sm font-semibold">
-            What should it be about? <span className="font-normal text-muted-foreground">(optional)</span>
+            {uiText("What should it be about?")} <span className="font-normal text-muted-foreground">{uiText("(optional)")}</span>
           </label>
-          <div className="flex min-w-0 flex-wrap gap-2" aria-label="Ideas: tap to add">
+          <div className="flex min-w-0 flex-wrap gap-2" aria-label={uiText("Ideas: tap to add")}>
             {STORY_IDEAS.map((idea) => (
               <button
                 key={idea}
@@ -328,7 +330,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           </div>
           <Textarea
             id="special-requests"
-            placeholder="For example: a dolphin who is scared of the dark"
+            placeholder={uiText("For example: a dolphin who is scared of the dark")}
             value={value}
             onChange={(e) => handleInputChange('specialRequest', e.target.value)}
             className={`min-h-[90px] text-base ${validationErrors.specialRequest?.length > 0 ? 'border-destructive' : ''}`}
@@ -339,7 +341,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           {spellcheckLoading.specialRequest && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Loader2 className="h-3 w-3 animate-spin" />
-              <span>Checking spelling...</span>
+              <span>{uiText("Checking spelling...")}</span>
             </div>
           )}
           
@@ -355,13 +357,13 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           {spellcheckSuggestions.specialRequest && (
             <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
               <span className="text-xs text-warning">
-                Did you mean: {spellcheckSuggestions.specialRequest}?
+                {uiText("Did you mean:")} {spellcheckSuggestions.specialRequest}?
               </span>
               <button
                 onClick={() => acceptSpellcheckSuggestion('specialRequest')}
                 className="text-xs text-primary hover:text-primary/80 font-medium"
               >
-                Accept
+                {uiText("Accept")}
               </button>
             </div>
           )}
@@ -381,12 +383,12 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
         </div>
         <div className="mt-4 min-w-0 space-y-2">
           <label htmlFor="target-vocab" className="text-sm font-semibold">
-            Any words to practice? <span className="font-normal text-muted-foreground">(optional)</span>
+            {uiText("Any words to practice?")} <span className="font-normal text-muted-foreground">{uiText("(optional)")}</span>
           </label>
           <TagInput
             value={targetVocab}
             onChange={(value) => handleInputChange('targetVocabulary', value)}
-            placeholder="Type a word, then press Enter"
+            placeholder={uiText("Type a word, then press Enter")}
             validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'general')}
             validationError={validationErrors.targetVocabulary}
           />
@@ -395,7 +397,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           {spellcheckLoading.targetVocabulary && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Loader2 className="h-3 w-3 animate-spin" />
-              <span>Checking spelling...</span>
+              <span>{uiText("Checking spelling...")}</span>
             </div>
           )}
           
@@ -411,13 +413,13 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           {spellcheckSuggestions.targetVocabulary && (
             <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
               <span className="text-xs text-warning">
-                Did you mean: {spellcheckSuggestions.targetVocabulary}?
+                {uiText("Did you mean:")} {spellcheckSuggestions.targetVocabulary}?
               </span>
               <button
                 onClick={() => acceptSpellcheckSuggestion('targetVocabulary')}
                 className="text-xs text-primary hover:text-primary/80 font-medium"
               >
-                Accept
+                {uiText("Accept")}
               </button>
             </div>
           )}
@@ -434,7 +436,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
             </div>
           )}
           
-          <p className="text-xs text-muted-foreground">We'll use these words in the story.</p>
+          <p className="text-xs text-muted-foreground">{uiText("We'll use these words in the story.")}</p>
         </div>
         
         <ValidationFeedback
@@ -445,13 +447,13 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
         />
         <DialogFooter className="flex-wrap gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isGenerating}>
-            Cancel
+            {uiText("Cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={isGenerating} className="h-auto min-h-11 max-w-full whitespace-normal break-words text-center" data-testid="write-story">
             {isGenerating && <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden />}
             {isGenerating 
-              ? (mode === 'new' ? "Writing your story…" : "Refreshing…") 
-              : (mode === 'new' ? (activeChild ? `Write ${activeChild.display_name}'s story` : "Write story") : "Refresh story")
+              ? (mode === 'new' ? uiText("Writing your story…") : uiText("Refreshing…"))
+              : (mode === 'new' ? (activeChild ? `Write ${activeChild.display_name}'s story` : uiText("Write story")) : uiText("Refresh story"))
             }
           </Button>
         </DialogFooter>

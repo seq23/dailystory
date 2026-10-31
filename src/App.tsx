@@ -1,9 +1,11 @@
 import React from "react";
+import { useUiLanguage } from "@/i18n/uiText";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { RetainedReader } from "@/components/RetainedReader";
 import { MobileWrapper } from "@/components/MobileWrapper";
 import { FloatingFeedback } from "@/components/FloatingFeedback";
 import Index from "./pages/Index";
@@ -56,6 +58,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  useUiLanguage();
   // Initialize development tools conditionally for performance
   React.useEffect(() => {
     // Migrate console logging to DebugLogger
@@ -93,8 +96,9 @@ const App = () => {
             <Toaster />
             <Sonner />
             
-            <Routes>
-              <Route path="/" element={<Index />} />
+            <RetainedReader reader={<Index />}><Routes>
+              <Route path="/" element={null} />
+              <Route path="/session-ended" element={<SessionEnded />} />
               <Route path="/style-preview" element={<StylePreview />} />
               
               <Route path="/pricing" element={<Pricing />} />
@@ -105,7 +109,6 @@ const App = () => {
               <Route path="/prompt-testing" element={<PromptTesting />} />
               <Route path="/template-testing" element={<TemplateTestingPage />} />
               <Route path="/prompt-studio" element={<PromptStudio />} />
-              <Route path="/session-ended" element={<SessionEnded />} />
               <Route path="/ccpa" element={<CCPA />} />
               <Route path="/accessibility" element={<Accessibility />} />
               <Route path="/vendors" element={<Vendors />} />
@@ -126,7 +129,7 @@ const App = () => {
                 />
               ))}
               <Route path="*" element={<NotFound />} />
-            </Routes>
+            </Routes></RetainedReader>
             <VoiceHUD />
             <FloatingFeedback />
             <AudioFallbackNotification />

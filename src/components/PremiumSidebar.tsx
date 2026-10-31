@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useState, useEffect } from "react";
 import { premiumUntilLabel } from "@/lib/accessCode";
 import { 
@@ -62,16 +63,17 @@ const GROUP_LABELS: Record<string, string> = {
 };
 
 const sidebarItems = [
-  { title: "My Stories", url: "stories", icon: BookOpen, description: "Read or start a new story", premium: false, group: "child" },
-  { title: "Story Library", url: "library", icon: Library, description: "Saved stories", premium: true, group: "child" },
-  { title: "Progress", url: "progress", icon: BarChart3, description: "Stories read and words learned", premium: false, group: "child" },
-  { title: "Grown-up settings", url: "account", icon: CreditCard, description: "Children, plan, code, sign-in", premium: false, group: "grownup" },
-  { title: "Reading settings", url: "profile", icon: Settings, description: "Story language and reading level", premium: false, group: "grownup" },
-  { title: "Parent dashboard", url: "parent", icon: User, description: "Reports, word lists, controls", premium: false, group: "grownup" },
-  { title: "Help", url: "home", icon: Home, description: "How it works and questions", premium: false, group: "grownup" },
+  { title: uiText("My Stories"), url: "stories", icon: BookOpen, description: uiText("Read or start a new story"), premium: false, group: "child" },
+  { title: uiText("Story Library"), url: "library", icon: Library, description: uiText("Saved stories"), premium: true, group: "child" },
+  { title: uiText("Progress"), url: "progress", icon: BarChart3, description: uiText("Stories read and words learned"), premium: false, group: "child" },
+  { title: uiText("Grown-up settings"), url: "account", icon: CreditCard, description: uiText("Children, plan, code, sign-in"), premium: false, group: "grownup" },
+  { title: uiText("Reading settings"), url: "profile", icon: Settings, description: uiText("Story language and reading level"), premium: false, group: "grownup" },
+  { title: uiText("Parent dashboard"), url: "parent", icon: User, description: uiText("Reports, word lists, controls"), premium: false, group: "grownup" },
+  { title: uiText("Help"), url: "home", icon: Home, description: uiText("How it works and questions"), premium: false, group: "grownup" },
 ];
 
 export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium, hasPremium, premiumUntil, planKnown = false }: PremiumSidebarProps) => {
+  useUiLanguage();
   const { activeChild } = useChildProfiles();
   const { state, toggleSidebar, openMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
@@ -166,7 +168,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
     setTimeout(() => setImageToggleFeedback(false), 600);
   };
   return (
-    <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16 md:top-[var(--app-header-height)] md:h-[calc(100svh-var(--app-header-height))]" : "w-64"}`} collapsible="icon">
+    <Sidebar side={document.documentElement.dir === "rtl" ? "right" : "left"} className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16 md:top-[var(--app-header-height)] md:h-[calc(100svh-var(--app-header-height))]" : "w-64"}`} collapsible="icon">
       {/* Header */}
       <div className={`border-b relative overflow-visible z-30 ${effectiveCollapsed ? "px-2 pt-2 pb-3" : "p-4"}`}>
         <div className="flex items-center gap-3">
@@ -174,11 +176,11 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
             <>
               <img src="/icon-192.png" alt="" className="h-10 w-10" />
               <div className="flex-1">
-                <h2 className="font-bold text-lg">Time-2-Read</h2>
+                <h2 className="font-bold text-lg">{uiText("Time-2-Read")}</h2>
                 {hasPremium && (
                   <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs">
                     <Crown className="w-3 h-3 mr-1" />
-                    Premium
+                    {uiText("Premium")}
                   </Badge>
                 )}
               </div>
@@ -187,7 +189,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
           
           {isMobileOrTablet && (
             <Button
-              aria-label="Close navigation"
+              aria-label={uiText("Close navigation")}
               onClick={(e) => {
                 e.stopPropagation();
                 toggleSidebar();
@@ -211,7 +213,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
           <div className="px-3 py-3 mb-2 flex items-center gap-3">
             <img src={childAvatarUrl(activeChild)} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-primary" />
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Reading now</p>
+              <p className="text-xs text-muted-foreground">{uiText("Reading now")}</p>
               <p className="font-bold text-primary truncate">{activeChild.display_name}</p>
             </div>
           </div>
@@ -221,7 +223,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
         {Object.entries(groupedItems).map(([groupName, items]) => (
           <SidebarGroup key={groupName}>
             <SidebarGroupLabel className={effectiveCollapsed ? "sr-only" : "text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-2"}>
-              {GROUP_LABELS[groupName] ?? groupName}
+              {uiText(GROUP_LABELS[groupName] ?? groupName)}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -243,13 +245,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                       {!effectiveCollapsed && (
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="truncate">{item.title}</span>
+                            <span className="truncate">{uiText(item.title)}</span>
                             {item.premium && !isPremium && (
                               <Sparkles className="w-3 h-3 text-warning flex-shrink-0" />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground truncate">
-                            {item.description}
+                            {uiText(item.description)}
                           </p>
                         </div>
                       )}
@@ -269,13 +271,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
               onClick={() => setToolsOpen((v) => !v)}
               data-testid="reading-tools-toggle"
             >
-              {toolsOpen ? "Hide reading page options ▴" : "Reading page options (timer, towers, pictures) ▾"}
+              {toolsOpen ? uiText("Hide reading page options ▴") : uiText("Reading page options (timer, towers, pictures) ▾")}
             </button>
           )}
           {isPremium && (toolsOpen || effectiveCollapsed) && (
             <SidebarGroup>
               <SidebarGroupLabel className={effectiveCollapsed ? "sr-only" : ""}>
-                Reading page options
+                {uiText("Reading page options")}
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -287,13 +289,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                             <SidebarMenuButton
                               onClick={() => toggleTimer()}
                               className="flex items-center justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground h-10 w-10 mx-auto"
-                              aria-label="Toggle reading timer visibility"
+                              aria-label={uiText("Toggle reading timer visibility")}
                             >
                               <Clock className="w-5 h-5 flex-shrink-0" />
                             </SidebarMenuButton>
                           </TooltipTrigger>
                           <TooltipContent>
-                            Timer: {timerEnabled ? 'On' : 'Off'}
+                            {uiText("Timer:")} {timerEnabled ? uiText("On") : uiText("Off")}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -303,13 +305,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                           role="button"
                           onClick={() => toggleTimer()}
                           className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px]"
-                          aria-label="Toggle reading timer visibility"
+                          aria-label={uiText("Toggle reading timer visibility")}
                         >
                         <div className="flex items-center gap-3">
                           <Clock className="w-5 h-5 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{timerEnabled ? 'Hide Timer' : 'Show Timer'}</span>
+                              <span className="font-medium">{timerEnabled ? uiText("Hide Timer") : uiText("Show Timer")}</span>
                             </div>
                           </div>
                         </div>
@@ -317,7 +319,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                           checked={timerEnabled}
                           onCheckedChange={() => toggleTimer()}
                           onClick={(e) => e.stopPropagation()}
-                          aria-label={timerEnabled ? 'Hide timer' : 'Show timer'}
+                          aria-label={timerEnabled ? uiText("Hide timer") : uiText("Show timer")}
                         />
                       </div>
                       </SidebarMenuButton>
@@ -334,13 +336,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                               onClick={() => toggleTowers()
                               }
                               className="flex items-center justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground h-10 w-10 mx-auto"
-                              aria-label="Toggle progress towers visibility"
+                              aria-label={uiText("Toggle progress towers visibility")}
                             >
                               <Trophy className="w-5 h-5 flex-shrink-0" />
                             </SidebarMenuButton>
                           </TooltipTrigger>
                           <TooltipContent>
-                            Progress Towers: {towersEnabled ? 'On' : 'Off'}
+                            {uiText("Progress Towers:")} {towersEnabled ? uiText("On") : uiText("Off")}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -350,13 +352,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                           role="button"
                           onClick={() => toggleTowers()}
                           className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px]"
-                          aria-label="Toggle progress towers visibility"
+                          aria-label={uiText("Toggle progress towers visibility")}
                         >
                         <div className="flex items-center gap-3">
                           <Trophy className="w-5 h-5 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{towersEnabled ? 'Hide Progress Towers' : 'Show Progress Towers'}</span>
+                              <span className="font-medium">{towersEnabled ? uiText("Hide Progress Towers") : uiText("Show Progress Towers")}</span>
                             </div>
                           </div>
                         </div>
@@ -364,7 +366,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                           checked={towersEnabled}
                           onCheckedChange={() => toggleTowers()}
                           onClick={(e) => e.stopPropagation()}
-                          aria-label={towersEnabled ? 'Hide progress towers' : 'Show progress towers'}
+                          aria-label={towersEnabled ? uiText("Hide progress towers") : uiText("Show progress towers")}
                         />
                       </div>
                       </SidebarMenuButton>
@@ -380,13 +382,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                             <SidebarMenuButton
                               onClick={() => toggleImages()}
                               className={`flex items-center justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground h-10 w-10 mx-auto ${imageToggleFeedback ? 'ring-2 ring-primary animate-pulse' : ''}`}
-                              aria-label="Toggle story images"
+                              aria-label={uiText("Toggle story images")}
                             >
                               <Image className="w-5 h-5 flex-shrink-0" />
                             </SidebarMenuButton>
                           </TooltipTrigger>
                           <TooltipContent>
-                            Story Images: {imagesEnabled ? 'On' : 'Off'}
+                            {uiText("Story Images:")} {imagesEnabled ? uiText("On") : uiText("Off")}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -396,13 +398,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                           role="button"
                           onClick={() => toggleImages()}
                           className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px]"
-                          aria-label="Toggle story images"
+                          aria-label={uiText("Toggle story images")}
                         >
                         <div className="flex items-center gap-3">
                           <Image className="w-5 h-5 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{imagesEnabled ? 'Hide Images' : 'Show Images'}</span>
+                              <span className="font-medium">{imagesEnabled ? uiText("Hide Images") : uiText("Show Images")}</span>
                             </div>
                           </div>
                         </div>
@@ -410,7 +412,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                           checked={imagesEnabled}
                           onCheckedChange={() => toggleImages()}
                           onClick={(e) => e.stopPropagation()}
-                          aria-label={imagesEnabled ? 'Hide story images' : 'Show story images'}
+                          aria-label={imagesEnabled ? uiText("Hide story images") : uiText("Show story images")}
                           className={imageToggleFeedback ? 'ring-2 ring-primary animate-pulse' : ''}
                         />
                       </div>
@@ -427,10 +429,10 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
                       {!effectiveCollapsed && (
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">My Vocabulary</span>
+                            <span className="font-medium">{uiText("My Vocabulary")}</span>
                           </div>
                           <p className="text-xs text-muted-foreground truncate">
-                            View and manage your saved words
+                            {uiText("View and manage your saved words")}
                           </p>
                         </div>
                       )}
@@ -446,7 +448,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
             (never while the plan is loading or could not be read). */}
         {!effectiveCollapsed && hasPremium && (
           <p className="mt-auto px-4 py-3 text-xs text-muted-foreground" data-testid="sidebar-premium-until">
-            {premiumUntilLabel(premiumUntil) ?? "Premium is on"}
+            {premiumUntilLabel(premiumUntil) ?? uiText("Premium is on")}
           </p>
         )}
         {!effectiveCollapsed && planKnown && !hasPremium && (
@@ -454,16 +456,16 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Crown className="w-4 h-4 text-yellow-600" />
-                <span className="font-semibold text-yellow-800 text-sm">Premium</span>
+                <span className="font-semibold text-yellow-800 text-sm">{uiText("Premium")}</span>
               </div>
               <p className="text-xs text-yellow-700 mb-3">
-                Unlimited stories, the story library and more. Have a code? Use it in Grown-up settings.
+                {uiText("Unlimited stories, the story library and more. Have a code? Use it in Grown-up settings.")}
               </p>
               <button 
                 onClick={() => { onViewChange("account"); if (isMobileOrTablet) { if (openMobile) setOpenMobile(false); else if (state === "expanded") toggleSidebar(); } }}
                 className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-medium py-2 px-3 rounded-md hover:from-yellow-500 hover:to-orange-600 transition-colors"
               >
-                See plans or use a code
+                {uiText("See plans or use a code")}
               </button>
             </div>
           </div>

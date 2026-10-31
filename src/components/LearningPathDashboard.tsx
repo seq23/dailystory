@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -165,7 +166,7 @@ export const LearningPathDashboard = ({
                     {getChallengeIcon(challenge.type)}
                     <div>
                       <h4 className="font-medium">{challenge.title}</h4>
-                      <p className="text-sm text-muted-foreground">{challenge.estimatedMinutes} min</p>
+                      <p className="text-sm text-muted-foreground">{challenge.estimatedMinutes}  {uiText("min")} </p>
                     </div>
                   </div>
                   <Button
@@ -215,12 +216,10 @@ export const LearningPathDashboard = ({
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {challenge.estimatedMinutes} min
-                    </span>
+                      {challenge.estimatedMinutes}  {uiText("min")} </span>
                     <span className="flex items-center gap-1">
                       <Star className="h-3 w-3" />
-                      {challenge.rewards.points} points
-                    </span>
+                      {challenge.rewards.points}  {uiText("points")} </span>
                   </div>
                   <Button 
                     size="sm" 
@@ -278,11 +277,9 @@ export const LearningPathDashboard = ({
                     {selectedChallenge.difficulty}
                   </Badge>
                   <span className="text-sm text-muted-foreground">
-                    {selectedChallenge.estimatedMinutes} minutes
-                  </span>
+                    {selectedChallenge.estimatedMinutes}  {uiText("minutes")} </span>
                   <span className="text-sm text-muted-foreground">
-                    {selectedChallenge.rewards.points} points
-                  </span>
+                    {selectedChallenge.rewards.points}  {uiText("points")} </span>
                 </div>
                 
                 {/* Render challenge content based on type */}

@@ -40,12 +40,14 @@ describe("← Back on the menu pages", () => {
     for (let i = 0; i < 50; i++) t = pushView(t, MENU_VIEWS[i % MENU_VIEWS.length], MENU_VIEWS[(i + 1) % MENU_VIEWS.length]);
     expect(t.length).toBeLessThanOrEqual(10);
   });
-  it("the app renders Back from the trail on every page showsBack allows", () => {
+  it("the app renders Back from router history on every page showsBack allows", () => {
     const app = read("src/components/AuthenticatedApp.tsx");
     expect(app).toMatch(/\{showsBack\(currentView\) && !isEditingProfile && \(\s*<button[\s\S]{0,80}onClick=\{goBack\}[\s\S]{0,80}data-testid="view-back"/);
-    expect(app).toMatch(/const \{ to, trail \} = popView\(viewTrailRef\.current, currentView\);/);
-    expect(app).toMatch(/viewTrailRef\.current = pushView\(viewTrailRef\.current, lastViewRef\.current, currentView\);/);
-    expect(app).toMatch(/<span aria-hidden>←<\/span> Back/);
+    expect(app).toContain('if (window.history.state?.idx > 0) navigate(-1)');
+    expect(app).toContain('useScreenHistory<AppView>("app", "stories")');
+    expect(app).toContain('else setCurrentView("stories")');
+    expect(app).not.toContain('viewTrailRef');
+    expect(app).toMatch(/<span aria-hidden>←<\/span> \{uiText\("Back"\)\}/);
   });
 });
 

@@ -429,36 +429,19 @@ All colors MUST be HSL.
     direction: rtl;
   }
 
-  /* CRITICAL RTL FIXES: Keep navigation buttons LTR even in RTL languages */
-  [dir="rtl"] .story-navigation,
-  [dir="rtl"] .reading-level-controls,
-  [dir="rtl"] .story-navigation button,
-  [dir="rtl"] .reading-level-controls button {
-    direction: ltr !important;
-    text-align: left !important;
+  /* Only the carousel track uses LTR mechanics; UI and controls follow the chosen language. */
+  [dir="rtl"] .homepage .carousel-content {
+    direction: ltr;
   }
-
-  /* HOMEPAGE: Keep layout LTR but allow Arabic text to be centered like English */
-  [dir="rtl"] .homepage header,
-  [dir="rtl"] .homepage nav,
-  [dir="rtl"] .homepage .carousel-container,
-  [dir="rtl"] .homepage .carousel-nav,
-  [dir="rtl"] .homepage .carousel,
-  [dir="rtl"] .homepage .carousel-item,
-  [dir="rtl"] .homepage .carousel-content,
-  [dir="rtl"] .homepage .carousel-indicators,
-  [dir="rtl"] .homepage .carousel-buttons,
-  [dir="rtl"] .homepage .language-picker,
-  [dir="rtl"] .homepage .sign-in-btn {
-    direction: ltr !important;
+  [dir="rtl"] .homepage .carousel-item {
+    direction: rtl;
   }
-
-  /* Force carousel mechanics to stay LTR while allowing Arabic text */
-  [dir="rtl"] .homepage .carousel-container *,
-  [dir="rtl"] .homepage .carousel *,
-  [dir="rtl"] .homepage .carousel-item *:not(.carousel-text) {
-    direction: ltr !important;
+  [lang="ur"] {
+    font-family: 'Noto Nastaliq Urdu', 'Noto Naskh Arabic', sans-serif;
   }
+  [dir="rtl"] .text-left { text-align: start; }
+  [dir="rtl"] .text-right { text-align: end; }
+  [dir="rtl"] .story-content { text-align: left; }
 
   /* Center Arabic text on homepage like English */
   [dir="rtl"] .homepage .hero-content,

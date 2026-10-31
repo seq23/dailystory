@@ -10,8 +10,8 @@ const read = (f: string) => readFileSync(join(process.cwd(), f), "utf8");
 describe("parent dashboard has the Reports it promises", () => {
   it("the section picker is labelled and offers Reports", () => {
     const d = read("src/components/ParentDashboard.tsx");
-    expect(read("src/components/PremiumSidebar.tsx")).toMatch(/description: "Reports, word lists, controls"/);
-    expect(d).toMatch(/<SelectItem value="insights">Reports<\/SelectItem>/);
+    expect(read("src/components/PremiumSidebar.tsx")).toMatch(/description: uiText\("Reports, word lists, controls"\)/);
+    expect(d).toMatch(/<SelectItem value="insights">\{uiText\("Reports"\)\}<\/SelectItem>/);
     expect(d).toMatch(/Show section \(tap to choose\):/);
   });
   it("a saved Advanced minimum shows as selected (as its grade)", () => {

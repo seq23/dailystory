@@ -11,6 +11,7 @@ interface FreeReadingSessionProps {
   onHome?: () => void;
   onNewStory?: () => void;
   onSessionEnded?: (stats: SessionStats) => void;
+  isActive?: boolean;
   isPremium?: boolean;
 }
 
@@ -21,6 +22,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   onHome,
   onNewStory,
   onSessionEnded,
+  isActive = true,
   isPremium = false,
 }) => {
   DebugLogger.log('ui', 'FreeReadingSession: Using new CleanStoryDisplay architecture');
@@ -37,6 +39,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   
   return (
     <CleanStoryDisplay
+      isActive={isActive}
       userInfo={userInfo}
       isPremium={isPremium}
       onSessionEnded={onSessionEnded || (() => {})}

@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 
 import { DebugLogger } from '@/services/DebugLogger';
 import { useState, useEffect } from 'react';
@@ -243,8 +244,8 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
             </Button>
           </div>
           <div className="flex justify-between text-sm opacity-90">
-            <span>Game {gamesCompleted + 1} of 3</span>
-            <span>Score: {score}</span>
+            <span> {uiText("Game")} {gamesCompleted + 1}  {uiText("of 3")} </span>
+            <span> {uiText("Score:")} {score}</span>
           </div>
         </CardHeader>
 
@@ -264,7 +265,7 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
                 <div className="space-y-3">
                   <div className="text-center">
                     <h3 className="text-lg font-bold text-purple-600 mb-2">"{currentGame.word}"</h3>
-                    <p className="text-sm text-gray-600">What does this word mean?</p>
+                    <p className="text-sm text-gray-600"> {uiText("What does this word mean?")} </p>
                   </div>
                   
                   <div className="space-y-2">
@@ -341,8 +342,7 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
                   disabled={selectedAnswer === null}
                   className="w-full"
                 >
-                  Submit Answer
-                </Button>
+                   {uiText("Submit Answer")} </Button>
               )}
 
               {/* Result */}
@@ -350,9 +350,9 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
                 <div className="text-center">
                   <div className="text-lg mb-2">
                     {selectedAnswer === currentGame.correctIndex ? (
-                      <span className="text-green-600 font-bold">✓ Correct!</span>
+                      <span className="text-green-600 font-bold"> {uiText("✓ Correct!")} </span>
                     ) : (
-                      <span className="text-red-600 font-bold">✗ Try again next time!</span>
+                      <span className="text-red-600 font-bold"> {uiText("✗ Try again next time!")} </span>
                     )}
                   </div>
                   <p className="text-sm text-gray-500">
@@ -369,20 +369,18 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
               
               <div>
                 <h3 className="text-xl font-bold mb-2">
-                  {score === 3 ? 'Perfect!' : score >= 2 ? 'Great job!' : 'Good try!'}
+                  {score === 3 ? uiText("Perfect!") : score >= 2 ? uiText("Great job!") : 'Good try!'}
                 </h3>
-                <p className="text-gray-600">You scored {score} out of 3!</p>
+                <p className="text-gray-600"> {uiText("You scored")} {score}  {uiText("out of 3!")} </p>
               </div>
 
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" onClick={handleRestart}>
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  Play Again
-                </Button>
+                   {uiText("Play Again")} </Button>
                 <Button onClick={handleComplete}>
                   <Star className="w-4 h-4 mr-2" />
-                  Continue Reading
-                </Button>
+                   {uiText("Continue Reading")} </Button>
               </div>
             </div>
           )}

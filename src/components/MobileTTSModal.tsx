@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -52,21 +53,20 @@ export const MobileTTSModal = ({
               size="sm"
               onClick={onClose}
               className="h-8 w-8 p-0 hover:bg-gray-100"
-              aria-label="Close modal"
+              aria-label={uiText("Close modal")}
             >
               <X className="h-4 w-4" />
             </Button>
           </DialogTitle>
           <DialogDescription id="word-modal-desc" className="sr-only">
-            Hear pronunciation, get an explanation, or break the word into syllables.
-          </DialogDescription>
+             {uiText("Hear pronunciation, get an explanation, or break the word into syllables.")} </DialogDescription>
         </DialogHeader>
         
         <div className="p-6 space-y-4">
           {info && (
             <div className="rounded-lg border bg-muted/40 p-4 text-center" aria-live="polite">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {info.kind === "meaning" ? "What it means" : "Syllables"}
+                {info.kind === "meaning" ? "What it means" : uiText("Syllables")}
               </p>
               <p className={info.kind === "syllables" ? "mt-1 text-2xl font-semibold tracking-wide" : "mt-1 text-base"}>
                 {info.text}
@@ -105,8 +105,7 @@ export const MobileTTSModal = ({
             variant="outline"
           >
             <Layers className="mr-3 h-5 w-5" />
-            Break into Syllables
-          </Button>
+             {uiText("Break into Syllables")} </Button>
 
           {/* Save Word Button (Premium/Saved) */}
           {(isPremium || isSaved) && (
@@ -118,8 +117,7 @@ export const MobileTTSModal = ({
                 variant="outline"
               >
                 <BookmarkPlus className="mr-3 h-5 w-5" />
-                ✓ Saved to word list
-              </Button>
+                 {uiText("✓ Saved to word list")} </Button>
             ) : (
               onSave && (
                 <Button
@@ -130,8 +128,7 @@ export const MobileTTSModal = ({
                   variant="outline"
                 >
                   <BookmarkPlus className="mr-3 h-5 w-5" />
-                  Save Word
-                </Button>
+                   {uiText("Save Word")} </Button>
               )
             )
           )}

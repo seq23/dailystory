@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertTriangle, Shield, HelpCircle } from 'lucide-react';
@@ -34,7 +35,7 @@ export const ValidationTooltip: React.FC<ValidationTooltipProps> = ({
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-destructive font-medium text-sm">
               {hasCoppaViolation ? <Shield className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-              <span>{hasCoppaViolation ? "Privacy Alert" : "Content Issue"}</span>
+              <span>{hasCoppaViolation ? uiText("Privacy Alert") : uiText("Content Issue")}</span>
             </div>
             
             {errors.map((error, index) => (
@@ -47,11 +48,10 @@ export const ValidationTooltip: React.FC<ValidationTooltipProps> = ({
               <div className="text-xs text-muted-foreground pt-2 border-t">
                 <div className="flex items-center gap-1">
                   <HelpCircle className="h-3 w-3" />
-                  <span>Why can't I use this?</span>
+                  <span> {uiText("Why can't I use this?")} </span>
                 </div>
                 <p className="mt-1">
-                  This helps protect children's privacy online. Try using different words that don't include personal information.
-                </p>
+                   {uiText("This helps protect children's privacy online. Try using different words that don't include personal information.")} </p>
               </div>
             )}
           </div>

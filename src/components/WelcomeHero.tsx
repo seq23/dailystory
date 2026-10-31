@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -60,7 +61,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
       <header className="relative z-20 bg-black/15 backdrop-blur-sm border-b border-white/20">
         <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-6">
           {/* Single descriptive page heading for SEO + screen readers */}
-          <h1 className="sr-only">Time-2-Read — Interactive AI Reading Adventures for Kids</h1>
+          <h1 className="sr-only"> {uiText("Time-2-Read — Interactive AI Reading Adventures for Kids")} </h1>
 
           {/* Mobile Layout - Fixed Overlap Prevention */}
           <div className="flex sm:hidden justify-between items-center gap-2 min-h-[50px]">
@@ -90,7 +91,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             <div className="flex items-center gap-1 flex-1 justify-center min-w-0 px-2">
               <img 
                 src={logoImage} 
-                alt="Time-2-Read - Interactive reading platform for children with AI-powered stories"
+                alt={uiText("Time-2-Read - Interactive reading platform for children with AI-powered stories")}
                 className="w-7 h-7 flex-shrink-0 drop-shadow-lg"
               />
               <div className="flex items-center font-comic mobile-text-fixed truncate">
@@ -108,7 +109,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                     <div className="p-2">
                       <div className="flex items-center gap-2 mb-1">
                         <Crown className="w-4 h-4 text-purple-600" />
-                        <span className="font-medium text-sm">Premium Access</span>
+                        <span className="font-medium text-sm"> {uiText("Premium Access")} </span>
                       </div>
                       <p className="text-xs text-gray-600">
                         {t("welcomeHero.signInTooltip", "Sign in or create account for unlimited stories, AI images & premium features!")}
@@ -124,7 +125,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                     onClick={onSignIn}
                     className="bg-white text-purple-900 border-white hover:bg-white/90 text-sm font-semibold shadow-lg px-3 h-10"
                   >
-                    <span>Sign in</span>
+                    <span> {uiText("Sign in")} </span>
                   </MobileOptimizedButton>
                 </MobileTooltip>
               )}
@@ -163,11 +164,10 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                       <div>
                         <div className="flex items-center gap-2 p-2">
                           <Crown className="w-4 h-4 text-purple-600" />
-                          <span className="font-medium">Your grown-up account</span>
+                          <span className="font-medium"> {uiText("Your grown-up account")} </span>
                         </div>
                         <p className="text-xs text-gray-600 mt-1">
-                          Sign in, or make an account and add your children.
-                        </p>
+                           {uiText("Sign in, or make an account and add your children.")} </p>
                       </div>
                     }
                     side="bottom"
@@ -178,7 +178,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                       onClick={onSignIn}
                       className="bg-white text-purple-900 border-white hover:bg-white/90 text-sm font-semibold shadow-lg px-4 h-10"
                     >
-                      <span>Sign in or create account</span>
+                      <span> {uiText("Sign in or create account")} </span>
                     </MobileOptimizedButton>
                   </MobileTooltip>
                 )}
@@ -190,7 +190,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               <div className="flex items-center gap-2 sm:gap-4 hover-scale transition-all duration-300">
                 <img 
                   src={logoImage} 
-                  alt="Time-2-Read Logo" 
+                  alt={uiText("Time-2-Read Logo")}
                   className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 drop-shadow-lg"
                 />
                 <div className="flex flex-col">
@@ -233,7 +233,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                     <div className="relative">
                       <img 
                         src={carouselImage1} 
-                        alt="Young girl reading on tablet in car - mobile reading anywhere experience" 
+                        alt={uiText("Young girl reading on tablet in car - mobile reading anywhere experience")}
                         fetchPriority="high"
                         decoding="async"
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
@@ -250,7 +250,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                     <div className="relative">
                       <img 
                         src={carouselImage2} 
-                        alt="Asian boy reading on laptop at home" 
+                        alt={uiText("Asian boy reading on laptop at home")}
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
@@ -265,7 +265,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                     <div className="relative">
                       <img 
                         src={carouselImage3} 
-                        alt="Hispanic girl reading on phone in park" 
+                        alt={uiText("Hispanic girl reading on phone in park")}
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
@@ -280,7 +280,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                     <div className="relative">
                       <img 
                         src={carouselImage4} 
-                        alt="White boy reading on tablet in library" 
+                        alt={uiText("White boy reading on tablet in library")}
                         className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover rounded-2xl md:rounded-3xl shadow-glow border-2 md:border-4 border-white/20"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl md:rounded-b-3xl p-3 md:p-4">
@@ -342,11 +342,10 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 <div>
                   <div className="flex items-center gap-2 p-2">
                     <Users className="w-4 h-4 text-green-600" />
-                    <span className="font-medium">Guest Users</span>
+                    <span className="font-medium"> {uiText("Guest Users")} </span>
                   </div>
                   <p className="text-xs text-gray-600 mt-1">
-                    Start a guest session — no signup required!
-                  </p>
+                     {uiText("Start a guest session — no signup required!")} </p>
                 </div>
               }
               side="top"
@@ -362,7 +361,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 <div className="absolute inset-0 bg-white/10/20 animate-pulse group-hover:animate-none"></div>
                 <Users className="w-6 h-6 relative z-10 animate-pulse group-hover:animate-none" />
                 <span className="relative z-10 text-center break-words leading-tight">
-                  <span className="block sm:inline">{t("welcomeHero.ctaButtonNew") || "Create Your First Story"}</span>
+                  <span className="block sm:inline">{t("welcomeHero.ctaButtonNew") || uiText("Create Your First Story")}</span>
                 </span>
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </MobileOptimizedButton>
@@ -400,7 +399,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
               <span className="text-white/30">·</span>
               <span data-testid="landing-made-by">{MADE_BY_LINE}</span>
               <span className="text-white/30">·</span>
-              <span data-testid="footer-pitch">Helping children ages 3 to 15 love reading. <a href="/pricing" className="underline hover:text-white/80 transition-colors">Try 3 stories free, then 7 days of Premium free</a>. Schools: <a href="mailto:hello@time-2-read.com?subject=School%20pricing" className="underline hover:text-white/80 transition-colors">contact us</a>.</span>
+              <span data-testid="footer-pitch"> {uiText("Helping children ages 3 to 15 love reading.")} <a href="/pricing" className="underline hover:text-white/80 transition-colors"> {uiText("Try 3 stories free, then 7 days of Premium free")} </a> {uiText(". Schools:")} <a href="mailto:hello@time-2-read.com?subject=School%20pricing" className="underline hover:text-white/80 transition-colors"> {uiText("contact us")} </a>.</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
               <a href="/pricing" className="hover:text-white/80 transition-colors">{t("welcomeHero.footer.plansAndPricing", "Pricing")}</a>

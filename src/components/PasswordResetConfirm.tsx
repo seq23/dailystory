@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { DebugLogger } from '@/services/DebugLogger';
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +20,7 @@ export const PasswordResetConfirm = () => {
     // Handle the password reset flow
     const handleAuthStateChange = (event: string) => {
       if (event === 'PASSWORD_RECOVERY') {
-        toast.success("Please enter your new password");
+        toast.success(uiText("Please enter your new password"));
       }
     };
 
@@ -28,9 +29,9 @@ export const PasswordResetConfirm = () => {
   }, []);
 
   const validatePassword = (pwd: string): string | null => {
-    if (pwd.length < 8) return "Password must be at least 8 characters long";
-    if (!/[A-Za-z]/.test(pwd)) return "Password must contain at least one letter";
-    if (!/\d/.test(pwd)) return "Password must contain at least one number";
+    if (pwd.length < 8) return uiText("Password must be at least 8 characters long");
+    if (!/[A-Za-z]/.test(pwd)) return uiText("Password must contain at least one letter");
+    if (!/\d/.test(pwd)) return uiText("Password must contain at least one number");
     return null;
   };
 
@@ -44,7 +45,7 @@ export const PasswordResetConfirm = () => {
     }
 
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(uiText("Passwords do not match"));
       return;
     }
 
@@ -57,14 +58,14 @@ export const PasswordResetConfirm = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Password updated successfully! You can now sign in.");
+        toast.success(uiText("Password updated successfully! You can now sign in."));
         // Redirect to login after a short delay
         setTimeout(() => {
           window.location.href = '/auth';
         }, 2000);
       }
     } catch (error) {
-      toast.error("Failed to update password. Please try again.");
+      toast.error(uiText("Failed to update password. Please try again."));
       DebugLogger.error('auth', 'Password update error', error);
     } finally {
       setLoading(false);
@@ -79,24 +80,22 @@ export const PasswordResetConfirm = () => {
       <Card className="w-full max-w-md mx-auto bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Set New Password
-          </CardTitle>
+             {uiText("Set New Password")} </CardTitle>
           <CardDescription>
-            Enter your new password below
-          </CardDescription>
+             {uiText("Enter your new password below")} </CardDescription>
         </CardHeader>
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
+              <Label htmlFor="new-password"> {uiText("New Password")} </Label>
               <div className="relative">
                 <Input
                   id="new-password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your new password"
+                  placeholder={uiText("Enter your new password")}
                   required
                   className={passwordError && password ? "border-red-300" : ""}
                 />
@@ -123,20 +122,19 @@ export const PasswordResetConfirm = () => {
               {!passwordError && password && (
                 <p className="text-xs text-green-600 flex items-center gap-1">
                   <Check className="w-3 h-3" />
-                  Password meets requirements
-                </p>
+                   {uiText("Password meets requirements")} </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Label htmlFor="confirm-password"> {uiText("Confirm Password")} </Label>
               <div className="relative">
                 <Input
                   id="confirm-password"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm your new password"
+                  placeholder={uiText("Confirm your new password")}
                   required
                   className={confirmPassword && !passwordsMatch ? "border-red-300" : ""}
                 />
@@ -157,14 +155,12 @@ export const PasswordResetConfirm = () => {
               {confirmPassword && !passwordsMatch && (
                 <p className="text-xs text-red-600 flex items-center gap-1">
                   <X className="w-3 h-3" />
-                  Passwords do not match
-                </p>
+                   {uiText("Passwords do not match")} </p>
               )}
               {passwordsMatch && (
                 <p className="text-xs text-green-600 flex items-center gap-1">
                   <Check className="w-3 h-3" />
-                  Passwords match
-                </p>
+                   {uiText("Passwords match")} </p>
               )}
             </div>
 
@@ -173,7 +169,7 @@ export const PasswordResetConfirm = () => {
               className="w-full" 
               disabled={loading || passwordError !== null || !passwordsMatch}
             >
-              {loading ? "Updating..." : "Update Password"}
+              {loading ? uiText("Updating...") : uiText("Update Password")}
             </Button>
           </form>
         </CardContent>

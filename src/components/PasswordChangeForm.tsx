@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Lock, Eye, EyeOff } from "lucide-react";
 
 export function PasswordChangeForm() {
+  useUiLanguage();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
@@ -33,8 +35,8 @@ export function PasswordChangeForm() {
     
     if (formData.newPassword !== formData.confirmPassword) {
       toast({
-        title: "Passwords don't match",
-        description: "Please make sure your new passwords match.",
+        title: uiText("Passwords don't match"),
+        description: uiText("Please make sure your new passwords match."),
         variant: "destructive",
       });
       return;
@@ -43,7 +45,7 @@ export function PasswordChangeForm() {
     const passwordError = validatePassword(formData.newPassword);
     if (passwordError) {
       toast({
-        title: "Invalid password",
+        title: uiText("Invalid password"),
         description: passwordError,
         variant: "destructive",
       });
@@ -59,8 +61,8 @@ export function PasswordChangeForm() {
       if (error) throw error;
 
       toast({
-        title: "Password updated successfully",
-        description: "Your password has been changed.",
+        title: uiText("Password updated successfully"),
+        description: uiText("Your password has been changed."),
       });
 
       setFormData({
@@ -70,7 +72,7 @@ export function PasswordChangeForm() {
       });
     } catch (error: any) {
       toast({
-        title: "Failed to update password",
+        title: uiText("Failed to update password"),
         description: error.message || "Please try again later.",
         variant: "destructive",
       });
@@ -91,20 +93,20 @@ export function PasswordChangeForm() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Lock className="w-5 h-5" />
-          Change Password
+          {uiText("Change Password")}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="current-password">Current Password</Label>
+            <Label htmlFor="current-password">{uiText("Current Password")}</Label>
             <div className="relative">
               <Input
                 id="current-password"
                 type={showPasswords.current ? "text" : "password"}
                 value={formData.currentPassword}
                 onChange={(e) => setFormData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                placeholder="Enter current password"
+                placeholder={uiText("Enter current password")}
                 required
               />
               <Button
@@ -124,14 +126,14 @@ export function PasswordChangeForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="new-password">New Password</Label>
+            <Label htmlFor="new-password">{uiText("New Password")}</Label>
             <div className="relative">
               <Input
                 id="new-password"
                 type={showPasswords.new ? "text" : "password"}
                 value={formData.newPassword}
                 onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
-                placeholder="Enter new password"
+                placeholder={uiText("Enter new password")}
                 required
               />
               <Button
@@ -149,19 +151,19 @@ export function PasswordChangeForm() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Must be at least 8 characters with letters and numbers
+              {uiText("Must be at least 8 characters with letters and numbers")}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirm New Password</Label>
+            <Label htmlFor="confirm-password">{uiText("Confirm New Password")}</Label>
             <div className="relative">
               <Input
                 id="confirm-password"
                 type={showPasswords.confirm ? "text" : "password"}
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                placeholder="Confirm new password"
+                placeholder={uiText("Confirm new password")}
                 required
               />
               <Button
@@ -185,7 +187,7 @@ export function PasswordChangeForm() {
             className="w-full"
             disabled={isLoading || !formData.currentPassword || !formData.newPassword || !formData.confirmPassword}
           >
-            {isLoading ? "Updating..." : "Update Password"}
+            {isLoading ? uiText("Updating...") : uiText("Update Password")}
           </Button>
         </form>
       </CardContent>

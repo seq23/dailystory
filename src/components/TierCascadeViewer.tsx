@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -112,7 +113,7 @@ export function TierCascadeViewer({ tierData, sessionId }: TierCascadeViewerProp
             <Card key={pageNumber} className="mb-4">
               <CardHeader>
                 <CardTitle className="text-lg">
-                  Page {pageNumber}
+                   {uiText("Page")} {pageNumber}
                   <Badge variant="secondary" className="ml-2">
                     {groupedByPage[pageNumber].length} tier events
                   </Badge>
@@ -145,7 +146,7 @@ export function TierCascadeViewer({ tierData, sessionId }: TierCascadeViewerProp
                                 onClick={() => toggleExpanded(entry.originalIndex)}
                                 className="flex items-center gap-1 text-sm hover:text-primary"
                               >
-                                Details <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                 {uiText("Details")} <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                               </CollapsibleTrigger>
                             </Collapsible>
                           </div>

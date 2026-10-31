@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,7 @@ export function OrbitingSparkLoader({ className, isPremium = false, size = "md" 
     <div
       className={cn("relative select-none", sizeClasses[size], className)}
       role="img"
-      aria-label="Loading animation"
+      aria-label={uiText("Loading animation")}
     >
       {/* Static rings */}
       <div className="absolute inset-0 rounded-full border-2 border-primary/20" />

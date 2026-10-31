@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Check, User, BookOpen, Heart } from "lucide-react";
@@ -36,7 +37,7 @@ export const FormProgressIndicator = ({ currentStep, completedSteps, compact = f
   return (
     <div className={cn("mb-8", compact && "mb-0")}>
       <div className="flex justify-center">
-        <nav aria-label="Progress" className={cn("w-full max-w-md", compact && "max-w-lg")}>
+        <nav aria-label={uiText("Progress")} className={cn("w-full max-w-md", compact && "max-w-lg")}>
           <ol className="flex items-center justify-between">
             {steps.map((step, stepIdx) => {
               const isCompleted = completedSteps.includes(step.number);

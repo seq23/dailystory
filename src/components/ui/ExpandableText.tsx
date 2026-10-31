@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -35,12 +36,11 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({
         {isExpanded ? (
           <>
             <ChevronUp className="h-3 w-3" />
-            Show less
-          </>
+             {uiText("Show less")} </>
         ) : (
           <>
             <ChevronDown className="h-3 w-3" />
-            Show more {showCharCount && `(${text.length} chars)`}
+             {uiText("Show more")} {showCharCount && `(${text.length} chars)`}
           </>
         )}
       </button>

@@ -29,7 +29,7 @@ export const AuthWrapper = () => {
       
       if (!hasActiveSession) {
         DebugLogger.log('auth', 'Clearing orphaned story URL parameters');
-        window.history.replaceState(null, '', '/');
+        window.history.replaceState(window.history.state, '', '/');
       }
     }
   }, [location.search]);

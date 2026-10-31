@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { Component, ReactNode } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,8 +66,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-destructive" />
-              Something went wrong
-            </CardTitle>
+               {uiText("Something went wrong")} </CardTitle>
             <CardDescription>
               {isNetworkError 
                 ? 'Network request timed out. Please check your connection and try again.'
@@ -89,16 +89,14 @@ export class ErrorBoundary extends Component<Props, State> {
                   className="flex items-center gap-2"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  Retry ({this.maxRetries - this.state.retryCount} left)
-                </Button>
+                   {uiText("Retry (")} {this.maxRetries - this.state.retryCount}  {uiText("left)")} </Button>
               )}
               
               <Button 
                 onClick={() => window.location.reload()}
                 size="sm"
               >
-                Refresh Page
-              </Button>
+                 {uiText("Refresh Page")} </Button>
             </div>
           </CardContent>
         </Card>

@@ -1,5 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-import { popView, pushView, showsBack } from "@/lib/viewTrail";
+import { uiText, useUiLanguage } from "@/i18n/uiText";
+import { useScreenHistory } from "@/hooks/useScreenHistory";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { showsBack } from "@/lib/viewTrail";
 import { savedReadingGrade } from '@/lib/readingGradeStore';
 import { DebugLogger } from '@/services/DebugLogger';
 import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
@@ -102,23 +105,14 @@ interface CurrentStory {
 export const MAIN_BOTTOM_CLEARANCE = "calc(var(--cookie-banner-h, 0px) + 6rem)";
 
 export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
-  const [currentView, setCurrentView] = useState<AppView>("stories");
-  // "← Back" on menu pages: the views visited, newest last (src/lib/viewTrail.ts).
-  const viewTrailRef = useRef<string[]>([]);
-  const lastViewRef = useRef<AppView>("stories");
-  const goingBackRef = useRef(false);
-  useEffect(() => {
-    if (lastViewRef.current === currentView) return;
-    if (!goingBackRef.current) viewTrailRef.current = pushView(viewTrailRef.current, lastViewRef.current, currentView);
-    goingBackRef.current = false;
-    lastViewRef.current = currentView;
-  }, [currentView]);
+  useUiLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [currentView, setCurrentView] = useScreenHistory<AppView>("app", "stories");
   const goBack = () => {
-    const { to, trail } = popView(viewTrailRef.current, currentView);
-    viewTrailRef.current = trail;
-    goingBackRef.current = true;
     setIsEditingProfile(false);
-    setCurrentView(to as AppView);
+    if (window.history.state?.idx > 0) navigate(-1);
+    else setCurrentView("stories");
   };
   const [userProfile, setUserProfile] = useState<UserProfile | PremiumUserPreferences | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -175,27 +169,22 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
       sessionStorage.setItem(onceKey, "1");
     } catch { /* storage blocked: may retry next load, which is harmless (idempotent) */ }
     redeemAccessCode(fromLink || undefined).then((r) => {
-      if (r.ok) toast.success(premiumUntilLabel(r.premiumUntil) ?? "Premium is on");
+      if (r.ok) toast.success(premiumUntilLabel(r.premiumUntil) ?? uiText("Premium is on"));
       else if (fromLink) toast.error(`That code didn't go through: ${r.message}`);
     });
   }, [subLoading, isSubscriptionActive, user.id, user.user_metadata?.access_code]);
 
-  // Check for query parameters on component mount
+  // The reader stays mounted across routes, so handle action links on every arrival.
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(location.search);
     const action = urlParams.get('action');
-    
-    if (action === 'new-story') {
-      // User came from session ended page wanting to start new story
-      setCurrentView("stories");
-      // Clean up the URL
-      window.history.replaceState({}, '', '/');
-    } else if (action === 'library') {
-      // Navigate directly to the Story Library after save
-      setCurrentView("library");
-      window.history.replaceState({}, '', '/');
-    }
-  }, []);
+    if (location.pathname !== '/' || !['new-story', 'library'].includes(action ?? '')) return;
+    setOpenNewStoryOnArrival(action === 'new-story');
+    navigate('/', { replace: true, state: {
+      ...location.state,
+      screens: { ...location.state?.screens, app: action === 'library' ? 'library' : 'stories', stories: 'library' },
+    } });
+  }, [location.pathname, location.search, navigate]);
 
   // Listen for global navigation to Parent Controls (from Profile editor etc.)
   useEffect(() => {
@@ -592,16 +581,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   };
 
   const handleSessionEnded = async (stats: SessionStats) => {
-    // Clear ALL session caches comprehensively before navigation
-    try {
-      const { SessionCacheManager } = await import('@/services/SessionCacheManager');
-      SessionCacheManager.clearOnSessionEnd(user.id, userInfo?.avatar?.type);
-    } catch (error) {
-      DebugLogger.warn('performance', 'Failed to clear session caches', error);
-    }
-    
-    // Navigate to SessionEnded page with stats
-    window.location.href = `/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium}))}`;
+    // Client navigation keeps the reading tree mounted for native Back and Forward.
+    navigate(`/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium}))}`);
   };
 
   const handleProfileUpdate = async (updatedUserInfo: UserInfo) => {
@@ -751,9 +732,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
           <div className="text-center mb-6">
             <BookOpen className="h-12 w-12 text-amber-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900">Email Verification Required</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{uiText("Email Verification Required")}</h2>
             <p className="text-gray-600 mt-2">
-              Your 90-day grace period has expired. Please verify your email address to continue using your account.
+              {uiText("Your 90-day grace period has expired. Please verify your email address to continue using your account.")}
             </p>
           </div>
           <div className="space-y-3">
@@ -765,14 +746,14 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               className="w-full"
             >
               <BookOpen className="w-4 h-4 mr-2" />
-              Resend Verification Email
+              {uiText("Resend Verification Email")}
             </Button>
             <Button 
               variant="outline" 
               onClick={handleSignOut}
               className="w-full"
             >
-              Sign Out
+              {uiText("Sign Out")}
             </Button>
           </div>
         </div>
@@ -793,8 +774,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-800 mb-2">Welcome to Time-2-Read!</h1>
-              <p className="text-gray-600">Let's set up your reading profile</p>
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">{uiText("Welcome to Time-2-Read!")}</h1>
+              <p className="text-gray-600">{uiText("Let's set up your reading profile")}</p>
             </div>
             <MultiStepUserForm
               onSubmit={async (info) => {
@@ -817,10 +798,10 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             currentView={currentView}
             onViewChange={(view: string) => {
               // Block navigation to premium views if subscription is inactive
-              const premiumViews = ['stories', 'library', 'reading', 'premium', 'progress', 'parent', 'profile'];
+              const premiumViews = ["stories", 'library', 'reading', 'premium', 'progress', 'parent', 'profile'];
               if (!effectiveSubscriptionActive && premiumViews.includes(view)) {
                 // Stay on current view (stories), don't navigate
-                setCurrentView('stories');
+                setCurrentView("stories");
                 return;
               }
               setCurrentView(view as AppView);
@@ -853,7 +834,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               {/* Premium badge: what the parent has, and until when */}
               {!subLoading && isSubscriptionActive && (
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-green-300 bg-green-50 px-3 py-1 text-sm font-medium text-green-900" data-testid="premium-badge">
-                  <span aria-hidden>✓</span> {premiumUntilLabel(premiumUntil) ?? "Premium is on"}
+                  <span aria-hidden>✓</span> {premiumUntilLabel(premiumUntil) ?? uiText("Premium is on")}
                 </div>
               )}
               
@@ -864,11 +845,11 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               {!hasPaidAccess && !freeStories.loading && !freeStories.exhausted && (
                 <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2 text-sm flex flex-wrap items-center justify-between gap-2" data-testid="free-stories-banner">
                   <span>
-                    {freeStories.remaining} of {freeStories.limit} free stories left. Then try Premium free for {TRIAL_DAYS} days.
+                    {uiText("{{remaining}} of {{limit}} free stories left. Then try Premium free for {{days}} days.", { remaining: freeStories.remaining, limit: freeStories.limit, days: TRIAL_DAYS })}
                   </span>
                   <span className="flex items-center gap-4">
-                    <button type="button" className="font-medium text-primary underline" onClick={() => setCurrentView("account")}>Have a code?</button>
-                    <a href="/pricing" className="font-medium text-primary underline">See plans</a>
+                    <button type="button" className="font-medium text-primary underline" onClick={() => setCurrentView("account")}>{uiText("Have a code?")}</button>
+                    <Link to="/pricing" className="font-medium text-primary underline">{uiText("See plans")}</Link>
                   </span>
                 </div>
               )}
@@ -888,7 +869,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                   data-testid="view-back"
                   className="mb-3 inline-flex min-h-11 items-center gap-1 rounded-full border border-border bg-background px-4 text-base font-medium text-foreground shadow-sm hover:bg-muted"
                 >
-                  <span aria-hidden>←</span> Back
+                  <span aria-hidden>←</span> {uiText("Back")}
                 </button>
               )}
 
@@ -910,14 +891,17 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                     />
                   )}
 
-                  {currentView === "stories" && (
+                  {(
+          <div hidden={currentView !== "stories"}>
           <PremiumMyStoriesView
             userInfo={userInfo}
             isPremium={isPremium}
             isSubscriptionActive={effectiveSubscriptionActive}
             onSessionEnded={handleSessionEnded}
             openNewStoryOnArrival={openNewStoryOnArrival}
+            isActive={currentView === "stories"}
           />
+          </div>
                   )}
 
                   {currentView === "library" && (
@@ -928,8 +912,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                           <BookOpen className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                          <h1 className="text-2xl font-bold text-foreground">Story Library</h1>
-                          <p className="text-muted-foreground">Manage your saved stories and collections</p>
+                          <h1 className="text-2xl font-bold text-foreground">{uiText("Story Library")}</h1>
+                          <p className="text-muted-foreground">{uiText("Manage your saved stories and collections")}</p>
                         </div>
                       </div>
                        <PremiumStoryLibrary
@@ -1030,22 +1014,23 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                     />
                   )}
 
-                  {currentView === "reading" && (
+                  {currentStory && (
                     effectiveSubscriptionActive && currentStory ? (
-                    <div className="space-y-6">
+                    <div hidden={currentView !== "reading"} className="space-y-6">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-gradient-primary/20 rounded-full">
                           <BookOpen className="w-6 h-6 text-primary" />
                         </div>
                         <div>
                           <h1 className="text-2xl font-bold text-foreground">{currentStory.title}</h1>
-                          <p className="text-muted-foreground">Reading saved story</p>
+                          <p className="text-muted-foreground">{uiText("Reading saved story")}</p>
                         </div>
                       </div>
                        <CleanStoryDisplay
                          userInfo={userInfo}
                          isPremium={isPremium}
                          currentStory={currentStory}
+                         isActive={currentView === "reading"}
                          // A story finished from the library ends like a new one: the
                          // session-ended page with its quiz (27 Oct 2026, final live tests:
                          // ending a saved story went back to the library, so a story resumed

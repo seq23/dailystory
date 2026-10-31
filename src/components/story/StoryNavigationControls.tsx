@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 /**
  * CRITICAL REGRESSION PREVENTION:
  * 
@@ -110,8 +111,8 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         className="navigation-button h-11 px-2 sm:px-4 font-semibold shrink-0"
       >
         <ChevronLeft className="w-5 h-5 sm:mr-1" />
-        <span className="hidden sm:inline">Previous</span>
-        <span className="sm:hidden">Back</span>
+        <span className="hidden sm:inline"> {uiText("Previous")} </span>
+        <span className="sm:hidden"> {uiText("Back")} </span>
       </Button>
 
       {/* Center Controls with Audio Buttons */}
@@ -137,7 +138,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         
         {/* Page Indicator */}
         <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-          <span className="hidden sm:inline">Page </span>{currentPage + 1} of {totalPages}
+          <span className="hidden sm:inline"> {uiText("Page")} </span>{currentPage + 1}  {uiText("of")} {totalPages}
         </span>
         
         {/* Help Me Read Button - Right of page numbers - Guest Users Only */}
@@ -146,23 +147,20 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
             <DialogTrigger asChild>
               <Button variant="secondary" size="sm" className="xl:flex hidden">
                 <GraduationCap className="w-4 h-4 mr-2" />
-                Help Me Read
-              </Button>
+                 {uiText("Help Me Read")} </Button>
             </DialogTrigger>
             <DialogContent className="w-[min(96vw,720px)] max-h-[85vh] overflow-y-auto p-0">
               <DialogHeader>
-                <DialogTitle>Help Me Read</DialogTitle>
+                <DialogTitle> {uiText("Help Me Read")} </DialogTitle>
               </DialogHeader>
               {/* Help Me Read Coach for guests would be limited - show upgrade prompt */}
               <div className="p-6 text-center">
                 <GraduationCap className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Unlock Reading Help</h3>
+                <h3 className="text-lg font-semibold mb-2"> {uiText("Unlock Reading Help")} </h3>
                 <p className="text-muted-foreground mb-4">
-                  Get personalized reading assistance with our premium features.
-                </p>
+                   {uiText("Get personalized reading assistance with our premium features.")} </p>
                 <Button onClick={onUpgrade} variant="default">
-                  Upgrade Now
-                </Button>
+                   {uiText("Upgrade Now")} </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -181,12 +179,10 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
           {isLoadingNextPage ? (
             <>
               <div className="animate-spin w-4 h-4 mr-2 border-2 border-primary border-t-transparent rounded-full" />
-              Loading...
-            </>
+               {uiText("Loading...")} </>
           ) : (
             <>
-              Next
-              <ChevronRight className="w-5 h-5 ml-1" />
+               {uiText("Next")} <ChevronRight className="w-5 h-5 ml-1" />
             </>
           )}
         </Button>

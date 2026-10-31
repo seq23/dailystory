@@ -110,7 +110,7 @@ export function judgedWords(page: string): string[] {
   const out: string[] = [];
   const text = (page ?? "").replace(/\{[^}]*\}/g, " ");
   for (const sentence of text.split(/(?<=[.!?]["”’)]?)\s+/)) {
-    const toks = sentence.match(/[\p{L}][\p{L}'’]*/gu) ?? [];
+    const toks: string[] = sentence.match(/[\p{L}][\p{L}'’]*/gu) ?? [];
     toks.forEach((t, i) => {
       if (i > 0 && /^\p{Lu}/u.test(t) && t !== "I") return; // a name
       out.push(t.toLowerCase().replace(/[’]/g, "'").replace(/'+$/, ""));

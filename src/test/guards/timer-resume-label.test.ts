@@ -7,7 +7,7 @@ const src = readFileSync(join(__dirname, "../../..", "src/components/Collapsible
 
 describe("reading timer button", () => {
   it("says Resume once the timer has run", () => {
-    expect(src).toMatch(/\{isReading \? "Pause" : startedOnce \? "Resume" : "Start"\}/);
+    expect(src).toMatch(/\{isReading \? uiText\("Pause"\) : startedOnce \? uiText\("Resume"\) : uiText\("Start"\)\}/);
     expect(src).toMatch(/useEffect\(\(\) => \{ if \(isReading\) setStartedOnce\(true\); \}, \[isReading\]\)/);
   });
 });

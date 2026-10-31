@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 // Enhanced Audio Error Boundary Component
 import React, { Component, ReactNode } from 'react';
 import { toast } from '@/hooks/use-toast';
@@ -230,7 +231,7 @@ export class EnhancedAudioErrorBoundary extends Component<Props, State> {
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              <CardTitle className="text-sm font-medium">Audio Error</CardTitle>
+              <CardTitle className="text-sm font-medium"> {uiText("Audio Error")} </CardTitle>
             </div>
             <CardDescription className="text-xs">
               {audioError.message}
@@ -250,8 +251,7 @@ export class EnhancedAudioErrorBoundary extends Component<Props, State> {
                   className="h-8 gap-1 text-xs"
                 >
                   <RefreshCw className="h-3 w-3" />
-                  Try Again
-                </Button>
+                   {uiText("Try Again")} </Button>
                 
                 {audioError.type === 'MOBILE_AUDIO_ERROR' && (
                   <Button
@@ -266,15 +266,14 @@ export class EnhancedAudioErrorBoundary extends Component<Props, State> {
                     }}
                   >
                     <Volume2 className="h-3 w-3" />
-                    Enable Audio
-                  </Button>
+                     {uiText("Enable Audio")} </Button>
                 )}
               </div>
               
               {audioError.type === 'TTS_SERVICE_ERROR' && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <VolumeX className="h-3 w-3" />
-                  <span>You can continue reading without audio</span>
+                  <span> {uiText("You can continue reading without audio")} </span>
                 </div>
               )}
             </div>

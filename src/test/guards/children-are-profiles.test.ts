@@ -34,7 +34,7 @@ describe("the reader is always a real child", () => {
 describe("children are listed, added and switched in obvious places", () => {
   it("header: 'Reading as <child> ▾' lists every child, + Add a child, Grown-up settings", () => {
     const h = read("src/components/PremiumHeader.tsx");
-    expect(h).toMatch(/"Reading as"/);
+    expect(h).toContain('uiText("Reading as")');
     expect(h).toMatch(/children\.map\(\(c\) =>/);
     expect(h).toMatch(/data-testid="header-add-child"/);
     expect(h).toMatch(/Grown-up settings/);
@@ -55,7 +55,7 @@ describe("children are listed, added and switched in obvious places", () => {
     // 26 Oct 2026: Reading settings repeated all 29 children. It links to the list instead.
     const editor = read("src/components/PremiumProfileEditor.tsx");
     expect(editor).not.toMatch(/<ChildrenList/);
-    expect(editor).toMatch(/onClick=\{onManageChildren\}>Manage your children →/);
+    expect(editor).toMatch(/onClick=\{onManageChildren\}>\{uiText\("Manage your children →"\)\}/);
     expect(read("src/components/AuthenticatedApp.tsx")).toMatch(/onManageChildren=\{\(\) => setCurrentView\("account"\)\}/);
   });
   it("the story form says who the story is for", () => {
@@ -75,7 +75,7 @@ describe("every picker shows what is picked", () => {
   it("grade chips: aria-checked, ✓ and 'Selected: <grade>'", () => {
     const f = read("src/components/children/ChildForm.tsx");
     expect(f).toMatch(/aria-checked=\{selected\}/);
-    expect(f).toMatch(/Selected: <strong>/);
+    expect(f).toMatch(/\{uiText\("Selected:"\)\} <strong>/);
     expect(f).toMatch(/Saving…/);
     expect(f).toMatch(/"Try again"/);
   });

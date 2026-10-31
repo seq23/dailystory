@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
@@ -460,14 +461,13 @@ export const FormStep3Personalization = ({
                 {spellcheckSuggestions.favoriteColor && (
                   <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
                     <span className="text-xs text-warning">
-                      Did you mean: {spellcheckSuggestions.favoriteColor}?
+                       {uiText("Did you mean:")} {spellcheckSuggestions.favoriteColor}?
                     </span>
                     <button
                       onClick={() => acceptSpellcheckSuggestion('favoriteColor')}
                       className="text-xs text-primary hover:text-primary/80 font-medium"
                     >
-                      Accept
-                    </button>
+                       {uiText("Accept")} </button>
                   </div>
                 )}
               </div>
@@ -490,7 +490,7 @@ export const FormStep3Personalization = ({
                 {spellcheckLoading.favoriteAnimal && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>Checking spelling...</span>
+                    <span> {uiText("Checking spelling...")} </span>
                   </div>
                 )}
                 
@@ -506,14 +506,13 @@ export const FormStep3Personalization = ({
                 {spellcheckSuggestions.favoriteAnimal && (
                   <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
                     <span className="text-xs text-warning">
-                      Did you mean: {spellcheckSuggestions.favoriteAnimal}?
+                       {uiText("Did you mean:")} {spellcheckSuggestions.favoriteAnimal}?
                     </span>
                     <button
                       onClick={() => acceptSpellcheckSuggestion('favoriteAnimal')}
                       className="text-xs text-primary hover:text-primary/80 font-medium"
                     >
-                      Accept
-                    </button>
+                       {uiText("Accept")} </button>
                   </div>
                 )}
                 
@@ -527,8 +526,7 @@ export const FormStep3Personalization = ({
                       </div>
                     ))}
                     <div className="mt-2 text-xs text-muted-foreground">
-                      Try child-friendly animals like "dog," "elephant," or "butterfly"
-                    </div>
+                       {uiText("Try child-friendly animals like \"dog,\" \"elephant,\" or \"butterfly\"")} </div>
                   </div>
                 )}
               </div>
@@ -551,7 +549,7 @@ export const FormStep3Personalization = ({
                 {spellcheckLoading.favoriteFood && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>Checking spelling...</span>
+                    <span> {uiText("Checking spelling...")} </span>
                   </div>
                 )}
                 
@@ -567,14 +565,13 @@ export const FormStep3Personalization = ({
                 {spellcheckSuggestions.favoriteFood && (
                   <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
                     <span className="text-xs text-warning">
-                      Did you mean: {spellcheckSuggestions.favoriteFood}?
+                       {uiText("Did you mean:")} {spellcheckSuggestions.favoriteFood}?
                     </span>
                     <button
                       onClick={() => acceptSpellcheckSuggestion('favoriteFood')}
                       className="text-xs text-primary hover:text-primary/80 font-medium"
                     >
-                      Accept
-                    </button>
+                       {uiText("Accept")} </button>
                   </div>
                 )}
                 
@@ -588,8 +585,7 @@ export const FormStep3Personalization = ({
                       </div>
                     ))}
                     <div className="mt-2 text-xs text-muted-foreground">
-                      Try child-friendly foods like "pizza," "fruit," or "cookies"
-                    </div>
+                       {uiText("Try child-friendly foods like \"pizza,\" \"fruit,\" or \"cookies\"")} </div>
                   </div>
                 )}
               </div>
@@ -612,7 +608,7 @@ export const FormStep3Personalization = ({
                 {spellcheckLoading.hobbies && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>Checking spelling...</span>
+                    <span> {uiText("Checking spelling...")} </span>
                   </div>
                 )}
                 
@@ -628,14 +624,13 @@ export const FormStep3Personalization = ({
                 {spellcheckSuggestions.hobbies && (
                   <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
                     <span className="text-xs text-warning">
-                      Did you mean: {spellcheckSuggestions.hobbies}?
+                       {uiText("Did you mean:")} {spellcheckSuggestions.hobbies}?
                     </span>
                     <button
                       onClick={() => acceptSpellcheckSuggestion('hobbies')}
                       className="text-xs text-primary hover:text-primary/80 font-medium"
                     >
-                      Accept
-                    </button>
+                       {uiText("Accept")} </button>
                   </div>
                 )}
                 
@@ -649,8 +644,7 @@ export const FormStep3Personalization = ({
                       </div>
                     ))}
                     <div className="mt-2 text-xs text-muted-foreground">
-                      Try child-friendly activities like "reading," "sports," or "art"
-                    </div>
+                       {uiText("Try child-friendly activities like \"reading,\" \"sports,\" or \"art\"")} </div>
                   </div>
                 )}
               </div>
@@ -677,7 +671,7 @@ Setting: magical forest AND cozy cottage → Enter`}
                 {spellcheckLoading.specialRequest && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>Checking spelling...</span>
+                    <span> {uiText("Checking spelling...")} </span>
                   </div>
                 )}
                 
@@ -690,26 +684,24 @@ Setting: magical forest AND cozy cottage → Enter`}
                 )}
                 
                 <p className="text-xs text-muted-foreground leading-relaxed mt-2">
-                  <span className="font-medium">This format helps our system provide best results:</span><br/>
+                  <span className="font-medium"> {uiText("This format helps our system provide best results:")} </span><br/>
                   <span className="text-muted-foreground/80">
-                    Themes: underwater adventure AND friendship →Enter<br/>
-                    Setting: Pacific Ocean AND Hawaii →Enter<br/>
-                    Characters: story about a dolphin named Brian →Enter
-                  </span>
+                     {uiText("Themes: underwater adventure AND friendship →Enter")} <br/>
+                     {uiText("Setting: Pacific Ocean AND Hawaii →Enter")} <br/>
+                     {uiText("Characters: story about a dolphin named Brian →Enter")} </span>
                 </p>
                 
                 {/* Spellcheck suggestion */}
                 {spellcheckSuggestions.specialRequest && (
                   <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
                     <span className="text-xs text-warning">
-                      Did you mean: {spellcheckSuggestions.specialRequest}?
+                       {uiText("Did you mean:")} {spellcheckSuggestions.specialRequest}?
                     </span>
                     <button
                       onClick={() => acceptSpellcheckSuggestion('specialRequest')}
                       className="text-xs text-primary hover:text-primary/80 font-medium"
                     >
-                      Accept
-                    </button>
+                       {uiText("Accept")} </button>
                   </div>
                 )}
                 
@@ -723,8 +715,7 @@ Setting: magical forest AND cozy cottage → Enter`}
                       </div>
                     ))}
                     <div className="mt-2 text-xs text-muted-foreground">
-                      Please use child-friendly themes like "adventure," "friendship," or "magic"
-                    </div>
+                       {uiText("Please use child-friendly themes like \"adventure,\" \"friendship,\" or \"magic\"")} </div>
                   </div>
                 )}
               </div>
@@ -738,7 +729,7 @@ Setting: magical forest AND cozy cottage → Enter`}
                 <TagInput
                   value={formData.targetVocabulary || ''}
                   onChange={(value) => handleInputChange('targetVocabulary', value)}
-                  placeholder="example: ocean, brave, explore"
+                  placeholder={uiText("example: ocean, brave, explore")}
                   className="w-full"
                   validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'general')}
                   validationError={validationErrors.targetVocabulary}
@@ -751,7 +742,7 @@ Setting: magical forest AND cozy cottage → Enter`}
                 {spellcheckLoading.targetVocabulary && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>Checking spelling...</span>
+                    <span> {uiText("Checking spelling...")} </span>
                   </div>
                 )}
                 
@@ -767,14 +758,13 @@ Setting: magical forest AND cozy cottage → Enter`}
                 {spellcheckSuggestions.targetVocabulary && (
                   <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
                     <span className="text-xs text-warning">
-                      Did you mean: {spellcheckSuggestions.targetVocabulary}?
+                       {uiText("Did you mean:")} {spellcheckSuggestions.targetVocabulary}?
                     </span>
                     <button
                       onClick={() => acceptSpellcheckSuggestion('targetVocabulary')}
                       className="text-xs text-primary hover:text-primary/80 font-medium"
                     >
-                      Accept
-                    </button>
+                       {uiText("Accept")} </button>
                   </div>
                 )}
                 
@@ -788,8 +778,7 @@ Setting: magical forest AND cozy cottage → Enter`}
                       </div>
                     ))}
                     <div className="mt-2 text-xs text-muted-foreground">
-                      Use educational words like "ocean," "explore," or "friendship"
-                    </div>
+                       {uiText("Use educational words like \"ocean,\" \"explore,\" or \"friendship\"")} </div>
                   </div>
                 )}
               </div>

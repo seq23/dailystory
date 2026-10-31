@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useEffect } from "react";
 
 const Terms = () => {
@@ -41,7 +42,7 @@ const Terms = () => {
   return (
     <main>
       <header className="container mx-auto px-4 py-10">
-        <h1 className="text-3xl md:text-4xl font-bold">Terms of Service</h1>
+        <h1 className="text-3xl md:text-4xl font-bold">{uiText("Terms of Service")}</h1>
         <p className="text-muted-foreground mt-2">Effective date: {new Date().getFullYear()}-01-01</p>
       </header>
       <section className="container mx-auto px-4 pb-12 space-y-6">
@@ -141,10 +142,10 @@ const Terms = () => {
             LLC is not liable for indirect, incidental, or consequential damages.
           </p>
 
-          <h2>Privacy</h2>
+          <h2>{uiText("Privacy")}</h2>
           <p>
             Your use of our Services is also governed by our{" "}
-            <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>, which describes how we collect, use,
+            <a href="/privacy" className="text-primary hover:underline">{uiText("Privacy Policy")}</a>, which describes how we collect, use,
             and protect your personal information. By using our Services, you agree to our Privacy Policy.
           </p>
 

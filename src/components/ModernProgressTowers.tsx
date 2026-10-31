@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { ProgressTower } from '@/components/ui/progress-tower';
@@ -333,7 +334,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                 shakeMode && "animate-achievement-shake",
                 celebrationMode && "ring-2 ring-primary/30 shadow-xl shadow-primary/10"
               )}
-              aria-label="Show progress towers"
+              aria-label={uiText("Show progress towers")}
               longPressDuration={500}
             >
               <Trophy className="w-5 h-5 text-primary group-hover:text-primary/80" />
@@ -495,13 +496,12 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                 variant="ghost" 
                 size="sm" 
                 onClick={handleDismiss} 
-                aria-label="Dismiss progress towers" 
+                aria-label={uiText("Dismiss progress towers")}
                 className="h-8"
                 longPressDuration={500}
               >
                 <X className="w-4 h-4 mr-1" />
-                Dismiss
-              </MobileOptimizedButton>
+                 {uiText("Dismiss")} </MobileOptimizedButton>
             </div>
           )}
 
@@ -535,8 +535,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                    <div className="mt-3 p-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200">
                      <div className="text-sm font-medium text-amber-800 mb-2 flex items-center gap-1">
                        <Star className="w-4 h-4" />
-                       Recent Achievements
-                     </div>
+                        {uiText("Recent Achievements")} </div>
                      <div className="space-y-1">
                        {recentAchievements.slice(0, 3).map((achievement, index) => (
                          <div 
@@ -546,7 +545,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                          >
                            <span className="text-amber-600">{achievement.icon}</span>
                            <span className="font-medium text-amber-800">{achievement.title}</span>
-                           <span className="text-amber-600 ml-auto">+{achievement.points}pts</span>
+                           <span className="text-amber-600 ml-auto">+{achievement.points} {uiText("pts")} </span>
                          </div>
                        ))}
                      </div>
@@ -593,11 +592,11 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                 <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/10">
                   <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
-                      <p className="text-xs text-muted-foreground">Current Level</p>
+                      <p className="text-xs text-muted-foreground"> {uiText("Current Level")} </p>
                       <p className="text-lg font-bold text-primary">{userStats.currentLevel || 1}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Total Points</p>
+                      <p className="text-xs text-muted-foreground"> {uiText("Total Points")} </p>
                       <p className="text-lg font-bold text-accent">{userStats.totalPoints || 0}</p>
                     </div>
                   </div>
@@ -635,8 +634,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                     </div>
                     {recentAchievements.length > 3 && (
                       <div className="text-xs text-yellow-600 mt-2 text-center">
-                        +{recentAchievements.length - 3} more achievements unlocked!
-                      </div>
+                        +{recentAchievements.length - 3}  {uiText("more achievements unlocked!")} </div>
                     )}
                   </div>
                 )}
@@ -668,8 +666,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                     </div>
                     {userStats.badges.length > 6 && (
                       <div className="text-center text-xs text-muted-foreground">
-                        +{userStats.badges.length - 6} more badges
-                      </div>
+                        +{userStats.badges.length - 6}  {uiText("more badges")} </div>
                     )}
                   </div>
                 )}
@@ -678,14 +675,12 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                 {userType === 'premium' ? (
                   <div className="mt-4 text-center">
                     <p className="text-xs text-amber-600 font-medium">
-                      ✨ Progress saved permanently ✨
-                    </p>
+                       {uiText("✨ Progress saved permanently ✨")} </p>
                   </div>
                 ) : (
                   <div className="mt-4 text-center">
                     <p className="text-xs text-muted-foreground">
-                      Session progress • Upgrade to save forever
-                    </p>
+                       {uiText("Session progress • Upgrade to save forever")} </p>
                   </div>
                 )}
               </>

@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -12,6 +13,7 @@ export const ABOUT_DESCRIPTION =
 
 /** Who is behind Time-2-Read and what it does. Linked from the homepage and the site footer. */
 const About = () => {
+  const { t } = useTranslation();
   useEffect(() => {
     document.title = ABOUT_TITLE;
     let meta = document.querySelector('meta[name="description"]');
@@ -36,41 +38,38 @@ const About = () => {
         <Link to="/">
           <Button variant="ghost" size="sm" className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            {t("about.back")}
           </Button>
         </Link>
-        <h1 className="text-3xl md:text-4xl font-bold mb-6">About Time-2-Read</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-6">{t("about.title")}</h1>
         <section className="space-y-4 text-foreground/80 leading-relaxed">
           <p>
-            Time-2-Read makes a new illustrated story for your child every time they read. The story is built around
-            them: their name, the things they love and the reading level they are at today. It is made for children
-            from about 3 to 15, from pre-readers who listen along to confident readers who want a challenge.
+            {t("about.intro")}
           </p>
-          <h2 className="text-xl font-semibold text-foreground pt-2">How it works</h2>
-          <ul className="list-disc pl-6 space-y-1">
-            <li>Tell us your child's name, age and interests, and pick a reading level.</li>
-            <li>Time-2-Read writes a story with your child as the main character, with a picture on every page.</li>
-            <li>Tap any word to hear it, with phonics help for sounding out tricky words.</li>
-            <li>Narration reads the story aloud and highlights each word as it is spoken.</li>
-            <li>A 20-minute reading timer is built into every story.</li>
+          <h2 className="text-xl font-semibold text-foreground pt-2">{t("about.how")}</h2>
+          <ul className="list-disc ps-6 space-y-1">
+            <li>{t("about.setup")}</li>
+            <li>{t("about.story")}</li>
+            <li>{t("about.word")}</li>
+            <li>{t("about.narration")}</li>
+            <li>{t("about.timer")}</li>
           </ul>
-          <p>Stories are written in English.</p>
-          <h2 className="text-xl font-semibold text-foreground pt-2">What it costs</h2>
+          <p>{t("about.english")}</p>
+          <h2 className="text-xl font-semibold text-foreground pt-2">{t("about.cost")}</h2>
           <p>
-            Your first {FREE_STORY_LIMIT} stories are free, with no card. Premium is {PLAN_PRICES.monthly.label}
-            {PLAN_PRICES.monthly.period} or {PLAN_PRICES.annual.label}
-            {PLAN_PRICES.annual.period}, with a {TRIAL_DAYS}-day free trial.{" "}
-            <Link to="/pricing" className="underline hover:text-primary">See pricing</Link>.
+            {t("about.plans", { count: FREE_STORY_LIMIT, monthly: PLAN_PRICES.monthly.label, annual: PLAN_PRICES.annual.label, days: TRIAL_DAYS })}{" "}
+            <Link to="/pricing" className="underline hover:text-primary">{t("about.pricing")}</Link>.
           </p>
-          <h2 className="text-xl font-semibold text-foreground pt-2">Who makes it</h2>
+          <h2 className="text-xl font-semibold text-foreground pt-2">{t("about.maker")}</h2>
           <p>
-            Time-2-Read is built and run by Spry VSL LLC. We take children's privacy seriously: read our{" "}
-            <Link to="/privacy" className="underline hover:text-primary">privacy policy</Link>, our{" "}
-            <Link to="/ferpa" className="underline hover:text-primary">FERPA notes for schools</Link> and our{" "}
-            <Link to="/accessibility" className="underline hover:text-primary">accessibility statement</Link>.
+            <Trans i18nKey="about.owner" values={{ operator: "Spry VSL LLC" }} components={{
+              privacy: <Link to="/privacy" className="underline hover:text-primary" />,
+              ferpa: <Link to="/ferpa" className="underline hover:text-primary" />,
+              accessibility: <Link to="/accessibility" className="underline hover:text-primary" />,
+            }} />
           </p>
           <p>
-            Questions, ideas or a problem to report: write to{" "}
+            {t("about.contact")}{" "}
             <a href="mailto:privacy@time-2-read.com" className="underline hover:text-primary">privacy@time-2-read.com</a>.
           </p>
         </section>

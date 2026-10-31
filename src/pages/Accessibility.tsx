@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Accessibility as AccessibilityIcon, Eye, Keyboard, Volume2, Monitor, Mail } from "lucide-react";
@@ -48,7 +49,7 @@ const Accessibility = () => {
         <Link to="/">
           <Button variant="ghost" size="sm" className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            {uiText("Back to Home")}
           </Button>
         </Link>
         <div className="flex items-center gap-3 mb-2">
@@ -246,7 +247,7 @@ const Accessibility = () => {
             our accessibility practices.
           </p>
 
-          <h2>Contact Us</h2>
+          <h2>{uiText("Contact Us")}</h2>
           <p>
             For general inquiries or if you need assistance accessing any content on our platform:
           </p>

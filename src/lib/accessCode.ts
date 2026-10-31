@@ -1,3 +1,5 @@
+import i18n from "@/i18n/config";
+import { uiText } from "@/i18n/uiText";
 // Client side of access-code trials. The server (create-checkout) is the authority:
 // it normalises and validates the code and sets the trial. The client only sends
 // what the parent typed and shows the server's plain message when it is refused.
@@ -7,7 +9,6 @@ export {
   ACCESS_CODE_MESSAGES,
   INVALID_ACCESS_CODE,
   normalizeAccessCode,
-  premiumUntilLabel,
 } from "../../supabase/functions/_shared/accessCodeRules";
 
 /** Shown for any payment failure we can't explain in plain words. Never an env var or stack. */
@@ -125,4 +126,14 @@ export async function checkoutErrorMessage(error: unknown, data?: unknown): Prom
     }
   }
   return null;
+}
+
+/** Dates and labels follow the UI language; the server still owns access decisions. */
+export function premiumUntilLabel(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  return uiText("Premium active until {{date}}", {
+    date: date.toLocaleDateString(i18n.resolvedLanguage || 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }),
+  });
 }

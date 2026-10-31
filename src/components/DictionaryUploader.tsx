@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -159,8 +160,7 @@ export const DictionaryUploader = () => {
                   className="flex items-center gap-2"
                 >
                   {isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
-                  Delete
-                </Button>
+                   {uiText("Delete")} </Button>
               </div>
             ))}
           </div>

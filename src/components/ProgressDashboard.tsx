@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ interface ProgressDashboardProps {
 }
 
 export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPremium = false }: ProgressDashboardProps) => {
+  useUiLanguage();
   const progress = useRealProgressData(userId);
 
   const formatTime = (minutes: number) => {
@@ -38,12 +40,12 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
 
   // Determine reading level based on activity
   const getReadingLevel = () => {
-    if (progress.storiesRead >= 50) return { label: 'Master Reader', level: 5 };
-    if (progress.storiesRead >= 25) return { label: 'Advanced Reader', level: 4 };
-    if (progress.storiesRead >= 10) return { label: 'Growing Reader', level: 3 };
-    if (progress.storiesRead >= 3) return { label: 'Eager Reader', level: 2 };
-    if (progress.storiesRead >= 1) return { label: 'Beginner Reader', level: 1 };
-    return { label: 'New Explorer', level: 0 };
+    if (progress.storiesRead >= 50) return { label: uiText("Master Reader"), level: 5 };
+    if (progress.storiesRead >= 25) return { label: uiText("Advanced Reader"), level: 4 };
+    if (progress.storiesRead >= 10) return { label: uiText("Growing Reader"), level: 3 };
+    if (progress.storiesRead >= 3) return { label: uiText("Eager Reader"), level: 2 };
+    if (progress.storiesRead >= 1) return { label: uiText("Beginner Reader"), level: 1 };
+    return { label: uiText("New Explorer"), level: 0 };
   };
 
   const readingLevel = getReadingLevel();
@@ -74,16 +76,16 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-3xl font-bold">Your Reading Journey</CardTitle>
+            <CardTitle className="text-3xl font-bold">{uiText("Your Reading Journey")}</CardTitle>
             <CardDescription className="text-lg">
               {hasAnyActivity 
                 ? `${readingLevel.label} · Level ${readingLevel.level}`
-                : "Start reading to track your progress!"}
+                : uiText("Start reading to track your progress!")}
             </CardDescription>
           </div>
           {progress.currentStreak > 0 && (
             <Badge className="text-lg px-4 py-2 bg-orange-100 text-orange-700 border-orange-300">
-              🔥 {progress.currentStreak} Day Streak
+              🔥 {progress.currentStreak} {uiText("Day Streak")}
             </Badge>
           )}
         </div>
@@ -92,9 +94,9 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
       <CardContent>
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+            <TabsTrigger value="overview">{uiText("Overview")}</TabsTrigger>
+            <TabsTrigger value="details">{uiText("Details")}</TabsTrigger>
+            <TabsTrigger value="activity">{uiText("Recent Activity")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -104,7 +106,7 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                 <CardContent className="p-6 text-center">
                   <BookOpen className="w-10 h-10 text-blue-600 dark:text-blue-400 mx-auto mb-3" />
                   <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">{progress.storiesRead}</div>
-                  <div className="text-sm text-blue-600 dark:text-blue-400">Stories Read</div>
+                  <div className="text-sm text-blue-600 dark:text-blue-400">{uiText("Stories Read")}</div>
                 </CardContent>
               </Card>
               
@@ -112,7 +114,7 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                 <CardContent className="p-6 text-center">
                   <Clock className="w-10 h-10 text-green-600 dark:text-green-400 mx-auto mb-3" />
                   <div className="text-3xl font-bold text-green-700 dark:text-green-300">{formatTime(progress.totalReadingTimeMinutes)}</div>
-                  <div className="text-sm text-green-600 dark:text-green-400">Reading Time</div>
+                  <div className="text-sm text-green-600 dark:text-green-400">{uiText("Reading Time")}</div>
                 </CardContent>
               </Card>
               
@@ -120,7 +122,7 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                 <CardContent className="p-6 text-center">
                   <Star className="w-10 h-10 text-purple-600 dark:text-purple-400 mx-auto mb-3" />
                   <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">{progress.wordsLearned}</div>
-                  <div className="text-sm text-purple-600 dark:text-purple-400">Words Learned</div>
+                  <div className="text-sm text-purple-600 dark:text-purple-400">{uiText("Words Learned")}</div>
                 </CardContent>
               </Card>
               
@@ -128,7 +130,7 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                 <CardContent className="p-6 text-center">
                   <Library className="w-10 h-10 text-orange-600 dark:text-orange-400 mx-auto mb-3" />
                   <div className="text-3xl font-bold text-orange-700 dark:text-orange-300">{progress.savedStories}</div>
-                  <div className="text-sm text-orange-600 dark:text-orange-400">Saved Stories</div>
+                  <div className="text-sm text-orange-600 dark:text-orange-400">{uiText("Saved Stories")}</div>
                 </CardContent>
               </Card>
             </div>
@@ -138,9 +140,9 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
               <Card className="border-dashed">
                 <CardContent className="p-12 text-center">
                   <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-40" />
-                  <h3 className="text-xl font-semibold mb-2">No activity yet</h3>
+                  <h3 className="text-xl font-semibold mb-2">{uiText("No activity yet")}</h3>
                   <p className="text-muted-foreground">
-                    Start reading stories to see your progress here! Your reading sessions, quizzes, vocabulary, and games will all be tracked.
+                    {uiText("Start reading stories to see your progress here! Your reading sessions, quizzes, vocabulary, and games will all be tracked.")}
                   </p>
                 </CardContent>
               </Card>
@@ -153,14 +155,14 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="w-5 h-5 text-blue-500" />
-                      Reading Level
+                      {uiText("Reading Level")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span>{readingLevel.label}</span>
-                        <span className="font-semibold">Level {readingLevel.level}</span>
+                        <span className="font-semibold">{uiText("Level")} {readingLevel.level}</span>
                       </div>
                       <Progress 
                         value={readingLevel.level > 0 ? Math.min((readingLevel.level / 5) * 100, 100) : 0} 
@@ -179,22 +181,22 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Target className="w-5 h-5 text-orange-500" />
-                      Streaks
+                      {uiText("Streaks")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span>Current Streak</span>
-                        <span className="font-semibold">{progress.currentStreak} days</span>
+                        <span>{uiText("Current Streak")}</span>
+                        <span className="font-semibold">{progress.currentStreak} {uiText("days")}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Longest Streak</span>
-                        <span className="font-semibold">{progress.longestStreak} days</span>
+                        <span>{uiText("Longest Streak")}</span>
+                        <span className="font-semibold">{progress.longestStreak} {uiText("days")}</span>
                       </div>
                       {progress.currentStreak === 0 && (
                         <p className="text-xs text-muted-foreground">
-                          Read a story today to start a streak!
+                          {uiText("Read a story today to start a streak!")}
                         </p>
                       )}
                     </div>
@@ -211,21 +213,21 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Brain className="w-5 h-5 text-blue-500" />
-                    Comprehension
+                    {uiText("Comprehension")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {progress.quizzesTaken > 0 ? (
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span>Average Score</span>
+                        <span>{uiText("Average Score")}</span>
                         <span className="font-semibold">{progress.averageComprehensionScore}%</span>
                       </div>
                       <Progress value={progress.averageComprehensionScore} className="h-3" />
-                      <p className="text-sm text-muted-foreground">{progress.quizzesTaken} quizzes completed</p>
+                      <p className="text-sm text-muted-foreground">{progress.quizzesTaken} {uiText("quizzes completed")}</p>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">Complete a quiz after reading to track comprehension!</p>
+                    <p className="text-sm text-muted-foreground">{uiText("Complete a quiz after reading to track comprehension!")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -235,21 +237,21 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Gamepad2 className="w-5 h-5 text-green-500" />
-                    Games
+                    {uiText("Games")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {progress.gamesPlayed > 0 ? (
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span>Average Score</span>
+                        <span>{uiText("Average Score")}</span>
                         <span className="font-semibold">{progress.averageGameScore}%</span>
                       </div>
                       <Progress value={progress.averageGameScore} className="h-3" />
-                      <p className="text-sm text-muted-foreground">{progress.gamesPlayed} games played</p>
+                      <p className="text-sm text-muted-foreground">{progress.gamesPlayed} {uiText("games played")}</p>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">Play reading games to see your scores here!</p>
+                    <p className="text-sm text-muted-foreground">{uiText("Play reading games to see your scores here!")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -259,17 +261,17 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Star className="w-5 h-5 text-purple-500" />
-                    Vocabulary
+                    {uiText("Vocabulary")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {progress.wordsLearned > 0 ? (
                     <div className="space-y-3">
                       <div className="text-3xl font-bold">{progress.wordsLearned}</div>
-                      <p className="text-sm text-muted-foreground">words encountered and tracked</p>
+                      <p className="text-sm text-muted-foreground">{uiText("words encountered and tracked")}</p>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">Words you encounter in stories will be tracked here!</p>
+                    <p className="text-sm text-muted-foreground">{uiText("Words you encounter in stories will be tracked here!")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -279,17 +281,17 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Library className="w-5 h-5 text-orange-500" />
-                    Story Library
+                    {uiText("Story Library")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {progress.savedStories > 0 ? (
                     <div className="space-y-3">
                       <div className="text-3xl font-bold">{progress.savedStories}</div>
-                      <p className="text-sm text-muted-foreground">stories saved to your library</p>
+                      <p className="text-sm text-muted-foreground">{uiText("stories saved to your library")}</p>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">Save stories to build your personal library!</p>
+                    <p className="text-sm text-muted-foreground">{uiText("Save stories to build your personal library!")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -305,9 +307,9 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
                       <div className="flex items-start gap-4">
                         <div className="flex-shrink-0">
                           {activity.type === 'story' && <BookOpen className="w-6 h-6 text-blue-500" />}
-                          {activity.type === 'quiz' && <Brain className="w-6 h-6 text-purple-500" />}
+                          {activity.type === "quiz" && <Brain className="w-6 h-6 text-purple-500" />}
                           {activity.type === 'vocabulary' && <Star className="w-6 h-6 text-yellow-500" />}
-                          {activity.type === 'game' && <Gamepad2 className="w-6 h-6 text-green-500" />}
+                          {activity.type === "game" && <Gamepad2 className="w-6 h-6 text-green-500" />}
                         </div>
                         <div className="flex-grow">
                           <h4 className="font-semibold">{activity.title}</h4>
@@ -325,9 +327,9 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
               <Card className="border-dashed">
                 <CardContent className="p-12 text-center">
                   <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
-                  <h3 className="text-lg font-semibold mb-2">No activity yet</h3>
+                  <h3 className="text-lg font-semibold mb-2">{uiText("No activity yet")}</h3>
                   <p className="text-muted-foreground">
-                    Your reading sessions, quizzes, and games will appear here.
+                    {uiText("Your reading sessions, quizzes, and games will appear here.")}
                   </p>
                 </CardContent>
               </Card>

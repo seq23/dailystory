@@ -85,10 +85,10 @@ describe("switching readers is instant and never reverts", () => {
 
   it("the header and the New story dialog say 'Switching…' and follow the current reader", () => {
     const h = read("src/components/PremiumHeader.tsx");
-    expect(h).toMatch(/switchingToId \? "Switching…" : activeChild \? "Reading as"/);
+    expect(h).toMatch(/switchingToId \? uiText\("Switching…"\) : activeChild \? uiText\("Reading as"\)/);
     expect(h).not.toMatch(/e\.preventDefault\(\);\s*setSwitchingTo/);
     const d = read("src/components/SpecialRequestDialog.tsx");
-    expect(d).toMatch(/\{switching && <span[^>]*data-testid="story-for-switching">Switching…<\/span>\}/);
+    expect(d).toMatch(/\{switching && <span[^>]*data-testid="story-for-switching">\{uiText\("Switching…"\)\}<\/span>\}/);
     expect(d).toMatch(/value=\{activeChild\?\.id \?\? ""\}/);
   });
 });

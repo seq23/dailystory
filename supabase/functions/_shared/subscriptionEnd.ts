@@ -8,11 +8,16 @@ export interface StripeSubscriptionDates {
   cancel_at?: number | null;
   current_period_end?: number | null;
   trial_end?: number | null;
+  items?: { data: { current_period_end?: number | null }[] };
 }
 
 /** The access end Stripe has scheduled: a set cancel date first, else the end of the paid or trial period. */
 export function subscriptionEndFrom(sub: StripeSubscriptionDates | null | undefined, fallback: Date): Date {
-  const seconds = sub?.cancel_at ?? sub?.current_period_end ?? sub?.trial_end ?? null;
+  // Basil and later put billing periods on subscription items.
+  const itemEnds = sub?.items?.data.map(item => item.current_period_end)
+    .filter((end): end is number => typeof end === "number" && end > 0) ?? [];
+  const seconds = sub?.cancel_at ?? sub?.current_period_end ??
+    (itemEnds.length ? Math.min(...itemEnds) : null) ?? sub?.trial_end ?? null;
   return typeof seconds === "number" && seconds > 0 ? new Date(seconds * 1000) : fallback;
 }
 

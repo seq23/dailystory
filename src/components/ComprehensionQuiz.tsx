@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { uiText, useUiLanguage } from "@/i18n/uiText";
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MobileOptimizedButton } from '@/components/MobileOptimizedButton';
@@ -36,6 +37,7 @@ export const ComprehensionQuiz = ({
   storyGrade,
   practiceWords,
 }: ComprehensionQuizProps) => {
+  useUiLanguage();
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -66,8 +68,10 @@ export const ComprehensionQuiz = ({
     speak([q.say || q.question, ...(q.skill === 'sight-words' ? [] : q.options)].join('. '));
   };
 
+  const loadedStoryRef = useRef('');
   useEffect(() => {
-    if (isVisible && storyText) {
+    if (isVisible && storyText && loadedStoryRef.current !== storyText) {
+      loadedStoryRef.current = storyText;
       DebugLogger.log('ui', 'Generating AI quiz questions for story', {
         storyLength: storyText.length,
         userAge: userInfo.age,
@@ -217,10 +221,10 @@ export const ComprehensionQuiz = ({
         <Card className="w-full max-w-lg">
           <CardContent className="p-8 text-center">
             <div className="text-4xl mb-4">😕</div>
-            <p className="text-gray-600 mb-4">{generationError || 'Could not generate quiz'}</p>
+            <p className="text-gray-600 mb-4">{generationError || uiText("Could not generate quiz")}</p>
             <div className="flex gap-2 justify-center">
-              <MobileOptimizedButton variant="outline" onClick={onClose}>Close</MobileOptimizedButton>
-              <MobileOptimizedButton onClick={fetchQuizQuestions}>Try Again</MobileOptimizedButton>
+              <MobileOptimizedButton variant="outline" onClick={onClose}>{uiText("Close")}</MobileOptimizedButton>
+              <MobileOptimizedButton onClick={fetchQuizQuestions}>{uiText("Try Again")}</MobileOptimizedButton>
             </div>
           </CardContent>
         </Card>
@@ -246,8 +250,8 @@ export const ComprehensionQuiz = ({
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm opacity-90">
-              <span>Question {currentQuestion + 1} of {questions.length}</span>
-              <span>Score: {score}/{questions.length}</span>
+              <span>{uiText("Question {{current}} of {{total}}", { current: currentQuestion + 1, total: questions.length })}</span>
+              <span>{uiText("Score:")} {score}/{questions.length}</span>
             </div>
             <Progress value={progress} className="bg-white/20" />
           </div>
@@ -352,18 +356,18 @@ export const ComprehensionQuiz = ({
                   }
                 </h3>
                 <p className="text-gray-600">
-                  You got {score} out of {questions.length} questions correct!
+                  {uiText("You got {{score}} out of {{total}} questions correct!", { score, total: questions.length })}
                 </p>
               </div>
 
               <div className="flex gap-2 justify-center">
                 <MobileOptimizedButton variant="outline" onClick={handleRetry}>
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  Try Again
+                  {uiText("Try Again")}
                 </MobileOptimizedButton>
                 <MobileOptimizedButton onClick={handleComplete}>
                   <ArrowRight className="w-4 h-4 mr-2" />
-                  Continue Reading
+                  {uiText("Continue Reading")}
                 </MobileOptimizedButton>
               </div>
             </div>

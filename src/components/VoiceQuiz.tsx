@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -151,7 +152,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
   const handleStartQuiz = async () => {
     if (!isConnected) {
       toast({
-        title: "Connect to Buddy",
+        title: uiText("Connect to Buddy"),
         description: "Please connect to Buddy first to start the voice quiz"
       });
       return;
@@ -312,7 +313,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
         <Card className="w-full max-w-lg">
           <CardContent className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Creating quiz questions from your story...</p>
+            <p className="text-gray-600"> {uiText("Creating quiz questions from your story...")} </p>
           </CardContent>
         </Card>
       </div>
@@ -326,10 +327,10 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
         <Card className="w-full max-w-lg">
           <CardContent className="p-8 text-center">
             <div className="text-4xl mb-4">😕</div>
-            <p className="text-gray-600 mb-4">{generationError || 'Could not generate quiz'}</p>
+            <p className="text-gray-600 mb-4">{generationError || uiText("Could not generate quiz")}</p>
             <div className="flex gap-2 justify-center">
-              <Button variant="outline" onClick={onClose}>Close</Button>
-              <Button onClick={fetchQuizQuestions}>Try Again</Button>
+              <Button variant="outline" onClick={onClose}> {uiText("Close")} </Button>
+              <Button onClick={fetchQuizQuestions}> {uiText("Try Again")} </Button>
             </div>
           </CardContent>
         </Card>
@@ -347,16 +348,15 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Star className="w-5 h-5" />
-              Quiz with Buddy
-            </CardTitle>
+               {uiText("Quiz with Buddy")} </CardTitle>
             <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
               ✕
             </Button>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm opacity-90">
-              <span>Question {currentQuestion + 1} of {questions.length}</span>
-              <span>Score: {score}/{questions.length}</span>
+              <span> {uiText("Question")} {currentQuestion + 1}  {uiText("of")} {questions.length}</span>
+              <span> {uiText("Score:")} {score}/{questions.length}</span>
             </div>
             <Progress value={progress} className="bg-white/20" />
           </div>
@@ -366,27 +366,23 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
           {!quizStarted ? (
             <div className="text-center space-y-4">
               <div className="text-6xl mb-4">🎤</div>
-              <h3 className="text-xl font-bold">Ready for a Voice Quiz?</h3>
+              <h3 className="text-xl font-bold"> {uiText("Ready for a Voice Quiz?")} </h3>
               <p className="text-gray-600">
-                Connect with Buddy and answer questions about your story using your voice!
-              </p>
+                 {uiText("Connect with Buddy and answer questions about your story using your voice!")} </p>
               
               <div className="space-y-3">
                 {!isConnected ? (
                   <Button onClick={handleVoiceToggle} className="w-full">
                     <Mic className="w-4 h-4 mr-2" />
-                    Connect to Buddy
-                  </Button>
+                     {uiText("Connect to Buddy")} </Button>
                 ) : (
                   <Button onClick={handleStartQuiz} className="w-full">
                     <Volume2 className="w-4 h-4 mr-2" />
-                    Start Voice Quiz
-                  </Button>
+                     {uiText("Start Voice Quiz")} </Button>
                 )}
                 
                 <Button variant="outline" onClick={onClose} className="w-full">
-                  Take Text Quiz Instead
-                </Button>
+                   {uiText("Take Text Quiz Instead")} </Button>
               </div>
             </div>
           ) : !quizComplete ? (
@@ -396,12 +392,12 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
                   {isConnected ? (
                     <div className="flex items-center gap-2 text-green-600">
                       <Mic className="w-5 h-5" />
-                      <span className="text-sm">Connected to Buddy</span>
+                      <span className="text-sm"> {uiText("Connected to Buddy")} </span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-red-600">
                       <MicOff className="w-5 h-5" />
-                      <span className="text-sm">Disconnected</span>
+                      <span className="text-sm"> {uiText("Disconnected")} </span>
                     </div>
                   )}
                 </div>
@@ -433,23 +429,22 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
 
                 {waitingForAnswer && (
                   <div className="text-sm text-gray-600">
-                    🎤 Listening for your answer... Say "A", "B", "C", or "D"
-                  </div>
+                     {uiText("🎤 Listening for your answer... Say \"A\", \"B\", \"C\", or \"D\"")} </div>
                 )}
 
                 {showResult && (
                   <div className="text-center">
                     <div className="text-sm text-gray-600 mb-2">
                       {currentAnswer === currentQ.correctAnswer ? (
-                        <span className="text-green-600 font-medium">✓ Correct!</span>
+                        <span className="text-green-600 font-medium"> {uiText("✓ Correct!")} </span>
                       ) : (
-                        <span className="text-red-600 font-medium">✗ Not quite right</span>
+                        <span className="text-red-600 font-medium"> {uiText("✗ Not quite right")} </span>
                       )}
                     </div>
                     {currentQ.explanation && (
                       <p className="text-xs text-blue-600 mb-1">💡 {currentQ.explanation}</p>
                     )}
-                    <p className="text-xs text-gray-500">Moving to next question...</p>
+                    <p className="text-xs text-gray-500"> {uiText("Moving to next question...")} </p>
                   </div>
                 )}
               </div>
@@ -463,26 +458,23 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">
                   {score === questions.length 
-                    ? 'Perfect!'
+                    ? uiText("Perfect!")
                     : score >= questions.length / 2 
-                    ? 'Good job!'
-                    : 'Keep trying!'
+                    ? uiText("Good job!")
+                    : uiText("Keep trying!")
                   }
                 </h3>
                 <p className="text-gray-600">
-                  You got {score} out of {questions.length} questions correct!
-                </p>
+                   {uiText("You got")} {score}  {uiText("out of")} {questions.length}  {uiText("questions correct!")} </p>
               </div>
 
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" onClick={handleRetry}>
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  Try Again
-                </Button>
+                   {uiText("Try Again")} </Button>
                 <Button onClick={handleEndQuiz}>
                   <ArrowRight className="w-4 h-4 mr-2" />
-                  Continue
-                </Button>
+                   {uiText("Continue")} </Button>
               </div>
             </div>
           )}

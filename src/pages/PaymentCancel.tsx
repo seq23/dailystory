@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useNavigate } from "react-router-dom";
 import { XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,20 +14,16 @@ const PaymentCancel = () => {
         </div>
 
         <h1 className="text-2xl font-bold text-foreground">
-          Payment Cancelled
-        </h1>
+           {uiText("Payment Cancelled")} </h1>
 
         <p className="text-muted-foreground">
-          No worries — you weren't charged. You can upgrade to premium anytime.
-        </p>
+           {uiText("No worries — you weren't charged. You can upgrade to premium anytime.")} </p>
 
         <div className="space-y-3">
           <Button onClick={() => navigate("/pricing")} variant="default" className="w-full" size="lg">
-            View Plans
-          </Button>
+             {uiText("View Plans")} </Button>
           <Button onClick={() => navigate("/")} variant="outline" className="w-full" size="lg">
-            Continue as Guest
-          </Button>
+             {uiText("Continue as Guest")} </Button>
         </div>
       </div>
     </div>

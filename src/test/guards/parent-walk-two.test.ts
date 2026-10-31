@@ -30,7 +30,7 @@ describe("user_preferences is written atomically (one row per parent)", () => {
 describe("the sidebar tells a Premium parent what they have", () => {
   it("quiet 'Premium active until' for Premium; the upsell only when the plan is known to be free", () => {
     const sb = read("src/components/PremiumSidebar.tsx");
-    expect(sb).toMatch(/hasPremium && \(\s*<p[^>]*data-testid="sidebar-premium-until"[^>]*>\s*\{premiumUntilLabel\(premiumUntil\) \?\? "Premium is on"\}/);
+    expect(sb).toMatch(/hasPremium && \(\s*<p[^>]*data-testid="sidebar-premium-until"[^>]*>\s*\{premiumUntilLabel\(premiumUntil\) \?\? uiText\("Premium is on"\)\}/);
     expect(sb).toMatch(/!effectiveCollapsed && planKnown && !hasPremium && \(\s*<div[^>]*data-testid="sidebar-premium-upsell"/);
     expect(sb).toMatch(/planKnown = false/); // unknown plan → no upsell
     const app = read("src/components/AuthenticatedApp.tsx");
@@ -44,7 +44,7 @@ describe("pickers keep their names", () => {
     const p = read("src/components/ui/avatar-picker.tsx");
     expect(p).not.toMatch(/selected \? "Selected" :/);
     expect(p).toMatch(/data-testid=\{`avatar-tone-name-\$\{tone\}`\}>\s*\{t\(`userInfoForm\.fields\.skinTone\.options\.\$\{tone\}`, tone\)\}/);
-    expect(p).toMatch(/✓ Selected/);
+    expect(p).toContain('uiText("✓ Selected")');
   });
 });
 

@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "@/i18n/uiText";
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
@@ -90,7 +91,7 @@ export const AvatarPicker = React.forwardRef<
                 type="button"
                 onClick={() => onChange({ ...value, type })}
                 aria-pressed={selected}
-                aria-label={`${TYPE_LABELS[type]} picture${selected ? ", selected" : ""}`}
+                aria-label={`${TYPE_LABELS[type]} picture${selected ? uiText(", selected") : ""}`}
                 data-testid={`avatar-type-${type}`}
                 className={cn(
                   "relative flex flex-col items-center gap-1 rounded-xl p-2 transition",
@@ -100,7 +101,7 @@ export const AvatarPicker = React.forwardRef<
                 {selected && <SelectedMark />}
                 <img src={avatarImageFor(type, value.skinTone)} alt="" className="h-16 w-16 rounded-full object-cover" />
                 <span className="text-sm">{TYPE_LABELS[type]}</span>
-                <span className={cn("text-xs font-semibold", selected ? "text-primary" : "invisible")}>Selected</span>
+                <span className={cn("text-xs font-semibold", selected ? "text-primary" : "invisible")}>{uiText("Selected")}</span>
               </button>
             )
           })}
@@ -120,7 +121,7 @@ export const AvatarPicker = React.forwardRef<
                 type="button"
                 onClick={() => onChange({ ...value, skinTone: tone })}
                 aria-pressed={selected}
-                aria-label={`${tone} skin tone${selected ? ", selected" : ""}`}
+                aria-label={`${tone} skin tone${selected ? uiText(", selected") : ""}`}
                 data-testid={`avatar-tone-${tone}`}
                 className="flex flex-col items-center gap-1"
               >
@@ -137,7 +138,7 @@ export const AvatarPicker = React.forwardRef<
                 <span className={cn("text-xs capitalize", selected ? "font-semibold text-primary" : "text-muted-foreground")} data-testid={`avatar-tone-name-${tone}`}>
                   {t(`userInfoForm.fields.skinTone.options.${tone}`, tone)}
                 </span>
-                <span className={cn("text-xs font-semibold", selected ? "text-primary" : "invisible")}>✓ Selected</span>
+                <span className={cn("text-xs font-semibold", selected ? "text-primary" : "invisible")}>{uiText("✓ Selected")}</span>
               </button>
             )
           })}
@@ -147,11 +148,11 @@ export const AvatarPicker = React.forwardRef<
       <div className="flex items-center gap-3 rounded-lg bg-muted/40 p-3" data-testid="avatar-preview">
         <img
           src={avatarImageFor(value.type, value.skinTone)}
-          alt={`Chosen picture: ${TYPE_LABELS[value.type] ?? "Other"}, ${value.skinTone} skin tone`}
+          alt={`Chosen picture: ${TYPE_LABELS[value.type] ?? uiText("Other")}, ${value.skinTone} skin tone`}
           className="h-14 w-14 rounded-full object-cover ring-4 ring-primary"
         />
         <p className="text-sm">
-          <span className="font-semibold">Selected:</span> {TYPE_LABELS[value.type] ?? "Other"}, {value.skinTone} skin tone
+          <span className="font-semibold">{uiText("Selected:")}</span> {TYPE_LABELS[value.type] ?? uiText("Other")}, {value.skinTone} {uiText("skin tone")}
         </p>
       </div>
     </div>

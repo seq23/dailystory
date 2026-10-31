@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -189,8 +190,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
             </MobileOptimizedButton>
           </div>
           <div className="text-sm opacity-90">
-            {vocabulary.length} words collected
-          </div>
+            {vocabulary.length}  {uiText("words collected")} </div>
         </CardHeader>
         
         <CardContent className="p-0 flex flex-col h-full">
