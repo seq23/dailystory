@@ -163,7 +163,7 @@ describe("only real story text reaches a page", () => {
     // The story call (whole story: a budget cut keeps its complete pages, guest-story-path.test.ts)
     // and the re-injection call both check every answer.
     // Live pages: livePageProblem (live-page.test.ts) wraps storyTextProblem.
-    expect(handler).toMatch(/accept: \(text, finishReason\) => isWholeStory\s*\? \(wholeStoryTextProblem\(text, finishReason\) \?\? wholeStoryProblem\([^\n]*\)\)\s*: livePageProblem\(text, finishReason, \{ minWords, previous: previousPages, maxSentenceWords: maxSentenceWordsForGrade\(pageGrade\) \}\),/);
+    expect(handler).toMatch(/accept: \(text, finishReason\) => isWholeStory\s*\? \(wholeStoryTextProblem\(text, finishReason\) \?\? wholeStoryProblem\([^\n]*\)\)\s*: livePageProblem\(parseStoryChoices\(text, pageGrade\)\.text, finishReason, \{ minWords, previous: previousPages, maxSentenceWords: maxSentenceWordsForGrade\(pageGrade\) \}\),/);
     expect((handler.match(/accept: \(text, finishReason\) => storyTextProblem\(text, finishReason\)/g) || []).length).toBe(1);
     expect(handler).toMatch(/errorType: 'output_rejected'/);
     // Every successful story says which tier and model wrote it.

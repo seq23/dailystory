@@ -1,3 +1,4 @@
+import { backupChoiceLead, normalizeStoryChoices, safeStoryChoices, type StoryChoices } from "../../supabase/functions/_shared/storyChoices";
 // Live Generation Service for Premium Users
 import { FREE_LIMIT_CODE } from '@/lib/freeStoryAllowance';
 // Generates stories page-by-page with backend validation
@@ -26,6 +27,7 @@ export interface LiveGenerationContext {
   currentPage: number;
   totalExpectedPages: number;
   characters: string[];
+  nextChoices?: StoryChoices;
 }
 
 export interface LivePageResult {
@@ -34,6 +36,8 @@ export interface LivePageResult {
   nextContext?: LiveGenerationContext;
   error?: string;
   endingPageCount?: number;
+  choices?: StoryChoices;
+  isBackup?: boolean;
 }
 
 export class LiveGenerationService {
@@ -57,6 +61,17 @@ export class LiveGenerationService {
    * Generate the first page of a story for premium users
    */
   static async generateFirstPage(userInfo: UserInfo, sessionType?: 'new' | 'continuation' | 'rewrite', vocabularyData?: any, sessionId?: string): Promise<LivePageResult> {
+    return this.withChoices(await this.generateFirstPageResult(userInfo, sessionType, vocabularyData, sessionId), userInfo);
+  }
+
+  private static withChoices(result: LivePageResult, userInfo: UserInfo): LivePageResult {
+    if (result.isComplete || result.error) return result;
+    const grade = readsAtGradeOf(userInfo, userInfo.expertGradeLevel, DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'pre-reader'));
+    const choices = result.isBackup ? safeStoryChoices(grade) : normalizeStoryChoices(result.choices, grade);
+    return { ...result, choices, nextContext: result.nextContext ? { ...result.nextContext, nextChoices: choices } : undefined };
+  }
+
+  private static async generateFirstPageResult(userInfo: UserInfo, sessionType?: 'new' | 'continuation' | 'rewrite', vocabularyData?: any, sessionId?: string): Promise<LivePageResult> {
     try {
       DebugLogger.log('story', 'Starting first page generation', { user: userInfo.name });
       DebugLogger.log('story', 'LiveGen: First page generation started', { 
@@ -203,6 +218,7 @@ export class LiveGenerationService {
 
       return {
         content,
+        choices: result.choices,
         isComplete: false,
         nextContext: initialContext
       };
@@ -216,7 +232,17 @@ export class LiveGenerationService {
     }
   }
 
-  static async generateNextPage(context: LiveGenerationContext, vocabularyData?: any, userRequestedEnding?: boolean, sessionId?: string): Promise<LivePageResult> {
+  static async generateNextPage(context: LiveGenerationContext, vocabularyData?: any, userRequestedEnding?: boolean, sessionId?: string, selectedChoice?: string): Promise<LivePageResult> {
+    const result = await this.generateNextPageResult(context, vocabularyData, userRequestedEnding, sessionId, selectedChoice);
+    if (result.isBackup && selectedChoice && !result.error) {
+      const content = backupChoiceLead(selectedChoice) + (Array.isArray(result.content) ? result.content[0] : result.content);
+      result.content = content;
+      if (result.nextContext) result.nextContext.storyContext = [...context.storyContext, content];
+    }
+    return this.withChoices(result, { ...context.userInfo, difficultyLevel: context.difficulty as UserInfo['difficultyLevel'], expertGradeLevel: context.expertGradeLevel });
+  }
+
+  private static async generateNextPageResult(context: LiveGenerationContext, vocabularyData?: any, userRequestedEnding?: boolean, sessionId?: string, selectedChoice?: string): Promise<LivePageResult> {
     try {
       const nextPageNumber = context.currentPage + 1;
       // Never auto-conclude stories - only conclude if user explicitly requests ending
@@ -313,6 +339,7 @@ export class LiveGenerationService {
         sessionType: 'premium',
         pageNumber: nextPageNumber,
         existingStory: recentContext,
+        selectedChoice,
         sessionId: actualSessionId,
         difficulty: backendDiff,
         expertGradeLevel: backendDiff === 'expert' ? context.expertGradeLevel : undefined
@@ -337,6 +364,7 @@ export class LiveGenerationService {
 
             return {
               content: fallbackContent,
+              isBackup: true,
               isComplete: shouldConclude,
               nextContext: shouldConclude ? undefined : updatedContext
             };
@@ -387,6 +415,7 @@ export class LiveGenerationService {
       
       return {
         content,
+        choices: result.choices,
         isComplete: shouldConclude,
         nextContext: shouldConclude ? undefined : updatedContext
       };
@@ -564,6 +593,7 @@ export class LiveGenerationService {
 
       return {
         content,
+        isBackup: true,
         isComplete: false,
         nextContext: context
       };
@@ -604,6 +634,7 @@ export class LiveGenerationService {
 
       return {
         content,
+        isBackup: true,
         isComplete: false,
         nextContext: context
       };
@@ -659,6 +690,7 @@ export class LiveGenerationService {
 
       return {
         content,
+        isBackup: true,
         isComplete: isLastPage,
         nextContext: isLastPage ? undefined : updatedContext
       };
@@ -685,6 +717,7 @@ export class LiveGenerationService {
 
       return {
         content,
+        isBackup: true,
         isComplete: isLastPage,
         nextContext: isLastPage ? undefined : updatedContext
       };

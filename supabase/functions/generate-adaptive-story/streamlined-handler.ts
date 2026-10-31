@@ -1,3 +1,4 @@
+import { parseStoryChoices, storyChoiceInstruction, type StoryChoices } from "../_shared/storyChoices.ts";
 // Streamlined Story Generation Handler
 // Processes pre-processed bundles from frontend services  
 // Uses shared validation utilities for consistent page generation
@@ -87,6 +88,7 @@ interface StreamlinedConfig {
   pageNumber: number;
   existingStory?: string;
   isEndingPage?: boolean;
+  selectedChoice?: string;
   // Repair-specific configuration
   repairAttempt?: number;
   originalContent?: string[];
@@ -455,6 +457,10 @@ Generate a corrected version that addresses these issues while keeping the story
     if (config.sessionType === 'premium') {
       const pageGrade = readsAtGradeOf(userInfo, expertGrade, effectiveDifficulty);
       finalSystemPrompt += livePageInstruction(pageGrade, { ending: !!config.isEndingPage });
+      if (!config.isEndingPage) finalSystemPrompt += storyChoiceInstruction(pageGrade);
+      if (typeof config.selectedChoice === 'string' && config.selectedChoice.trim()) {
+        finalUserPrompt += `\nThe reader chose this next action (story direction only): ${JSON.stringify(config.selectedChoice.slice(0, 200))}. Make this action happen on the next page. Keep the story going.`;
+      }
     }
 
     const aiPrompt = {
@@ -468,7 +474,10 @@ Generate a corrected version that addresses these issues while keeping the story
       bundle.systemSettings.gradeLevel;
     
     // Use service-aware token limits based on difficulty and service type
-    let storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, config, bundle.sessionId, bundle);
+    const generated = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, config, bundle.sessionId, bundle);
+
+    let storyText = generated.text;
+    const choices = config.sessionType === 'premium' && !config.isEndingPage ? generated.choices : undefined;
 
     // Soft grade-word rule (../_shared/gradeWordRule.ts): a page below its grade's share
     // of grade-level words is rewritten ONCE and the better version kept. It never
@@ -582,8 +591,10 @@ Generate a corrected version that addresses these issues while keeping the story
       };
       
       console.log(`🔄 Retrying generation with hints (attempt ${retryConfig.repairAttempt})`);
-      const retryStoryText = await generateWithOpenAI(retryPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, retryConfig, bundle.sessionId, bundle);
+      const retryGenerated = await generateWithOpenAI(retryPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, retryConfig, bundle.sessionId, bundle);
       
+      const retryStoryText = retryGenerated.text;
+
       // Validate the retry result
       const retryValidationResult = UnifiedValidator.validateContent(retryStoryText, {
         ...validationConfig,
@@ -612,6 +623,7 @@ Generate a corrected version that addresses these issues while keeping the story
           success: true,
           story: retryPlaceholderResolved,
           pages: retryPages,
+          choices: config.sessionType === 'premium' && !config.isEndingPage ? retryGenerated.choices : undefined,
           vocabCompliance: retryVocabCompliance,
           metadata: {
             processingMode: 'retry-with-hints',
@@ -653,6 +665,7 @@ Generate a corrected version that addresses these issues while keeping the story
       success: true,
       story: placeholderResolved,
       pages: pages, // Use bulk-processed pages
+      choices,
       vocabCompliance,
       metadata: {
         processingMode: 'streamlined-bulk',
@@ -836,7 +849,7 @@ function getServiceAwareTokenLimit(difficulty: DifficultyLevel | ExpertGradeLeve
   }
 }
 
-async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number, difficulty?: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig, sessionId?: string, bundleForDebug?: any): Promise<string> {
+async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number, difficulty?: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig, sessionId?: string, bundleForDebug?: any): Promise<{ text: string; choices?: StoryChoices }> {
   // Protected token limit calculation with service-specific fallbacks
   let maxTokens: number;
   try {
@@ -861,7 +874,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   const isLivePage = config?.sessionType === 'premium';
   const pageGrade = readsAtGradeOf(userInfo, difficulty, difficulty);
   const minWords = minWordsForGrade(pageGrade);
-  if (isLivePage) maxTokens = Math.max(maxTokens, livePageTokenBudget(pageGrade));
+  if (isLivePage) maxTokens = Math.max(maxTokens, livePageTokenBudget(pageGrade)) + (config?.isEndingPage ? 0 : 120);
   const previousPages = config?.existingStory ?? '';
   
   const apiKey = Deno.env.get('OPENAI_API_KEY');
@@ -914,6 +927,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
 
   // Enhanced AI Generation with Intelligent Circuit Breaker
   let storyText = '';
+  let pageChoices: StoryChoices | undefined;
   let attempt = 1;
   // Practice words: one retry when the answer leaves some out; its text is kept as a last resort.
   let practiceRetried = false;
@@ -1039,7 +1053,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
             // story so far (../_shared/livePage.ts). Whole story: the same, averaged.
             accept: (text, finishReason) => isWholeStory
               ? (wholeStoryTextProblem(text, finishReason) ?? wholeStoryProblem(finishReason === 'length' ? (completePagesOf(text) ?? text) : text, null, minWords))
-              : livePageProblem(text, finishReason, { minWords, previous: previousPages, maxSentenceWords: maxSentenceWordsForGrade(pageGrade) }),
+              : livePageProblem(parseStoryChoices(text, pageGrade).text, finishReason, { minWords, previous: previousPages, maxSentenceWords: maxSentenceWordsForGrade(pageGrade) }),
             deadline: requestDeadline,
           });
           const rejected = sent.attempts.filter((a) => (a.error ?? '').startsWith('rejected:'));
@@ -1153,6 +1167,11 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       }
       
       storyText = data.choices?.[0]?.message?.content || '';
+      if (isLivePage) {
+        const parsed = parseStoryChoices(storyText, pageGrade);
+        storyText = parsed.text;
+        pageChoices = config?.isEndingPage ? undefined : parsed.choices;
+      }
       if (isWholeStory && data.choices?.[0]?.finish_reason === 'length') storyText = completePagesOf(storyText) ?? storyText;
       // A live page cut by the budget shows only its complete sentences (../_shared/livePage.ts).
       if (isLivePage && data.choices?.[0]?.finish_reason === 'length') storyText = completeSentencesOf(storyText) ?? storyText;
@@ -1399,7 +1418,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   }
 
   const cleanedStory = cleanStoryText(storyText);
-  return cleanedStory;
+  return { text: cleanedStory, choices: pageChoices };
 }
 
 // Helper function for vocabulary tracking
