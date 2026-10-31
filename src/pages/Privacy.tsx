@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Mail } from "lucide-react";
@@ -29,10 +30,10 @@ const Privacy = () => {
       <header className="container mx-auto px-4 py-10">
         <Link to="/">
           <Button variant="ghost" size="sm" className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
+            <ArrowLeft className="w-4 h-4 mr-2" /> {uiText("Back to Home")}
           </Button>
         </Link>
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground">Privacy Policy</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground">{uiText("Privacy Policy")}</h1>
         <p className="text-muted-foreground mt-2">Effective date: January 1, {new Date().getFullYear()}</p>
         <p className="text-xs text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
       </header>
@@ -115,7 +116,7 @@ const Privacy = () => {
             <li><strong>Restrict Processing</strong> (Art. 18) — Freeze your account without deleting it</li>
             <li><strong>Data Portability</strong> (Art. 20) — Export your data in JSON format</li>
             <li><strong>Object</strong> (Art. 21) — Opt out of analytics/marketing via cookie preferences</li>
-            <li><strong>Withdraw Consent</strong> (Art. 7(3)) — Withdraw non-essential processing consent in account settings</li>
+            <li><strong>{uiText("Withdraw Consent")}</strong> (Art. 7(3)) — Withdraw non-essential processing consent in account settings</li>
           </ul>
           <p>
             <strong>California Residents:</strong> See our <Link to="/ccpa" className="text-primary hover:underline">CCPA Notice</Link> for additional rights.
@@ -197,7 +198,7 @@ const Privacy = () => {
           <Link to="/ferpa" className="text-primary hover:underline">FERPA Compliance</Link>
           <Link to="/data-transfers" className="text-primary hover:underline">Data Transfers</Link>
           <Link to="/vendors" className="text-primary hover:underline">Vendor List</Link>
-          <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>
+          <Link to="/terms" className="text-primary hover:underline">{uiText("Terms of Service")}</Link>
         </div>
       </section>
     </main>

@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Shield, Download, Trash2, Edit, Eye, FileText, Mail } from "lucide-react";
@@ -64,7 +65,7 @@ export default function GDPR() {
             <Link to="/">
               <Button variant="ghost" size="sm" className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
-                Back to Home
+                {uiText("Back to Home")}
               </Button>
             </Link>
             <div className="flex items-center gap-2">
@@ -227,8 +228,8 @@ export default function GDPR() {
         <section>
           <h2 className="text-xl font-semibold text-foreground mb-4">Related Policies</h2>
           <div className="flex flex-wrap gap-4 text-sm">
-            <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-            <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>
+            <Link to="/privacy" className="text-primary hover:underline">{uiText("Privacy Policy")}</Link>
+            <Link to="/terms" className="text-primary hover:underline">{uiText("Terms of Service")}</Link>
             <Link to="/ccpa" className="text-primary hover:underline">CCPA Rights</Link>
             <Link to="/vendors" className="text-primary hover:underline">Our Vendors</Link>
           </div>

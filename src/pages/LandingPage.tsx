@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useEffect } from "react";
 import { SiteFooterNav } from "@/components/SiteFooterNav";
 import { Link } from "react-router-dom";
@@ -87,7 +88,7 @@ const SightWordsSection = () => (
         them again and again inside a personalized, illustrated story where they are the main character.
       </p>
       <Button asChild size="lg">
-        <Link to="/?action=new-story">Start a free sight word story</Link>
+        <Link to="/?action=new-story">{uiText("Start a free sight word story")}</Link>
       </Button>
     </Card>
   </section>
@@ -110,7 +111,7 @@ const ReadingLogSection = () => (
           <tr>
             <th scope="col" className="border border-border p-2 w-28">Day</th>
             <th scope="col" className="border border-border p-2">What I read</th>
-            <th scope="col" className="border border-border p-2 w-24">Minutes</th>
+            <th scope="col" className="border border-border p-2 w-24">{uiText("Minutes")}</th>
             <th scope="col" className="border border-border p-2 w-32">Grown-up initials</th>
           </tr>
         </thead>
@@ -132,10 +133,10 @@ const ReadingLogSection = () => (
     </div>
     <div className="mt-6 flex flex-wrap gap-3 justify-center">
       <Button size="lg" variant="outline" onClick={() => window.print()}>
-        Print the reading log
+        {uiText("Print the reading log")}
       </Button>
       <Button asChild size="lg">
-        <Link to="/?action=new-story">Start a story with the 20-minute timer</Link>
+        <Link to="/?action=new-story">{uiText("Start a story with the 20-minute timer")}</Link>
       </Button>
     </div>
   </section>
@@ -192,10 +193,10 @@ const LandingPage = ({ slug }: { slug: string }) => {
             <p className="text-lg text-muted-foreground mb-8">{config.heroSubtitle}</p>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <Link to="/?action=new-story">Start a free story</Link>
+                <Link to="/?action=new-story">{uiText("Start a free story")}</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/pricing">See pricing</Link>
+                <Link to="/pricing">{uiText("See pricing")}</Link>
               </Button>
             </div>
           </div>
@@ -268,7 +269,7 @@ const LandingPage = ({ slug }: { slug: string }) => {
             Create a personalized, illustrated story in seconds. Your first {FREE_STORY_LIMIT} stories are free.
           </p>
           <Button asChild size="lg">
-            <Link to="/?action=new-story">Start your {FREE_STORY_LIMIT} free stories</Link>
+            <Link to="/?action=new-story">{uiText("Start your {{count}} free stories", { count: FREE_STORY_LIMIT })}</Link>
           </Button>
         </div>
       </section>
@@ -276,7 +277,7 @@ const LandingPage = ({ slug }: { slug: string }) => {
       {/* Footer cross-links */}
       <footer className="border-t border-border py-10">
         <nav className="mx-auto max-w-6xl px-4" aria-label="More reading collections">
-          <h2 className="font-fun text-lg text-foreground mb-4">Guides for parents and teachers</h2>
+          <h2 className="font-fun text-lg text-foreground mb-4">{uiText("Guides for parents and teachers")}</h2>
           <ul className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2 mb-8">
             {landingPages
               .filter((p) => p.kind === "guide" && p.slug !== slug)
@@ -305,7 +306,7 @@ const LandingPage = ({ slug }: { slug: string }) => {
           </ul>
           <div className="mt-6">
             <Link to="/" className="text-sm font-medium text-primary hover:underline">
-              ← Back to Time-2-Read home
+              {uiText("\u2190 Back to Time-2-Read home")}
             </Link>
           </div>
         </nav>

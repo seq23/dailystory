@@ -2457,5 +2457,13 @@
     "maker": "开发团队",
     "contact": "如有问题、建议或需要报告故障，请联系",
     "owner": "Time-2-Read 由 {{operator}} 开发和运营。我们认真保护儿童隐私：请阅读我们的<privacy>隐私政策</privacy>、<ferpa>面向学校的 FERPA 说明</ferpa>和<accessibility>无障碍声明</accessibility>。"
+  },
+  "guideControls": {
+    "sight": "开始免费的常用词故事",
+    "timed": "开始故事并使用20分钟计时器",
+    "print": "打印阅读记录",
+    "start": "开始免费故事",
+    "free": "开始阅读你的{{count}}个免费故事",
+    "home": "← 返回Time-2-Read首页"
   }
 }

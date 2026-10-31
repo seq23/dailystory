@@ -58,6 +58,23 @@ import { childSummary } from '@/components/children/childInfo';
 import { freeFeatures, premiumFeatures, additionalOfferings, enterpriseFeatures } from '@/constants/featureLists';
 
 describe('translated copy is connected to the screens', () => {
+  it('public route controls use the catalog instead of raw known English UI copy', () => {
+    const values = new Set(Object.values(english));
+    const untranslated: string[] = [];
+    for (const file of globSync('src/pages/*.tsx', { ignore: ['src/pages/StylePreview.tsx', 'src/pages/TemplateTestingPage.tsx', 'src/pages/PromptTesting.tsx'] })) {
+      const source = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
+      const visit = (node: ts.Node) => {
+        // Bold vendor/legal prose can contain product names that are also English verbs.
+        if (ts.isJsxText(node) && ts.isJsxElement(node.parent) && node.parent.openingElement.tagName.getText(source) === 'strong') return;
+        if (ts.isJsxText(node) && /[a-zA-Z]/.test(node.text) && values.has(node.text.trim())) {
+          untranslated.push(`${file}: ${node.text.trim()}`);
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(source);
+    }
+    expect(untranslated).toEqual([]);
+  });
   it('every literal t() key and uiText() phrase in app code exists in English', () => {
     const values = new Set(Object.values(english));
     const missing: string[] = [];

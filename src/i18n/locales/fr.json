@@ -2475,5 +2475,13 @@
     "maker": "Qui est derrière l’application",
     "contact": "Pour une question, une idée ou un problème à signaler, écrivez à",
     "owner": "Time-2-Read est développé et géré par {{operator}}. Nous prenons la vie privée des enfants au sérieux : consultez notre <privacy>politique de confidentialité</privacy>, nos <ferpa>informations FERPA pour les écoles</ferpa> et notre <accessibility>déclaration d’accessibilité</accessibility>."
+  },
+  "guideControls": {
+    "sight": "Créer une histoire gratuite avec des mots fréquents",
+    "timed": "Commencer une histoire avec le minuteur de 20 minutes",
+    "print": "Imprimer le carnet de lecture",
+    "start": "Commencer une histoire gratuite",
+    "free": "Commencez vos {{count}} histoires gratuites",
+    "home": "← Retour à l’accueil de Time-2-Read"
   }
 }

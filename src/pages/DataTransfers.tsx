@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Globe, Shield, ExternalLink } from "lucide-react";
@@ -174,7 +175,7 @@ const DataTransfers = () => {
 
         {/* Links */}
         <div className="flex flex-wrap gap-4 text-sm">
-          <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+          <Link to="/privacy" className="text-primary hover:underline">{uiText("Privacy Policy")}</Link>
           <Link to="/gdpr" className="text-primary hover:underline">GDPR Rights</Link>
           <Link to="/ccpa" className="text-primary hover:underline">CCPA Rights</Link>
           <Link to="/vendors" className="text-primary hover:underline">Vendor List</Link>

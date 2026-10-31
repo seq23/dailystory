@@ -2443,5 +2443,13 @@
     "maker": "Quién lo crea",
     "contact": "Si tienes preguntas, ideas o algún problema, escríbenos a",
     "owner": "Time-2-Read es creado y gestionado por {{operator}}. Nos tomamos muy en serio la privacidad de los niños: consulta nuestra <privacy>política de privacidad</privacy>, las <ferpa>notas sobre FERPA para escuelas</ferpa> y nuestra <accessibility>declaración de accesibilidad</accessibility>."
+  },
+  "guideControls": {
+    "sight": "Crear un cuento gratis con palabras frecuentes",
+    "timed": "Empezar un cuento con el temporizador de 20 minutos",
+    "print": "Imprimir el registro de lectura",
+    "start": "Empezar un cuento gratis",
+    "free": "Empieza tus {{count}} cuentos gratis",
+    "home": "← Volver al inicio de Time-2-Read"
   }
 }

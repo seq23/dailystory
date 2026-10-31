@@ -1,3 +1,4 @@
+import { uiText } from "@/i18n/uiText";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Server, Shield } from "lucide-react";
@@ -256,7 +257,7 @@ const Subprocessors = () => {
             <Button variant="outline">Data Transfers</Button>
           </Link>
           <Link to="/privacy">
-            <Button variant="outline">Privacy Policy</Button>
+            <Button variant="outline">{uiText("Privacy Policy")}</Button>
           </Link>
         </div>
       </section>

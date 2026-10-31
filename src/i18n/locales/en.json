@@ -2332,5 +2332,13 @@
     "maker": "Who makes it",
     "contact": "Questions, ideas or a problem to report: write to",
     "owner": "Time-2-Read is built and run by {{operator}}. We take children's privacy seriously: read our <privacy>privacy policy</privacy>, our <ferpa>FERPA notes for schools</ferpa> and our <accessibility>accessibility statement</accessibility>."
+  },
+  "guideControls": {
+    "sight": "Start a free sight word story",
+    "timed": "Start a story with the 20-minute timer",
+    "print": "Print the reading log",
+    "start": "Start a free story",
+    "free": "Start your {{count}} free stories",
+    "home": "← Back to Time-2-Read home"
   }
 }

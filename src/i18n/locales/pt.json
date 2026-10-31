@@ -2573,5 +2573,13 @@
     "maker": "Quem está por trás",
     "contact": "Para dúvidas, ideias ou para relatar um problema, escreva para",
     "owner": "O Time-2-Read é desenvolvido e mantido por {{operator}}. Levamos a privacidade das crianças a sério: leia nossa <privacy>política de privacidade</privacy>, as <ferpa>informações sobre FERPA para escolas</ferpa> e nossa <accessibility>declaração de acessibilidade</accessibility>."
+  },
+  "guideControls": {
+    "sight": "Começar uma história grátis com palavras frequentes",
+    "timed": "Começar uma história com o temporizador de 20 minutos",
+    "print": "Imprimir o registro de leitura",
+    "start": "Começar uma história grátis",
+    "free": "Comece suas {{count}} histórias grátis",
+    "home": "← Voltar ao início do Time-2-Read"
   }
 }
