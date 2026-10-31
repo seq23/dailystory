@@ -214,11 +214,13 @@ describe("the soft grade-word rule", () => {
   });
   it("the story handler runs the rule after generation, logs it, and feeds grade words into the prompt", () => {
     const h = read("supabase/functions/generate-adaptive-story/streamlined-handler.ts");
-    const gen = h.indexOf("let storyText = await generateWithOpenAI(aiPrompt");
+    const gen = h.indexOf("const generated = await generateWithOpenAI(aiPrompt");
+    const text = h.indexOf("let storyText = generated.text;");
+    expect(text).toBeGreaterThan(gen);
     const rule = h.indexOf("await applyGradeWordRule(storyText, readsAt");
     const validate = h.indexOf("UnifiedValidator.validateContent(storyText");
     expect(gen).toBeGreaterThan(0);
-    expect(rule).toBeGreaterThan(gen);
+    expect(rule).toBeGreaterThan(text);
     expect(validate).toBeGreaterThan(rule);
     expect(h).toMatch(/void logGradeWordShare\(ruled\.report/);
     expect(h).toMatch(/gradeWordShare: gradeWordReport/);

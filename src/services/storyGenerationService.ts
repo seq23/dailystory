@@ -1,3 +1,4 @@
+import type { StoryChoices } from "../../supabase/functions/_shared/storyChoices";
 // Unified Story Generation Service with 4-Layer Priority System
 import { practiceWordsPromptLine } from "../../supabase/functions/_shared/practiceWords";
 import { isFreeLimitError, announceFreeLimitReached, FREE_LIMIT_CODE } from '@/lib/freeStoryAllowance';
@@ -42,6 +43,7 @@ export interface StoryGenerationResult {
   success: boolean;
   story?: string;
   pages?: string[];
+  choices?: StoryChoices;
   error?: string;
   metadata?: {
     vocabCompliance: number;
@@ -73,6 +75,7 @@ export class StoryGenerationService {
       difficulty?: string;
       sessionId?: string;
       isEndingPage?: boolean;
+      selectedChoice?: string;
     }
   ): Promise<StoryGenerationResult> {
     try {
@@ -431,6 +434,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
             expertGradeLevel: config.expertGradeLevel,
             difficulty: config.difficulty,
             isEndingPage: config.isEndingPage,
+            selectedChoice: config.selectedChoice,
             // One story = one sessionId, so the server counts a free story once, not per retry
             sessionId: config.sessionId
           }
@@ -487,6 +491,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
         success: true,
         story: data.story,
         pages: processedPages,
+        choices: data.choices,
         metadata: {
           vocabCompliance: data.vocabCompliance || 0,
           processingTime,

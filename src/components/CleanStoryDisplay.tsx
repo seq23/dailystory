@@ -1,3 +1,4 @@
+import { StoryChoices } from "@/components/story/StoryChoices";
 import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useLocation } from "react-router-dom";
 import { StoryAudioControls } from "@/components/story/StoryAudioControls";
@@ -2484,8 +2485,9 @@ const initializeStory = async () => {
   }
 };
 
-  const generateNextPage = async (): Promise<LivePageResult | undefined> => {
-    if (!isPremium || isLoadingNextPage) return;
+  const pageGenerationLock = useRef(false);
+  const generateNextPage = async (selectedChoice?: string): Promise<LivePageResult | undefined> => {
+    if (!isPremium || isLoadingNextPage || pageGenerationLock.current) return;
     
     // FIXED: Proper context validation with detailed logging
     if (!liveContext) {
@@ -2505,6 +2507,7 @@ const initializeStory = async () => {
       sessionId: stableSessionId
     });
     
+    pageGenerationLock.current = true;
     setIsLoadingNextPage(true);
     try {
       // Ensure session ID consistency for continuation
@@ -2518,7 +2521,7 @@ const initializeStory = async () => {
         expertGradeLevel: levelNow.expertGrade ?? undefined,
         userInfo: atCurrentLevel(baseContext.userInfo),
       };
-      const result = await LiveGenerationService.generateNextPage(contextAtLevel, vocabularyData, false, sessionId);
+      const result = await LiveGenerationService.generateNextPage(contextAtLevel, vocabularyData, false, sessionId, selectedChoice);
       
       DebugLogger.log('story', '✅ Premium Live Generation: generateNextPage result', {
         hasResult: !!result,
@@ -2540,6 +2543,7 @@ const initializeStory = async () => {
       setError('Failed to continue the story. Please try again.');
       return;
     } finally {
+      pageGenerationLock.current = false;
       setIsLoadingNextPage(false);
     }
   };
@@ -2547,7 +2551,7 @@ const initializeStory = async () => {
   // CRITICAL FIX (Oct 6, 2025): Premium live generation wrapper
   // This function calls generateNextPage() and properly advances the story state
   // Restores "never-ending" premium story experience
-  const handleGenerateNextPageAndAdvance = useCallback(async () => {
+  const handleGenerateNextPageAndAdvance = useCallback(async (selectedChoice?: string) => {
     DebugLogger.log('story', '🚀 Premium: handleGenerateNextPageAndAdvance invoked', {
       currentPage,
       storyLength: story.length,
@@ -2567,7 +2571,7 @@ const initializeStory = async () => {
 
     try {
       // Call the existing generateNextPage function
-      const result = await generateNextPage();
+      const result = await generateNextPage(selectedChoice);
       
       if (!result) {
         DebugLogger.warn('story', '⚠️ generateNextPage returned undefined result');
@@ -4632,7 +4636,7 @@ const handleRestartTimer = () => {
                             ManagedTimers.setTimeout(() => setFinishSparkle(false), 1200, 'CleanStoryDisplay');
                             setShowConfirmEndStory(true);
                           }}
-                          disabled={!liveContext || isGeneratingEnding || isStoryComplete || controlsBlocked}
+                          disabled={!liveContext || isLoadingNextPage || isGeneratingEnding || isStoryComplete || controlsBlocked}
                           variant="hero"
                           size="xl"
                           aria-busy={isGeneratingEnding}
@@ -4773,6 +4777,15 @@ const handleRestartTimer = () => {
                 )}
               </div>
 
+              {isPremium && !isStoryComplete && liveContext && currentPage === displayedStory.length - 1 && (
+                <StoryChoices
+                  choices={liveContext.nextChoices}
+                  grade={readingGrade}
+                  disabled={isLoadingNextPage || isGeneratingEnding || isGeneratingNewStory || isGeneratingRewrite || isLoading}
+                  onChoose={handleGenerateNextPageAndAdvance}
+                />
+              )}
+
               {/* Navigation - Responsive Layout */}
               <div id="story-navigation" className="story-navigation">
                 {/* Mobile/Tablet: Slightly more compact layout - moved under progress bar (hidden here) */}
@@ -4797,7 +4810,7 @@ const handleRestartTimer = () => {
                                   ManagedTimers.setTimeout(() => setFinishSparkle(false), 1200, 'CleanStoryDisplay');
                                   setShowConfirmEndStory(true);
                                }}
-                                disabled={isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
+                                disabled={isLoadingNextPage || isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
                                variant="hero"
                                aria-busy={isGeneratingEnding}
                                className={cn(finishFlashCycle && !isGeneratingEnding && "ring-2 ring-primary/60 animate-pulse")}
@@ -4843,7 +4856,7 @@ const handleRestartTimer = () => {
                                   ManagedTimers.setTimeout(() => setFinishSparkle(false), 1200, 'CleanStoryDisplay');
                                   setShowConfirmEndStory(true);
                                }}
-                                disabled={isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
+                                disabled={isLoadingNextPage || isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
                                variant="hero"
                                size="sm"
                                aria-busy={isGeneratingEnding}

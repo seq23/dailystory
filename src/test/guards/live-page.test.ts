@@ -95,8 +95,8 @@ describe("the story handler applies all of it, on every tier", () => {
 
   it("live pages: instruction, budget, check and one-page answer", () => {
     expect(h).toMatch(/finalSystemPrompt \+= livePageInstruction\(pageGrade, \{ ending: !!config\.isEndingPage \}\);/);
-    expect(h).toMatch(/if \(isLivePage\) maxTokens = Math\.max\(maxTokens, livePageTokenBudget\(pageGrade\)\);/);
-    expect(h).toMatch(/: livePageProblem\(text, finishReason, \{ minWords, previous: previousPages, maxSentenceWords: maxSentenceWordsForGrade\(pageGrade\) \}\),/);
+    expect(h).toMatch(/if \(isLivePage\) maxTokens = Math\.max\(maxTokens, livePageTokenBudget\(pageGrade\)\) \+ \(config\?\.isEndingPage \? 0 : 120\);/);
+    expect(h).toMatch(/: livePageProblem\(parseStoryChoices\(text, pageGrade\)\.text, finishReason, \{ minWords, previous: previousPages, maxSentenceWords: maxSentenceWordsForGrade\(pageGrade\) \}\),/);
     expect(h).toMatch(/if \(isLivePage && storyText\) storyText = capWords\(livePageFromAnswer\(storyText, previousPages\), maxKeptWordsForGrade\(pageGrade\)\);/);
     expect(h).toMatch(/wholeStoryProblem\(finishReason === 'length'/);
     // The grade-word rewrite may not drop a page below the floor.
