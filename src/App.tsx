@@ -17,6 +17,7 @@ import Pricing from "./pages/Pricing";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
+import Institutions from "./pages/Institutions";
 import ResetPassword from "./pages/ResetPassword";
 import PromptTesting from "./pages/PromptTesting";
 import TemplateTestingPage from "./pages/TemplateTestingPage";
@@ -103,6 +104,7 @@ const App = () => {
               
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/schools" element={<Institutions />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />

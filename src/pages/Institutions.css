@@ -1,0 +1,129 @@
+/* Genre: existing product workspace; calm, tabular; existing primary hue.
+   Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V3. Existing product tokens. */
+.school-workspace {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 10rem;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  overflow-wrap: anywhere;
+}
+.school-workspace header {
+  border-bottom: 2px solid hsl(var(--primary));
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.school-workspace h1 {
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  font-weight: 700;
+}
+.school-workspace h2 {
+  font-size: 1.4rem;
+  font-weight: 650;
+}
+.school-workspace h3 {
+  font-weight: 650;
+}
+.school-workspace p {
+  margin: 0.75rem 0;
+}
+.school-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+}
+.school-workspace a,
+.school-student {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.school-panel {
+  border-top: 1px solid hsl(var(--border));
+  padding: 1.5rem 0;
+}
+.school-filters,
+.school-workspace form {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: end;
+  margin: 1rem 0;
+}
+.school-workspace label {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  min-width: 0;
+  flex: 1 1 11rem;
+}
+.school-workspace select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  padding: 0.6rem;
+}
+.school-workspace details {
+  margin: 1rem 0;
+}
+.school-workspace summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.school-table {
+  overflow-x: auto;
+}
+.school-workspace table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.school-workspace caption {
+  text-align: left;
+  padding: 0.75rem 0;
+  color: hsl(var(--muted-foreground));
+}
+.school-workspace td,
+.school-workspace th {
+  padding: 0.7rem 0.5rem;
+  border-bottom: 1px solid hsl(var(--border));
+  text-align: left;
+}
+.school-workspace th {
+  font-weight: 600;
+}
+.school-workspace fieldset {
+  flex: 1 1 10rem;
+  border: 1px solid hsl(var(--border));
+  padding: 0.75rem;
+  min-width: 0;
+}
+.school-workspace .school-check {
+  display: flex;
+  align-items: center;
+}
+.school-workspace [role="alert"] {
+  border-left: 3px solid hsl(var(--destructive));
+  padding: 0.5rem 1rem;
+}
+.school-workspace :focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  .school-workspace form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .school-workspace button {
+    white-space: nowrap;
+  }
+}
+
+.school-workspace button, .school-workspace select, .school-workspace input { min-height: 44px; }
+.school-workspace summary { min-height: 44px; line-height: 2.5; }
+@media (hover: hover) { .school-student:hover, .school-workspace summary:hover { color: hsl(var(--primary)); } }
+.school-workspace button:disabled { cursor: not-allowed; }
