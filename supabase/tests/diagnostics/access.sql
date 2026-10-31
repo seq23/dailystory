@@ -37,6 +37,10 @@ select pg_temp.assert_rejected($q$insert into public.story_generation_failures(s
 select pg_temp.assert_rejected($q$insert into public.client_boot_errors(kind) select 'error' from generate_series(1, 31)$q$, 'P0001');
 insert into public.client_boot_errors(kind) select 'rejection' from generate_series(1, 28);
 select pg_temp.assert_rejected($q$insert into public.story_generation_failures(stage) values ('client_backup')$q$, 'P0001');
+-- PostgREST permits per-request timezone preferences; these must not reset quotas.
+set timezone = 'America/Los_Angeles';
+select pg_temp.assert_rejected($q$insert into public.client_boot_errors(kind) values ('error')$q$, 'P0001');
+set timezone = 'UTC';
 -- The same IP with a different proxy suffix still shares its quota.
 select set_config('request.headers', '{"x-forwarded-for":"192.0.2.10, 10.0.0.2"}', false);
 select pg_temp.assert_rejected($q$insert into public.client_boot_errors(kind) values ('error')$q$, 'P0001');

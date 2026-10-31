@@ -48,7 +48,9 @@ for diagnostic_table in client_boot_errors story_generation_failures; do
 done
 diagnostic_migration="${DIAGNOSTICS_MIGRATION:-supabase/migrations/20261031132701_guard_anonymous_error_logging.sql}"
 docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$diagnostic_migration"
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < supabase/migrations/20261031134327_pin_diagnostic_quota_timezone.sql
 docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < supabase/tests/diagnostics/access.sql
 docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$diagnostic_migration"
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < supabase/migrations/20261031134327_pin_diagnostic_quota_timezone.sql
 docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.client_boot_errors) <> 31 then raise exception 'Diagnostic reapplication lost data'; end if; end \$\$;"
 echo 'Anonymous diagnostic size, rate, access, and reapplication checks passed.'
