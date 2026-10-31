@@ -1,4 +1,5 @@
 import React from "react";
+import { MemoryRouter } from 'react-router-dom';
 import { render, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
@@ -43,7 +44,7 @@ afterEach(() => {
       { isPremium: false }
     );
 
-    const { getByTestId } = render(<GuestExperience />);
+    const { getByTestId } = render(<MemoryRouter><GuestExperience /></MemoryRouter>);
     expect(getByTestId("clean-story-display")).toBeInTheDocument();
   });
 
@@ -53,7 +54,7 @@ afterEach(() => {
     guestSession.saveTimerEndTs(Date.now() - 1000);
     StorySessionCache.cacheStorySession('guest', 'beginner' as any, ["P1"], [], 0, { isPremium: false });
 
-    const { queryByTestId } = render(<GuestExperience />);
+    const { queryByTestId } = render(<MemoryRouter><GuestExperience /></MemoryRouter>);
     expect(queryByTestId("clean-story-display")).toBeNull();
   });
 });

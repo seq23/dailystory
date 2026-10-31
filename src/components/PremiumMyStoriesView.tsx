@@ -48,6 +48,9 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive
   const [showTutorial, setShowTutorial] = useState(false);
   const [requestDialogOpen, setRequestDialogOpen] = useState(openNewStoryOnArrival);
   const [specialRequest, setSpecialRequest] = useState("");
+  useEffect(() => {
+    if (openNewStoryOnArrival && isActive) setRequestDialogOpen(true);
+  }, [openNewStoryOnArrival, isActive]);
   const { activeChild, setChildReadingGrade } = useChildProfiles();
 
   // Move useMemo hooks to top level to fix hooks ordering violation

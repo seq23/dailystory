@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
@@ -19,8 +19,24 @@ function Screens() {
     {opened && <div hidden={view !== 'reading'}><Reader /></div>}
   </>;
 }
+function NestedScreens() {
+  const [app, setApp] = useScreenHistory<string>('app', 'home');
+  const [story, setStory] = useScreenHistory<string>('story', 'library');
+  const originalSetApp = useRef(setApp).current;
+  return <><p data-testid="nested">{app}/{story}</p>
+    <button onClick={() => setStory('reading')}>Open story</button>
+    <button onClick={() => originalSetApp('settings')}>Open settings</button>
+  </>;
+}
 afterEach(cleanup);
 describe('phone native Back and Forward', () => {
+  it('keeps nested reader state when a long-lived navigation callback opens another screen', () => {
+    window.history.replaceState(null, '', '/');
+    render(<BrowserRouter><NestedScreens /></BrowserRouter>);
+    fireEvent.click(screen.getByText('Open story'));
+    fireEvent.click(screen.getByText('Open settings'));
+    expect(screen.getByTestId('nested')).toHaveTextContent('settings/reading');
+  });
   it('pushes reading and quiz entries, returns through screens, and keeps the same story/page', async () => {
     window.history.replaceState(null, '', '/');
     render(<BrowserRouter><Screens /></BrowserRouter>);
@@ -54,7 +70,8 @@ describe('phone native Back and Forward', () => {
     expect(stories).toContain("<div hidden={currentView !== 'reading'}>");
     expect(ended).toContain("('activity', 'summary')");
     expect(ended).toContain('{isQuizAllowed && (');
-    expect(read('src/App.tsx')).toContain("hidden={location.pathname !== '/'}");
+    expect(read('src/App.tsx')).toContain('<RetainedReader reader={<Index />}><Routes>');
+    expect(read('src/components/RetainedReader.tsx')).toContain("hidden={location.pathname !== '/'}");
     const reader = read('src/components/CleanStoryDisplay.tsx');
     expect(reader).toContain('if (!readerVisible)');
     expect(reader).toContain('if (readerVisible && isStoryStable');

@@ -2439,5 +2439,23 @@
     "learningGoal": "学习目标",
     "languageSupport": "语言帮助",
     "languageSupportDesc": "阅读英语故事时，可以听词语发音并查看翻译。"
+  },
+  "about": {
+    "back": "返回首页",
+    "title": "关于 Time-2-Read",
+    "intro": "孩子每次阅读时，Time-2-Read 都会为他们创作一个新的插图故事。故事围绕孩子的名字、喜好和当前阅读水平展开，适合约 3 至 15 岁的孩子，无论是还在听故事的小朋友，还是想迎接挑战的熟练读者。",
+    "how": "如何使用",
+    "setup": "告诉我们孩子的名字、年龄和兴趣，再选择阅读水平。",
+    "story": "Time-2-Read 会创作以孩子为主角的故事，每页都配有插图。",
+    "word": "轻点任意单词即可听发音，还能借助自然拼读帮助读出难词。",
+    "narration": "朗读功能会读出故事，并同步高亮正在读的单词。",
+    "timer": "每个故事都配有 20 分钟的阅读计时器。",
+    "english": "故事以英语编写。",
+    "cost": "费用说明",
+    "plans": "前 {{count}} 个故事免费，无需银行卡。高级版每月 {{monthly}} 或每年 {{annual}}，可免费试用 {{days}} 天。",
+    "pricing": "查看价格",
+    "maker": "开发团队",
+    "contact": "如有问题、建议或需要报告故障，请联系",
+    "owner": "Time-2-Read 由 {{operator}} 开发和运营。我们认真保护儿童隐私：请阅读我们的<privacy>隐私政策</privacy>、<ferpa>面向学校的 FERPA 说明</ferpa>和<accessibility>无障碍声明</accessibility>。"
   }
 }

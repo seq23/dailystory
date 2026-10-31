@@ -92,7 +92,8 @@ describe('translated copy is connected to the screens', () => {
   });
   it('keeps English story content LTR while Arabic and Urdu UI use RTL', () => {
     const reader = readFileSync(join(__dirname, '../../components/CleanStoryDisplay.tsx'), 'utf8');
-    expect(reader).toContain('dir="ltr" lang="en" role="main"');
+    expect(reader.match(/dir="ltr" lang="en"\s+className=\{cn\("story-content/g)).toHaveLength(2);
+    expect(reader).not.toContain('dir="ltr" lang="en" role="main"');
     const sidebar = readFileSync(join(__dirname, '../../components/PremiumSidebar.tsx'), 'utf8');
     expect(sidebar).toContain('document.documentElement.dir === "rtl" ? "right" : "left"');
     const css = readFileSync(join(__dirname, '../../index.css'), 'utf8');

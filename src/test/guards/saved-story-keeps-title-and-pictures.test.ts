@@ -7,6 +7,10 @@ import { describe, expect, it } from "vitest";
 const src = readFileSync(join(__dirname, "../../..", "src/components/CleanStoryDisplay.tsx"), "utf8");
 
 describe("a library story opens as it was saved", () => {
+  it("never starts live generation alongside a saved story load", () => {
+    const init = src.slice(src.indexOf('const initializeStory = async () => {'), src.indexOf("isInitializingRef.current = true;", src.indexOf('const initializeStory = async () => {')));
+    expect(init).toContain('if (currentStory?.isFromSavedStory) return;');
+  });
   it("My Stories marks saved content before opening the reader", () => {
     const myStories = readFileSync(join(__dirname, "../../..", "src/components/PremiumMyStoriesView.tsx"), "utf8");
     expect(myStories).toContain('setCurrentStory({ ...story, isFromSavedStory: true })');

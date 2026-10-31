@@ -1,5 +1,5 @@
 import { useScreenHistory } from "@/hooks/useScreenHistory";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 /*
  * ============================================================================
  * BUSINESS MODEL DOCUMENTATION - GUEST EXPERIENCE
@@ -61,10 +61,18 @@ type GuestState = "welcome" | "form" | "reading" | "upgrade" | "login";
 
 export const GuestExperience = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentState, setCurrentState] = useScreenHistory<GuestState>("guest", "welcome");
   const [hasOpenedStory, setHasOpenedStory] = useState(false);
   useEffect(() => { if (currentState === "reading") setHasOpenedStory(true); }, [currentState]);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [storyVersion, setStoryVersion] = useState(0);
+  useEffect(() => {
+    if (location.pathname !== '/' || new URLSearchParams(location.search).get('action') !== 'new-story') return;
+    navigate('/', { replace: true, state: {
+      ...location.state, screens: { ...location.state?.screens, guest: 'form' },
+    } });
+  }, [location.pathname, location.search, navigate]);
   
   // Initialize security monitoring for guests
   useSecurityMonitoring();
@@ -90,16 +98,7 @@ useEffect(() => {
     window.history.replaceState(window.history.state, '', '/');
   }
   
-  if (action === 'new-story') {
-    // User came from session ended page wanting to start new story
-    setCurrentState("form");
-    // Clean up the URL
-    window.history.replaceState(window.history.state, '', '/');
-    // Clear any previous guest session
-    try { guestSession.clearAll(); } catch {}
-    try { StorySessionCache.clearCachedSession('guest'); } catch {}
-    return;
-  }
+  if (action === 'new-story') return;
 
   // Auto-resume guest session if enabled in config
   const allowOverride = APP_CONFIG.features.resumeOnRefresh.allowUrlOverride;
@@ -176,6 +175,7 @@ const handleFormSubmit = (info: UserInfo) => {
   });
 
   setUserInfo(info);
+  setStoryVersion(version => version + 1);
   try { guestSession.setActive(true); guestSession.saveUserInfo(info); } catch {}
   // Clear all caches with new unified cache manager to ensure clean separation
   const avatarType = info.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : info.avatar?.type;
@@ -266,6 +266,7 @@ const handleBackToWelcome = () => {
   } })();
   return <>{screenContent}{hasOpenedStory && userInfo && (        <div hidden={currentState !== "reading"} className="animate-fade-in min-h-[100dvh]">
           <FreeReadingSession
+            key={storyVersion}
             isActive={currentState === "reading"}
             userInfo={userInfo}
             onUpgrade={handleUpgrade}

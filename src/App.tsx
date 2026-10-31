@@ -4,7 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { RetainedReader } from "@/components/RetainedReader";
 import { MobileWrapper } from "@/components/MobileWrapper";
 import { FloatingFeedback } from "@/components/FloatingFeedback";
 import Index from "./pages/Index";
@@ -56,14 +57,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Keep the reading tree alive while the summary/quiz occupies the screen.
-const ReadingRoutes = () => {
-  const location = useLocation();
-  const hasReader = React.useRef(location.pathname === '/');
-  if (location.pathname === '/') hasReader.current = true;
-  return <>{hasReader.current && <div hidden={location.pathname !== '/'}><Index /></div>}<Outlet /></>;
-};
-
 const App = () => {
   useUiLanguage();
   // Initialize development tools conditionally for performance
@@ -103,8 +96,9 @@ const App = () => {
             <Toaster />
             <Sonner />
             
-            <Routes>
-              <Route element={<ReadingRoutes />}><Route path="/" element={null} /><Route path="/session-ended" element={<SessionEnded />} /></Route>
+            <RetainedReader reader={<Index />}><Routes>
+              <Route path="/" element={null} />
+              <Route path="/session-ended" element={<SessionEnded />} />
               <Route path="/style-preview" element={<StylePreview />} />
               
               <Route path="/pricing" element={<Pricing />} />
@@ -135,7 +129,7 @@ const App = () => {
                 />
               ))}
               <Route path="*" element={<NotFound />} />
-            </Routes>
+            </Routes></RetainedReader>
             <VoiceHUD />
             <FloatingFeedback />
             <AudioFallbackNotification />

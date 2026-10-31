@@ -8,7 +8,7 @@ interface Subscription extends StripeSubscriptionDates {
 /** Process verified Stripe lifecycle events; errors must reach the webhook's 500 response for retries. */
 export async function syncSubscriptionEvent(
   event: { type: string; data: { object: Subscription } },
-  db: { from: (table: string) => { update: (values: Record<string, unknown>) => { eq: (key: string, value: string) => PromiseLike<{ error: { message: string } | null }> } } },
+  db: { from: (table: string) => { update: (values: Record<string, unknown>, options: { count: 'exact' }) => { eq: (key: string, value: string) => PromiseLike<{ error: { message: string } | null; count: number | null }> } } },
   now = new Date(),
 ): Promise<boolean> {
   if (!["customer.subscription.updated", "customer.subscription.deleted"].includes(event.type)) return false;
@@ -24,7 +24,10 @@ export async function syncSubscriptionEvent(
   };
   if (!active) values.subscription_tier = null;
   else if (interval === "year" || interval === "month") values.subscription_tier = interval === "year" ? "annual" : "monthly";
-  const { error } = await db.from("subscribers").update(values).eq("stripe_customer_id", customer);
+  const { error, count } = await db.from("subscribers").update(values, { count: 'exact' }).eq("stripe_customer_id", customer);
   if (error) throw new Error(`Subscription sync failed: ${error.message}`);
+  // Stripe does not guarantee delivery order: checkout may still be linking this customer.
+  // A 500 asks Stripe to retry instead of acknowledging and losing the lifecycle update.
+  if (count !== 1) throw new Error('Subscription customer not linked to exactly one subscriber');
   return true;
 }

@@ -1,8 +1,8 @@
 import { uiText, useUiLanguage } from "@/i18n/uiText";
 import { useScreenHistory } from "@/hooks/useScreenHistory";
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
-import { pushView, showsBack } from "@/lib/viewTrail";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { showsBack } from "@/lib/viewTrail";
 import { savedReadingGrade } from '@/lib/readingGradeStore';
 import { DebugLogger } from '@/services/DebugLogger';
 import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
@@ -107,17 +107,8 @@ export const MAIN_BOTTOM_CLEARANCE = "calc(var(--cookie-banner-h, 0px) + 6rem)";
 export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   useUiLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentView, setCurrentView] = useScreenHistory<AppView>("app", "stories");
-  // "← Back" on menu pages: the views visited, newest last (src/lib/viewTrail.ts).
-  const viewTrailRef = useRef<string[]>([]);
-  const lastViewRef = useRef<AppView>("stories");
-  const goingBackRef = useRef(false);
-  useEffect(() => {
-    if (lastViewRef.current === currentView) return;
-    if (!goingBackRef.current) viewTrailRef.current = pushView(viewTrailRef.current, lastViewRef.current, currentView);
-    goingBackRef.current = false;
-    lastViewRef.current = currentView;
-  }, [currentView]);
   const goBack = () => {
     setIsEditingProfile(false);
     if (window.history.state?.idx > 0) navigate(-1);
@@ -183,22 +174,17 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
     });
   }, [subLoading, isSubscriptionActive, user.id, user.user_metadata?.access_code]);
 
-  // Check for query parameters on component mount
+  // The reader stays mounted across routes, so handle action links on every arrival.
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(location.search);
     const action = urlParams.get('action');
-    
-    if (action === 'new-story') {
-      // User came from session ended page wanting to start new story
-      setCurrentView("stories");
-      // Clean up the URL
-      window.history.replaceState(window.history.state, '', '/');
-    } else if (action === 'library') {
-      // Navigate directly to the Story Library after save
-      setCurrentView("library");
-      window.history.replaceState(window.history.state, '', '/');
-    }
-  }, []);
+    if (location.pathname !== '/' || !['new-story', 'library'].includes(action ?? '')) return;
+    setOpenNewStoryOnArrival(action === 'new-story');
+    navigate('/', { replace: true, state: {
+      ...location.state,
+      screens: { ...location.state?.screens, app: action === 'library' ? 'library' : 'stories', stories: 'library' },
+    } });
+  }, [location.pathname, location.search, navigate]);
 
   // Listen for global navigation to Parent Controls (from Profile editor etc.)
   useEffect(() => {
@@ -863,7 +849,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                   </span>
                   <span className="flex items-center gap-4">
                     <button type="button" className="font-medium text-primary underline" onClick={() => setCurrentView("account")}>{uiText("Have a code?")}</button>
-                    <a href="/pricing" className="font-medium text-primary underline">{uiText("See plans")}</a>
+                    <Link to="/pricing" className="font-medium text-primary underline">{uiText("See plans")}</Link>
                   </span>
                 </div>
               )}

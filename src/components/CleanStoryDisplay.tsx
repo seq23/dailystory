@@ -1966,6 +1966,9 @@ const startBackupStory = () => {
 };
 
 const initializeStory = async () => {
+  // Saved content is loaded by the saved-story effect. Never start a competing live
+  // request: a late response would replace the child's retained story after Back.
+  if (currentStory?.isFromSavedStory) return;
   // Prevent multiple simultaneous initializations
   if (isInitializingRef.current) {
     DebugLogger.log('story', 'initializeStory: Already initializing, skipping');
@@ -4344,7 +4347,7 @@ const handleRestartTimer = () => {
 
               {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
               <div className="bg-gradient-card rounded-2xl p-2 md:p-4 lg:p-6 mb-6 flex-1 min-h-0 flex flex-col shadow-xl mt-2" 
-                   dir="ltr" lang="en" role="main" aria-label={uiText("Story content")}>
+                   role="main" aria-label={uiText("Story content")}>
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image - Dynamic aspect ratio to prevent whitespace */}
@@ -4416,6 +4419,7 @@ const handleRestartTimer = () => {
                     )}
                     <div className={cn(isLongPage ? "px-4 md:px-6 pb-4" : "flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4")} data-testid="story-text-scroll-mobile">
                       <div 
+                        dir="ltr" lang="en"
                         className={cn("story-content storybook-frame story-content--difficulty-aware w-full", justAdvanced && "animate-enter", difficultyBasedContainerConfig)}
                         data-difficulty={currentDifficulty}
                         style={{
@@ -4525,6 +4529,7 @@ const handleRestartTimer = () => {
                       )}
                       <div className={cn(isLongPage ? "overflow-x-hidden p-3 md:p-6" : "h-full overflow-y-auto overflow-x-hidden p-3 md:p-4", isShortPage && "flex items-center justify-center")} data-testid="story-text-scroll"> 
                         <div 
+                          dir="ltr" lang="en"
                           className={cn("story-content story-content--compact story-content--difficulty-aware w-full", (isPremium && isShortPage || currentDifficulty === 'easy') && "text-center", justAdvanced && "animate-enter", difficultyBasedContainerConfig)}
                           data-difficulty={currentDifficulty}
                           style={{

@@ -2314,5 +2314,23 @@
     "learningGoal": "Learning goal",
     "languageSupport": "Language support",
     "languageSupportDesc": "Hear words and see translations while you read English stories."
+  },
+  "about": {
+    "back": "Back to Home",
+    "title": "About Time-2-Read",
+    "intro": "Time-2-Read makes a new illustrated story for your child every time they read. The story is built around them: their name, the things they love and the reading level they are at today. It is made for children from about 3 to 15, from pre-readers who listen along to confident readers who want a challenge.",
+    "how": "How it works",
+    "setup": "Tell us your child's name, age and interests, and pick a reading level.",
+    "story": "Time-2-Read writes a story with your child as the main character, with a picture on every page.",
+    "word": "Tap any word to hear it, with phonics help for sounding out tricky words.",
+    "narration": "Narration reads the story aloud and highlights each word as it is spoken.",
+    "timer": "A 20-minute reading timer is built into every story.",
+    "english": "Stories are written in English.",
+    "cost": "What it costs",
+    "plans": "Your first {{count}} stories are free, with no card. Premium is {{monthly}} per month or {{annual}} per year, with a {{days}}-day free trial.",
+    "pricing": "See pricing",
+    "maker": "Who makes it",
+    "contact": "Questions, ideas or a problem to report: write to",
+    "owner": "Time-2-Read is built and run by {{operator}}. We take children's privacy seriously: read our <privacy>privacy policy</privacy>, our <ferpa>FERPA notes for schools</ferpa> and our <accessibility>accessibility statement</accessibility>."
   }
 }

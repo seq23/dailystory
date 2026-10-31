@@ -2457,5 +2457,23 @@
     "learningGoal": "Objectif d’apprentissage",
     "languageSupport": "Aide linguistique",
     "languageSupportDesc": "Écoute les mots et consulte leur traduction pendant tes lectures en anglais."
+  },
+  "about": {
+    "back": "Retour à l’accueil",
+    "title": "À propos de Time-2-Read",
+    "intro": "Time-2-Read crée une nouvelle histoire illustrée pour votre enfant à chaque lecture. Elle s’inspire de son prénom, de ce qu’il aime et de son niveau de lecture actuel. L’application s’adresse aux enfants d’environ 3 à 15 ans, des petits qui écoutent les histoires aux lecteurs à l’aise qui cherchent un défi.",
+    "how": "Comment ça marche",
+    "setup": "Indiquez le prénom, l’âge et les centres d’intérêt de votre enfant, puis choisissez un niveau de lecture.",
+    "story": "Time-2-Read écrit une histoire dont votre enfant est le héros, avec une illustration à chaque page.",
+    "word": "Touchez un mot pour l’écouter et découvrez les sons qui aident à lire les mots difficiles.",
+    "narration": "La narration lit l’histoire à voix haute et surligne chaque mot au fil de la lecture.",
+    "timer": "Chaque histoire comprend un minuteur de lecture de 20 minutes.",
+    "english": "Les histoires sont écrites en anglais.",
+    "cost": "Les tarifs",
+    "plans": "Vos {{count}} premières histoires sont gratuites, sans carte bancaire. Premium coûte {{monthly}} par mois ou {{annual}} par an, avec un essai gratuit de {{days}} jours.",
+    "pricing": "Voir les tarifs",
+    "maker": "Qui est derrière l’application",
+    "contact": "Pour une question, une idée ou un problème à signaler, écrivez à",
+    "owner": "Time-2-Read est développé et géré par {{operator}}. Nous prenons la vie privée des enfants au sérieux : consultez notre <privacy>politique de confidentialité</privacy>, nos <ferpa>informations FERPA pour les écoles</ferpa> et notre <accessibility>déclaration d’accessibilité</accessibility>."
   }
 }

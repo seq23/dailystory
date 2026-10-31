@@ -2555,5 +2555,23 @@
       "titleWithName": "Criando sua aventura de leitura, {{userName}}!",
       "title": "Criando sua aventura de leitura…"
     }
+  },
+  "about": {
+    "back": "Voltar ao início",
+    "title": "Sobre o Time-2-Read",
+    "intro": "O Time-2-Read cria uma nova história ilustrada para seu filho a cada leitura. A história leva em conta o nome dele, o que ele gosta e seu nível atual de leitura. Foi feito para crianças de cerca de 3 a 15 anos, desde as que ainda ouvem as histórias até leitores confiantes que querem um desafio.",
+    "how": "Como funciona",
+    "setup": "Conte o nome, a idade e os interesses do seu filho e escolha um nível de leitura.",
+    "story": "O Time-2-Read escreve uma história com seu filho como protagonista e uma imagem em cada página.",
+    "word": "Toque em qualquer palavra para ouvi-la e use a ajuda com os sons para ler as palavras mais difíceis.",
+    "narration": "A narração lê a história em voz alta e destaca cada palavra enquanto ela é falada.",
+    "timer": "Cada história inclui um temporizador de leitura de 20 minutos.",
+    "english": "As histórias são escritas em inglês.",
+    "cost": "Quanto custa",
+    "plans": "As primeiras {{count}} histórias são grátis, sem cartão. O Premium custa {{monthly}} por mês ou {{annual}} por ano, com {{days}} dias de teste grátis.",
+    "pricing": "Ver preços",
+    "maker": "Quem está por trás",
+    "contact": "Para dúvidas, ideias ou para relatar um problema, escreva para",
+    "owner": "O Time-2-Read é desenvolvido e mantido por {{operator}}. Levamos a privacidade das crianças a sério: leia nossa <privacy>política de privacidade</privacy>, as <ferpa>informações sobre FERPA para escolas</ferpa> e nossa <accessibility>declaração de acessibilidade</accessibility>."
   }
 }

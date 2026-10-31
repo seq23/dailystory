@@ -2425,5 +2425,23 @@
     "learningGoal": "Meta de aprendizaje",
     "languageSupport": "Ayuda con el idioma",
     "languageSupportDesc": "Escucha palabras y consulta traducciones mientras lees historias en inglés."
+  },
+  "about": {
+    "back": "Volver al inicio",
+    "title": "Acerca de Time-2-Read",
+    "intro": "Time-2-Read crea un nuevo cuento ilustrado para tu hijo cada vez que lee. El cuento se adapta a su nombre, a lo que le gusta y a su nivel de lectura actual. Está pensado para niños de unos 3 a 15 años, desde quienes aún escuchan los cuentos hasta lectores seguros que buscan nuevos retos.",
+    "how": "Cómo funciona",
+    "setup": "Dinos el nombre, la edad y los intereses de tu hijo y elige un nivel de lectura.",
+    "story": "Time-2-Read escribe un cuento con tu hijo como protagonista y una ilustración en cada página.",
+    "word": "Toca cualquier palabra para escucharla y usa la ayuda de sonidos para leer las más difíciles.",
+    "narration": "La narración lee el cuento en voz alta y resalta cada palabra al decirla.",
+    "timer": "Cada cuento incluye un temporizador de lectura de 20 minutos.",
+    "english": "Los cuentos se escriben en inglés.",
+    "cost": "Cuánto cuesta",
+    "plans": "Tus primeros {{count}} cuentos son gratis, sin tarjeta. Premium cuesta {{monthly}} al mes o {{annual}} al año, con {{days}} días de prueba gratis.",
+    "pricing": "Ver precios",
+    "maker": "Quién lo crea",
+    "contact": "Si tienes preguntas, ideas o algún problema, escríbenos a",
+    "owner": "Time-2-Read es creado y gestionado por {{operator}}. Nos tomamos muy en serio la privacidad de los niños: consulta nuestra <privacy>política de privacidad</privacy>, las <ferpa>notas sobre FERPA para escuelas</ferpa> y nuestra <accessibility>declaración de accesibilidad</accessibility>."
   }
 }

@@ -27,6 +27,7 @@ test('native Back restores the library, reader page and summary from the quiz', 
   await expect(text).toContainText('The little comet followed', { timeout: 20_000 });
   await page.getByRole('button', { name: /^next$/i }).first().click();
   await expect(text).toContainText('A friendly moon waved');
+  expect(state.calls.filter(c => c.fn === 'generate-adaptive-story')).toHaveLength(0);
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'My Stories', exact: true })).toBeVisible();
   await expect(text).toBeHidden();
