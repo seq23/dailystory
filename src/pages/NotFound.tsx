@@ -10,6 +10,21 @@ const NotFound = () => {
     DebugLogger.error('ui', 'User attempted to access non-existent route', { path: location.pathname });
   }, [location.pathname]);
 
+  // The host answers 200 for every path (single-page app), so an unknown route is a soft 404.
+  // Telling crawlers not to index it is the in-repo mitigation; a real 404 status needs the host.
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "Page not found | Time-2-Read";
+    const meta = document.createElement("meta");
+    meta.name = "robots";
+    meta.content = "noindex";
+    document.head.appendChild(meta);
+    return () => {
+      meta.remove();
+      document.title = previousTitle;
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="text-center">
