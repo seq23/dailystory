@@ -25,7 +25,7 @@ export function hexToColorName(hex: string): string {
   }
   
   // Look up the hex code in our mapping
-  const colorName = HEX_TO_COLOR_MAP[hex.toLowerCase()];
+  const colorName = HEX_TO_COLOR_MAP[hex.toUpperCase()];
   
   // Return the mapped color name or default to 'blue'
   return colorName || 'blue';

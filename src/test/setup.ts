@@ -4,6 +4,11 @@ import '@/i18n/config';
 // Mock fetch by default to avoid hitting external APIs in tests
 import { vi } from 'vitest';
 
+// Browser storage belongs to JSDOM, including on Node versions with native storage.
+for (const name of ['localStorage', 'sessionStorage'] as const) {
+  Object.defineProperty(globalThis, name, { configurable: true, value: window[name] });
+}
+
 // JSDOM has no media-query API; responsive components still need the browser contract.
 if (typeof window !== 'undefined' && !window.matchMedia) {
   window.matchMedia = vi.fn((query: string) => ({

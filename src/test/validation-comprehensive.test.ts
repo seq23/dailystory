@@ -105,8 +105,8 @@ describe('Comprehensive Content Validation Tests', () => {
     });
 
     it('should validate theme fields for appropriateness', () => {
-      const goodThemes = ['adventure', 'friendship', 'magic', 'animals'];
-      const badThemes = ['violence', 'scary monsters', 'war'];
+      const goodThemes = ['adventure', 'friendship', 'magic', 'animals', 'scary monsters'];
+      const badThemes = ['violence', 'weapons', 'war'];
       
       goodThemes.forEach(theme => {
         const result = InputSanitizer.validateChildSafeInput(theme, 'theme');

@@ -22,10 +22,26 @@ jobs:
       # index.html and src/seo/schema.ts must repeat it exactly, and the parent is Spry Labs.
       - name: Entity graph is one definition
         run: node scripts/validate-entity-graph.mjs
-      # Fast merge gate: the edge-function import guard and the public-URL guard.
-      - run: npx vitest run src/test/guards
+      # Run every unit test, including guards; Playwright has its own runner.
+      - run: npm run test:unit
       - name: Institutional RLS and transaction checks (disposable local PostgreSQL)
         run: bash scripts/test-institutions-db.sh
       # Build-time prerender: real HTML for every public page (crawlers see text).
       - run: npm run build
       - run: node scripts/check-prerender.mjs
+
+  lovable-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      # Bun does not install npm's implicit peer dependencies. Test its actual tree.
+      - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit -p tsconfig.app.json && bunx tsc --noEmit -p tsconfig.node.json
+      - run: bun run build:dev

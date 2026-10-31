@@ -47,7 +47,7 @@ defect, not a quiet week.
 `.github/workflows/checks.yml` is the fast check and must stay fast:
 
 ```bash
-npx vitest run src/test/guards   # guards: edge-function imports, public URLs, paywall, SEO surfaces, zero-paid
+npm run test:unit                # every unit test, including guards; Playwright runs separately
 npm run build                    # prerenders real HTML for every public page
 node scripts/check-prerender.mjs # crawlers must see text, not an empty shell
 ```
@@ -56,3 +56,7 @@ Guards live in `src/test/guards/`. A guard reads a real file — a workflow, a
 migration, a document, the routing config — and fails on the defect it pins.
 When a change makes a guard false, rewrite the guard to the new truth at least as
 strictly; never skip, loosen or delete it.
+
+The separate preview job installs with Bun's frozen lockfile, typechecks, and runs
+`build:dev`. Keep test-library peers explicit: npm supplies implicit peers that
+Bun's preview install does not.

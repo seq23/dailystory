@@ -17,11 +17,12 @@ const mocks = vi.hoisted(() => ({
   insert: vi.fn(),
   listener: null as any,
   user: "fixture-adult",
+  session: null as Promise<any> | null,
 }));
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
-      getSession: async () => ({
+      getSession: async () => mocks.session ?? ({
         data: { session: mocks.user ? { user: { id: mocks.user } } : null },
       }),
       onAuthStateChange: (listener: any) => {
@@ -75,6 +76,7 @@ const fixture = {
 };
 beforeEach(() => {
   mocks.user = "fixture-adult";
+  mocks.session = null;
   mocks.load.mockResolvedValue(fixture);
   mocks.rpc.mockResolvedValue(1);
   mocks.insert.mockResolvedValue({ error: null });
@@ -97,6 +99,17 @@ describe("school workspace user journeys", () => {
       await screen.findByRole("link", { name: "Sign in" }),
     ).toHaveAttribute("href", "/auth");
     expect(mocks.load).not.toHaveBeenCalled();
+  });
+  it("keeps loading until authentication and workspace records have resolved", async () => {
+    let resolveSession!: (value: any) => void;
+    mocks.session = new Promise((resolve) => { resolveSession = resolve; });
+    show();
+    expect(screen.getByRole("status")).toHaveTextContent("Loading school records");
+    expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/No school access assigned/)).not.toBeInTheDocument();
+    expect(mocks.load).not.toHaveBeenCalled();
+    resolveSession({ data: { session: { user: { id: "fixture-adult" } } } });
+    expect(await screen.findByRole("button", { name: "Reader A" })).toBeInTheDocument();
   });
   it("shows a membership empty state without sample students", async () => {
     mocks.load.mockResolvedValue(EMPTY_WORKSPACE);

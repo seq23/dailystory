@@ -58,7 +58,8 @@ const PERSONAL_INFO_PATTERNS = [
   /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/,
   
   // School info
-  /\b(school|classroom|teacher|principal)\s+\w+/i
+  /\b(school|classroom|teacher|principal)\s+\w+/i,
+  /\b\w+\s+(elementary|middle|high)(\s+school)?\b/i
 ];
 
 // Zod schema for theme validation - validates strings directly
@@ -107,6 +108,11 @@ export function validateTheme(theme: string): ValidationResult {
   };
 
   try {
+    // Validate length before the sanitizer truncates the submitted value.
+    if (theme.trim().length > 50) {
+      result.errors.push('Theme too long (max 50 characters)');
+      return result;
+    }
     // First sanitize the input once
     const sanitized = InputSanitizer.sanitizeThemeInput(theme);
     result.sanitized = sanitized;
@@ -152,7 +158,9 @@ export function validateThemeBatch(themes: string[]): BatchValidationResult {
     const validation = validateTheme(theme);
     
     if (validation.valid) {
-      result.validThemes.push(validation.sanitized);
+      if (!result.validThemes.includes(validation.sanitized)) {
+        result.validThemes.push(validation.sanitized);
+      }
     } else {
       result.rejectedThemes.push({
         theme,

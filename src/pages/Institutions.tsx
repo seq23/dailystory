@@ -168,6 +168,7 @@ export default function Institutions() {
   const principal = useRef<string | null>(null);
   const [workspace, setWorkspace] = useState<Workspace>(EMPTY_WORKSPACE);
   const [userId, setUserId] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -196,6 +197,7 @@ export default function Institutions() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
       authEventSeen = true;
+      setAuthReady(true);
       setUserId((previous) => {
         const next = session?.user.id ?? null;
         principal.current = next;
@@ -213,6 +215,7 @@ export default function Institutions() {
       if (active && !authEventSeen) {
         principal.current = data.session?.user.id ?? null;
         setUserId(principal.current);
+        setAuthReady(true);
       }
     });
     return () => {
@@ -222,6 +225,7 @@ export default function Institutions() {
   }, []);
   useEffect(() => {
     let active = true;
+    if (!authReady) return;
     if (!userId) {
       setLoading(false);
       return;
@@ -244,7 +248,7 @@ export default function Institutions() {
     return () => {
       active = false;
     };
-  }, [userId]);
+  }, [userId, authReady]);
   const member = workspace.members.find(
     (m) => m.school_id === schoolId && m.user_id === userId,
   );

@@ -118,7 +118,7 @@ export class PlaceholderValidationService {
     return {
       isComplete: missingFields.length === 0,
       missingFields,
-      completeness,
+      completeness: Math.round(completeness * 1e12) / 1e12,
       recommendations
     };
   }
