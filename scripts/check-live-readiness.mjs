@@ -9,7 +9,10 @@
 // So this reads the LIVE host, the same HTML a crawler gets, and fails by name:
 //   b10 TITLE_NOT_LIVE     - a page's <title> does not name Time-2-Read
 //   e9  CLARITY_STILL_LIVE - a public page still loads Microsoft Clarity
-// Both clear themselves the moment the current main is published. A failure is
+//   k4  PARENT_NOT_LIVE    - a page's Organization does not name Spry Labs as its
+//                            parent (added 31 Oct 2026 with the entity work: the
+//                            same stale-publish gap hides it exactly the same way)
+// They all clear themselves the moment the current main is published. A failure is
 // therefore one action: publish, or fix the regression at source.
 import { readFileSync } from "node:fs";
 
@@ -20,6 +23,8 @@ const BRAND = "Time-2-Read";
 // Clarity now mounts only inside LoginScreen (useParentFormClarity), the
 // grown-up's account/checkout form. No sitemap page may ship the tag.
 const CLARITY = /clarity\.ms|clarity\.js|\/clarity[-.]|microsoft clarity/i;
+// k4: every page's Organization names Spry Labs as its parent (src/seo/entity.json).
+const SPRY_LABS_ID = "https://billionairehighperformancecoach.com/spry-labs#organization";
 const UA = "Mozilla/5.0 (compatible; Time2ReadLiveCheck/1.0; +https://time-2-read.com)";
 
 const locs = [...readFileSync("public/sitemap.xml", "utf8").matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
@@ -65,6 +70,7 @@ for (const loc of locs) {
     .replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'");
   if (!title.includes(BRAND)) fails.push(`TITLE_NOT_LIVE ${path}: live title does not name ${BRAND}: "${title}"`);
   if (CLARITY.test(html)) fails.push(`CLARITY_STILL_LIVE ${path}: live page outside the parent form still loads Clarity`);
+  if (!html.includes(SPRY_LABS_ID)) fails.push(`PARENT_NOT_LIVE ${path}: live Organization does not name Spry Labs as its parent (${SPRY_LABS_ID})`);
 }
 
 // Rule 0: a run that looked at nothing is a failure, not a pass.
@@ -80,4 +86,4 @@ if (fails.length) {
   );
   process.exit(1);
 }
-console.log(`live: ${checked} pages name ${BRAND} in their title and none loads Clarity`);
+console.log(`live: ${checked} pages name ${BRAND} in their title, none loads Clarity, and each names Spry Labs as its parent`);

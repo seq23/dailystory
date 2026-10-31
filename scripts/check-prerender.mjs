@@ -14,6 +14,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const SITE = "https://time-2-read.com";
+/** k4: the Spry Labs entity home every side business names as its parent (src/seo/entity.json). */
+const SPRY_LABS_ID = "https://billionairehighperformancecoach.com/spry-labs#organization";
 const APP_ROUTES = new Set(["/auth"]);
 const dist = process.argv[2] ?? "dist";
 const locs = [...readFileSync("public/sitemap.xml", "utf8").matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
@@ -62,8 +64,12 @@ for (const loc of locs) {
   if (/clarity\.ms|clarity\.js|\/clarity[-.]|microsoft clarity/i.test(html)) fails.push(`${path}: public page loads Clarity outside the parent form`);
   const nodes = lds.flatMap((b) => b["@graph"] ?? [b]);
   const org = nodes.find((n) => /Organization/.test(n["@type"]));
-  for (const k of ["name", "url", "logo", "sameAs"]) {
+  for (const k of ["name", "url", "logo", "sameAs", "parentOrganization"]) {
     if (!org?.[k] || (Array.isArray(org[k]) && !org[k].length)) fails.push(`${path}: Organization lacks ${k}`);
+  }
+  // k4: a side business names Spry Labs as its parent on EVERY page, not just the homepage.
+  if (org?.parentOrganization && org.parentOrganization["@id"] !== SPRY_LABS_ID) {
+    fails.push(`${path}: Organization parentOrganization is ${org.parentOrganization["@id"]}, not ${SPRY_LABS_ID}`);
   }
   if (org?.logo && !String(org.logo).startsWith(`${SITE}/`)) fails.push(`${path}: Organization logo is not on ${SITE}`);
   if (!types.includes("WebPage")) fails.push(`${path}: no WebPage JSON-LD`);
