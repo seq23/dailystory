@@ -18,6 +18,10 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Typecheck application and build configuration
         run: npx tsc --noEmit -p tsconfig.app.json && npx tsc --noEmit -p tsconfig.node.json
+      # The site's identity lives in ONE src/seo/entity.json (Search Readiness k1/k4):
+      # index.html and src/seo/schema.ts must repeat it exactly, and the parent is Spry Labs.
+      - name: Entity graph is one definition
+        run: node scripts/validate-entity-graph.mjs
       # Fast merge gate: the edge-function import guard and the public-URL guard.
       - run: npx vitest run src/test/guards
       - name: Institutional RLS and transaction checks (disposable local PostgreSQL)

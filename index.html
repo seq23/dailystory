@@ -87,7 +87,8 @@
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://time-2-read.com/" />
-    <!-- Structured data in the static shell so crawlers see it without running JS -->
+    <!-- Structured data in the static shell so crawlers see it without running JS.
+         It repeats src/seo/entity.json; scripts/validate-entity-graph.mjs fails CI on any drift. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -103,7 +104,12 @@
           "brand": { "@type": "Brand", "name": "Spry Labs" },
           "address": { "@type": "PostalAddress", "addressCountry": "US" },
           "email": "privacy@time-2-read.com",
-          "sameAs": ["https://github.com/seq23/dailystory"]
+          "sameAs": ["https://github.com/seq23/dailystory"],
+          "parentOrganization": {
+            "@id": "https://billionairehighperformancecoach.com/spry-labs#organization",
+            "name": "Spry Labs",
+            "url": "https://billionairehighperformancecoach.com/spry-labs"
+          }
         },
         {
           "@type": "WebSite",

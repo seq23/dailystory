@@ -6,6 +6,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { ORGANIZATION, OG_IMAGE_URL, SOFTWARE_APPLICATION, pageGraph } from "@/seo/schema";
+import ENTITY from "@/seo/entity.json";
 import { PLAN_PRICES } from "@/lib/freeStoryAllowance";
 
 const ROOT = join(__dirname, "../../..");
@@ -52,6 +53,31 @@ describe("static shell structured data", () => {
     expect(org.logo).toBe(ORGANIZATION.logo);
     expect(org["@id"]).toBe(ORGANIZATION["@id"]);
     expect(org.logo.startsWith("https://time-2-read.com/")).toBe(true);
+  });
+
+  // Search Readiness k1 (31 Oct 2026): the identity lived in two hand-kept copies
+  // (this shell and src/seo/schema.ts) and no entity.json, so nothing could reconcile
+  // the brand. src/seo/entity.json is now the ONE definition and both repeat it.
+  it("repeats src/seo/entity.json field for field — the one definition (k1)", () => {
+    const org = byType("Organization");
+    for (const field of ["@id", "name", "alternateName", "legalName", "url", "logo", "sameAs", "parentOrganization"]) {
+      expect(org[field], field).toEqual(ENTITY[field]);
+    }
+    // and the module every rendered page builds from reads the same file
+    expect(ORGANIZATION["@id"]).toBe(ENTITY["@id"]);
+    expect(ORGANIZATION.name).toBe(ENTITY.name);
+    expect(ORGANIZATION.logo).toBe(ENTITY.logo);
+    expect([...ORGANIZATION.sameAs]).toEqual(ENTITY.sameAs);
+    expect(ENTITY.profiles_pending, "unclaimed profiles park in profiles_pending, never in sameAs").toBeInstanceOf(Array);
+  });
+
+  // Search Readiness k4 (31 Oct 2026): a side business names Spry Labs as its parent, so
+  // the grid reconciles as one graph. It must be on EVERY page, which means the shell.
+  it("names Spry Labs as the parent organization, in the shell and in schema.ts (k4)", () => {
+    const parent = { "@id": "https://billionairehighperformancecoach.com/spry-labs#organization", name: "Spry Labs", url: "https://billionairehighperformancecoach.com/spry-labs" };
+    expect(byType("Organization").parentOrganization).toEqual(parent);
+    expect(ORGANIZATION.parentOrganization).toEqual(parent);
+    expect(ENTITY.parentOrganization).toEqual(parent);
   });
 
   it("og:image and twitter:image are on the site's own host and ship in public/", () => {

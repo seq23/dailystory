@@ -14,7 +14,9 @@
     "gsc:coverage": "node scripts/search_intelligence/collect_index_coverage.mjs",
     "gsc:sitemaps": "node scripts/search_intelligence/collect_gsc_sitemaps.mjs",
     "gsc:all": "npm run gsc:truth && npm run gsc:coverage && npm run gsc:sitemaps",
-    "test:guards": "vitest run src/test/guards"
+    "test:guards": "vitest run src/test/guards",
+    "entity:validate": "node scripts/validate-entity-graph.mjs",
+    "entity:watch": "node scripts/entity-backlink-watch.mjs --dry-run"
   },
   "dependencies": {
     "@11labs/react": "^0.1.4",

@@ -5,38 +5,47 @@
 // scripts/check-prerender.mjs fails CI if a page loses any of it.
 import { SITE_URL } from "@/config/site";
 import { PLAN_PRICES, FREE_STORY_LIMIT } from "@/lib/freeStoryAllowance";
+// The ONE definition of this site's identity (Search Readiness k1/k4). Everything
+// below derives from it, so the name, logo, profiles and parent cannot drift apart.
+// scripts/validate-entity-graph.mjs fails the merge gate if index.html disagrees.
+import ENTITY from "./entity.json";
 
-export const ORG_ID = `${SITE_URL}/#organization`;
+export const ORG_ID = ENTITY["@id"];
 export const WEBSITE_ID = `${SITE_URL}/#website`;
 export const APP_ID = `${SITE_URL}/#app`;
 /** Served from the site's own host (public/), never a third-party bucket. */
-export const LOGO_URL = `${SITE_URL}/logo-512.png`;
+export const LOGO_URL = ENTITY.logo;
 export const OG_IMAGE_URL = `${SITE_URL}/og-image.png`;
 /**
  * Public profiles that are the same entity. Only real, live URLs go here; the
- * product's public source repository is the one that exists today. Add a social
- * profile here (and in index.html) the day one is opened.
+ * product's public source repository is the one that exists today. A new profile
+ * is added to src/seo/entity.json (never here), the day one is opened; the weekly
+ * entity-backlink-watch promotes a profiles_pending entry once it links back.
  */
-export const ALTERNATE_NAMES = ["Time 2 Read", "time-2-read.com"] as const;
+export const ALTERNATE_NAMES = ENTITY.alternateName;
 /** The line on the homepage and in the footer. */
 export const MADE_BY_LINE = "Time-2-Read is made by Spry Labs in the USA.";
 
-export const SAME_AS = ["https://github.com/seq23/dailystory"] as const;
+export const SAME_AS = ENTITY.sameAs;
+/** The parent entity every Spry Labs side business names (owner, 30 Oct 2026). */
+export const PARENT_ORGANIZATION = ENTITY.parentOrganization;
 
 export const ORGANIZATION = {
   "@type": "Organization",
   "@id": ORG_ID,
-  name: "Time-2-Read",
+  name: ENTITY.name,
   // Other ways people type the name, so search engines join them to this site
   // (another site uses a similar name without the dashes).
   alternateName: [...ALTERNATE_NAMES],
-  legalName: "Spry VSL LLC",
-  url: `${SITE_URL}/`,
+  legalName: ENTITY.legalName,
+  url: ENTITY.url,
   logo: LOGO_URL,
   brand: { "@type": "Brand", name: "Spry Labs" },
   address: { "@type": "PostalAddress", addressCountry: "US" },
   email: "privacy@time-2-read.com",
   sameAs: [...SAME_AS],
+  // k4: a side business names Spry Labs as its parent, so the grid is one graph.
+  parentOrganization: PARENT_ORGANIZATION,
 } as const;
 
 export const WEBSITE = {
