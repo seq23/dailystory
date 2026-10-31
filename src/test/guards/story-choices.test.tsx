@@ -64,6 +64,7 @@ describe('three choices from the same page answer', () => {
     expect(handler).toContain('await chatCompletionWithFallback(apiBody, {');
     expect(read('src/services/storyGenerationService.ts')).toMatch(/selectedChoice: config\.selectedChoice/);
     expect(read('src/services/storyGenerationService.ts')).toMatch(/choices: data\.choices/);
+    expect(read('.github/workflows/journey.yml')).toMatch(/playwright test e2e\/parent-journey\.spec\.ts e2e\/story-choices\.spec\.ts --project=chromium/);
   });
 });
 

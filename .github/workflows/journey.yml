@@ -3,6 +3,7 @@ name: Parent journey
 # The parent journey over the built site with Supabase mocked
 # (e2e/parent-journey.spec.ts): sign up with a code → Premium badge → children →
 # avatar → switch → start a story, and no developer panel for a family.
+# The story choices journey also checks the phone controls and Finish Story.
 # Separate from checks.yml so the merge gate stays fast; runs on PRs and main.
 on:
   pull_request:
@@ -27,7 +28,7 @@ jobs:
         run: |
           npx vite preview --port 4173 --strictPort &
           npx --yes wait-on@8.0.1 http://localhost:4173 --timeout 60000
-          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts --project=chromium --retries=1
+          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts e2e/story-choices.spec.ts --project=chromium --retries=1
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
