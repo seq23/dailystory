@@ -5,7 +5,7 @@ import type { UserInfo } from "@/types";
 
 function createTestUser(overrides: Partial<UserInfo> = {}): UserInfo {
   return {
-    name: "Emma Johnson",
+    name: "Tavi Wizzle",
     age: 8,
     grade: "3",
     nativeLanguage: "en",
@@ -22,32 +22,31 @@ function createTestUser(overrides: Partial<UserInfo> = {}): UserInfo {
 }
 
 describe("PlaceholderValidationService", () => {
-  it("validates all core placeholders with stub implementation", () => {
+  it("validates all core placeholders", () => {
     const user = createTestUser();
     const template = "Hi {userName}! You love {favoriteColor} and {favoriteAnimal}. Your hobbies include {hobbies} and you enjoy eating {favoriteFood}. Today's story theme: {specialRequest}";
     
     const result = PlaceholderValidationService.validatePlaceholders(template, user);
     
-    // Test stub behavior - always returns success
     expect(result.isValid).toBe(true);
     expect(result.missingPlaceholders).toHaveLength(0);
     expect(result.unresolvedPlaceholders).toHaveLength(0);
     expect(result.validationScore).toBe(1.0);
-    expect(result.recommendations).toContain('Validation handled by unified edge function');
+    expect(result.recommendations).toEqual([]);
+    expect(result.resolvedText).toBe(`Hi ${user.name}! You love purple and butterfly. Your hobbies include painting and dancing and you enjoy eating strawberries. Today's story theme: theme: friendship and courage`);
   });
 
-  it("validates user data completeness with stub implementation", () => {
+  it("validates user data completeness", () => {
     const user = createTestUser();
     const result = PlaceholderValidationService.validateUserDataCompleteness(user);
     
-    // Test stub behavior
     expect(result.isComplete).toBe(true);
     expect(result.missingFields).toHaveLength(0);
     expect(result.completeness).toBe(1.0);
-    expect(result.recommendations).toContain("User profile is complete!");
+    expect(result.recommendations).toEqual(["Excellent profile completeness!"]);
   });
 
-  it("handles incomplete data with stub implementation", () => {
+  it("handles incomplete data", () => {
     const incompleteUser = createTestUser({
       favoriteColor: "",
       hobbies: "",
@@ -59,36 +58,38 @@ describe("PlaceholderValidationService", () => {
       incompleteUser
     );
     
-    // Stub implementation always returns success
-    expect(result.isValid).toBe(true);
-    expect(result.validationScore).toBe(1.0);
-    expect(result.recommendations).toContain('Validation handled by unified edge function');
+    expect(result.isValid).toBe(false);
+    expect(result.missingPlaceholders).toEqual(['favoriteColor', 'hobbies', 'specialRequest']);
+    expect(result.unresolvedPlaceholders).toEqual(result.missingPlaceholders);
+    expect(result.resolvedText).toBe(`${incompleteUser.name} likes {favoriteColor}. Hobbies: {hobbies}. Theme: {specialRequest}`);
+    expect(result.validationScore).toBeCloseTo(0.7);
+    expect(result.recommendations[0]).toBe('Missing data for placeholders: favoriteColor, hobbies, specialRequest');
   });
 
-  it("handles unknown placeholders with stub implementation", () => {
+  it("handles unknown placeholders", () => {
     const user = createTestUser();
     const template = "Hello {userName} and {unknownPlaceholder}!";
     
     const result = PlaceholderValidationService.validatePlaceholders(template, user);
     
-    // Stub implementation always returns success
-    expect(result.isValid).toBe(true);
-    expect(result.unresolvedPlaceholders).toHaveLength(0);
-    expect(result.validationScore).toBe(1.0);
-    expect(result.recommendations).toContain('Validation handled by unified edge function');
+    expect(result.isValid).toBe(false);
+    expect(result.missingPlaceholders).toEqual(['unknownPlaceholder']);
+    expect(result.unresolvedPlaceholders).toEqual(['unknownPlaceholder']);
+    expect(result.resolvedText).toBe(`Hello ${user.name} and {unknownPlaceholder}!`);
+    expect(result.validationScore).toBe(0.9);
+    expect(result.recommendations).toEqual(['Missing data for placeholders: unknownPlaceholder']);
   });
 
-  it("analyzes placeholder coverage with stub implementation", () => {
+  it("analyzes placeholder coverage", () => {
     const template = "Hello {name}, your favorite color is {favoriteColor}";
     
     const result = PlaceholderValidationService.analyzePlaceholderCoverage(template);
     
-    // Test stub behavior
-    expect(result.required).toHaveLength(0);
-    expect(result.optional).toHaveLength(0);
-    expect(result.found).toHaveLength(0);
-    expect(result.missing).toHaveLength(0);
-    expect(result.coverage).toBe(1.0);
+    expect(result.required).toEqual(["name", "favoriteColor", "favoriteAnimal"]);
+    expect(result.optional).toEqual(["favoriteFood", "hobbies", "specialRequest", "age"]);
+    expect(result.found).toEqual(["name", "favoriteColor"]);
+    expect(result.missing).toEqual(["favoriteAnimal"]);
+    expect(result.coverage).toBe(2 / 7);
   });
 });
 

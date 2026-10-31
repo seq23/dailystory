@@ -69,7 +69,8 @@ describe('COPPA Infrastructure', () => {
       });
 
       expect(response.success).toBe(false);
-      expect(response.error).toBe('No authenticated user');
+      expect(response.error).toBe('Authentication required');
+      expect(supabase.functions.invoke).not.toHaveBeenCalled();
     });
   });
 

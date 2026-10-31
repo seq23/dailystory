@@ -42,10 +42,11 @@ describe('InteractiveWord Component', () => {
   it('applies the correct CSS classes', () => {
     const { getByText } = render(
       <span>
-        <InteractiveWord word="hello" className="text-blue-500" />
+        <InteractiveWord word="hello" wordIndex={3} className="text-blue-500" />
       </span>
     );
-    expect(getByText(/hello/i)).toHaveClass('text-blue-500');
+    expect(getByText(/hello/i).closest('[data-word-index="3"]')).toHaveClass('text-blue-500');
+    expect(getByText(/hello/i)).toHaveClass('underline', 'decoration-dotted');
   });
 
   it('handles click events', () => {
@@ -62,7 +63,7 @@ describe('InteractiveWord Component', () => {
   it('supports mobile touch interactions (no crash)', () => {
     const { getByText } = render(
       <span>
-        <InteractiveWord word="hello" />
+        <InteractiveWord word="hello" wordIndex={3} />
       </span>
     );
     const el = getByText(/hello/i);
@@ -74,10 +75,12 @@ describe('InteractiveWord Component', () => {
   it('maintains proper inline display style', () => {
     const { getByText } = render(
       <span data-testid="container">
-        <InteractiveWord word="hello" />
+        <InteractiveWord word="hello" wordIndex={3} />
       </span>
     );
     const el = getByText(/hello/i);
-    expect(getComputedStyle(el).display).toBe('inline');
+    const wrapper = el.closest('[data-word-index]');
+    expect(wrapper).toHaveClass('inline');
+    expect(getComputedStyle(wrapper!).display).toBe('inline');
   });
 });

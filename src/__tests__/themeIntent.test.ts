@@ -3,7 +3,7 @@ import { extractThemeIntent, extractThemeIntentWithValidation } from "@/utils/th
 import type { UserInfo } from "@/types";
 
 const makeUser = (overrides: Partial<UserInfo> = {}): UserInfo => ({
-  name: "Avery Johnson",
+  name: "Tavi Wizzle",
   age: 8,
   grade: "3",
   nativeLanguage: "en",
@@ -31,16 +31,17 @@ describe("themeIntent", () => {
     expect(ti.theme).toEqual([]);
   });
 
-  it("filters inappropriate themes for safety", () => {
+  it("keeps fantasy themes while filtering violent themes", () => {
     const youngUser = makeUser({ 
       age: 4, 
-      specialRequest: "theme: monsters and friendship" 
+      specialRequest: "theme: monsters and friendship and violence"
     });
     const ti = extractThemeIntent(youngUser);
     
     // Should filter out inappropriate themes but keep safe ones
     expect(ti.theme).toContain("friendship");
-    expect(ti.theme).not.toContain("monsters"); // Filtered out as inappropriate
+    expect(ti.theme).toEqual(["monsters", "friendship"]);
+    expect(ti.theme).not.toContain("violence");
   });
 
   it("includes validation information when requested", () => {
@@ -66,7 +67,7 @@ describe("themeIntent", () => {
     // Should filter inappropriate themes but keep safe ones
     expect(ti.theme).toEqual(expect.arrayContaining(["friendship", "adventure"]));
     expect(ti.theme).not.toContain("romance"); // Filtered for children
-    expect(ti.theme).not.toContain("monsters"); // Filtered as potentially scary
+    expect(ti.theme).toEqual(["friendship", "monsters", "adventure"]);
     expect(ti.keywords).toContain("exciting");
   });
 

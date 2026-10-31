@@ -6,7 +6,7 @@ describe('errorHandling', () => {
   let logSpy: ReturnType<typeof vi.spyOn>;
   beforeEach(() => {
     // Mock lean error service
-    vi.spyOn(LeanErrorService, 'logError').mockImplementation(() => {});
+    logSpy = vi.spyOn(LeanErrorService, 'logError').mockImplementation(() => {});
   });
   afterEach(() => {
     logSpy.mockRestore();
@@ -46,7 +46,10 @@ describe('errorHandling', () => {
     ErrorHandler.handleError(new Error('boom'), 'ctx');
     const stats = ErrorHandler.getErrorStats();
     expect(stats['unknown_ctx']).toBe(2);
-    expect(logSpy).toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledTimes(2);
+    expect(logSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      type: ErrorType.UNKNOWN, message: 'boom', context: 'ctx', recoverable: true,
+    }), 'ErrorHandler');
   });
 
   it('handleErrors decorator wraps and rethrows as AppError', async () => {

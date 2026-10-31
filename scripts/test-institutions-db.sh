@@ -37,3 +37,18 @@ docker exec "$container" pg_dump -U "$test_db_user" -d institutions_test --data-
 # Compare actual INSERT data only, excluding pg_dump's random restriction tokens.
 diff <(rg '^INSERT INTO' "$test_dir/before.sql") <(rg '^INSERT INTO' "$test_dir/after.sql")
 echo 'Migration reapplication preserved institutional data.'
+
+# Exercise the real anonymous insert path and reapply the additive logging migration.
+for diagnostic_table in client_boot_errors story_generation_failures; do
+  case "$diagnostic_table" in
+    client_boot_errors) diagnostic_base=supabase/migrations/20261026180000_client_boot_errors.sql ;;
+    story_generation_failures) diagnostic_base=supabase/migrations/20261026220000_story_generation_failures.sql ;;
+  esac
+  docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$diagnostic_base"
+done
+diagnostic_migration="${DIAGNOSTICS_MIGRATION:-supabase/migrations/20261031132701_guard_anonymous_error_logging.sql}"
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$diagnostic_migration"
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < supabase/tests/diagnostics/access.sql
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$diagnostic_migration"
+docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.client_boot_errors) <> 31 then raise exception 'Diagnostic reapplication lost data'; end if; end \$\$;"
+echo 'Anonymous diagnostic size, rate, access, and reapplication checks passed.'

@@ -75,7 +75,7 @@ export class InputSanitizer {
   // Advanced character substitution patterns for leetspeak detection
   private static readonly leetspeakPatterns = [
     { pattern: /[0o]/gi, replacement: 'o' },
-    { pattern: /[1l!|]/gi, replacement: 'l' },
+    { pattern: /[1!|]/gi, replacement: 'i' },
     { pattern: /[3e]/gi, replacement: 'e' },
     { pattern: /[4a@]/gi, replacement: 'a' },
     { pattern: /[5s\$]/gi, replacement: 's' },
@@ -87,18 +87,6 @@ export class InputSanitizer {
     { pattern: /[+t]/gi, replacement: 't' },
     { pattern: /[\*]/gi, replacement: '' },
     { pattern: /[_]/gi, replacement: '' }
-  ];
-
-  // Phonetic similarity patterns for common misspellings
-  private static readonly phoneticPatterns = [
-    { pattern: /f[u\*]ck?/gi, replacement: 'fuck' },
-    { pattern: /sh[i!1]t/gi, replacement: 'shit' },
-    { pattern: /b[i!1]tch/gi, replacement: 'bitch' },
-    { pattern: /a[s\$][s\$]/gi, replacement: 'ass' },
-    { pattern: /d[a@]mn/gi, replacement: 'damn' },
-    { pattern: /h[e3][l1][l1]/gi, replacement: 'hell' },
-    { pattern: /wh[o0]r[e3]/gi, replacement: 'whore' },
-    { pattern: /h[o0][e3]?s?/gi, replacement: 'hoe' }
   ];
 
   // Semantic context patterns for inappropriate combinations
@@ -122,11 +110,6 @@ export class InputSanitizer {
       normalized = normalized.replace(pattern, replacement);
     });
     
-    // Pass 2: Apply phonetic corrections
-    this.phoneticPatterns.forEach(({ pattern, replacement }) => {
-      normalized = normalized.replace(pattern, replacement);
-    });
-    
     // Pass 3: Remove extra spaces and punctuation for word boundary detection
     normalized = normalized.replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ');
     
@@ -146,12 +129,22 @@ export class InputSanitizer {
     }
 
     const cleaned = input.trim();
+    const maxLength = context === 'name' || context === 'theme' ? 50 : 100;
+    if (cleaned.length > maxLength) {
+      return {
+        isValid: false,
+        issues: [`Input exceeds the maximum length of ${maxLength} characters`],
+        suggestions: [`Please keep input within ${maxLength} characters`],
+      };
+    }
     const normalized = this.normalizeText(cleaned);
     const issues: string[] = [];
     const suggestions: string[] = [];
 
     // Pass 1: Check content using lean security
-    const isClean = LeanSecurity.isContentClean(cleaned);
+    const unsafeLanguage = /\b(stupid|stopid|hell|heck|sucks?|hate|violen(?:ce|t)|fight(?:ing)?|war|weapons?)\b/i;
+    const isClean = LeanSecurity.isContentClean(cleaned) &&
+      LeanSecurity.isContentClean(normalized) && !unsafeLanguage.test(normalized);
     if (!isClean) {
       issues.push('Contains inappropriate language or content');
       if (context === 'name') {
@@ -167,7 +160,10 @@ export class InputSanitizer {
 
     // Pass 2: Check semantic context patterns for inappropriate combinations
     for (const { pattern, reason } of this.semanticPatterns) {
-      if (pattern.test(normalized) || pattern.test(cleaned)) {
+      pattern.lastIndex = 0;
+      const matchesNormalized = pattern.test(normalized);
+      pattern.lastIndex = 0;
+      if (matchesNormalized || pattern.test(cleaned)) {
         issues.push(`Contains ${reason} not suitable for children`);
         suggestions.push('Please rephrase using child-friendly language');
       }
@@ -180,15 +176,18 @@ export class InputSanitizer {
       personalInfo: /\b(\d{3}[-.]?\d{3}[-.]?\d{4}|\(\d{3}\)\s*\d{3}[-.]?\d{4}|\d{3}-?\d{2}-?\d{4})\b/,
       addresses: /\b\d+\s+[A-Za-z\s]*(street|st\.?|avenue|ave\.?|road|rd\.?|drive|dr\.?|lane|ln\.?|boulevard|blvd\.?|way|ct\.?|court|place|pl\.?|circle|cir\.?|trail|pkwy\.?|parkway|hunt|fox\s+hunt)\b/i,
       birthdays: /\b(0?[1-9]|1[0-2])[\/\-\.](0?[1-9]|[12][0-9]|3[01])[\/\-\.](\d{2,4})\b/,
-      myHouse: /\b(my\s+house|my\s+home|my\s+address|where\s+i\s+live)\b/i
+      myHouse: /\b(my\s+house|my\s+home|my\s+address|where\s+i\s+live)\b/i,
+      school: /\b\w+\s+(elementary|middle|high)(\s+school)?\b/i,
+      spokenPhone: /\b(?:zero|one|two|three|four|five|six|seven|eight|nine)(?:[\s-]+(?:zero|one|two|three|four|five|six|seven|eight|nine)){6,}\b/i,
+      name: /\s/,
     };
 
     // Pass 4: Context-specific validation
     const contextChecks = {
-      name: ['personal', 'personalInfo', 'addresses', 'birthdays'],
-      interest: ['contact', 'personalInfo', 'addresses', 'birthdays', 'myHouse'],
-      theme: ['contact', 'personal', 'personalInfo', 'addresses', 'birthdays', 'myHouse'],
-      general: ['contact', 'personal', 'personalInfo', 'addresses', 'birthdays', 'myHouse']
+      name: ['personal', 'personalInfo', 'addresses', 'birthdays', 'school', 'spokenPhone', 'name'],
+      interest: ['contact', 'personalInfo', 'addresses', 'birthdays', 'myHouse', 'school', 'spokenPhone'],
+      theme: ['contact', 'personal', 'personalInfo', 'addresses', 'birthdays', 'myHouse', 'school', 'spokenPhone'],
+      general: ['contact', 'personal', 'personalInfo', 'addresses', 'birthdays', 'myHouse', 'school', 'spokenPhone']
     };
 
     const checksToRun = contextChecks[context] || contextChecks.general;
@@ -204,12 +203,6 @@ export class InputSanitizer {
           suggestions.push('Please remove any personal information like addresses, phone numbers, or birthdays');
         }
       }
-    }
-
-    // Pass 5: Additional safety checks
-    if (cleaned.length > 100) {
-      issues.push('Input is too long for safety');
-      suggestions.push('Please keep input under 100 characters');
     }
 
     // URL or email detection
@@ -239,7 +232,7 @@ export class InputSanitizer {
     validation: ReturnType<typeof InputSanitizer.validateChildSafeInput>;
   } {
     const sanitized = this.sanitizeUserInfo(value);
-    const validation = this.validateChildSafeInput(sanitized, context);
+    const validation = this.validateChildSafeInput(value, context);
     
     return { sanitized, validation };
   }
