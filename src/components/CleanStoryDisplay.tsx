@@ -3217,7 +3217,7 @@ const handleDockCoach = () => {
 };
 
   // Manual end session logic exists below
-  const saveReadingSessionRow = async (r: { startedAt: number | null | undefined; wordsRead: number; completed: boolean }) => {
+  const saveReadingSessionRow = async (r: { startedAt: number | null | undefined; wordsRead: number; pagesRead?: number; completed: boolean }) => {
     try {
       const { data: auth } = await supabase.auth.getUser();
       const uid = auth?.user?.id;
@@ -3235,6 +3235,8 @@ const handleDockCoach = () => {
         completed_at: r.completed ? new Date().toISOString() : null,
         time_spent: minutes,
         words_read: r.wordsRead || 0,
+        // Pages shown, for the trial-ending email's per-child summary (lifecycle emails, 1 Nov 2026).
+        pages_read: Math.max(0, Math.min(1000, Math.round(r.pagesRead || 0))),
       } as any);
       if (error) DebugLogger.warn('performance', 'reading_sessions insert failed', error);
     } catch (e) {
@@ -3283,6 +3285,7 @@ const handleDockCoach = () => {
     void saveReadingSessionRow({
       startedAt: sessionStartTimeValue,
       wordsRead: totalWordsRead,
+      pagesRead,
       completed: isPremium ? (currentPage === story.length - 1) : (currentPage === displayedStory.length - 1),
     });
 

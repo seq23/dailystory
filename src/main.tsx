@@ -9,6 +9,8 @@ import './services/simpleAudioCoordinator'
 import './utils/errorSuppressionManager'
 // Initialize debug logger service
 import './services/DebugLogger'
+// Keep a ?billing= link from the trial-ending email across sign-in (src/lib/billingIntent.ts).
+import './lib/billingIntent'
 
 // GLOBAL AUDIO SERVICE EXPOSURE - For AudioPlaybackTester and debugging
 import { charlotteVoiceService } from './services/CharlotteVoiceService';

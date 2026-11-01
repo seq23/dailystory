@@ -164,7 +164,8 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Time-2-Read <noreply@time2read.com>",
+        from: "Time-2-Read <hello@time-2-read.com>",
+        reply_to: "st@time-2-read.com",
         to: [email],
         subject: subject,
         html: htmlContent,

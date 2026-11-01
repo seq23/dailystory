@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { RedeemCodeCard } from "@/components/RedeemCodeCard";
 import { PAYMENT_TROUBLE, checkoutBody, checkoutErrorMessage, premiumUntilLabel } from "@/lib/accessCode";
+import { type BillingIntent, clearBillingIntent, peekBillingIntent } from "@/lib/billingIntent";
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -27,6 +28,39 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
   const [refreshing, setRefreshing] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  // From the trial-ending email: offer the one thing the link asked for.
+  const [intent, setIntent] = useState<BillingIntent | null>(() => peekBillingIntent());
+  useEffect(() => { if (intent === "keep") clearBillingIntent(); }, [intent]);
+  const dismissIntent = () => { clearBillingIntent(); setIntent(null); };
+
+  const billingFlow = async (flow: "yearly" | "cancel") => {
+    try {
+      setLoading(true);
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        toast.error(uiText("Please sign in to manage subscription"));
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        body: { flow },
+        headers: { Authorization: `Bearer ${session.session.access_token}` },
+      });
+      if (error) { toast.error(PAYMENT_TROUBLE); return; }
+      if (flow === "yearly") {
+        dismissIntent();
+        toast.success(data?.already ? uiText("You're already on the yearly plan.") : uiText("Switched to yearly: $99 a year."));
+        void checkSubscription();
+        return;
+      }
+      if (data?.url) { clearBillingIntent(); window.location.href = data.url; }
+      else toast.error(uiText("Billing page didn't open. Please try again."));
+    } catch (error) {
+      toast.error(PAYMENT_TROUBLE);
+      DebugLogger.error('error', 'Billing flow failed', { error });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const checkSubscription = async () => {
     try {
@@ -151,6 +185,24 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
 
   return (
     <div className="space-y-6">
+      {(intent === "yearly" || intent === "cancel") && (
+        <Card className="border-primary" data-testid="billing-intent">
+          <CardHeader>
+            <CardTitle>{intent === "yearly" ? uiText("Switch to yearly: $99, saves $56") : uiText("Cancel before your trial ends")}</CardTitle>
+            <CardDescription>
+              {intent === "yearly"
+                ? uiText("Your plan becomes $99 a year. During your free week nothing is charged until it ends.")
+                : uiText("You won't be charged. Your stories stay saved either way.")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            <Button onClick={() => billingFlow(intent)} disabled={loading}>
+              {intent === "yearly" ? uiText("Switch to yearly") : uiText("Go to cancel")}
+            </Button>
+            <Button variant="outline" onClick={dismissIntent} disabled={loading}>{uiText("Not now")}</Button>
+          </CardContent>
+        </Card>
+      )}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">{uiText("Your plan")}</h2>
         <Button 

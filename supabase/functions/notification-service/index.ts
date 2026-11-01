@@ -64,7 +64,7 @@ const { operation, email, parentEmail, childName, parentName, incidentDetails, c
         }
 
         const emailContent = {
-          from: 'StoryForge <notifications@storyforge.app>',
+          from: 'Time-2-Read <hello@time-2-read.com>',
           to: targetEmail,
           subject: `Important: Activity Alert for ${childName}`,
           html: `
@@ -139,7 +139,7 @@ const { operation, email, parentEmail, childName, parentName, incidentDetails, c
         }
 
         const emailContent = {
-          from: 'StoryForge Privacy <privacy@storyforge.app>',
+          from: 'Time-2-Read Privacy <privacy@time-2-read.com>',
           to: targetEmail,
           subject: 'COPPA Compliance Notification - Child Privacy Protection',
           html: `
@@ -164,7 +164,7 @@ const { operation, email, parentEmail, childName, parentName, incidentDetails, c
               <h3>Next Steps:</h3>
               <p>Please review your child's account settings and contact us if you have any concerns about data collection or privacy.</p>
 
-              <p>For questions about COPPA compliance or data privacy, contact: <a href="mailto:privacy@storyforge.app">privacy@storyforge.app</a></p>
+              <p>For questions about COPPA compliance or data privacy, contact: <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a></p>
               
               <p>Sincerely,<br>StoryForge Privacy Team</p>
             </div>

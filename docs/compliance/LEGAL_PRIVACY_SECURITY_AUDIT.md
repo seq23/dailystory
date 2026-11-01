@@ -611,12 +611,12 @@ All authenticated functions validate JWT tokens and user sessions.
 
 ## Part 12: Contact Information
 
-**Privacy Inquiries:** privacy@time2read.app  
-**Security Reports:** security@time2read.app  
-**General Support:** hello@time2read.app  
-**CCPA Requests:** privacy@time2read.app  
-**COPPA Parent Inquiries:** privacy@time2read.app  
-**School Partnerships:** schools@time2read.app
+**Privacy Inquiries:** privacy@time-2-read.com  
+**Security Reports:** security@time-2-read.com  
+**General Support:** hello@time-2-read.com  
+**CCPA Requests:** privacy@time-2-read.com  
+**COPPA Parent Inquiries:** privacy@time-2-read.com  
+**School Partnerships:** schools@time-2-read.com
 
 **Mailing Address:**  
 Time2Read LLC  

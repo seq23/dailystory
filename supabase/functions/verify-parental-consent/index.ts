@@ -59,12 +59,13 @@ serve(async (req: Request) => {
     }
 
     // Build verification URL
-    const baseUrl = Deno.env.get("SITE_URL") || "https://time2read.app";
+    const baseUrl = Deno.env.get("SITE_URL") || "https://time-2-read.com";
     const verificationUrl = `${baseUrl}/verify-consent?token=${consentToken}`;
 
     // Send verification email
     const emailResponse = await resend.emails.send({
-      from: "Time2Read <noreply@time2read.app>",
+      from: "Time-2-Read <hello@time-2-read.com>",
+      reply_to: "st@time-2-read.com",
       to: [parent_email],
       subject: `Parental Consent Required for ${child_name}'s Time2Read Account`,
       html: `
@@ -130,12 +131,12 @@ serve(async (req: Request) => {
             <p style="font-size: 12px; color: #666; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
               You can revoke consent and request deletion of your child's data at any time by 
               visiting your account settings or contacting us at 
-              <a href="mailto:privacy@time2read.app">privacy@time2read.app</a>.
+              <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>.
             </p>
             
             <p style="font-size: 12px; color: #666;">
-              Time2Read LLC | <a href="https://time2read.app/privacy">Privacy Policy</a> | 
-              <a href="https://time2read.app/terms">Terms of Service</a>
+              Time2Read LLC | <a href="https://time-2-read.com/privacy">Privacy Policy</a> | 
+              <a href="https://time-2-read.com/terms">Terms of Service</a>
             </p>
           </div>
         </body>

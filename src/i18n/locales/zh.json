@@ -2465,5 +2465,23 @@
     "start": "开始免费故事",
     "free": "开始阅读你的{{count}}个免费故事",
     "home": "← 返回Time-2-Read首页"
+  },
+  "lifecycleEmail": {
+    "already_yearly": "您已经是年度方案。",
+    "switched_yearly": "已切换为年度方案：每年 99 美元。",
+    "switch_yearly_saves": "切换为年度方案：99 美元，节省 56 美元",
+    "cancel_before_trial_ends": "在试用结束前取消",
+    "yearly_explainer": "您的方案将变为每年 99 美元。免费周结束前不会收取任何费用。",
+    "cancel_explainer": "您不会被收费。无论如何，您的故事都会保留。",
+    "switch_yearly": "切换为年度",
+    "go_to_cancel": "前往取消",
+    "not_now": "暂不",
+    "unsubscribing": "正在退订…",
+    "one_moment": "请稍候。",
+    "unsubscribed": "您已退订",
+    "unsubscribed_line": "我们不会再给您发送此类邮件。您的账户和故事不受影响。",
+    "link_failed": "此链接无效",
+    "link_failed_line": "链接可能不完整。回复我们的任意一封邮件，我们会将您移出名单。",
+    "try_again_minute": "请一分钟后再试此链接。"
   }
 }

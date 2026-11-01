@@ -59,9 +59,39 @@ serve(async (req) => {
     logStep("Found Stripe customer", { customerId });
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
+    // Optional flow from the trial-ending email's links (?billing=yearly|cancel in the app):
+    //   cancel: Stripe's own cancel page for the live subscription (Stripe asks to confirm).
+    //   yearly: switch a monthly subscription to yearly ($99, docs/PRICING.md) on the same product,
+    //           no proration; during a trial the first charge is simply the yearly price.
+    let flow: string | null = null;
+    try { flow = (await req.json())?.flow ?? null; } catch { flow = null; }
+    const live = flow ? (await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 10 })).data
+      .find((s: any) => ["trialing", "active", "past_due"].includes(s.status)) : null;
+    if (flow === "yearly") {
+      if (!live) throw new Error("No active subscription to switch.");
+      const item = live.items.data[0];
+      if (item?.price?.recurring?.interval === "year") {
+        return new Response(JSON.stringify({ switched: false, already: "annual" }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
+      }
+      const product = typeof item.price.product === "string" ? item.price.product : item.price.product.id;
+      await stripe.subscriptions.update(live.id, {
+        items: [{ id: item.id, price_data: { currency: item.price.currency || "usd", product, unit_amount: 9900, recurring: { interval: "year" } } }],
+        proration_behavior: "none",
+        metadata: { ...(live.metadata ?? {}), plan: "annual", switched_from: "monthly" },
+      });
+      logStep("Switched to yearly", { subscription: live.id });
+      return new Response(JSON.stringify({ switched: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
+    }
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/`,
+      ...(flow === "cancel" && live ? {
+        flow_data: {
+          type: "subscription_cancel",
+          subscription_cancel: { subscription: live.id },
+          after_completion: { type: "redirect", redirect: { return_url: `${origin}/` } },
+        },
+      } : {}),
     });
     logStep("Customer portal session created", { sessionId: portalSession.id, url: portalSession.url });
 

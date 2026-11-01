@@ -153,3 +153,9 @@ verify_jwt = false
 
 [functions.voice-overrides-admin]
 verify_jwt = false
+
+[functions.lifecycle-emails]
+verify_jwt = false
+
+[functions.lifecycle-unsubscribe]
+verify_jwt = false
