@@ -11,9 +11,16 @@
 //                                  would otherwise be a silent pass.
 //
 // Usage: node scripts/tts-usage-alert.mjs '<usage json from /usage>' <refusals in the last 7 days>
-// Prints one ::error:: line per reason and exits 1, or one quiet line and exits 0.
+// Prints one ::error:: line per reason and exits 1, or one quiet line and exits 0. A named stop only
+// the owner can clear (credits unreadable) prints ::warning:: and exits 0 when it is the only reason.
 
 export const LOW_CREDIT_SHARE = 0.2;
+
+/** Exit code for a set of alerts: 1 when anything needs fixing now; 0 when the only reason is a
+ *  named stop that the owner alone can clear (shown as a warning, never a red main). Pure. */
+export function alertExitCode(alerts) {
+  return alerts.some((a) => !a.stop) ? 1 : 0;
+}
 
 /** The named reasons narration needs attention. Pure. */
 export function ttsAlerts(usage, refusals7d) {
@@ -21,7 +28,7 @@ export function ttsAlerts(usage, refusals7d) {
   const used = Number(usage?.character_count);
   const limit = Number(usage?.character_limit);
   if (!usage || usage.key_present === false || !Number.isFinite(used) || !Number.isFinite(limit) || limit <= 0) {
-    out.push({ code: "ELEVENLABS_CREDITS_UNREADABLE", text: "the ElevenLabs account behind the deployed key did not report its credits, so a low balance could not be seen" });
+    out.push({ code: "ELEVENLABS_CREDITS_UNREADABLE", text: "the ElevenLabs account behind the deployed key did not report its credits, so a low balance could not be seen (NAMED STOP: only the owner can give that key the User read permission in ElevenLabs; narration itself is unaffected)", stop: true });
   } else {
     const left = Math.max(0, limit - used);
     if (left < limit * LOW_CREDIT_SHARE) {
@@ -41,6 +48,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log("narration healthy: credits above 20% of the plan and no browser-voice fallback in 7 days");
     process.exit(0);
   }
-  for (const a of alerts) console.log(`::error title=${a.code}::${a.code}: ${a.text}`);
-  process.exit(1);
+  for (const a of alerts) console.log(`::${a.stop ? "warning" : "error"} title=${a.code}::${a.code}: ${a.text}`);
+  process.exit(alertExitCode(alerts));
 }

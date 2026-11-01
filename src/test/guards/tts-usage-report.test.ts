@@ -4,7 +4,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { LOW_CREDIT_SHARE, ttsAlerts } from "../../../scripts/tts-usage-alert.mjs";
+import { LOW_CREDIT_SHARE, alertExitCode, ttsAlerts } from "../../../scripts/tts-usage-alert.mjs";
 
 const ROOT = join(__dirname, "../../..");
 const WF = readFileSync(join(ROOT, ".github/workflows/tts-usage-report.yml"), "utf8");
@@ -46,5 +46,15 @@ describe("ttsAlerts", () => {
     for (const u of [null, { key_present: false }, { key_present: true, http_status: 401 }, { ...healthy, character_limit: 0 }]) {
       expect(codes(u, 0)).toEqual(["ELEVENLABS_CREDITS_UNREADABLE"]);
     }
+  });
+  it("unreadable credits alone are a named stop (warning, exit 0); anything real still fails", () => {
+    const stopOnly = ttsAlerts(null, 0);
+    expect(stopOnly).toHaveLength(1);
+    expect(stopOnly[0].stop).toBe(true);
+    expect(stopOnly[0].text).toContain("NAMED STOP");
+    expect(alertExitCode(stopOnly)).toBe(0);
+    expect(alertExitCode(ttsAlerts(null, 2))).toBe(1); // a fallback still fails even with unreadable credits
+    expect(alertExitCode(ttsAlerts({ ...healthy, character_count: 99_000 }, 0))).toBe(1);
+    expect(alertExitCode(ttsAlerts(healthy, 0))).toBe(0);
   });
 });
