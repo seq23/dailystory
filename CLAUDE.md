@@ -3,7 +3,7 @@
 The subscription reading product at **https://time-2-read.com/**. Identity, host
 limits and the Search Console property are in `REPO_IDENTITY.md`; the agent
 bootstrap and the Repo Operator laws are in `AGENTS.md`, which this file does not
-repeat.
+repeat. Email and analytics settlements are in [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
 ## Nothing paid
 
