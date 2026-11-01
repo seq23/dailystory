@@ -7,7 +7,7 @@ schedule); see the notes below for what moved.
 
 | Job | Workflow | When | Cron |
 |---|---|---|---|
-| entity backlink watch | `entity-backlink-watch.yml` | Thu 07:40 CT | `40 7 * * 4` |
+| entity backlink watch | `entity-backlink-watch.yml` | Thu 07:20 CT | `20 7 * * 4` |
 | Lifecycle emails | `lifecycle-emails.yml` | `23 * * * *` (UTC; repeating, no fixed hour) | `23 * * * *` |
 | Monitor AI Visual Scene Creator - ERROR-001 FIX | `monitor-ai-visual.yml` | every day 01:15 CT | `15 1 * * *` |
 | Monitor Runware Generate Image | `monitor-runware-generate.yml` | every day 01:00 CT | `0 1 * * *` |
@@ -25,7 +25,7 @@ schedule); see the notes below for what moved.
   self-healing are not upkeep and keep their own days.
 
 ## Moved on 1 Nov 2026
-- Entity backlink watch: Monday → Thursday 07:40 CT.
+- Entity backlink watch: Monday → Thursday 07:20 CT.
 - TTS usage report: no longer scheduled (owner, 1 Nov 2026: nobody read the weekly numbers). It runs
   after each Edge Functions deploy and on dispatch, and fails with a named reason when ElevenLabs
   credits fall under 20% of the plan or a child fell back to the browser voice in the last 7 days
