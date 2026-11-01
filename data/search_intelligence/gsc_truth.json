@@ -2,24 +2,24 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-10-31T06:45:22.983Z",
+  "collected_at": "2026-11-01T06:43:44.907Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-01",
-    "end_date": "2026-10-28",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-29",
     "days": 28
   },
   "totals": {
     "clicks": 1,
-    "impressions": 163,
-    "ctr": 0.0061,
-    "position": 18.15
+    "impressions": 178,
+    "ctr": 0.0056,
+    "position": 17.76
   },
-  "row_count": 26,
-  "query_count": 25,
+  "row_count": 28,
+  "query_count": 27,
   "page_count": 7,
-  "attributed_impressions": 89,
+  "attributed_impressions": 96,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
@@ -29,6 +29,14 @@
       "impressions": 18,
       "ctr": 0,
       "position": 54.5
+    },
+    {
+      "query": "time2read",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 5.27
     },
     {
       "query": "time to read",
@@ -45,14 +53,6 @@
       "impressions": 9,
       "ctr": 0,
       "position": 8.89
-    },
-    {
-      "query": "time2read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 9,
-      "ctr": 0,
-      "position": 5.67
     },
     {
       "query": "time read",
@@ -79,20 +79,20 @@
       "position": 5.4
     },
     {
+      "query": "toddler books online",
+      "page": "https://time-2-read.com/toddler-books",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 58
+    },
+    {
       "query": "2read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
       "impressions": 3,
       "ctr": 0,
       "position": 12.67
-    },
-    {
-      "query": "toddler books online",
-      "page": "https://time-2-read.com/toddler-books",
-      "clicks": 0,
-      "impressions": 3,
-      "ctr": 0,
-      "position": 57
     },
     {
       "query": "online books for toddlers",
@@ -117,6 +117,22 @@
       "impressions": 2,
       "ctr": 0,
       "position": 71
+    },
+    {
+      "query": "time2read login",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9
+    },
+    {
+      "query": "time2read login",
+      "page": "https://time-2-read.com/auth",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 3.5
     },
     {
       "query": "2 year old books online",
@@ -149,6 +165,14 @@
       "impressions": 1,
       "ctr": 0,
       "position": 56
+    },
+    {
+      "query": "level 2",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
     },
     {
       "query": "read along books for toddlers",
@@ -199,20 +223,12 @@
       "position": 48
     },
     {
-      "query": "time2read login",
+      "query": "timetoread",
       "page": "https://time-2-read.com/",
       "clicks": 0,
       "impressions": 1,
       "ctr": 0,
       "position": 9
-    },
-    {
-      "query": "time2read login",
-      "page": "https://time-2-read.com/auth",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 4
     },
     {
       "query": "tiny read",
