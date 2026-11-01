@@ -1,0 +1,54 @@
+name: Lifecycle emails
+
+# The parent lifecycle emails (welcome, trial ending, 3 free stories, come back), approved
+# 1 Nov 2026. Hourly sweep: the edge function lifecycle-emails sends whatever is due, once per
+# account per kind (public.lifecycle_email_log). The welcome is also sent at once by stripe-webhook.
+#
+# Kill switch (Boss OS Email Map "pause"):
+#   gh workflow run lifecycle-emails.yml -R seq23/dailystory -f action=pause    # nothing is sent
+#   gh workflow run lifecycle-emails.yml -R seq23/dailystory -f action=resume
+# A named stop (no mailing address, sender domain not verified) is printed and the run stays green;
+# an error (bad secret, database failure) fails the run.
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "sweep, pause, resume or status"
+        required: true
+        default: sweep
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lifecycle-emails
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PROJECT_URL: https://cpzeuogomaixamrtnnmj.supabase.co
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      LIFECYCLE_CRON_SECRET: ${{ secrets.LIFECYCLE_CRON_SECRET }}
+      ACTION: ${{ github.event.inputs.action || 'sweep' }}
+    steps:
+      - name: Run the lifecycle email function
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$ACTION" in sweep|pause|resume|status) ;; *) echo "::error::unknown action $ACTION"; exit 1 ;; esac
+          if [ -z "$LIFECYCLE_CRON_SECRET" ]; then echo "::error::NAMED STOP: repo secret LIFECYCLE_CRON_SECRET is not set"; exit 1; fi
+          code=$(curl -sS -o /tmp/out.json -w '%{http_code}' --max-time 120 -X POST \
+            "$PROJECT_URL/functions/v1/lifecycle-emails" \
+            -H "apikey: $SUPABASE_ANON_KEY" -H "x-lifecycle-secret: $LIFECYCLE_CRON_SECRET" \
+            -H "Content-Type: application/json" -d "{\"action\":\"$ACTION\"}" || echo 000)
+          echo "HTTP $code"
+          jq -c . /tmp/out.json 2>/dev/null | head -c 2000 || head -c 500 /tmp/out.json
+          echo
+          [ "$code" = "200" ] || { echo "::error::lifecycle-emails answered $code"; exit 1; }
+          stop=$(jq -r '.stop // empty' /tmp/out.json)
+          if [ -n "$stop" ]; then echo "::warning::$stop"; fi

@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const ALERT_EMAIL = 'privacy@time2read.com';
+const ALERT_EMAIL = 'privacy@time-2-read.com';
 const COST_ALERT_THRESHOLD = 100;
 const SPIKE_MULTIPLIER = 1.5;
 const DROP_MULTIPLIER = 0.5;

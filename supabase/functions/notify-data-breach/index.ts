@@ -117,7 +117,7 @@ serve(async (req: Request) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Time2Read Security <privacy@time2read.com>',
+            from: 'Time-2-Read Security <privacy@time-2-read.com>',
             to: emails.slice(0, 50), // Batch limit
             subject: 'Important Security Notice from Time2Read',
             html: `
@@ -130,7 +130,7 @@ serve(async (req: Request) => {
               <ul>
                 <li>Change your password at <a href="https://time2read.lovable.app">time2read.lovable.app</a></li>
                 <li>Review your account for any unauthorized activity</li>
-                <li>Contact us at privacy@time2read.com with any concerns</li>
+                <li>Contact us at privacy@time-2-read.com with any concerns</li>
               </ul>
               <p>We take the security of your data seriously and apologize for any inconvenience.</p>
               <p>— The Time2Read Security Team<br/>Spry VSL LLC</p>

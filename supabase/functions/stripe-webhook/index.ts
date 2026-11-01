@@ -8,6 +8,9 @@ import { subscriptionEndFrom } from "../_shared/subscriptionEnd.ts";
 
 import { syncSubscriptionEvent } from "../_shared/subscriptionUpdate.ts";
 import { verifyStripeEvent } from "../_shared/verifyStripeEvent.ts";
+import { recordCheckoutLifecycle, recordSubscriptionLifecycle } from "../_shared/lifecycleEmail/stripeState.ts";
+import { sendLifecycleEmail } from "../_shared/lifecycleEmail/core.ts";
+import { lifecycleDeps } from "../_shared/lifecycleEmail/deps.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -122,6 +125,19 @@ serve(async (req) => {
 
       log("Subscriber activated successfully", { userId, plan, subscriptionEnd: subscriptionEnd.toISOString() });
 
+      // Parent lifecycle emails: record the trial, then send the welcome at once when a trial
+      // started. Never fails the webhook; the hourly sweep (lifecycle-emails) retries a miss.
+      try {
+        const recorded = await recordCheckoutLifecycle(userId, stripeSub, event.livemode, supabaseAdmin);
+        log("Lifecycle state", { recorded });
+        if (stripeSub?.status === "trialing") {
+          const outcome = await sendLifecycleEmail("welcome", userId, lifecycleDeps(supabaseAdmin, Deno.env));
+          log("Welcome email", { status: outcome.status, reason: (outcome as any).reason ?? (outcome as any).stop ?? null });
+        }
+      } catch (e) {
+        log("Lifecycle email step failed; the sweep will retry", { error: String(e) });
+      }
+
       // Access-code trials: mark the code use as a completed signup (see access_code_signups).
       if (session.metadata?.access_code) {
         const { error: redemptionError } = await supabaseAdmin
@@ -140,6 +156,9 @@ serve(async (req) => {
 
     // Keep cancellations, renewals and plan changes in sync. Throw on DB errors so Stripe retries.
     await syncSubscriptionEvent(event, supabaseAdmin);
+    // Trial dates, scheduled cancels and cancellations for the lifecycle emails (never throws).
+    const lifecycle = await recordSubscriptionLifecycle(event, supabaseAdmin);
+    if (lifecycle !== "ignored") log("Lifecycle state", { type: event.type, lifecycle });
 
     // Handle invoice payment failed
     if (event.type === "invoice.payment_failed") {

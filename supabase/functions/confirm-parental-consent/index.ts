@@ -196,7 +196,7 @@ function generateHtmlResponse(status: string, message: string): string {
         ` : status === "expired" ? `
           <p class="message">Please contact the account holder to request a new verification email.</p>
         ` : ''}
-        <a href="https://time2read.app" class="btn">Go to Time2Read</a>
+        <a href="https://time-2-read.com" class="btn">Go to Time2Read</a>
       </div>
     </body>
     </html>

@@ -33,6 +33,7 @@ import About from "./pages/About";
 import { PromptStudio } from "./components/PromptStudio";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
+import Unsubscribe from "./pages/Unsubscribe";
 import LandingPage from "./pages/LandingPage";
 import { landingPages } from "./data/landingPages";
 import VoiceAdmin from "./pages/admin/VoiceAdmin";
@@ -122,6 +123,7 @@ const App = () => {
               <Route path="/about" element={<About />} />
               <Route path="/success" element={<PaymentSuccess />} />
               <Route path="/cancel" element={<PaymentCancel />} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/admin/voices" element={<VoiceAdmin />} />
               {landingPages.map((p) => (
                 <Route

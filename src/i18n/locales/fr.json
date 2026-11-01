@@ -2483,5 +2483,23 @@
     "start": "Commencer une histoire gratuite",
     "free": "Commencez vos {{count}} histoires gratuites",
     "home": "← Retour à l’accueil de Time-2-Read"
+  },
+  "lifecycleEmail": {
+    "already_yearly": "Vous avez déjà le forfait annuel.",
+    "switched_yearly": "Passé au forfait annuel : 99 $ par an.",
+    "switch_yearly_saves": "Passer à l'annuel : 99 $, 56 $ d'économie",
+    "cancel_before_trial_ends": "Annulez avant la fin de votre essai",
+    "yearly_explainer": "Votre forfait passe à 99 $ par an. Pendant votre semaine gratuite, rien n'est facturé avant la fin.",
+    "cancel_explainer": "Vous ne serez pas facturé. Vos histoires restent enregistrées dans tous les cas.",
+    "switch_yearly": "Passer à l'annuel",
+    "go_to_cancel": "Aller à l'annulation",
+    "not_now": "Pas maintenant",
+    "unsubscribing": "Désinscription…",
+    "one_moment": "Un instant.",
+    "unsubscribed": "Vous êtes désinscrit",
+    "unsubscribed_line": "Nous ne vous enverrons plus ces e-mails. Votre compte et vos histoires ne sont pas concernés.",
+    "link_failed": "Ce lien n'a pas fonctionné",
+    "link_failed_line": "Il est peut-être incomplet. Répondez à l'un de nos e-mails et nous vous retirerons de la liste.",
+    "try_again_minute": "Réessayez le lien dans une minute."
   }
 }

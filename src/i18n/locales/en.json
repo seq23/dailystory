@@ -2340,5 +2340,23 @@
     "start": "Start a free story",
     "free": "Start your {{count}} free stories",
     "home": "← Back to Time-2-Read home"
+  },
+  "lifecycleEmail": {
+    "already_yearly": "You're already on the yearly plan.",
+    "switched_yearly": "Switched to yearly: $99 a year.",
+    "switch_yearly_saves": "Switch to yearly: $99, saves $56",
+    "cancel_before_trial_ends": "Cancel before your trial ends",
+    "yearly_explainer": "Your plan becomes $99 a year. During your free week nothing is charged until it ends.",
+    "cancel_explainer": "You won't be charged. Your stories stay saved either way.",
+    "switch_yearly": "Switch to yearly",
+    "go_to_cancel": "Go to cancel",
+    "not_now": "Not now",
+    "unsubscribing": "Unsubscribing…",
+    "one_moment": "One moment.",
+    "unsubscribed": "You're unsubscribed",
+    "unsubscribed_line": "We won't send you any more of these emails. Your account and stories are not affected.",
+    "link_failed": "This link didn't work",
+    "link_failed_line": "It may be incomplete. Reply to any of our emails and we'll take you off the list.",
+    "try_again_minute": "Please try the link again in a minute."
   }
 }

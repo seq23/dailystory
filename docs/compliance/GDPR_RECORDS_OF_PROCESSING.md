@@ -3,7 +3,7 @@
 **Document Version:** 1.0  
 **Last Updated:** 2026-01-22  
 **Data Controller:** Time2Read LLC  
-**Contact Email:** privacy@time2read.app  
+**Contact Email:** privacy@time-2-read.com  
 **Data Protection Officer:** [To be appointed if required]
 
 ---
@@ -15,8 +15,8 @@
 | **Organization Name** | Time2Read LLC |
 | **Address** | [Company Address] |
 | **Country** | United States |
-| **Contact Email** | privacy@time2read.app |
-| **Website** | https://time2read.app |
+| **Contact Email** | privacy@time-2-read.com |
+| **Website** | https://time-2-read.com |
 | **Representative in EU** | [To be designated if required] |
 
 ---
@@ -222,9 +222,9 @@
 | **Access (Art. 15)** | Export user data feature | 30 days |
 | **Rectification (Art. 16)** | Self-service profile editing | Immediate |
 | **Erasure (Art. 17)** | Account deletion feature | 30 days |
-| **Restriction (Art. 18)** | Contact privacy@time2read.app | 30 days |
+| **Restriction (Art. 18)** | Contact privacy@time-2-read.com | 30 days |
 | **Portability (Art. 20)** | JSON export feature | 30 days |
-| **Object (Art. 21)** | Contact privacy@time2read.app | 30 days |
+| **Object (Art. 21)** | Contact privacy@time-2-read.com | 30 days |
 | **Automated Decisions (Art. 22)** | N/A - no automated decision-making with legal effects | N/A |
 
 ---

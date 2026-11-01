@@ -151,7 +151,7 @@ window.__ENABLE_DIAGNOSTICS__ === undefined // → Components don't render
 #### 3. No URL Parameter Activation
 ```javascript
 // This does NOT work:
-// https://app.time2read.com/?diagnostics=true
+// https://time-2-read.com/?diagnostics=true
 
 // Only manual console access works
 ```

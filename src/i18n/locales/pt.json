@@ -2581,5 +2581,23 @@
     "start": "Começar uma história grátis",
     "free": "Comece suas {{count}} histórias grátis",
     "home": "← Voltar ao início do Time-2-Read"
+  },
+  "lifecycleEmail": {
+    "already_yearly": "Você já está no plano anual.",
+    "switched_yearly": "Mudou para o plano anual: US$ 99 por ano.",
+    "switch_yearly_saves": "Mude para o anual: US$ 99, economize US$ 56",
+    "cancel_before_trial_ends": "Cancele antes do fim do seu teste",
+    "yearly_explainer": "Seu plano passa a ser US$ 99 por ano. Durante a sua semana grátis nada é cobrado até ela terminar.",
+    "cancel_explainer": "Você não será cobrado. Suas histórias continuam salvas de qualquer forma.",
+    "switch_yearly": "Mudar para anual",
+    "go_to_cancel": "Ir para o cancelamento",
+    "not_now": "Agora não",
+    "unsubscribing": "Cancelando a inscrição…",
+    "one_moment": "Um momento.",
+    "unsubscribed": "Sua inscrição foi cancelada",
+    "unsubscribed_line": "Não enviaremos mais esses e-mails. Sua conta e suas histórias não são afetadas.",
+    "link_failed": "Este link não funcionou",
+    "link_failed_line": "Ele pode estar incompleto. Responda a qualquer e-mail nosso e tiraremos você da lista.",
+    "try_again_minute": "Tente o link novamente em um minuto."
   }
 }

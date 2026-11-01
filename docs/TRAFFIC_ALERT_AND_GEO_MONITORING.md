@@ -12,7 +12,7 @@ Automated monthly traffic monitoring that detects anomalies and sends email aler
 ### 1. Traffic Alert Edge Function (`traffic-alert`)
 
 **Schedule:** 1st of every month at 9:00 AM UTC via `pg_cron`  
-**Email:** `privacy@time2read.com`
+**Email:** `privacy@time-2-read.com`
 
 #### Alert Triggers (any one triggers an email)
 | Trigger | Threshold |

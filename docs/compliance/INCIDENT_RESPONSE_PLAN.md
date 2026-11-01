@@ -38,7 +38,7 @@ This document outlines Time2Read's procedures for identifying, responding to, an
 - **Legal/Compliance**: External Counsel - regulatory requirements
 
 ### Contact Information
-- Primary: security@time2read.app
+- Primary: security@time-2-read.com
 - Emergency: [Internal contact list - not for public distribution]
 
 ## 4. Incident Response Phases

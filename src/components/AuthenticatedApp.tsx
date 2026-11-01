@@ -44,6 +44,7 @@ import { isUserInfo } from "@/utils/typeGuards";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 
 import { convertImagesToRecord } from "@/utils/imageUtils";
+import { peekBillingIntent } from "@/lib/billingIntent";
 
 interface AuthenticatedAppProps {
   user: User;
@@ -126,6 +127,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   // new-story form already open (before, it only switched pages and looked dead).
   const [openNewStoryOnArrival, setOpenNewStoryOnArrival] = useState(false);
   useEffect(() => { if (currentView !== "stories") setOpenNewStoryOnArrival(false); }, [currentView]);
+  // A link from the trial-ending email (?billing=keep|yearly|cancel) opens My Account.
+  useEffect(() => { if (peekBillingIntent()) setCurrentView("account"); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // The grown-up owns the account; children are the readers.
   const { children: childProfiles, loading: childrenLoading, error: childrenError } = useChildProfiles();
   const parentName = (user.user_metadata?.display_name as string | undefined) ?? null;
