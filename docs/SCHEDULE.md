@@ -8,6 +8,7 @@ schedule); see the notes below for what moved.
 | Job | Workflow | When | Cron |
 |---|---|---|---|
 | entity backlink watch | `entity-backlink-watch.yml` | Thu 07:40 CT | `40 7 * * 4` |
+| Lifecycle emails | `lifecycle-emails.yml` | `23 * * * *` (UTC; repeating, no fixed hour) | `23 * * * *` |
 | Monitor AI Visual Scene Creator - ERROR-001 FIX | `monitor-ai-visual.yml` | every day 01:15 CT | `15 1 * * *` |
 | Monitor Runware Generate Image | `monitor-runware-generate.yml` | every day 01:00 CT | `0 1 * * *` |
 | Monitor Template AB | `monitor-template-ab.yml` | every day 01:30 CT | `30 1 * * *` |

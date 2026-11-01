@@ -46,5 +46,6 @@ Four emails to the account holder, approved by Sequoia on 1 Nov 2026 (copy word 
   `{flow: "cancel"}` (Stripe's cancel page).
 - **Local test:** the local copy honours `LIFECYCLE_RESEND_BASE` (a capture endpoint) and
   `LIFECYCLE_LOCAL_RECIPIENT` (the only address it will send to); the hosted project ignores both.
+
 ## Schedule
 - Every scheduled job, in Central time, is listed in `docs/SCHEDULE.md` (rebalanced 1 Nov 2026).
