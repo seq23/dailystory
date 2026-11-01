@@ -93,5 +93,8 @@ describe("the migration is additive and the database suite runs it", () => {
     expect(script).toContain("supabase/tests/institutions/app_reading.sql");
     expect(script.match(/\$app_migration"/g)?.length).toBe(2);
     expect(read(".github/workflows/checks.yml")).toContain("bash scripts/test-institutions-db.sh");
+    // CI runners have no ripgrep: an rg-based comparison compared two empty outputs and always passed.
+    expect(script).not.toMatch(/(^|[\s(<])rg\s/m);
+    expect(script).toMatch(/Reapply comparison has only/);
   });
 });

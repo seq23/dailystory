@@ -40,8 +40,11 @@ docker exec -i "$container" psql -d institutions_test -U "$test_db_user" -v ON_E
 docker exec -i "$container" psql -d institutions_test -U "$test_db_user" -v ON_ERROR_STOP=1 -q < "$app_migration"
 docker exec "$container" pg_dump -U "$test_db_user" -d institutions_test --data-only --inserts --table='public.institution_*' > "$test_dir/after.sql"
 # Compare actual INSERT data only, excluding pg_dump's random restriction tokens.
-diff <(rg '^INSERT INTO' "$test_dir/before.sql") <(rg '^INSERT INTO' "$test_dir/after.sql")
-rg -q "'app'" "$test_dir/before.sql" || { echo 'Reapply comparison holds no app rows' >&2; exit 1; }
+# grep, not rg: CI runners have no ripgrep, and an empty comparison would pass unseen.
+before_rows=$(grep -c '^INSERT INTO' "$test_dir/before.sql" || true)
+if [ "${before_rows:-0}" -lt 10 ]; then echo "Reapply comparison has only ${before_rows:-0} rows" >&2; exit 1; fi
+diff <(grep '^INSERT INTO' "$test_dir/before.sql") <(grep '^INSERT INTO' "$test_dir/after.sql")
+grep -q "'app'" "$test_dir/before.sql" || { echo 'Reapply comparison holds no app rows' >&2; exit 1; }
 echo 'Migration reapplication preserved institutional data, app rows included.'
 
 # Exercise the real anonymous insert path and reapply the additive logging migration.
