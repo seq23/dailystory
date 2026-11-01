@@ -1,0 +1,12 @@
+import { chromium } from 'playwright';
+const exe = process.env.HOME + '/Library/Caches/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-mac-arm64/chrome-headless-shell';
+const out = process.argv[2];
+const b = await chromium.launch({ executablePath: exe });
+const p = await (await b.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
+await p.goto('https://time-2-read.com/', { waitUntil: 'networkidle' });
+await p.getByText('Create Your First Story').first().click();
+await p.waitForTimeout(3000);
+await p.screenshot({ path: out + '/g1.png' });
+const t = (await p.locator('body').innerText()).replace(/\s+/g,' ');
+console.log(t.slice(0, 1200));
+await b.close();
