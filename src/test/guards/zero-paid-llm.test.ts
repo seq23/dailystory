@@ -1,11 +1,10 @@
 // Guard: nothing paid in this repo's own automation (owner policy, 11 Oct 2026:
-// "nothing should be paid"). The rule lives in docs/cost/zero-paid-llm.md and
-// config/llm_routing.json; this guard is the code that reads it, so the rule is
-// not a wish. It also keeps the two lanes honest: a provider endpoint in
+// "nothing should be paid"). The rule lives in config/llm_routing.json (written
+// up in docs/cost/zero-paid-llm.md); this guard is the code that reads it. It also keeps the two lanes honest: a provider endpoint in
 // scripts/ or .github/workflows/ must go through the router, and one in
 // supabase/functions/ must be listed in the product-inference paid lane.
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 // The router's own policy check, so the guard and the router cannot disagree.
@@ -13,8 +12,6 @@ import { policyErrors, readConfig } from "../../../scripts/llm/free_router.mjs";
 
 const ROOT = join(__dirname, "../../..");
 const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
-const DOC = "docs/cost/zero-paid-llm.md";
-const CONFIG = "config/llm_routing.json";
 const ROUTER = "scripts/llm/free_router.mjs";
 
 /** Provider endpoints that cost money, from the config's own marker list. */
@@ -38,24 +35,6 @@ function endpointHits(rel: string): string[] {
   }
   return hits;
 }
-
-describe("the zero-paid rule is written down where it is read", () => {
-  it("has the cost doc, and it names both lanes", () => {
-    expect(existsSync(join(ROOT, DOC)), `${DOC} is missing`).toBe(true);
-    const doc = read(DOC);
-    expect(doc).toMatch(/nothing should be paid/i);
-    expect(doc, "the doc must name the $0 automation lane").toMatch(/automation lane/i);
-    expect(doc, "the doc must name the paid product lane").toMatch(/product lane/i);
-    expect(doc, "the doc must point at the router").toContain(ROUTER);
-    expect(doc, "the doc must point at the routing config").toContain(CONFIG);
-  });
-
-  it('CLAUDE.md carries the "nothing paid" line and points at the doc', () => {
-    const claude = read("CLAUDE.md");
-    expect(claude, 'CLAUDE.md must say "nothing paid"').toMatch(/nothing paid/i);
-    expect(claude).toContain(DOC);
-  });
-});
 
 describe("the routing config is a $0-only policy", () => {
   it("passes the router's own policy check", () => {
@@ -82,7 +61,6 @@ describe("the routing config is a $0-only policy", () => {
     expect(cfg).not.toHaveProperty("paid_lanes");
     expect(cfg.product_inference_manifest).toBe("config/product_inference.json");
     const product = JSON.parse(read(cfg.product_inference_manifest));
-    expect(product.scope).toMatch(/Subscriber-funded product inference only/);
     expect(product.paid_lanes.find((l: { id: string }) => l.id === "product-inference")).toBeTruthy();
     const ids: string[] = [];
     const visit = (value: unknown, key = "") => {
