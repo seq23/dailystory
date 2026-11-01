@@ -86,9 +86,14 @@ Market as of Oct 2026, from comparison sites (re-check before the next change):
   One code path does this for every voice entry point: `src/services/narrationRouter.ts`.
 - **Each fallback is counted.** The function writes a zero-cost `cost_tracking` row
   (`operation_type 'tts_refused'`, reason in `api_endpoint`); the browser keeps
-  `t2r_narration_fallbacks` and fires `audio:fallback`. The weekly
-  `.github/workflows/tts-usage-report.yml` prints the refusal count, the characters
-  generated, and the credits the deployed key's account reports.
+  `t2r_narration_fallbacks` and fires `audio:fallback`.
+  `.github/workflows/tts-usage-report.yml` runs after each Edge Functions deploy and on
+  dispatch (no weekly schedule since 1 Nov 2026: nobody read the weekly numbers). It prints
+  the refusal count, the characters generated and the credits the deployed key's account
+  reports, then **passes quietly when narration is healthy and fails with a named reason**
+  (`scripts/tts-usage-alert.mjs`) when the account has under 20% of its plan's characters
+  left (`ELEVENLABS_CREDITS_LOW`), a refusal sent a child to the browser voice in the last
+  7 days (`NARRATION_FELL_BACK`), or the credits cannot be read (`ELEVENLABS_CREDITS_UNREADABLE`).
 - **Caches still apply first:** a persistent `tts-cache` in Supabase storage, then an
   in-memory last-known-good cache; at most 4,000 characters per request.
 

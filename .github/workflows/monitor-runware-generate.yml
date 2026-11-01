@@ -2,8 +2,9 @@ name: Monitor Runware Generate Image
 
 on:
   schedule:
-    # Check daily at 6:00 AM UTC (cost optimized: 1x/day)
-    - cron: '0 6 * * *'
+    # Check daily at 1:00 AM CT (cost optimized: 1x/day)
+    - cron: '0 1 * * *'  # America/Chicago, all year
+      timezone: America/Chicago
   workflow_dispatch:
 
 # Unified deployment concurrency - prevents race conditions

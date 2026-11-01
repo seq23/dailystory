@@ -12,9 +12,10 @@ name: Search Console Daily
 
 on:
   schedule:
-    # 06:40 UTC daily. Search Console data lags ~3 days, so the hour is only
+    # 01:40 CT daily. Search Console data lags ~3 days, so the hour is only
     # about spreading load, not freshness.
-    - cron: '40 6 * * *'
+    - cron: '40 1 * * *'  # America/Chicago, all year
+      timezone: America/Chicago
   workflow_dispatch:
 
 concurrency:

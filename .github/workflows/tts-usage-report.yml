@@ -5,6 +5,13 @@ name: TTS usage report
 # refusals that sent a child to the browser voice, and what the ElevenLabs
 # account behind ELEVENLABS_API_KEY says about its own credits. Aggregates
 # only: no row, no key, no user id is printed.
+#
+# No weekly schedule (owner, 1 Nov 2026: nobody read the weekly numbers). It runs
+# after each Edge Functions deploy and on dispatch, passes quietly when narration
+# is healthy, and fails with a NAMED reason (scripts/tts-usage-alert.mjs) when
+# the account has under 20% of its plan's characters left or a refusal sent a
+# child to the browser voice in the last 7 days. On a pull request the same
+# reasons are warnings: they describe production, not the change.
 
 on:
   pull_request:
@@ -12,11 +19,10 @@ on:
       - ".github/workflows/tts-usage-report.yml"
       - "supabase/functions/elevenlabs-tts-smart/**"
       - "docs/PRICING.md"
+      - "scripts/tts-usage-alert.mjs"
   workflow_run:
     workflows: ["Deploy Edge Functions"]
     types: [completed]
-  schedule:
-    - cron: "0 14 * * 1" # Mondays
   workflow_dispatch:
 
 jobs:
@@ -27,7 +33,9 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
     steps:
+      - uses: actions/checkout@v4
       - name: ElevenLabs usage from cost_tracking (aggregates only)
+        id: tracking
         run: |
           set -euo pipefail
           if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_PROJECT_ID" ]; then
@@ -45,6 +53,7 @@ jobs:
             max(timestamp) filter (where provider='elevenlabs' and operation_type='audio_generation') as el_last_generation,
             count(*) filter (where provider='elevenlabs' and operation_type='tts_refused') as el_refusals_all_time,
             count(*) filter (where provider='elevenlabs' and operation_type='tts_refused' and timestamp >= date_trunc('month', now())) as el_refusals_this_month,
+            count(*) filter (where provider='elevenlabs' and operation_type='tts_refused' and timestamp >= now() - interval '7 days') as el_refusals_last_7d,
             count(*) filter (where operation_type='story_generation') as stories_all_time,
             round(coalesce(sum(cost),0)::numeric, 4) as all_providers_cost_all_time
           from public.cost_tracking
@@ -57,8 +66,10 @@ jobs:
           fi
           echo "$out" | jq -r '.[0] | to_entries[] | "\(.key): \(.value)"'
           echo "$out" | jq -r '.[0] | "per narrated session: \(if .el_sessions_all_time > 0 then (.el_chars_all_time / .el_sessions_all_time | floor) else 0 end) chars"'
+          echo "refusals_7d=$(echo "$out" | jq -r '.[0].el_refusals_last_7d // 0')" >> "$GITHUB_OUTPUT"
 
       - name: ElevenLabs account credits behind the deployed key
+        id: credits
         run: |
           set -euo pipefail
           # The service-role key is fetched for this one call and masked; the
@@ -71,6 +82,25 @@ jobs:
             -H "Authorization: Bearer $srk" -H "apikey: $srk" || true)
           if echo "$res" | jq -e '.usage' >/dev/null 2>&1; then
             echo "$res" | jq -r '.usage | to_entries[] | "\(.key): \(.value)"'
+            echo "usage=$(echo "$res" | jq -c '.usage')" >> "$GITHUB_OUTPUT"
           else
-            echo "::notice::usage endpoint not answering yet (deployed on merge): $(echo "$res" | head -c 160)"
+            echo "usage endpoint did not answer: $(echo "$res" | head -c 160)"
+            echo "usage=null" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Low-credit alert (named reason, or a quiet pass)
+        env:
+          USAGE: ${{ steps.credits.outputs.usage }}
+          REFUSALS_7D: ${{ steps.tracking.outputs.refusals_7d }}
+          ON_PR: ${{ github.event_name == 'pull_request' }}
+        run: |
+          set -uo pipefail
+          # Actions runs bash with -e; capture the exit code instead of dying on it.
+          rc=0
+          out=$(node scripts/tts-usage-alert.mjs "$USAGE" "$REFUSALS_7D") || rc=$?
+          if [ "$rc" -ne 0 ] && [ "$ON_PR" = "true" ]; then
+            echo "$out" | sed 's/^::error /::warning /'
+            exit 0
+          fi
+          echo "$out"
+          exit "$rc"

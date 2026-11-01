@@ -2,8 +2,9 @@ name: Monitor AI Visual Scene Creator - ERROR-001 FIX
 
 on:
   schedule:
-    # Check daily at 6:15 AM UTC (cost optimized: 1x/day, staggered +15min)
-    - cron: '15 6 * * *'
+    # Check daily at 1:15 AM CT (cost optimized: 1x/day, staggered +15min)
+    - cron: '15 1 * * *'  # America/Chicago, all year
+      timezone: America/Chicago
   workflow_dispatch:
 
 # Unified deployment concurrency - prevents race conditions

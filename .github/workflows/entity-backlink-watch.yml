@@ -13,7 +13,8 @@ name: entity backlink watch
 
 on:
   schedule:
-    - cron: '41 13 * * 1' # Mondays 13:41 UTC
+    - cron: '40 7 * * 4'  # Thursdays 07:40 CT
+      timezone: America/Chicago
   workflow_dispatch:
 
 permissions:
