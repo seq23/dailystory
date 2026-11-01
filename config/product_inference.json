@@ -99,7 +99,42 @@
             "provider": "Groq / Cerebras free tiers",
             "why": "Not added: no key on the project. Groq terms page gave no readable age clause (needs a manual read); Cerebras terms require the account holder to be 13+ with no child-service clause found. Each needs an owner signup (console.groq.com/keys, cloud.cerebras.ai) before it can be a tier."
           }
-        ]
+        ],
+        "school_lane": {
+          "decided": "2026-10-26 (Phase 8 approval); built 2026-10-31",
+          "applies_to": "story pages, end-of-story quizzes, word definitions, translation and spelling, for any request from an account that is an institution member or owns an app profile linked to a roster child, or that names a linked child profile",
+          "decided_by": "public.institution_ai_lane (supabase/migrations/20261031210000_institution_app_reading.sql), service role only; supabase/functions/_shared/privacyLane.ts reads it and fails closed to the school lane when the account cannot be confirmed",
+          "enforced_in": "supabase/functions/_shared/storyTextProvider.ts assertSchoolSafeRequest(), checked before every school request is sent",
+          "fail_closed": "no school-safe route answering means the caller's backup content (Backup Mode stories, the story-text quiz, the built-in definition); never a free or training route",
+          "allowed": [
+            {
+              "tier": "cloudflare-free",
+              "why": "Workers AI data usage (developers.cloudflare.com/workers-ai/platform/data-usage, read 31 Oct 2026): 'Cloudflare does not use Customer Content processed by Workers AI to train AI models' and does not retain inputs or outputs after the request. Called directly on api.cloudflare.com, never through AI Gateway logging or caching. Names masked."
+            },
+            {
+              "tier": "openrouter-paid",
+              "why": "Every request carries provider { data_collection: 'deny', zdr: true }: OpenRouter routes only to endpoints with a Zero Data Retention policy (openrouter.ai/docs/features/zdr, read 31 Oct 2026) that do not collect prompts. meta-llama/llama-3.3-70b-instruct had 10 ZDR endpoints on 31 Oct 2026 (openrouter.ai/api/v1/endpoints/zdr). Names masked."
+            },
+            {
+              "tier": "openai",
+              "why": "OpenAI API data is not used for training by default (owner-accepted standard for this lane); kept up to 30 days for abuse monitoring only. School requests are sent with names masked."
+            }
+          ],
+          "excluded": [
+            {
+              "tier": "openrouter-free",
+              "why": "Free endpoints may log prompts and use them for training; none of the four :free models had a ZDR endpoint on 31 Oct 2026, so none is provably no-training."
+            },
+            {
+              "tier": "lovable-gateway / Gemini",
+              "why": "Already out of the text chain (Gemini API terms bar under-18 services); the image scene step that still calls it is skipped for schools, see images."
+            }
+          ],
+          "images": {
+            "decision": "Off for school accounts: runware-generate-image answers success:false (skipped: school-privacy) before any prompt is built, and the client shows its static picture.",
+            "why": "Runware never trains on API data (runware.ai/docs/platform/zero-data-retention, read 31 Oct 2026), but without its enterprise Zero Data Retention it keeps generated images for 7 days, and the scene-writing step sends page text to the Lovable gateway (Gemini). Turn pictures back on for schools only once Runware ZDR is enabled on the account and the scene step uses a school-safe route."
+          }
+        }
       }
     }
   ]

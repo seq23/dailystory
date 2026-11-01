@@ -10,6 +10,7 @@
 // Guard: src/test/guards/story-quiz.test.ts.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
+import { privacyLaneForRequest } from "../_shared/privacyLane.ts";
 import {
   buildQuizMessages,
   finalizeQuiz,
@@ -49,6 +50,8 @@ serve(async (req) => {
     .filter((n): n is string => typeof n === "string" && n.trim().length >= 2)
     .slice(0, 4);
 
+  // School children: no-training/no-retention routes only; none answering → the story-text quiz.
+  const lane = await privacyLaneForRequest(req, body);
   let raw: unknown = null;
   let provider = "none";
   try {
@@ -60,7 +63,7 @@ serve(async (req) => {
         temperature: 0.4,
       },
       // Output check: planning, cut-off or non-quiz JSON → next model (../_shared/quiz.ts).
-      { privateNames, accept: (content, finishReason) => quizAnswerProblem(content, finishReason) },
+      { privateNames, lane, accept: (content, finishReason) => quizAnswerProblem(content, finishReason) },
     );
     console.log("generate-quiz provider", { provider: p, attempts: attempts.map((a) => `${a.provider} ${a.model ?? ""} ${a.status ?? "-"}`) });
     if (response.ok) {

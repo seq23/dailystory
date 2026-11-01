@@ -1,6 +1,7 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
+import { privacyLaneForRequest, withPrivacyLane } from "../_shared/privacyLane.ts";
 import { plainAnswerProblem } from "../_shared/storyOutputCheck.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
@@ -19,7 +20,7 @@ interface SpellingRequest {
   context?: string;
 }
 
-Deno.serve(async (req) => {
+const handleRequest = async (req: Request): Promise<Response> => {
   console.log('correct-spelling function called');
 
   // Handle CORS and health checks
@@ -155,4 +156,14 @@ Deno.serve(async (req) => {
       }
     );
   }
+};
+
+// School children's text only on no-training/no-retention routes (../_shared/privacyLane.ts):
+// every model call in the handler inherits the lane decided here from the signed-in account.
+Deno.serve(async (req: Request) => {
+  if (req.method !== "POST") return handleRequest(req);
+  let laneBody: unknown = null;
+  try { laneBody = await req.clone().json(); } catch { /* the handler answers bad JSON itself */ }
+  const lane = await privacyLaneForRequest(req, laneBody);
+  return withPrivacyLane(lane, () => handleRequest(req));
 });

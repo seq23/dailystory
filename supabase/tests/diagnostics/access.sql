@@ -1,5 +1,5 @@
 -- All identities and addresses are synthetic. Runs only in disposable PostgreSQL.
-create role service_role nologin bypassrls;
+do $$ begin if not exists (select 1 from pg_roles where rolname = 'service_role') then create role service_role nologin bypassrls; end if; end $$; -- the institutions bootstrap may have made it
 grant all on public.client_boot_errors, public.story_generation_failures to service_role;
 grant usage on sequence public.client_boot_errors_id_seq, public.story_generation_failures_id_seq to service_role;
 

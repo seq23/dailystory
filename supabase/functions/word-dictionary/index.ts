@@ -5,6 +5,7 @@ import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
+import { privacyLaneForRequest } from "../_shared/privacyLane.ts";
 import { parseModelJson, freeDictionaryLookup, builtInWordEntry } from "../_shared/wordFallback.ts";
 import { jsonAnswerProblem } from "../_shared/storyOutputCheck.ts";
 
@@ -274,7 +275,8 @@ serve(async (req) => {
 
   let userLanguage = 'en'; // Default fallback
   try {
-    const { word, userLevel = 'easy', userLanguage: reqUserLanguage = 'en' } = await req.json();
+    const reqBody = await req.json();
+    const { word, userLevel = 'easy', userLanguage: reqUserLanguage = 'en' } = reqBody;
     userLanguage = reqUserLanguage; // Store for error handling
 
     if (!word) {
@@ -349,7 +351,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
         ],
         temperature: 0.3,
         max_tokens: 300,
-    }, { accept: jsonAnswerProblem('definition') });
+    }, { accept: jsonAnswerProblem('definition'), lane: await privacyLaneForRequest(req, reqBody) });
 
     if (!response.ok) {
       const errorText = await response.text();

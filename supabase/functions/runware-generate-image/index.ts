@@ -19,6 +19,7 @@ import {
   buildImagePrompt,
   type ImageUserInfo,
 } from '../_shared/imagePrompt.ts';
+import { privacyLaneForRequest } from '../_shared/privacyLane.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -242,6 +243,15 @@ Deno.serve(async (req) => {
 
   if (!pageText) {
     return json({ success: false, error: 'pageText is required' });
+  }
+
+  // School children get no generated pictures (31 Oct 2026). Runware never trains on API
+  // data, but without its enterprise Zero Data Retention it keeps outputs for 7 days, and
+  // the scene-writing step sends page text to the Lovable gateway (Gemini). Until both
+  // are no-retention, a school child's page text never leaves here: the client shows its
+  // static fallback picture. config/product_inference.json text_chain.school_lane.images.
+  if ((await privacyLaneForRequest(req, payload)) === 'school') {
+    return json({ success: false, skipped: 'school-privacy', error: 'Pictures are off for school accounts' });
   }
 
   const userId = await resolveUserId(req);
