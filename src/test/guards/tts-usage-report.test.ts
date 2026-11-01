@@ -4,7 +4,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-// @ts-expect-error plain .mjs module
 import { LOW_CREDIT_SHARE, ttsAlerts } from "../../../scripts/tts-usage-alert.mjs";
 
 const ROOT = join(__dirname, "../../..");
@@ -21,6 +20,8 @@ describe("tts-usage-report workflow", () => {
   });
   it("ends in the alert step, fed the 7-day refusals and the credits", () => {
     expect(WF).toContain("node scripts/tts-usage-alert.mjs");
+    // Actions runs bash with -e: the exit code is captured, so a PR can downgrade the reasons to warnings.
+    expect(WF).toContain("|| rc=$?");
     expect(WF).toContain("el_refusals_last_7d");
     expect(WF).toContain("interval '7 days'");
     expect(WF).toContain("steps.credits.outputs.usage");

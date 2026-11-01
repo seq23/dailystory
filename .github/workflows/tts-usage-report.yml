@@ -95,7 +95,9 @@ jobs:
           ON_PR: ${{ github.event_name == 'pull_request' }}
         run: |
           set -uo pipefail
-          out=$(node scripts/tts-usage-alert.mjs "$USAGE" "$REFUSALS_7D"); rc=$?
+          # Actions runs bash with -e; capture the exit code instead of dying on it.
+          rc=0
+          out=$(node scripts/tts-usage-alert.mjs "$USAGE" "$REFUSALS_7D") || rc=$?
           if [ "$rc" -ne 0 ] && [ "$ON_PR" = "true" ]; then
             echo "$out" | sed 's/^::error /::warning /'
             exit 0
