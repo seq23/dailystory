@@ -5,6 +5,10 @@ limits and the Search Console property are in `REPO_IDENTITY.md`; the agent
 bootstrap and the Repo Operator laws are in `AGENTS.md`, which this file does not
 repeat. Email and analytics settlements are in [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
+## Company brain
+
+Read `~/Brains/time-2-read.md` before any work (business facts, priorities, voice, settled decisions). New business facts go to the brain via Boss OS, not into this repo or memory. Repo how-tos stay in `docs/`.
+
 ## Nothing paid
 
 **Nothing paid** in this repo's own automation. No script and no workflow here
