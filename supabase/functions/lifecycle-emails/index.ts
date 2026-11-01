@@ -22,6 +22,8 @@ function sameSecret(a: string, b: string): boolean {
 }
 
 serve(async (req) => {
+  // The deploy probes every function's OPTIONS preflight for a 2xx (deploy-functions.yml boot check).
+  if (req.method === "OPTIONS") return new Response(null, { status: 204 });
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
   const secret = Deno.env.get("LIFECYCLE_CRON_SECRET");
   if (!secret) return json({ stop: "NAMED STOP LIFECYCLE_CRON_SECRET: the sweep secret is not set on the project; nothing runs." }, 503);

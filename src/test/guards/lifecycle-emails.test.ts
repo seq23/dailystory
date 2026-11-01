@@ -290,6 +290,14 @@ describe('wiring, senders and the database', () => {
   it('school status comes from the Phase 8 database check, not a flag', () => {
     expect(read('supabase/functions/_shared/lifecycleEmail/deps.ts')).toContain('rpc("institution_ai_lane", { p_user: userId, p_child: null })');
   });
+  it('both new functions answer the deploy\'s OPTIONS boot probe with a 2xx before any other check', () => {
+    for (const fn of ['lifecycle-emails', 'lifecycle-unsubscribe']) {
+      const src = read(`supabase/functions/${fn}/index.ts`);
+      const options = src.indexOf('req.method === "OPTIONS"');
+      expect(options, fn).toBeGreaterThan(0);
+      expect(options, fn).toBeLessThan(src.indexOf('req.method !== "POST"'));
+    }
+  });
   it('the hourly sweep, the kill switch and the webhook are wired', () => {
     const wf = read('.github/workflows/lifecycle-emails.yml');
     expect(wf).toMatch(/cron: "23 \* \* \* \*"/);
