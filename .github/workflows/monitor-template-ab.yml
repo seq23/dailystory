@@ -2,8 +2,9 @@ name: Monitor Template AB
 
 on:
   schedule:
-    # Check daily at 6:30 AM UTC (cost optimized: 1x/day, staggered +30min)
-    - cron: '30 6 * * *'
+    # Check daily at 1:30 AM CT (cost optimized: 1x/day, staggered +30min)
+    - cron: '30 1 * * *'  # America/Chicago, all year
+      timezone: America/Chicago
   workflow_dispatch:
 
 # Unified deployment concurrency - prevents race conditions

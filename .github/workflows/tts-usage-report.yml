@@ -16,7 +16,8 @@ on:
     workflows: ["Deploy Edge Functions"]
     types: [completed]
   schedule:
-    - cron: "0 14 * * 1" # Mondays
+    - cron: "30 8 * * 3"  # Wednesdays 08:30 CT
+      timezone: America/Chicago
   workflow_dispatch:
 
 jobs:

@@ -2,8 +2,9 @@ name: Monitor Template CD
 
 on:
   schedule:
-    # Check daily at 6:45 AM UTC (cost optimized: 1x/day, staggered +45min)
-    - cron: '45 6 * * *'
+    # Check daily at 1:45 AM CT (cost optimized: 1x/day, staggered +45min)
+    - cron: '45 1 * * *'  # America/Chicago, all year
+      timezone: America/Chicago
   workflow_dispatch:
 
 # Unified deployment concurrency - prevents race conditions
