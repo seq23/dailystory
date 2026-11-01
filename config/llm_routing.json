@@ -62,12 +62,13 @@
     }
   ],
   "automation_lane": {
-    "state": "no_model_calls_today",
-    "detail": "No script or workflow in this repository calls a model. The Search Console collectors, the prerender check and the IndexNow submitter are all deterministic. The router exists so that the first one to need a model has a $0 door to go through instead of naming its own.",
+    "state": "search_loop_engine_only",
+    "detail": "One automation calls a model: the shared search engine (seq23/search-loop @v1, .github/workflows/search-loop.yml). It gets its model list from this file only, through scripts/search-loop/engine-routing.mjs (which runs the router policy check and refuses on failure); the engine itself refuses any model not priced $0/$0 and fails loud on a reported cost. Everything else here (Search Console collectors, prerender check, IndexNow submitter) is deterministic.",
     "scan_roots": [
       "scripts",
       ".github/workflows"
-    ]
+    ],
+    "engine_adapter": "scripts/search-loop/engine-routing.mjs"
   },
   "provider_endpoint_markers": [
     "openrouter\\.ai/api",

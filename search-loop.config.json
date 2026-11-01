@@ -1,0 +1,182 @@
+{
+  "schema": "search-loop-config-v1",
+  "site": "time-2-read.com",
+  "base_url": "https://guides.time-2-read.com",
+  "site_name": "Time-2-Read",
+  "publisher": {
+    "name": "Time-2-Read",
+    "url": "https://time-2-read.com"
+  },
+  "audience": "parents, homeschool families and teachers of children aged 3 to 15 (Pre-K through 10th grade) who want their child to read more, at the right reading level",
+  "voice": "encouraging and plain, parent-to-parent and teacher-to-teacher; celebrates kids reading; short sentences. Never say 'no screens' or frame anything against AI or screens. No medical, clinical, dyslexia, ADHD-treatment or diagnosis claims. Never promise grade jumps, reading-level gains or guaranteed results. Stories are in English only. The brand is written Time-2-Read, with dashes. Ages 3 to 15, Pre-K through 10th grade",
+  "topics": [
+    "how many minutes should a child read a day",
+    "my child doesn't want to read",
+    "help second grader read better",
+    "summer reading log for kids",
+    "ai story generator for kids",
+    "bedtime story with my child's name",
+    "reading log with parent signature",
+    "if you read 20 minutes a day how many books",
+    "reading app for homeschool",
+    "stories at my child's reading level",
+    "reading level stories for kids",
+    "reading comprehension stories for kids"
+  ],
+  "find": {
+    "exclude_words": [
+      "no screen",
+      "screen free",
+      "screen-free",
+      "without screens",
+      "dyslexia",
+      "dyslexic",
+      "adhd",
+      "autism",
+      "autistic",
+      "spanish",
+      "bilingual",
+      "french",
+      "in hindi",
+      "no subscription",
+      "free reading app",
+      "printable",
+      "pdf",
+      "is reading 20 minutes a day enough",
+      "reading app with timer",
+      "reading timer app",
+      "struggling to read",
+      "struggling 8 year old",
+      "high interest low level",
+      "hi lo books",
+      "sight word story",
+      "sight words in a story",
+      "decodable story",
+      "reading app for esl",
+      "esl kids",
+      "esl students",
+      "20 minute reading log",
+      "hates reading",
+      "main character"
+    ]
+  },
+  "banned_claims": [
+    {
+      "id": "no-screens",
+      "pattern": "\\b(no|without|zero|fewer|less) screens?\\b|\\bscreen[- ]free\\b|\\bscreen time is (bad|harmful)",
+      "why": "brain voice: never 'no screens'"
+    },
+    {
+      "id": "anti-ai",
+      "pattern": "\\b(unlike|instead of|not) (an? )?(ai|artificial intelligence)\\b|\\bai[- ]free\\b|\\b(ai|artificial intelligence) (is|can be) (bad|harmful|dangerous)",
+      "why": "brain voice: no anti-AI framing"
+    },
+    {
+      "id": "medical",
+      "pattern": "\\b(treat|treats|treating|treatment|cure|cures|diagnos\\w*|therap\\w*|clinical\\w*|clinically)\\b",
+      "why": "brain voice: no medical or clinical claims"
+    },
+    {
+      "id": "dyslexia",
+      "pattern": "\\bdyslexi\\w*",
+      "why": "brain voice: no dyslexia claims"
+    },
+    {
+      "id": "grade-jump",
+      "pattern": "\\b(guarantee\\w*|proven to|jump (a |one |two |\\d+ )?(grade|reading level)s?|(raise|boost|improve)s? (their |your child's |a child's )?(reading )?(grade|level|scores?) by|grade levels? ahead)",
+      "why": "brain voice: no guaranteed results or grade jumps"
+    },
+    {
+      "id": "non-english-stories",
+      "pattern": "\\bstories (in|available in) (spanish|french|chinese|hindi|arabic|any language|\\d+ languages)|\\b(multilingual|bilingual) stories\\b",
+      "why": "stories are English only"
+    },
+    {
+      "id": "brand-spelling",
+      "pattern": "\\bTime ?2 ?Read\\b|\\bTime to Read\\b",
+      "flags": "",
+      "why": "brand is Time-2-Read, with dashes"
+    },
+    {
+      "id": "age-range",
+      "pattern": "\\bages? (0|1|2|16|17|18)\\b|\\b(1[6-9]|2\\d)[- ]year[- ]olds?\\b",
+      "why": "ages 3-15, Pre-K to 10th grade only"
+    }
+  ],
+  "action": {
+    "label": "Start a free week",
+    "url": "https://time-2-read.com/pricing"
+  },
+  "allowed_link_targets": [
+    "https://guides.time-2-read.com",
+    "https://time-2-read.com"
+  ],
+  "mode": "normal",
+  "pace": {
+    "start_per_day": 10,
+    "step_per_week": 5,
+    "cap": 30
+  },
+  "menu_pages_need_approval": false,
+  "health_gate": "none",
+  "protected_paths": [
+    "index.html",
+    "public",
+    "src",
+    "supabase",
+    "guides-site"
+  ],
+  "output": {
+    "dir": "questions",
+    "format": "dir-index",
+    "url_prefix": "/questions/",
+    "redirects": {
+      "file": "guides-site/_redirects",
+      "format": "lines"
+    }
+  },
+  "template": {
+    "section_name": "Reading questions",
+    "stylesheets": [
+      "/assets/guides.css"
+    ],
+    "og_image": {
+      "url": "https://time-2-read.com/og-image.png",
+      "width": 1200,
+      "height": 630
+    },
+    "header_html": "<header class=\"site-header\"><div class=\"container\"><a class=\"brand\" href=\"https://time-2-read.com/\">Time-2-Read</a><nav aria-label=\"Primary\"><a href=\"/questions/\">Reading questions</a><a href=\"https://time-2-read.com/pricing\">Pricing</a></nav></div></header>",
+    "footer_html": "<footer class=\"footer\"><div class=\"container\"><p>Time-2-Read makes stories at your child's reading level, for ages 3 to 15 (Pre-K through 10th grade). Stories are in English.</p></div></footer>"
+  },
+  "related": {
+    "max_pages_per_new_page": 2,
+    "scan_dirs": [
+      "questions"
+    ],
+    "skip_dirs": []
+  },
+  "gsc": {
+    "site_url": "https://time-2-read.com/"
+  },
+  "llm": {
+    "routing_file": ".search-loop-routing.json"
+  },
+  "indexnow": {
+    "key": "0d5e9f65e7181755294d3a96b70860fc",
+    "key_location": "https://guides.time-2-read.com/0d5e9f65e7181755294d3a96b70860fc.txt"
+  },
+  "analytics": {
+    "ai_referrals": "none",
+    "ai_bot_hits": "none"
+  },
+  "conversions": {
+    "source": "none"
+  },
+  "shares_audience_with": [
+    {
+      "site": "heygetonmylevel.com",
+      "ledger_url": "https://raw.githubusercontent.com/seq23/heygetonmylevel/main/data/search-loop"
+    }
+  ],
+  "ledger_dir": "data/search-loop"
+}

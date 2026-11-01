@@ -46,6 +46,12 @@ refusal is recorded in the file with the owner step and exits 0. Search Console
 answering with zero rows for a property that has impressions exits 1: that is a
 defect, not a quiet week.
 
+## Search loop
+
+The shared search engine writes gated pages to `guides.time-2-read.com/questions/`
+(Cloudflare Pages, independent of Lovable). How it works, proof mode and the go-live
+steps: [`docs/search/search-loop.md`](docs/search/search-loop.md).
+
 ## The merge gate
 
 `.github/workflows/checks.yml` is the fast check and must stay fast:

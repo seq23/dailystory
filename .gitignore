@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 test-results/
 playwright-report/
+
+# shared search engine (seq23/search-loop)
+.search-loop-engine/
+.search-loop-run.log
+.search-loop-routing.json
+dist-guides/
