@@ -15,7 +15,6 @@ schedule); see the notes below for what moved.
 | Prerender live check | `prerender-live-check.yml` | `17 */4 * * *` (UTC; repeating, no fixed hour) | `17 */4 * * *` |
 | Search Console Daily | `search-console-daily.yml` | every day 01:40 CT | `40 1 * * *` |
 | Supabase keep-alive | `supabase-keep-alive.yml` | every day 00:41 CT | `41 0 * * *` |
-| TTS usage report | `tts-usage-report.yml` | Wed 08:30 CT | `30 8 * * 3` |
 
 ## Weekly windows
 
@@ -26,4 +25,7 @@ schedule); see the notes below for what moved.
 
 ## Moved on 1 Nov 2026
 - Entity backlink watch: Monday → Thursday 07:40 CT.
-- TTS usage report: Monday → Wednesday 08:30 CT.
+- TTS usage report: no longer scheduled (owner, 1 Nov 2026: nobody read the weekly numbers). It runs
+  after each Edge Functions deploy and on dispatch, and fails with a named reason when ElevenLabs
+  credits fall under 20% of the plan or a child fell back to the browser voice in the last 7 days
+  (docs/PRICING.md, scripts/tts-usage-alert.mjs).
