@@ -13,6 +13,7 @@ const tables = {
   readings: "institution_readings",
   assessments: "institution_assessments",
   scores: "institution_quiz_results",
+  appLinks: "institution_app_links",
 } as const;
 
 /** Fetch every page; reports must never silently stop at PostgREST's row cap. */
@@ -28,7 +29,9 @@ export async function loadWorkspace(db = institutionDb): Promise<Workspace> {
             ? ["class_id", "student_id"]
             : key === "scores"
               ? ["assessment_id", "skill"]
-              : ["id"];
+              : key === "appLinks"
+                ? ["child_profile_id"]
+                : ["id"];
       for (let offset = 0; ; offset += 500) {
         let query = db.from(table).select("*");
         for (const column of order) query = query.order(column);
@@ -52,4 +55,18 @@ export async function institutionRpc(
   const { data, error } = await institutionDb.rpc(name, args);
   if (error) throw new Error(error.message);
   return data;
+}
+
+/** The signed-in adult's own app child profiles: the only ones they may link to a roster child. */
+export async function loadOwnAppProfiles(
+  userId: string,
+  db = institutionDb,
+): Promise<Array<{ id: string; display_name: string }>> {
+  const { data, error } = await db
+    .from("child_profiles")
+    .select("id, display_name")
+    .eq("parent_user_id", userId)
+    .order("display_name");
+  if (error) throw new Error("Your app profiles could not be loaded.");
+  return (data ?? []) as Array<{ id: string; display_name: string }>;
 }

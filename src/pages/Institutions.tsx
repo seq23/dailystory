@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   institutionDb,
   institutionRpc,
+  loadOwnAppProfiles,
   loadWorkspace,
 } from "@/lib/institutions/api";
 import {
@@ -13,6 +14,7 @@ import {
   classGrowth,
   skillSummary,
   studentReport,
+  sourceLabel,
   type Workspace,
   type Student,
 } from "@/lib/institutions/report";
@@ -74,6 +76,14 @@ function StudentDetail({
     workspace.assessments,
     workspace.scores,
   );
+  const app = studentReport(
+    student,
+    workspace.readings,
+    workspace.assessments,
+    workspace.scores,
+    "app",
+  );
+  const linked = workspace.appLinks.some((l) => l.student_id === student.id);
   return (
     <section aria-label="Student report" className="school-panel">
       <h2>{student.display_name}</h2>
@@ -82,10 +92,15 @@ function StudentDetail({
         {gradeLabel(report.readingGrade)}
       </p>
       <p>
-        {report.stories} recorded stories completed · {report.minutes} recorded
+        Teacher recorded: {report.stories} stories completed · {report.minutes}{" "}
         {uiText("minutes")}
       </p>
-      <h3>Growth from recorded assessments</h3>
+      <p>
+        From the app: {app.stories} stories completed · {app.minutes}{" "}
+        {uiText("minutes")} · {app.wordsRead} words read
+        {linked ? "" : " · No app profile linked"}
+      </p>
+      <h3>Growth from teacher-recorded assessments</h3>
       {report.start && report.now ? (
         <p>
           {date(report.start.assessed_on)}:{" "}
@@ -134,15 +149,72 @@ function StudentDetail({
           </tbody>
         </table>
       </div>
+      <h3>From the app</h3>
+      <p>
+        Recorded automatically while a linked app profile reads: its Reads-at
+        setting and its in-app quizzes. Kept apart from teacher assessments and
+        never combined with them.
+      </p>
+      {app.start && app.now ? (
+        <p>
+          Reads-at setting {date(app.start.assessed_on)}:{" "}
+          {gradeLabel(app.start.reading_grade)} → {date(app.now.assessed_on)}:{" "}
+          {gradeLabel(app.now.reading_grade)}.{" "}
+          {app.levelDelta === null
+            ? "Two changes are needed for a comparison."
+            : `${app.levelDelta > 0 ? "+" : ""}${app.levelDelta} grade steps.`}
+        </p>
+      ) : (
+        <p>No Reads-at changes recorded by the app.</p>
+      )}
+      <div className="school-table">
+        <table>
+          <caption>App quiz results by skill (percentage points)</caption>
+          <thead>
+            <tr>
+              <th>Skill</th>
+              <th>{uiText("Start")}</th>
+              <th>Latest</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            {app.skills.map((s) => (
+              <tr key={s.skill}>
+                <th>{s.skill}</th>
+                <td>
+                  {s.first
+                    ? `${s.first.correct}/${s.first.total} · ${date(s.first.date)}`
+                    : "Not assessed"}
+                </td>
+                <td>
+                  {s.last
+                    ? `${s.last.correct}/${s.last.total} · ${date(s.last.date)}`
+                    : "Not assessed"}
+                </td>
+                <td>
+                  {s.delta === null
+                    ? "Needs two results"
+                    : `${s.delta > 0 ? "+" : ""}${s.delta} pp`}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <details>
-        <summary>Assessment history ({report.history.length})</summary>
+        <summary>
+          Assessment history ({report.history.length + app.history.length})
+        </summary>
         <ul>
-          {report.history.map((a) => (
-            <li key={a.id}>
-              {date(a.assessed_on)} — School grade {gradeLabel(a.school_grade)},
-              Reads at {gradeLabel(a.reading_grade)} · Teacher recorded
-            </li>
-          ))}
+          {[...report.history, ...app.history]
+            .sort((a, b) => a.assessed_on.localeCompare(b.assessed_on))
+            .map((a) => (
+              <li key={a.id}>
+                {date(a.assessed_on)} — School grade {gradeLabel(a.school_grade)},
+                Reads at {gradeLabel(a.reading_grade)} · {sourceLabel(a.source)}
+              </li>
+            ))}
         </ul>
       </details>
       <details>
@@ -154,7 +226,7 @@ function StudentDetail({
             .map((r) => (
               <li key={r.id}>
                 {date(r.read_at)} — {r.story_title}: {r.minutes} min ·{" "}
-                {r.completed ? "Completed" : "In progress"} · Teacher recorded
+                {r.completed ? "Completed" : "In progress"} · {sourceLabel(r.source)}
               </li>
             ))}
         </ul>
@@ -285,6 +357,32 @@ export default function Institutions() {
     reportWorkspace.assessments,
     workspace.scores,
   );
+  const teacherReadings = reportWorkspace.readings.filter(
+    (r) => r.source === "teacher_recorded",
+  );
+  const appReadings = reportWorkspace.readings.filter((r) => r.source === "app");
+  const appSummary = skillSummary(
+    reportWorkspace.assessments,
+    workspace.scores,
+    "app",
+  );
+  const [appProfiles, setAppProfiles] = useState<
+    Array<{ id: string; display_name: string }>
+  >([]);
+  useEffect(() => {
+    let active = true;
+    if (!userId || !schoolId) return;
+    void loadOwnAppProfiles(userId)
+      .then((rows) => {
+        if (active) setAppProfiles(rows);
+      })
+      .catch(() => {
+        if (active) setAppProfiles([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [userId, schoolId]);
   async function mutate(task: () => Promise<unknown>, success: string) {
     setBusy(true);
     setError("");
@@ -415,18 +513,21 @@ export default function Institutions() {
               <section className="school-panel">
                 <h2>{selectedClass?.name ?? "Across classes"}</h2>
                 <p>
-                  Teacher-recorded observations. Family reading records are
-                  separate. A completed reading record counts as one story
-                  session; minutes are reported by the teacher.
+                  Two sources, always labelled and never added together:
+                  teacher-recorded observations, and reading recorded from the
+                  app by a child profile linked to a roster child. Household
+                  reading on unlinked profiles is not included. A completed
+                  reading record counts as one story session.
                 </p>
                 <p>
+                  Teacher recorded:{" "}
                   <strong>
-                    {reportWorkspace.readings.filter((r) => r.completed).length}
+                    {teacherReadings.filter((r) => r.completed).length}
                   </strong>{" "}
                   stories completed ·{" "}
                   <strong>
                     {Math.round(
-                      reportWorkspace.readings.reduce(
+                      teacherReadings.reduce(
                         (n, r) => n + Number(r.minutes),
                         0,
                       ) * 100,
@@ -434,10 +535,23 @@ export default function Institutions() {
                   </strong>{" "}
                   {uiText("minutes")}
                 </p>
+                <p>
+                  From the app:{" "}
+                  <strong>{appReadings.filter((r) => r.completed).length}</strong>{" "}
+                  stories completed ·{" "}
+                  <strong>
+                    {Math.round(
+                      appReadings.reduce((n, r) => n + Number(r.minutes), 0) *
+                        100,
+                    ) / 100}
+                  </strong>{" "}
+                  {uiText("minutes")} (time the reading page was open, up to 3
+                  hours a session)
+                </p>
                 <div className="school-table">
                   <table>
                     <caption>
-                      Quiz results by skill · all recorded questions
+                      Quiz results by skill · all teacher-recorded questions
                     </caption>
                     <thead>
                       <tr>
@@ -461,9 +575,36 @@ export default function Institutions() {
                     </tbody>
                   </table>
                 </div>
+                <div className="school-table">
+                  <table>
+                    <caption>
+                      Quiz results by skill · all in-app quiz questions
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th>Skill</th>
+                        <th>Correct / questions</th>
+                        <th>Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {appSummary.map((s) => (
+                        <tr key={s.skill}>
+                          <th>{s.skill}</th>
+                          <td>
+                            {s.total
+                              ? `${s.correct} / ${s.total}`
+                              : "Not assessed"}
+                          </td>
+                          <td>{s.percent === null ? "—" : `${s.percent}%`}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 <p>
                   Growth: {growth.paired} {uiText("of")} {growth.total} students have two
-                  recorded reading levels.{" "}
+                  teacher-recorded reading levels.{" "}
                   {growth.meanGradeSteps === null
                     ? "No comparison yet."
                     : `Mean change for those same students: ${growth.meanGradeSteps} grade steps.`}{" "}
@@ -577,6 +718,8 @@ export default function Institutions() {
                           <th>{uiText("Reads at")}</th>
                           <th>{uiText("Stories")}</th>
                           <th>{uiText("Minutes")}</th>
+                          <th>App stories</th>
+                          <th>App minutes</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -586,6 +729,13 @@ export default function Institutions() {
                             reportWorkspace.readings,
                             reportWorkspace.assessments,
                             workspace.scores,
+                          );
+                          const a = studentReport(
+                            s,
+                            reportWorkspace.readings,
+                            reportWorkspace.assessments,
+                            workspace.scores,
+                            "app",
                           );
                           return (
                             <tr key={s.id}>
@@ -601,6 +751,8 @@ export default function Institutions() {
                               <td>{gradeLabel(r.readingGrade)}</td>
                               <td>{r.stories}</td>
                               <td>{r.minutes}</td>
+                              <td>{a.stories}</td>
+                              <td>{a.minutes}</td>
                             </tr>
                           );
                         })}
@@ -897,6 +1049,101 @@ export default function Institutions() {
                     )}
                   </>
                 )}
+                <details>
+                  <summary>Link an app profile to a roster child</summary>
+                  <p>
+                    Link a child profile on your own account (for example a
+                    classroom profile) to a roster child in your class. While
+                    linked, that profile's reading sessions, in-app quizzes and
+                    Reads-at changes are recorded here as "From the app".
+                    Nothing read before the link is copied. Household profiles
+                    on other accounts cannot be linked. Story text for linked
+                    and school accounts goes only to AI services that do not
+                    train on or keep it, and pictures are turned off.
+                  </p>
+                  {!students.length || !appProfiles.length ? (
+                    <p>
+                      {!students.length
+                        ? "Add a roster child first."
+                        : "Create a child profile on this account first, in the app's profile settings."}
+                    </p>
+                  ) : (
+                    <form
+                      onSubmit={(e) => {
+                        const f = formData(e);
+                        void mutate(
+                          () =>
+                            institutionRpc("institution_link_app_profile", {
+                              p_student: String(f.get("student")),
+                              p_child_profile: String(f.get("profile")),
+                            }),
+                          "App profile linked. New reading will appear here.",
+                        );
+                      }}
+                    >
+                      <label>
+                        Roster child
+                        <select name="student" required>
+                          {students
+                            .filter(
+                              (s) =>
+                                !workspace.appLinks.some(
+                                  (l) => l.student_id === s.id,
+                                ),
+                            )
+                            .map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.display_name}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                      <label>
+                        Your app profile
+                        <select name="profile" required>
+                          {appProfiles
+                            .filter(
+                              (p) =>
+                                !workspace.appLinks.some(
+                                  (l) => l.child_profile_id === p.id,
+                                ),
+                            )
+                            .map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.display_name}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                      <Button disabled={busy}>Link app profile</Button>
+                    </form>
+                  )}
+                  {workspace.appLinks
+                    .filter((l) => students.some((s) => s.id === l.student_id))
+                    .map((l) => (
+                      <p key={l.child_profile_id}>
+                        {students.find((s) => s.id === l.student_id)
+                          ?.display_name}{" "}
+                        · linked {date(l.linked_at.slice(0, 10))}{" "}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={busy}
+                          onClick={() =>
+                            void mutate(
+                              () =>
+                                institutionRpc("institution_unlink_app_profile", {
+                                  p_child_profile: l.child_profile_id,
+                                }),
+                              "Unlinked. Recorded app history stays.",
+                            )
+                          }
+                        >
+                          Unlink
+                        </Button>
+                      </p>
+                    ))}
+                </details>
                 {admin && selectedStudent && (
                   <details>
                     <summary>Delete this institutional child profile</summary>

@@ -1,6 +1,7 @@
 // DIAGNOSTIC REDEPLOY: 2025-01-23T03:00:00Z - Force packaging inclusion
 console.log("[translate-universal] DIAGNOSTIC LOADED: 2025-01-23T03:00:00Z");
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
+import { privacyLaneForRequest, withPrivacyLane } from "../_shared/privacyLane.ts";
 import { plainAnswerProblem } from "../_shared/storyOutputCheck.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
@@ -257,7 +258,7 @@ Always use these exact translations for these words.`
   }
 }
 
-serve(async (req) => {
+const handleRequest = async (req: Request): Promise<Response> => {
   console.log('translate-universal function called');
 
   // Handle CORS and health checks
@@ -457,4 +458,14 @@ serve(async (req) => {
       }
     )
   }
-})
+};
+
+// School children's text only on no-training/no-retention routes (../_shared/privacyLane.ts):
+// every model call in the handler inherits the lane decided here from the signed-in account.
+serve(async (req: Request) => {
+  if (req.method !== "POST") return handleRequest(req);
+  let laneBody: unknown = null;
+  try { laneBody = await req.clone().json(); } catch { /* the handler answers bad JSON itself */ }
+  const lane = await privacyLaneForRequest(req, laneBody);
+  return withPrivacyLane(lane, () => handleRequest(req));
+});

@@ -13,6 +13,7 @@ import Institutions from "@/pages/Institutions";
 import { EMPTY_WORKSPACE } from "@/lib/institutions/report";
 const mocks = vi.hoisted(() => ({
   load: vi.fn(),
+  profiles: vi.fn(async () => [] as Array<{ id: string; display_name: string }>),
   rpc: vi.fn(),
   insert: vi.fn(),
   listener: null as any,
@@ -40,6 +41,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 vi.mock("@/lib/institutions/api", () => ({
   loadWorkspace: () => mocks.load(),
+  loadOwnAppProfiles: () => mocks.profiles(),
   institutionRpc: (...args: any[]) => mocks.rpc(...args),
   institutionDb: {
     from: () => ({ insert: (...args: any[]) => mocks.insert(...args) }),
@@ -233,17 +235,22 @@ describe("school workspace user journeys", () => {
       students: [...fixture.students, { ...fixture.students[0], id: "reader-b", display_name: "Reader B" }],
       enrollments: [...fixture.enrollments, { class_id: "class-b", school_id: "school-a", student_id: "reader-b" }],
       readings: [
-        { id: "reading-a", class_id: "class-a", student_id: "reader-a", completed: true, minutes: 5 },
-        { id: "reading-b", class_id: "class-b", student_id: "reader-b", completed: true, minutes: 10 },
+        { id: "reading-a", class_id: "class-a", student_id: "reader-a", completed: true, minutes: 5, read_at: "2026-10-02", story_title: "Fixture story", source: "teacher_recorded" },
+        { id: "reading-b", class_id: "class-b", student_id: "reader-b", completed: true, minutes: 10, read_at: "2026-10-02", story_title: "Fixture story", source: "teacher_recorded" },
+        // Recorded by the app for a linked profile: shown on its own line, never added to teacher totals.
+        { id: "reading-app", class_id: "class-a", student_id: "reader-a", completed: true, minutes: 7, words_read: 420, read_at: "2026-10-03", story_title: "Fixture app story", source: "app" },
       ],
       assessments: [
-        { id: "assessment-a", class_id: "class-a", student_id: "reader-a", assessed_on: "2026-10-01", recorded_at: "2026-10-01", reading_grade: null, school_grade: null },
-        { id: "assessment-b", class_id: "class-b", student_id: "reader-b", assessed_on: "2026-10-01", recorded_at: "2026-10-01", reading_grade: null, school_grade: null },
+        { id: "assessment-a", class_id: "class-a", student_id: "reader-a", assessed_on: "2026-10-01", recorded_at: "2026-10-01", reading_grade: null, school_grade: null, source: "teacher_recorded" },
+        { id: "assessment-b", class_id: "class-b", student_id: "reader-b", assessed_on: "2026-10-01", recorded_at: "2026-10-01", reading_grade: null, school_grade: null, source: "teacher_recorded" },
+        { id: "assessment-app", class_id: "class-a", student_id: "reader-a", assessed_on: "2026-10-03", recorded_at: "2026-10-03", reading_grade: null, school_grade: null, source: "app" },
       ],
       scores: [
         { assessment_id: "assessment-a", skill: "context", correct: 1, total: 1 },
         { assessment_id: "assessment-b", skill: "context", correct: 0, total: 9 },
+        { assessment_id: "assessment-app", skill: "context", correct: 3, total: 3 },
       ],
+      appLinks: [{ child_profile_id: "profile-a", school_id: "school-a", student_id: "reader-a", linked_at: "2026-10-02T09:00:00Z" }],
     });
     show();
     await screen.findByRole("button", { name: "Reader A" });
@@ -251,6 +258,14 @@ describe("school workspace user journeys", () => {
     expect(totals().getByText("2", { selector: "strong" })).toBeInTheDocument();
     expect(totals().getByText("15", { selector: "strong" })).toBeInTheDocument();
     expect(totals().getByRole("row", { name: "context 1 / 10 10%" })).toBeInTheDocument();
+    expect(totals().getByText("7", { selector: "strong" })).toBeInTheDocument();
+    expect(within(totals().getByRole("table", { name: /all in-app quiz questions/ })).getByRole("row", { name: "context 3 / 3 100%" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reader A" }));
+    const detail = within(screen.getByRole("region", { name: "Student report" }));
+    expect(detail.getByText(/Teacher recorded: 1 stories completed · 5/)).toBeInTheDocument();
+    expect(detail.getByText(/From the app: 1 stories completed · 7 .* 420 words read/)).toBeInTheDocument();
+    expect(detail.getByText(/Fixture app story: 7 min/)).toHaveTextContent("From the app");
+    expect(detail.getByText(/Fixture story: 5 min/)).toHaveTextContent("Teacher recorded");
     fireEvent.change(screen.getByLabelText("Teacher", { selector: "nav select" }), { target: { value: "fixture-teacher-b" } });
     expect(screen.queryByRole("button", { name: "Reader A" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Reader B" })).toBeInTheDocument();

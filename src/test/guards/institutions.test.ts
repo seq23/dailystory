@@ -71,13 +71,19 @@ describe("institutional reading and skill reports", () => {
   });
   it("counts completed sessions and actual fractional minutes only for the student", () => {
     const readings = [
-      { student_id: "reader-a", completed: true, minutes: 2.5 },
-      { student_id: "reader-a", completed: false, minutes: 1.25 },
-      { student_id: "reader-b", completed: true, minutes: 30 },
+      { student_id: "reader-a", completed: true, minutes: 2.5, source: "teacher_recorded" },
+      { student_id: "reader-a", completed: false, minutes: 1.25, source: "teacher_recorded" },
+      { student_id: "reader-b", completed: true, minutes: 30, source: "teacher_recorded" },
+      { student_id: "reader-a", completed: true, minutes: 9, words_read: 300, source: "app" },
     ] as Reading[];
     expect(studentReport(student, readings, [], [])).toMatchObject({
       stories: 1,
       minutes: 3.75,
+    });
+    expect(studentReport(student, readings, [], [], "app")).toMatchObject({
+      stories: 1,
+      minutes: 9,
+      wordsRead: 300,
     });
   });
   it("weights skill scores by real question count and filters inaccessible assessment ids", () => {
