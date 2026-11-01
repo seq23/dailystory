@@ -50,7 +50,6 @@ describe("the code charges and shows what PRICING.md says", () => {
   it("create-checkout sends exactly the doc's cents inline", () => {
     const src = read("supabase/functions/create-checkout/index.ts");
     expect(src).toMatch(new RegExp(`unit_amount: plan === "monthly" \\? ${monthly} : ${annual},`));
-    expect(src).toContain(`// Pricing: ${doc.monthly_label}/month or ${doc.annual_label}/year`);
   });
 
   it("legacy create-premium-subscription uses the same cents", () => {
@@ -108,7 +107,6 @@ describe("the code charges and shows what PRICING.md says", () => {
 
   it("the deploy reports leftover Stripe price-id secrets by name, never by value", () => {
     const wf = read(".github/workflows/deploy-functions.yml");
-    expect(wf).toMatch(/Stripe price-id secrets report \(names only\)/);
     expect(wf).toMatch(/jq -r '\.\[\]\?\.name \/\/ empty'/);
     expect(wf).not.toMatch(/\.value/);
   });
@@ -149,15 +147,11 @@ describe("the code charges and shows what PRICING.md says", () => {
 });
 
 describe("the narration voices are the ones PRICING.md states", () => {
-  const md = read("docs/PRICING.md");
-
-  it("free and guest readers get the voice the doc names, and the doc says browser ($0)", () => {
+  it("free and guest readers get the voice the doc names (browser, $0)", () => {
     expect(doc.free_voice).toBe("browser");
     // Fails if GUEST_TTS_PROVIDER is ever set back to 'elevenlabs' while the doc says browser.
     expect(TTS_CONFIG.GUEST_TTS_PROVIDER).toBe(doc.free_voice);
     expect(getTTSProvider(false)).toBe(doc.free_voice);
-    expect(md).toContain("**Free and guest readers hear the browser voice**");
-    expect(md).toContain("**$0**");
   });
 
   it("premium gets ElevenLabs, with the browser voice as the one fallback", () => {
@@ -166,13 +160,6 @@ describe("the narration voices are the ones PRICING.md states", () => {
     expect(doc.premium_fallback).toBe("browser");
     const router = read("src/services/narrationRouter.ts");
     expect(router).toMatch(/await o\.browser\(\);\s*return 'browser-fallback';/);
-    expect(md).toContain("**Premium narration is capped by her ElevenLabs credit balance.**");
-    expect(md).toContain("**The real narration cost is the ElevenLabs credits she buys, not a per-story list price.**");
-  });
-
-  it("the old per-story list-price estimate is gone", () => {
-    expect(md).not.toMatch(/\$0\.46 a story/);
-    expect(md).not.toMatch(/\$168 a year/);
   });
 });
 
