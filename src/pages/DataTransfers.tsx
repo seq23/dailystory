@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Globe, Shield, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 
 const DataTransfers = () => {
   useEffect(() => {
@@ -181,6 +182,7 @@ const DataTransfers = () => {
           <Link to="/vendors" className="text-primary hover:underline">Vendor List</Link>
         </div>
       </section>
+      <SiteFooterNav />
     </main>
   );
 };

@@ -1,4 +1,5 @@
 import { SITE_URL } from "@/config/site";
+import { ORGANIZATION } from "@/seo/schema";
 import type { LandingPageConfig } from "./landingPages";
 
 /** One JSON-LD graph per landing page: FAQPage always, Article for guide pages. */
@@ -25,7 +26,8 @@ export function landingJsonLd(config: LandingPageConfig) {
       url,
       mainEntityOfPage: url,
       inLanguage: "en-US",
-      author: { "@id": `${SITE_URL}/#organization` },
+      // c6: the schema author carries the same name the visible byline shows (PageByline).
+      author: { "@id": `${SITE_URL}/#organization`, name: ORGANIZATION.name },
       publisher: { "@id": `${SITE_URL}/#organization` },
       citation: (config.sources ?? []).map((s) => s.url),
     });

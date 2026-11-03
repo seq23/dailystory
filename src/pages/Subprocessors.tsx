@@ -5,6 +5,7 @@ import { ArrowLeft, Server, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 
 interface Subprocessor {
   name: string;
@@ -261,6 +262,7 @@ const Subprocessors = () => {
           </Link>
         </div>
       </section>
+      <SiteFooterNav />
     </main>
   );
 };

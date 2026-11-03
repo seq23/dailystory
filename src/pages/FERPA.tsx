@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 
 export default function FERPA() {
   useEffect(() => {
@@ -297,6 +298,7 @@ export default function FERPA() {
           Last updated: January 22, 2026
         </p>
       </main>
+      <SiteFooterNav />
     </div>
   );
 }

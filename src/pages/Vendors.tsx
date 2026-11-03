@@ -5,6 +5,7 @@ import { ArrowLeft, Building2, Database, Brain, Image, Volume2, CreditCard, Mail
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 
 interface VendorInfo {
   name: string;
@@ -273,6 +274,7 @@ const Vendors = () => {
           </Link>
         </div>
       </section>
+      <SiteFooterNav />
     </main>
   );
 };
