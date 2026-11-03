@@ -7,6 +7,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 import { logCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -22,7 +23,9 @@ serve(async (req) => {
   const healthResponse = handleHealthAndCors(req);
   if (healthResponse) return healthResponse;
 
-  
+  // Paid call: admins and the service role only (emergency backup, not the app path) (../_shared/paidCallGuard.ts).
+  const refused = await paidCallRefusal(req, 'generate-fallback-images', corsHeaders, { adminUserIds: adminUserIds() });
+  if (refused) return refused;
 
   try {
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');

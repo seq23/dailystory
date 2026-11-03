@@ -7,10 +7,11 @@ import {
   DEFAULT_ELEVENLABS_MODEL,
   TTS_MAX_CHARACTERS,
 } from "../_shared/languageVoiceMap.ts";
+import { identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-t2r-guest',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
   'Access-Control-Max-Age': '600',
   'Vary': 'Origin, Access-Control-Request-Headers',
@@ -142,6 +143,10 @@ async function handle(req: Request): Promise<Response> {
     });
   }
 
+  // Paid call: a signed-in user or a guest pass, never the anon key alone.
+  const caller = await identifyCaller(req);
+  if (caller instanceof Response) return caller;
+
   try {
     console.log('ElevenLabs TTS function called');
     const { text, voice, model, language, userInfo } = await req.json();
@@ -196,6 +201,10 @@ async function handle(req: Request): Promise<Response> {
     }
     
     console.log(`🔄 Cache MISS — generating via ElevenLabs Flash v2.5`);
+
+    // Only a cache miss spends money, so only a miss is charged to the caller's limit.
+    const limited = await chargeCall(caller, 'elevenlabs-tts');
+    if (limited) return limited;
 
     const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${effectiveVoice}`;
     
@@ -256,7 +265,7 @@ async function handle(req: Request): Promise<Response> {
 
       await sb.from('cost_tracking').insert({
         session_id: sessionId,
-        user_id: null,
+        user_id: caller.kind === 'user' ? caller.id : null,
         input_tokens: 0,
         output_tokens: 0,
         cost: cost,

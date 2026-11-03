@@ -4,12 +4,13 @@ import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
 import { privacyLaneForRequest, withPrivacyLane } from "../_shared/privacyLane.ts";
 import { plainAnswerProblem } from "../_shared/storyOutputCheck.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-t2r-guest',
   'Access-Control-Max-Age': '600',
   'Vary': 'Origin, Access-Control-Request-Headers',
 };
@@ -26,6 +27,10 @@ const handleRequest = async (req: Request): Promise<Response> => {
   // Handle CORS and health checks
   const healthResponse = handleHealthAndCors(req);
   if (healthResponse) return healthResponse;
+
+  // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
+  const refused = await paidCallRefusal(req, 'correct-spelling', corsHeaders);
+  if (refused) return refused;
 
   try {
     // Any one provider of the chain will do (../_shared/storyTextProvider.ts).
