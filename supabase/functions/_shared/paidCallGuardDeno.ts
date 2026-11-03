@@ -42,8 +42,8 @@ export function adminUserIds(): string[] {
 }
 
 export const identifyCaller = (req: Request, opts?: IdentifyOptions) => identifyPaidCaller(req, paidCallDeps(), opts);
-export const chargeCall = (caller: PaidCaller, fn: string, extra?: Record<string, unknown>) =>
-  chargePaidCall(caller, fn, paidCallDeps(), extra);
+export const chargeCall = (caller: PaidCaller, fn: string, extra?: Record<string, unknown>, failClosed = false) =>
+  chargePaidCall(caller, fn, paidCallDeps(), extra, failClosed);
 export const guardCall = (req: Request, fn: string, opts?: IdentifyOptions) => guardPaidCall(req, fn, paidCallDeps(), opts);
 
 /** For functions with no free cache path: the 401/403/429 to return (with CORS), or null to go ahead. */

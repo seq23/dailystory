@@ -8,12 +8,13 @@ import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrime
 import { handleStreamlinedGeneration } from './streamlined-handler.ts';
 import { privacyLaneForRequest, withPrivacyLane } from '../_shared/privacyLane.ts';
 import { checkFreeStoryAllowance, freeLimitResponse } from '../_shared/freeStoryAllowance.ts';
+import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
 
 // Supabase client will be created inside handler for better error handling
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-t2r-guest',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
   'Access-Control-Max-Age': '600',
   'Vary': 'Origin, Access-Control-Request-Headers',
@@ -159,21 +160,13 @@ serve(async (req) => {
     });
   }
 
-  // Rate limiting: 30 requests per minute per IP
-  try {
-    const { checkRateLimit, getClientIdentifier } = await import('../_shared/rateLimit.ts');
-    const rateLimitClient = await createTieredSupabaseClient().catch(() => null);
-    if (rateLimitClient) {
-      const clientId = getClientIdentifier(req);
-      const { allowed } = await checkRateLimit(rateLimitClient, clientId, 'generate-adaptive-story', 30, 60000);
-      if (!allowed) {
-        return new Response(JSON.stringify({ success: false, error: 'Too many requests, please try again later' }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-    }
-  } catch (rlErr) {
-    console.warn('Rate limit check skipped:', rlErr);
+  // Paid call (../_shared/paidCallGuard.ts): a signed-in user or a guest pass (the
+  // guest sample story), never the anon key alone; limited per user, per guest, per
+  // guest IP and per day. Story generation fails CLOSED: if the counter cannot be
+  // reached the call is refused (503), and the guest page shows its backup story.
+  {
+    const refused = await paidCallRefusal(req, 'generate-adaptive-story', corsHeaders, { failClosed: true });
+    if (refused) return refused;
   }
 
   // ── Fire-and-forget: Log anonymous geo from Cloudflare CDN headers ──
