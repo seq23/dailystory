@@ -36,7 +36,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'generate-quiz', corsHeaders);
+  const refused = await paidCallRefusal(req, 'generate-quiz', corsHeaders, { signInFor: 'to play the story quiz' });
   if (refused) return refused;
 
 

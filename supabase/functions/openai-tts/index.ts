@@ -35,7 +35,7 @@ serve(async (req) => {
   }
 
   // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'openai-tts', corsHeaders);
+  const refused = await paidCallRefusal(req, 'openai-tts', corsHeaders, { signInFor: 'to hear the reading voice' });
   if (refused) return refused;
 
   try {

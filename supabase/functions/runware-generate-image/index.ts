@@ -231,7 +231,7 @@ Deno.serve(async (req) => {
   }
 
   // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'runware-generate-image', corsHeaders);
+  const refused = await paidCallRefusal(req, 'runware-generate-image', corsHeaders, { signInFor: 'to make pictures' });
   if (refused) return refused;
 
   let payload: RequestPayload;

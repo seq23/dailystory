@@ -45,7 +45,7 @@ serve(async (req) => {
   }
   console.log('✅ Authenticated user:', user.id);
   {
-    const refused = await paidCallRefusal(req, 'openai-realtime', corsHeaders, { allowGuests: false });
+    const refused = await paidCallRefusal(req, 'openai-realtime', corsHeaders, { allowGuests: false, signInFor: 'to talk with your reading helper' });
     if (refused) return refused;
   }
   // --- End Auth ---

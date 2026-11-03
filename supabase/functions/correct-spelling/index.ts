@@ -29,7 +29,7 @@ const handleRequest = async (req: Request): Promise<Response> => {
   if (healthResponse) return healthResponse;
 
   // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'correct-spelling', corsHeaders);
+  const refused = await paidCallRefusal(req, 'correct-spelling', corsHeaders, { signInFor: 'to check your spelling' });
   if (refused) return refused;
 
   try {

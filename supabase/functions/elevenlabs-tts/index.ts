@@ -144,7 +144,7 @@ async function handle(req: Request): Promise<Response> {
   }
 
   // Paid call: a signed-in user or a guest pass, never the anon key alone.
-  const caller = await identifyCaller(req);
+  const caller = await identifyCaller(req, { signInFor: 'to hear the reading voice' });
   if (caller instanceof Response) return caller;
 
   try {

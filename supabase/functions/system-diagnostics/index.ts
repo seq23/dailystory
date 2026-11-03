@@ -67,7 +67,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // This operation makes a real (paid) Runware image: admins and the service role only.
     if (operation === 'runware-diagnostic') {
-      const refused = await paidCallRefusal(req, 'system-diagnostics', corsHeaders, { adminUserIds: adminUserIds() });
+      const refused = await paidCallRefusal(req, 'system-diagnostics', corsHeaders, { adminUserIds: adminUserIds(), signInFor: 'as an admin' });
       if (refused) return refused;
     }
 

@@ -18,7 +18,7 @@ serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   // Paid call: admins only (it changes the ElevenLabs account) (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'elevenlabs-dictionary-manager', corsHeaders, { adminUserIds: adminUserIds() });
+  const refused = await paidCallRefusal(req, 'elevenlabs-dictionary-manager', corsHeaders, { adminUserIds: adminUserIds(), signInFor: 'as an admin' });
   if (refused) return refused;
 
   try {

@@ -66,7 +66,7 @@ serve(async (req) => {
   
 
   // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'voice-to-text', corsHeaders, { maxBodyBytes: 8 * 1024 * 1024 });
+  const refused = await paidCallRefusal(req, 'voice-to-text', corsHeaders, { maxBodyBytes: 8 * 1024 * 1024, signInFor: 'so we can hear you read' });
   if (refused) return refused;
 
   try {

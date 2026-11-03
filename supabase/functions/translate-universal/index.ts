@@ -267,7 +267,7 @@ const handleRequest = async (req: Request): Promise<Response> => {
   if (healthResponse) return healthResponse;
 
   // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'translate-universal', corsHeaders);
+  const refused = await paidCallRefusal(req, 'translate-universal', corsHeaders, { signInFor: 'to see words in your language' });
   if (refused) return refused;
 
   try {
