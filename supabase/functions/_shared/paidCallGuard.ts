@@ -142,7 +142,12 @@ export interface IdentifyOptions {
   allowGuests?: boolean;
   /** Only the service role or a user in ADMIN_USER_IDS. */
   adminUserIds?: string[];
+  /** Largest request body accepted (Content-Length). Default DEFAULT_MAX_BODY_BYTES. */
+  maxBodyBytes?: number;
 }
+
+/** A page of text is a few KB; 64 KiB leaves room and stops a pasted book. */
+export const DEFAULT_MAX_BODY_BYTES = 64 * 1024;
 
 /** Who is calling, or the 401/403 Response to return. */
 export async function identifyPaidCaller(
@@ -154,6 +159,12 @@ export async function identifyPaidCaller(
   const ip = clientIp(req);
   const token = bearer(req);
   const refuse = () => json(401, { success: false, error: SIGN_IN_MESSAGE, code: "SIGN_IN_REQUIRED" });
+
+  const maxBody = opts.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES;
+  const length = Number(req.headers.get("content-length") || "0");
+  if (Number.isFinite(length) && length > maxBody) {
+    return json(413, { success: false, error: "That request is too large.", code: "BODY_TOO_LARGE" });
+  }
 
   if (deps.serviceKey && token === deps.serviceKey) return { kind: "service", ip };
 
