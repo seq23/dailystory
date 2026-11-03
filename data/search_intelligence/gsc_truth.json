@@ -2,24 +2,24 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-02T07:43:00.358Z",
+  "collected_at": "2026-11-03T07:43:09.920Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-03",
-    "end_date": "2026-10-30",
+    "start_date": "2026-10-04",
+    "end_date": "2026-10-31",
     "days": 28
   },
   "totals": {
     "clicks": 1,
-    "impressions": 199,
-    "ctr": 0.005,
-    "position": 18.24
+    "impressions": 216,
+    "ctr": 0.0046,
+    "position": 18
   },
-  "row_count": 32,
-  "query_count": 31,
-  "page_count": 10,
-  "attributed_impressions": 104,
+  "row_count": 35,
+  "query_count": 34,
+  "page_count": 11,
+  "attributed_impressions": 111,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
@@ -42,17 +42,25 @@
       "query": "time2read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 11,
+      "impressions": 12,
       "ctr": 0,
-      "position": 5.27
+      "position": 5.33
     },
     {
       "query": "2 read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 9,
+      "impressions": 10,
       "ctr": 0,
-      "position": 8.89
+      "position": 9
+    },
+    {
+      "query": "time 2 read",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 5.57
     },
     {
       "query": "time read",
@@ -61,14 +69,6 @@
       "impressions": 7,
       "ctr": 0.1429,
       "position": 8.43
-    },
-    {
-      "query": "time 2 read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 6,
-      "ctr": 0,
-      "position": 5.17
     },
     {
       "query": "reading time 2",
@@ -93,6 +93,14 @@
       "impressions": 3,
       "ctr": 0,
       "position": 12.67
+    },
+    {
+      "query": "add and reading",
+      "page": "https://time-2-read.com/reading-for-kids-with-adhd",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 71
     },
     {
       "query": "best reading apps for struggling readers",
@@ -167,12 +175,12 @@
       "position": 67
     },
     {
-      "query": "add and reading",
-      "page": "https://time-2-read.com/reading-for-kids-with-adhd",
+      "query": "best apps for struggling readers",
+      "page": "https://time-2-read.com/reading-app-for-kids-struggling-to-read",
       "clicks": 0,
       "impressions": 1,
       "ctr": 0,
-      "position": 74
+      "position": 82
     },
     {
       "query": "ferpa compliance school emergency notification",
@@ -191,6 +199,14 @@
       "position": 43
     },
     {
+      "query": "how many minutes should a 4th grader read per day",
+      "page": "https://time-2-read.com/is-reading-20-minutes-a-day-enough",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 30
+    },
+    {
       "query": "kindergarten sight words",
       "page": "https://time-2-read.com/kindergarten-sight-words",
       "clicks": 0,
@@ -201,6 +217,14 @@
     {
       "query": "level 2",
       "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "my year 2 daughter is behind with reading. should i use a reading app or find a tutor?",
+      "page": "https://time-2-read.com/reading-app-for-kids-struggling-to-read",
       "clicks": 0,
       "impressions": 1,
       "ctr": 0,
