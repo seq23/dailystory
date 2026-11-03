@@ -91,7 +91,7 @@ describe("who may make a paid call", () => {
     const res = await paidFunction(post({ Authorization: `Bearer ${USER_TOKEN}` }), deps, tts);
     expect(res.status).toBe(200);
     expect(tts).toHaveBeenCalledTimes(1);
-    expect([...deps.counts.keys()].some((k) => k.startsWith("user:u1|600@"))).toBe(true);
+    expect([...deps.counts.keys()].some((k) => k.startsWith("user:u1:elevenlabs-tts|600@"))).toBe(true);
     expect([...deps.counts.keys()].some((k) => k.startsWith("all:elevenlabs-tts|86400@"))).toBe(true);
   });
 
@@ -147,6 +147,40 @@ describe("who may make a paid call", () => {
   });
 });
 
+describe("story generation and the expensive functions", () => {
+  const user = () => post({ Authorization: `Bearer ${USER_TOKEN}` });
+  const downDeps = () => ({ ...fakeDeps(), hit: async () => { throw new Error("db down"); } });
+
+  it("story generation fails closed when the counter is unreachable (503); narration stays open", async () => {
+    const story = await guardPaidCall(user(), "generate-adaptive-story", downDeps(), { failClosed: true });
+    expect(story.refusal?.status).toBe(503);
+    const tts = await guardPaidCall(user(), "elevenlabs-tts", downDeps());
+    expect(tts.refusal).toBeNull();
+    expect(read("supabase/functions/generate-adaptive-story/index.ts")).toMatch(/paidCallRefusal\(req, 'generate-adaptive-story', corsHeaders, \{ failClosed: true \}\)/);
+    expect(read("supabase/functions/generate-adaptive-story/index.ts")).not.toMatch(/checkRateLimit/);
+  });
+
+  it("a guest gets the sample story but is stopped after its story allowance; no-login is 401", async () => {
+    const deps = fakeDeps();
+    const { pass } = await issueGuestPass(SERVICE, 1_800_000_000);
+    const guest = () => post({ Authorization: `Bearer ${ANON}`, [GUEST_PASS_HEADER]: pass });
+    const max = PAID_CALL_LIMITS.guest[0].max;
+    const storyMax = (await import("../../../supabase/functions/_shared/paidCallGuard")).FUNCTION_LIMITS["generate-adaptive-story"].guest[0].max;
+    expect(storyMax).toBeLessThan(max);
+    for (let i = 0; i < storyMax; i++) expect((await guardPaidCall(guest(), "generate-adaptive-story", deps)).refusal).toBeNull();
+    expect((await guardPaidCall(guest(), "generate-adaptive-story", deps)).refusal?.status).toBe(429);
+    // Its own bucket: the story allowance does not use up the reading voice.
+    expect((await guardPaidCall(guest(), "elevenlabs-tts", deps)).refusal).toBeNull();
+    expect((await guardPaidCall(post(), "runware-generate-image", deps)).refusal?.status).toBe(401);
+  });
+
+  it("a guest pass does not open the signed-in-only live voice", async () => {
+    const { pass } = await issueGuestPass(SERVICE, 1_800_000_000);
+    const r = await guardPaidCall(post({ [GUEST_PASS_HEADER]: pass }), "openai-realtime", fakeDeps());
+    expect(r.refusal?.status).toBe(401);
+  });
+});
+
 describe("request size", () => {
   it("a body over the cap is refused before any auth or paid work (413); voice-to-text allows recordings", async () => {
     const tts = vi.fn(async () => {});
@@ -160,11 +194,12 @@ describe("request size", () => {
 
 describe("every paid function is wired to the guard", () => {
   const guestFns = [...GUEST_PAID_FUNCTIONS];
-  const adminFns = ["elevenlabs-dictionary-manager", "generate-fallback-images"];
+  const adminFns = ["elevenlabs-dictionary-manager", "generate-fallback-images", "unified-debug-service", "system-diagnostics"];
+  const signedInFns = ["openai-realtime"];
 
   it("guards before the paid API, and lets the guest pass header through CORS", () => {
     expect(guestFns.length).toBeGreaterThan(0);
-    for (const fn of [...guestFns, ...adminFns]) {
+    for (const fn of [...guestFns, ...adminFns, ...signedInFns]) {
       const src = read(`supabase/functions/${fn}/index.ts`);
       expect(src, fn).toMatch(/from ["']\.\.\/_shared\/paidCallGuardDeno\.ts["']/);
       const gate = Math.max(src.indexOf("identifyCaller(req"), src.indexOf("paidCallRefusal(req"));

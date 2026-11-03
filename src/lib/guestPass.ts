@@ -18,6 +18,9 @@ export const GUEST_PAID_FUNCTIONS = [
   "translate-universal",
   "correct-spelling",
   "generate-quiz",
+  "generate-adaptive-story",
+  "runware-generate-image",
+  "word-dictionary",
 ] as const;
 
 const STORAGE_KEY = "t2r_guest_pass";

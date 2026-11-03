@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
 
 // Queue test verification - 2025-01-30
 
@@ -63,6 +64,12 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const operation = url.searchParams.get('operation') || 'health-check';
 
     console.log(`System Diagnostics - Operation: ${operation}`);
+
+    // This operation makes a real (paid) Runware image: admins and the service role only.
+    if (operation === 'runware-diagnostic') {
+      const refused = await paidCallRefusal(req, 'system-diagnostics', corsHeaders, { adminUserIds: adminUserIds() });
+      if (refused) return refused;
+    }
 
     switch (operation) {
       case 'runware-diagnostic': {

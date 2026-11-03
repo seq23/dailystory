@@ -168,7 +168,8 @@ export function DebugDataViewer() {
       // Use the corrected service that queries image_generation_debug
       const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/unified-debug-service?operation=recent-image-prompts&sessionId=${sessionId}&limit=50`, {
         headers: {
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino`,
+          // unified-debug-service is admin only: send the signed-in admin's session, not the anon key.
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? ''}`,
           'Content-Type': 'application/json'
         }
       });
@@ -343,7 +344,8 @@ export function DebugDataViewer() {
         DebugGateway.getPromptHistory(sessionId.trim(), 10),
         fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/unified-debug-service?operation=recent-image-prompts&sessionId=${sessionId}&limit=50`, {
           headers: {
-            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino`,
+            // unified-debug-service is admin only: send the signed-in admin's session, not the anon key.
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? ''}`,
             'Content-Type': 'application/json'
           }
         }).then(res => res.json()),

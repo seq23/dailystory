@@ -47,6 +47,40 @@ export const PAID_CALL_LIMITS = {
   guestPassPerIpHour: 30,
 } as const;
 
+type Window = { window: number; max: number };
+export type FunctionLimits = { user: readonly Window[]; guest: readonly Window[]; guestIp: readonly Window[]; allPerFunction: Window };
+
+// Functions whose calls cost more, or come in a different rhythm, than a word tap.
+// Usage (cost_tracking, 60 days to 3 Nov 2026): at most 142 story calls and 109
+// images in a day across everyone, and at most 33 images for one session in a day.
+// A story is one call (repairs and hints call it again); an image is one per page.
+// The guest sample is one 6-page story with pictures.
+export const FUNCTION_LIMITS: Record<string, FunctionLimits> = {
+  "generate-adaptive-story": {
+    user: [{ window: TEN_MIN, max: 30 }, { window: DAY, max: 150 }],
+    guest: [{ window: TEN_MIN, max: 6 }, { window: DAY, max: 12 }],
+    guestIp: [{ window: TEN_MIN, max: 30 }, { window: DAY, max: 120 }],
+    allPerFunction: { window: DAY, max: 2000 },
+  },
+  "runware-generate-image": {
+    user: [{ window: TEN_MIN, max: 60 }, { window: DAY, max: 400 }],
+    guest: [{ window: TEN_MIN, max: 20 }, { window: DAY, max: 40 }],
+    guestIp: [{ window: TEN_MIN, max: 80 }, { window: DAY, max: 300 }],
+    allPerFunction: { window: DAY, max: 3000 },
+  },
+  // One live voice conversation per call; signed-in only.
+  "openai-realtime": {
+    user: [{ window: TEN_MIN, max: 10 }, { window: DAY, max: 40 }],
+    guest: [],
+    guestIp: [],
+    allPerFunction: { window: DAY, max: 500 },
+  },
+};
+
+export function limitsFor(fn: string): FunctionLimits {
+  return FUNCTION_LIMITS[fn] ?? PAID_CALL_LIMITS;
+}
+
 export const RATE_LIMITED_MESSAGE = "Reading voice is taking a short rest. Please try again in a few minutes.";
 export const SIGN_IN_MESSAGE = "Please sign in to hear the reading voice.";
 
@@ -144,6 +178,8 @@ export interface IdentifyOptions {
   adminUserIds?: string[];
   /** Largest request body accepted (Content-Length). Default DEFAULT_MAX_BODY_BYTES. */
   maxBodyBytes?: number;
+  /** When the counter cannot be reached: refuse (503) instead of letting the call through. */
+  failClosed?: boolean;
 }
 
 /** A page of text is a few KB; 64 KiB leaves room and stops a pasted book. */
@@ -193,20 +229,24 @@ export async function chargePaidCall(
   fn: string,
   deps: PaidCallDeps,
   extra: Record<string, unknown> = {},
+  failClosed = false,
 ): Promise<Response | null> {
   if (caller.kind === "service") return null;
-  const L = PAID_CALL_LIMITS;
+  const L = limitsFor(fn);
   const buckets: string[] = [];
   const windows: number[] = [];
   const limits: number[] = [];
   const add = (b: string, w: number, m: number) => { buckets.push(`${b}|${w}`); windows.push(w); limits.push(m); };
 
+  if (caller.kind === "guest" && L.guest.length === 0) {
+    return json(401, { success: false, error: SIGN_IN_MESSAGE, code: "SIGN_IN_REQUIRED" });
+  }
   if (caller.kind === "user") {
-    for (const l of L.user) add(`user:${caller.id}`, l.window, l.max);
+    for (const l of L.user) add(`user:${caller.id}:${fn}`, l.window, l.max);
   } else {
-    for (const l of L.guest) add(`guest:${caller.id}`, l.window, l.max);
+    for (const l of L.guest) add(`guest:${caller.id}:${fn}`, l.window, l.max);
     const ipHash = await sha256Short(caller.ip);
-    for (const l of L.guestIp) add(`guestip:${ipHash}`, l.window, l.max);
+    for (const l of L.guestIp) add(`guestip:${ipHash}:${fn}`, l.window, l.max);
   }
   add(`all:${fn}`, L.allPerFunction.window, L.allPerFunction.max);
 
@@ -217,6 +257,9 @@ export async function chargePaidCall(
     // The caller is already a real user or guest; a counter outage must not silence
     // a child's reading voice. Named in the logs so it is seen.
     console.error(`[paid-call-guard] RATE_CHECK_UNAVAILABLE ${fn}: ${e instanceof Error ? e.message : e}`);
+    if (failClosed) {
+      return json(503, { success: false, error: RATE_LIMITED_MESSAGE, code: "RATE_CHECK_UNAVAILABLE", retry_after: 60, ...extra }, { "Retry-After": "60" });
+    }
     return null;
   }
   if (!over) return null;
@@ -239,6 +282,6 @@ export async function guardPaidCall(
 ): Promise<{ caller: PaidCaller; refusal: null } | { caller: null; refusal: Response }> {
   const caller = await identifyPaidCaller(req, deps, opts);
   if (caller instanceof Response) return { caller: null, refusal: caller };
-  const refusal = await chargePaidCall(caller, fn, deps);
+  const refusal = await chargePaidCall(caller, fn, deps, {}, opts.failClosed === true);
   return refusal ? { caller: null, refusal } : { caller, refusal: null };
 }
