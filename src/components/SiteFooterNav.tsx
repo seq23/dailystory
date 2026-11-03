@@ -1,6 +1,7 @@
 import { uiText } from "@/i18n/uiText";
 import { Link } from "react-router-dom";
 import { MADE_BY_LINE } from "@/seo/schema";
+import { PageByline } from "@/components/PageByline";
 
 /**
  * The site's own pages, one click from wherever this is rendered (the homepage,
@@ -36,6 +37,7 @@ export const SiteFooterNav = () => (
         <img src="/icon-192.png" alt={uiText("Time-2-Read logo")} width={24} height={24} className="h-6 w-6" />
         {MADE_BY_LINE}
       </p>
+      <PageByline />
     </nav>
   </footer>
 );

@@ -128,6 +128,9 @@ export function pageGraph(path: string, title: string, description: string) {
       inLanguage: "en-US",
       isPartOf: { "@id": WEBSITE_ID },
       publisher: { "@id": ORG_ID },
+      // c6: every page names its author, the same entity the visible byline shows
+      // (src/components/PageByline.tsx).
+      author: { "@id": ORG_ID, name: ENTITY.name },
       primaryImageOfPage: { "@type": "ImageObject", url: OG_IMAGE_URL },
     },
   ];

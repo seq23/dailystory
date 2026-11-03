@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SITE_URL } from "@/config/site";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 
 export default function GDPR() {
   useEffect(() => {
@@ -240,6 +241,7 @@ export default function GDPR() {
           Last updated: January 22, 2026
         </p>
       </main>
+      <SiteFooterNav />
     </div>
   );
 }

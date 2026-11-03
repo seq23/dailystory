@@ -24,6 +24,7 @@ if (locs.length === 0) { console.error("PRERENDER_CHECK_NO_SITEMAP_URLS"); proce
 const fails = [];
 const notes = [];
 let checked = 0;
+let bylines = 0;
 // Owner ruling 2 Nov 2026 (no petty validation): over a ceiling never fails;
 // under a floor fails only below 75% of it. Probed so a re-tightening is red.
 const TITLE = [30, 65];
@@ -85,6 +86,16 @@ for (const loc of locs) {
   }
   if (org?.logo && !String(org.logo).startsWith(`${SITE}/`)) fails.push(`${path}: Organization logo is not on ${SITE}`);
   if (!types.includes("WebPage")) fails.push(`${path}: no WebPage JSON-LD`);
+  // Search Readiness c6 (3 Nov 2026): a sampled page named no author or reviewer a
+  // reader or an answer engine could see. Every page carries the visible byline
+  // (src/components/PageByline.tsx, rendered by SiteFooterNav) and names the same
+  // entity in its schema.
+  const byline = (root?.[2] ?? "").match(/<a\b[^>]*rel="author"[^>]*>([\s\S]*?)<\/a>/);
+  const bylineName = (byline?.[1] ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  if (!bylineName) fails.push(`${path}: no visible rel="author" byline in the page's HTML (c6)`);
+  else { bylines++; if (!(root?.[2] ?? "").includes("Written and reviewed by")) fails.push(`${path}: the byline does not say who wrote and reviewed the page (c6)`); }
+  const schemaAuthors = nodes.flatMap((n) => [].concat(n.author ?? [])).map((a) => (typeof a === "string" ? a : a?.name)).filter(Boolean);
+  if (bylineName && !schemaAuthors.includes(bylineName)) fails.push(`${path}: schema names no author "${bylineName}" to match the visible byline (c6)`);
   if (path !== "/" && !types.includes("BreadcrumbList")) fails.push(`${path}: no BreadcrumbList JSON-LD`);
   if (path === "/") {
     if (!types.includes("WebSite")) fails.push("/: no WebSite JSON-LD");
@@ -110,6 +121,9 @@ for (const loc of locs) {
 // Bing Webmaster site-ownership tag (public code, not a secret) must survive the build.
 const home = existsSync(join(dist, "index.html")) ? readFileSync(join(dist, "index.html"), "utf8") : "";
 if (!/<meta name="msvalidate\.01" content="306F2E6DD99A91CBBA16C94091284F00"/.test(home)) fails.push("/: dist/index.html lost the msvalidate.01 Bing verification tag");
+// Rule 0: a run that checked no page, or found the byline on none, is a failure, not a pass.
+if (checked === 0) fails.push("PRERENDER_CHECK_NO_PAGES_CHECKED");
+if (bylines === 0) fails.push("PRERENDER_CHECK_NO_BYLINE_FOUND: no page carried a visible rel=\"author\" byline (c6)");
 for (const n of notes) console.warn(`note: ${n}`);
 if (fails.length) { console.error(`PRERENDER_CHECK_FAILED\n  ${fails.join("\n  ")}`); process.exit(1); }
-console.log(`prerender check: ${checked} pages carry real HTML, title, description, canonical and schema`);
+console.log(`prerender check: ${checked} pages carry real HTML, title, description, canonical and schema; ${bylines} carry a visible author byline`);

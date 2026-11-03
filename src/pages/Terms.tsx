@@ -1,5 +1,6 @@
 import { uiText } from "@/i18n/uiText";
 import { useEffect } from "react";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 
 const Terms = () => {
   useEffect(() => {
@@ -174,6 +175,7 @@ const Terms = () => {
           </p>
         </article>
       </section>
+      <SiteFooterNav />
     </main>
   );
 };
