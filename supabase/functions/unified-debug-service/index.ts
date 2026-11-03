@@ -45,7 +45,7 @@ serve(async (req) => {
   // (which can hold children's story details) and its visual-scene-debug operation
   // makes a real, paid image. Any valid JWT, the public anon key included, used to pass.
   {
-    const refused = await paidCallRefusal(req, 'unified-debug-service', corsHeaders, { adminUserIds: adminUserIds() });
+    const refused = await paidCallRefusal(req, 'unified-debug-service', corsHeaders, { adminUserIds: adminUserIds(), signInFor: 'as an admin' });
     if (refused) return refused;
   }
 

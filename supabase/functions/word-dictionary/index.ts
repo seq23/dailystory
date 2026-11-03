@@ -275,7 +275,7 @@ serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
-  const caller = await identifyCaller(req);
+  const caller = await identifyCaller(req, { signInFor: 'to see what words mean' });
   if (caller instanceof Response) {
     const h = new Headers(caller.headers);
     for (const [k, v] of Object.entries(corsHeaders)) if (!h.has(k)) h.set(k, v);

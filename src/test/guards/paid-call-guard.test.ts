@@ -156,7 +156,7 @@ describe("story generation and the expensive functions", () => {
     expect(story.refusal?.status).toBe(503);
     const tts = await guardPaidCall(user(), "elevenlabs-tts", downDeps());
     expect(tts.refusal).toBeNull();
-    expect(read("supabase/functions/generate-adaptive-story/index.ts")).toMatch(/paidCallRefusal\(req, 'generate-adaptive-story', corsHeaders, \{ failClosed: true \}\)/);
+    expect(read("supabase/functions/generate-adaptive-story/index.ts")).toMatch(/paidCallRefusal\(req, 'generate-adaptive-story', corsHeaders, \{[^}]*\bfailClosed: true\b[^}]*\}\)/);
     expect(read("supabase/functions/generate-adaptive-story/index.ts")).not.toMatch(/checkRateLimit/);
   });
 
@@ -222,7 +222,7 @@ describe("every paid function is wired to the guard", () => {
   it("the TTS functions charge only on a cache miss, never on cached audio", () => {
     for (const fn of ["elevenlabs-tts", "elevenlabs-tts-smart"]) {
       const src = read(`supabase/functions/${fn}/index.ts`);
-      const identify = src.indexOf("identifyCaller(req)");
+      const identify = src.indexOf("identifyCaller(req");
       const cache = src.indexOf("await getCachedAudio(");
       const charge = src.indexOf("chargeCall(caller");
       const paid = src.search(/fetch\(\s*(apiUrl|`https:\/\/api\.elevenlabs\.io\/v1\/text-to-speech)/);

@@ -24,7 +24,7 @@ serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   // Paid call: admins and the service role only (emergency backup, not the app path) (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'generate-fallback-images', corsHeaders, { adminUserIds: adminUserIds() });
+  const refused = await paidCallRefusal(req, 'generate-fallback-images', corsHeaders, { adminUserIds: adminUserIds(), signInFor: 'as an admin' });
   if (refused) return refused;
 
   try {

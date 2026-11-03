@@ -61,7 +61,7 @@ serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'elevenlabs-agent-signed-url', corsHeaders);
+  const refused = await paidCallRefusal(req, 'elevenlabs-agent-signed-url', corsHeaders, { signInFor: 'to talk with your reading helper' });
   if (refused) return refused;
 
   try {

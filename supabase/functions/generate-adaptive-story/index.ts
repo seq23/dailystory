@@ -165,7 +165,7 @@ serve(async (req) => {
   // guest IP and per day. Story generation fails CLOSED: if the counter cannot be
   // reached the call is refused (503), and the guest page shows its backup story.
   {
-    const refused = await paidCallRefusal(req, 'generate-adaptive-story', corsHeaders, { failClosed: true });
+    const refused = await paidCallRefusal(req, 'generate-adaptive-story', corsHeaders, { failClosed: true, signInFor: 'to make a new story' });
     if (refused) return refused;
   }
 

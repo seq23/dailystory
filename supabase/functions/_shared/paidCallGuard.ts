@@ -82,7 +82,8 @@ export function limitsFor(fn: string): FunctionLimits {
 }
 
 export const RATE_LIMITED_MESSAGE = "Reading voice is taking a short rest. Please try again in a few minutes.";
-export const SIGN_IN_MESSAGE = "Please sign in to hear the reading voice.";
+/** The 401 text. Each call site says what the child was trying to do (IdentifyOptions.signInFor). */
+export const signInMessage = (signInFor = "to keep going") => `Please sign in ${signInFor}.`;
 
 export type PaidCaller =
   | { kind: "user"; id: string; ip: string }
@@ -178,6 +179,8 @@ export interface IdentifyOptions {
   adminUserIds?: string[];
   /** Largest request body accepted (Content-Length). Default DEFAULT_MAX_BODY_BYTES. */
   maxBodyBytes?: number;
+  /** What the sign-in is for, finishing "Please sign in …", e.g. "to make a new story". */
+  signInFor?: string;
   /** When the counter cannot be reached: refuse (503) instead of letting the call through. */
   failClosed?: boolean;
 }
@@ -194,7 +197,7 @@ export async function identifyPaidCaller(
   const allowGuests = opts.allowGuests !== false && !opts.adminUserIds;
   const ip = clientIp(req);
   const token = bearer(req);
-  const refuse = () => json(401, { success: false, error: SIGN_IN_MESSAGE, code: "SIGN_IN_REQUIRED" });
+  const refuse = () => json(401, { success: false, error: signInMessage(opts.signInFor), code: "SIGN_IN_REQUIRED" });
 
   const maxBody = opts.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES;
   const length = Number(req.headers.get("content-length") || "0");
@@ -239,7 +242,7 @@ export async function chargePaidCall(
   const add = (b: string, w: number, m: number) => { buckets.push(`${b}|${w}`); windows.push(w); limits.push(m); };
 
   if (caller.kind === "guest" && L.guest.length === 0) {
-    return json(401, { success: false, error: SIGN_IN_MESSAGE, code: "SIGN_IN_REQUIRED" });
+    return json(401, { success: false, error: signInMessage(), code: "SIGN_IN_REQUIRED" });
   }
   if (caller.kind === "user") {
     for (const l of L.user) add(`user:${caller.id}:${fn}`, l.window, l.max);
