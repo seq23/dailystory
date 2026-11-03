@@ -60,6 +60,9 @@ verify_jwt = false
 [functions.get-monitoring-data]
 verify_jwt = false
 
+[functions.guest-pass]
+verify_jwt = false
+
 [functions.image-proxy]
 verify_jwt = false
 
