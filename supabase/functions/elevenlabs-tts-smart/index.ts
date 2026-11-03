@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 import { identifyCaller, chargeCall } from '../_shared/paidCallGuardDeno.ts';
+import { TTS_MAX_CHARACTERS } from '../_shared/languageVoiceMap.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -147,9 +148,11 @@ async function handle(req: Request): Promise<Response> {
   if (caller instanceof Response) return caller;
 
   try {
-    const { text, voice_id, model_id, voice_settings, session_id: clientSessionId } = await req.json();
+    const { text: rawText, voice_id, model_id, voice_settings, session_id: clientSessionId } = await req.json();
     
-    if (!text) throw new Error("Text is required");
+    if (!rawText) throw new Error("Text is required");
+    // Cost guardrail, as in elevenlabs-tts: hard cap characters per request.
+    const text = String(rawText).slice(0, TTS_MAX_CHARACTERS);
 
     const elevenLabsApiKey = Deno.env.get("ELEVENLABS_API_KEY");
     if (!elevenLabsApiKey) throw new Error("ElevenLabs API key not configured");

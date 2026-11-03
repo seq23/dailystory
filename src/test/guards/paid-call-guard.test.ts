@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
+  DEFAULT_MAX_BODY_BYTES,
   GUEST_PASS_HEADER,
   PAID_CALL_LIMITS,
   type PaidCallDeps,
@@ -143,6 +144,17 @@ describe("who may make a paid call", () => {
     expect(svc).toMatchObject({ kind: "service" });
     expect(await chargePaidCall(svc as never, "x", deps)).toBeNull();
     expect(deps.counts.size).toBe(0);
+  });
+});
+
+describe("request size", () => {
+  it("a body over the cap is refused before any auth or paid work (413); voice-to-text allows recordings", async () => {
+    const tts = vi.fn(async () => {});
+    const big = post({ Authorization: `Bearer ${USER_TOKEN}`, "content-length": String(DEFAULT_MAX_BODY_BYTES + 1) });
+    expect((await paidFunction(big, fakeDeps(), tts)).status).toBe(413);
+    expect(tts).not.toHaveBeenCalled();
+    expect(read("supabase/functions/voice-to-text/index.ts")).toMatch(/maxBodyBytes:\s*8 \* 1024 \* 1024/);
+    expect(read("supabase/functions/elevenlabs-tts-smart/index.ts")).toMatch(/String\(rawText\)\.slice\(0, TTS_MAX_CHARACTERS\)/);
   });
 });
 
