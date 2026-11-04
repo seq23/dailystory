@@ -2,24 +2,24 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-03T07:43:09.920Z",
+  "collected_at": "2026-11-04T07:43:17.034Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-04",
-    "end_date": "2026-10-31",
+    "start_date": "2026-10-05",
+    "end_date": "2026-11-01",
     "days": 28
   },
   "totals": {
     "clicks": 1,
-    "impressions": 216,
-    "ctr": 0.0046,
-    "position": 18
+    "impressions": 239,
+    "ctr": 0.0042,
+    "position": 17.15
   },
-  "row_count": 35,
-  "query_count": 34,
+  "row_count": 36,
+  "query_count": 35,
   "page_count": 11,
-  "attributed_impressions": 111,
+  "attributed_impressions": 119,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
@@ -31,6 +31,14 @@
       "position": 54.5
     },
     {
+      "query": "time2read",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 13,
+      "ctr": 0,
+      "position": 5.15
+    },
+    {
       "query": "time to read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
@@ -39,12 +47,12 @@
       "position": 7.83
     },
     {
-      "query": "time2read",
+      "query": "time 2 read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 12,
+      "impressions": 11,
       "ctr": 0,
-      "position": 5.33
+      "position": 4.73
     },
     {
       "query": "2 read",
@@ -55,20 +63,12 @@
       "position": 9
     },
     {
-      "query": "time 2 read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 7,
-      "ctr": 0,
-      "position": 5.57
-    },
-    {
       "query": "time read",
       "page": "https://time-2-read.com/",
       "clicks": 1,
-      "impressions": 7,
-      "ctr": 0.1429,
-      "position": 8.43
+      "impressions": 8,
+      "ctr": 0.125,
+      "position": 8.25
     },
     {
       "query": "reading time 2",
@@ -93,6 +93,14 @@
       "impressions": 3,
       "ctr": 0,
       "position": 12.67
+    },
+    {
+      "query": "stories for 2 year olds book",
+      "page": "https://time-2-read.com/toddler-books",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 72.67
     },
     {
       "query": "add and reading",
@@ -125,14 +133,6 @@
       "impressions": 2,
       "ctr": 0,
       "position": 51.5
-    },
-    {
-      "query": "stories for 2 year olds book",
-      "page": "https://time-2-read.com/toddler-books",
-      "clicks": 0,
-      "impressions": 2,
-      "ctr": 0,
-      "position": 71
     },
     {
       "query": "time2read login",
@@ -253,6 +253,14 @@
       "impressions": 1,
       "ctr": 0,
       "position": 47
+    },
+    {
+      "query": "software for struggling readers",
+      "page": "https://time-2-read.com/reading-app-for-kids-struggling-to-read",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 16
     },
     {
       "query": "story time for 2 year olds",
