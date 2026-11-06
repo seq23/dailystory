@@ -1686,6 +1686,235 @@
           "position": 97
         }
       }
+    },
+    {
+      "start_date": "2026-10-07",
+      "end_date": "2026-11-03",
+      "days": 28,
+      "collected_at": "2026-11-06T07:43:51.614Z",
+      "totals": {
+        "clicks": 3,
+        "impressions": 311,
+        "ctr": 0.0096,
+        "position": 15.11
+      },
+      "queries": {
+        "personalized books for 2 year olds": {
+          "impressions": 18,
+          "clicks": 0,
+          "position": 54.5
+        },
+        "time 2 read": {
+          "impressions": 17,
+          "clicks": 0,
+          "position": 4.59
+        },
+        "time2read": {
+          "impressions": 15,
+          "clicks": 0,
+          "position": 5.47
+        },
+        "time to read": {
+          "impressions": 14,
+          "clicks": 0,
+          "position": 7.79
+        },
+        "2 read": {
+          "impressions": 10,
+          "clicks": 0,
+          "position": 9
+        },
+        "time read": {
+          "impressions": 9,
+          "clicks": 1,
+          "position": 8.44
+        },
+        "20 minute reading timer": {
+          "impressions": 8,
+          "clicks": 0,
+          "position": 5.75
+        },
+        "reading time 2": {
+          "impressions": 6,
+          "clicks": 0,
+          "position": 8.67
+        },
+        "2read": {
+          "impressions": 4,
+          "clicks": 0,
+          "position": 13
+        },
+        "time2read login": {
+          "impressions": 4,
+          "clicks": 0,
+          "position": 6.25
+        },
+        "toddler books online": {
+          "impressions": 4,
+          "clicks": 0,
+          "position": 58
+        },
+        "reading timer 20 minutes": {
+          "impressions": 3,
+          "clicks": 0,
+          "position": 5.67
+        },
+        "stories for 2 year olds book": {
+          "impressions": 3,
+          "clicks": 0,
+          "position": 72.67
+        },
+        "20 min reading timer": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 4.5
+        },
+        "20 minute timer for reading": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 5
+        },
+        "20 minute timer reading": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 8
+        },
+        "add and reading": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 71
+        },
+        "best apps for struggling readers": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 54.5
+        },
+        "best reading apps for struggling readers": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 83
+        },
+        "online books for toddlers": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 48
+        },
+        "sight word generator": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 51.5
+        },
+        "software for struggling readers": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 17
+        },
+        "2 year old books online": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 63
+        },
+        "30 second short story": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 67
+        },
+        "ccpa notice": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 38
+        },
+        "ferpa compliance school emergency notification": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 39
+        },
+        "help reading app": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 43
+        },
+        "how many minutes should a 4th grader read per day": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 30
+        },
+        "kindergarten sight words": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 56
+        },
+        "level 2": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 1
+        },
+        "my year 2 daughter is behind with reading. should i use a reading app or find a tutor?": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 1
+        },
+        "read along books for toddlers": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 37
+        },
+        "reading 20 minutes a day statistics": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 8
+        },
+        "sight words 2 year olds": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 42
+        },
+        "sight words for kg2": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 47
+        },
+        "story time for 2 year olds": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 48
+        },
+        "teaching adhd child to read": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 66
+        },
+        "time to read books": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 6
+        },
+        "time2read app": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 48
+        },
+        "timetoread": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 9
+        },
+        "tiny read": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 22
+        },
+        "very short bedtime stories": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 97
+        },
+        "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 4
+        }
+      }
     }
   ]
 }

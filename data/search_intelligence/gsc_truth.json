@@ -2,24 +2,24 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-05T07:43:32.018Z",
+  "collected_at": "2026-11-06T07:43:51.614Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-06",
-    "end_date": "2026-11-02",
+    "start_date": "2026-10-07",
+    "end_date": "2026-11-03",
     "days": 28
   },
   "totals": {
     "clicks": 3,
-    "impressions": 278,
-    "ctr": 0.0108,
-    "position": 16
+    "impressions": 311,
+    "ctr": 0.0096,
+    "position": 15.11
   },
-  "row_count": 41,
-  "query_count": 39,
-  "page_count": 12,
-  "attributed_impressions": 138,
+  "row_count": 45,
+  "query_count": 43,
+  "page_count": 14,
+  "attributed_impressions": 154,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
@@ -31,28 +31,28 @@
       "position": 54.5
     },
     {
+      "query": "time 2 read",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 16,
+      "ctr": 0,
+      "position": 4.25
+    },
+    {
       "query": "time2read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 14,
+      "impressions": 15,
       "ctr": 0,
-      "position": 5.43
+      "position": 5.47
     },
     {
       "query": "time to read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 13,
+      "impressions": 14,
       "ctr": 0,
-      "position": 7.77
-    },
-    {
-      "query": "time 2 read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 12,
-      "ctr": 0,
-      "position": 4.58
+      "position": 7.79
     },
     {
       "query": "2 read",
@@ -74,17 +74,17 @@
       "query": "20 minute reading timer",
       "page": "https://time-2-read.com/20-minute-reading-log",
       "clicks": 0,
-      "impressions": 5,
+      "impressions": 8,
       "ctr": 0,
-      "position": 5.8
+      "position": 5.75
     },
     {
       "query": "reading time 2",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 5,
+      "impressions": 6,
       "ctr": 0,
-      "position": 8.6
+      "position": 8.67
     },
     {
       "query": "2read",
@@ -117,6 +117,22 @@
       "impressions": 3,
       "ctr": 0,
       "position": 72.67
+    },
+    {
+      "query": "20 min reading timer",
+      "page": "https://time-2-read.com/20-minute-reading-log",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 4.5
+    },
+    {
+      "query": "20 minute timer for reading",
+      "page": "https://time-2-read.com/20-minute-reading-log",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 5
     },
     {
       "query": "20 minute timer reading",
@@ -205,6 +221,14 @@
       "impressions": 1,
       "ctr": 0,
       "position": 67
+    },
+    {
+      "query": "ccpa notice",
+      "page": "https://time-2-read.com/ccpa",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 38
     },
     {
       "query": "ferpa compliance school emergency notification",
@@ -349,6 +373,14 @@
       "impressions": 1,
       "ctr": 0,
       "position": 97
+    },
+    {
+      "query": "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta",
+      "page": "https://time-2-read.com/bedtime-stories-about-your-childs-favorite-things",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 4
     }
   ]
 }
