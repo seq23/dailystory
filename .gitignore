@@ -25,6 +25,12 @@ dist-ssr
 test-results/
 playwright-report/
 
+# shared search engine (seq23/search-loop)
+.search-loop-engine/
+.search-loop-run.log
+.search-loop-routing.json
+dist-guides/
+
 # Supabase CLI local state (holds local secrets)
 supabase/.temp/
 supabase/.branches/

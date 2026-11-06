@@ -1,0 +1,57 @@
+name: Guides Deploy
+
+# Deploys the Time-2-Read guides section (the search engine's /questions/ pages)
+# to Cloudflare Pages project "time-2-read-guides", served at
+# guides.time-2-read.com. Independent of Lovable: the app shell stays on Lovable,
+# this section goes live on every green run here. $0 (Pages free plan).
+# Missing CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID is a NAMED STOP, not a red run.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "questions/**"
+      - "guides-site/**"
+      - "scripts/search-loop/build-guides-site.mjs"
+      - "search-loop.config.json"
+  schedule:
+    - cron: "17 13 * * *"
+  workflow_dispatch:
+
+permissions: { contents: read }
+
+concurrency:
+  group: guides-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10  # ~4x a ~2 min assemble + upload; a fault detector, not a budget
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PROJECT: time-2-read-guides
+      DOMAIN: guides.time-2-read.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Assemble the guides site
+        run: node scripts/search-loop/build-guides-site.mjs
+      - name: Deploy to Cloudflare Pages
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            msg="NAMED STOP [SECRET_MISSING_CLOUDFLARE_API_TOKEN] seq23/dailystory needs CLOUDFLARE_API_TOKEN (Pages: Edit) to deploy the guides site; assembled, not deployed."
+            echo "$msg"; echo "$msg" >> "$GITHUB_STEP_SUMMARY"; exit 0
+          fi
+          npx --yes wrangler@4 pages project create "$PROJECT" --production-branch main 2>/dev/null || true
+          npx --yes wrangler@4 pages deploy dist-guides --project-name "$PROJECT" --branch main --commit-dirty=true
+          # Attach the custom domain (idempotent; already attached answers an error we ignore).
+          curl -fsS -X POST "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PROJECT}/domains" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json" \
+            --data "{\"name\":\"${DOMAIN}\"}" >/dev/null 2>&1 || true
+      - name: Is the custom domain serving?
+        run: |
+          key="$(node -p "require('./search-loop.config.json').indexnow.key")"
+          if [ "$(curl -fsS --max-time 15 "https://${DOMAIN}/${key}.txt" 2>/dev/null | tr -d '[:space:]')" = "$key" ]; then echo "guides live at https://${DOMAIN}/"
+          else msg="NAMED STOP [GUIDES_DNS_MISSING] https://${DOMAIN}/ is not serving yet: add DNS record CNAME guides -> ${PROJECT}.pages.dev at the registrar (Squarespace Domains)."; echo "$msg"; echo "$msg" >> "$GITHUB_STEP_SUMMARY"; fi

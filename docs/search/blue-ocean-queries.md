@@ -1,5 +1,10 @@
 # Blue-ocean queries for time-2-read.com
 
+> **1 Nov 2026: the shared search engine owns this list now** (`docs/search/search-loop.md`).
+> Its unbuilt rows seed the engine's `topics`; the built pages' queries are in its
+> `find.exclude_words` so the engine never builds a duplicate of an app page. This file is
+> history; new targets live in `data/search-loop/targets.json`.
+
 Researched 25 Oct 2026, $0 spent (no paid APIs, no OpenSEO credits). Read by the weekly
 search checklist run: build the next unbuilt rows from the top, mark them built here, and
 re-check the evidence column before building (results move).

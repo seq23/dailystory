@@ -1,0 +1,50 @@
+name: Search Loop
+
+# The shared search growth engine (seq23/search-loop, pinned @v1), owner ruling
+# 1 Nov 2026: find easy searches weekly, write one gated page per search daily
+# under /questions/ on guides.time-2-read.com, check every page at 2/4/8 weeks,
+# strengthen / undo / merge, and upload the weekly report "search-loop-week".
+# The guides section deploys on its own to Cloudflare Pages (guides-deploy.yml);
+# it never waits for a Lovable Publish of the app shell.
+# Global throttle: gh variable set SEARCH_LOOP_MODE --body slow -R seq23/search-loop
+# Until guides.time-2-read.com is live the commit step runs in proof mode
+# (NAMED STOP [GUIDES_HOST_NOT_LIVE]); see docs/search/search-loop.md.
+on:
+  schedule:
+    - cron: "41 11 * * *"
+  # A change to the engine's config or this repo's steps gets a proof run on the
+  # PR (builds, gates, uploads the pages as an artifact, commits nothing).
+  pull_request:
+    paths:
+      - "search-loop.config.json"
+      - ".github/workflows/search-loop.yml"
+      - "scripts/search-loop/**"
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: "auto | find | build | check"
+        required: false
+        default: auto
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: search-loop
+  cancel-in-progress: false
+
+jobs:
+  search-loop:
+    uses: seq23/search-loop/.github/workflows/search-loop.yml@v1
+    with:
+      engine_ref: v1
+      stage: ${{ inputs.stage || 'auto' }}
+      setup_command: node scripts/search-loop/engine-routing.mjs
+      post_build_command: node scripts/search-loop/claims-gate.mjs && node scripts/search-loop/build-guides-site.mjs
+      commit_command: bash .github/scripts/search_loop_commit.sh
+    secrets:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+      BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}
