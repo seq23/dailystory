@@ -30,3 +30,7 @@ playwright-report/
 .search-loop-run.log
 .search-loop-routing.json
 dist-guides/
+
+# Supabase CLI local state (holds local secrets)
+supabase/.temp/
+supabase/.branches/

@@ -3,10 +3,11 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-t2r-guest",
   "Access-Control-Max-Age": "600",
   "Vary": "Origin, Access-Control-Request-Headers",
 };
@@ -58,6 +59,10 @@ serve(async (req) => {
   // Handle CORS and health checks
   const healthResponse = handleHealthAndCors(req);
   if (healthResponse) return healthResponse;
+
+  // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
+  const refused = await paidCallRefusal(req, 'elevenlabs-agent-signed-url', corsHeaders, { signInFor: 'to talk with your reading helper' });
+  if (refused) return refused;
 
   try {
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");

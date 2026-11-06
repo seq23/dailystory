@@ -11,6 +11,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
 import { privacyLaneForRequest } from "../_shared/privacyLane.ts";
+import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 import {
   buildQuizMessages,
   finalizeQuiz,
@@ -23,7 +24,7 @@ import {
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-t2r-guest",
 };
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -33,6 +34,11 @@ const OPENAI_QUIZ_MODEL = "gpt-4o-mini";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
+  const refused = await paidCallRefusal(req, 'generate-quiz', corsHeaders, { signInFor: 'to play the story quiz' });
+  if (refused) return refused;
+
 
   let body: Record<string, unknown> = {};
   try {

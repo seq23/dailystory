@@ -1577,23 +1577,25 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         // For English users, use ElevenLabs TTS
         DebugLogger.log('audio', 'Using ElevenLabs for English');
         
-        const ttsResponse = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        // Through the Supabase client, so the call carries the signed-in session (or a
+        // guest pass): elevenlabs-tts refuses the anon key alone. It answers JSON with
+        // base64 audio, not raw mp3.
+        const { data: ttsData, error: ttsError } = await supabase.functions.invoke('elevenlabs-tts', {
+          body: {
             text: explanationText.slice(0, 800),
             voice: voiceId,
             model: 'eleven_flash_v2_5'
-          })
+          }
         });
 
-        if (!ttsResponse.ok) {
+        if (ttsError || !ttsData?.audio) {
           throw new Error('Failed to generate audio explanation');
         }
         
         DebugLogger.log('network', 'ElevenLabs response received');
         
-        const audioBlob = await ttsResponse.blob();
+        const audioBytes = Uint8Array.from(atob(ttsData.audio), (c) => c.charCodeAt(0));
+        const audioBlob = new Blob([audioBytes], { type: ttsData.contentType || 'audio/mpeg' });
         const audioUrl = URL.createObjectURL(audioBlob);
         
         DebugLogger.log('audio', 'Audio blob created, setting up audio element');

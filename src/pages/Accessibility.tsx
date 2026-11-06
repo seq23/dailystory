@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Accessibility as AccessibilityIcon, Eye, Keyboard, Volume2, Monitor, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 
 const Accessibility = () => {
   useEffect(() => {
@@ -259,6 +260,7 @@ const Accessibility = () => {
           </p>
         </article>
       </section>
+      <SiteFooterNav />
     </main>
   );
 };

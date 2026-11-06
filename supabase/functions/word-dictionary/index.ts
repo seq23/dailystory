@@ -6,12 +6,13 @@ import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
 import { privacyLaneForRequest } from "../_shared/privacyLane.ts";
+import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
 import { parseModelJson, freeDictionaryLookup, builtInWordEntry } from "../_shared/wordFallback.ts";
 import { jsonAnswerProblem } from "../_shared/storyOutputCheck.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-t2r-guest',
   'Access-Control-Max-Age': '600',
   'Vary': 'Origin, Access-Control-Request-Headers',
 };
@@ -273,6 +274,14 @@ serve(async (req) => {
   const healthResponse = handleHealthAndCors(req);
   if (healthResponse) return healthResponse;
 
+  // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
+  const caller = await identifyCaller(req, { signInFor: 'to see what words mean' });
+  if (caller instanceof Response) {
+    const h = new Headers(caller.headers);
+    for (const [k, v] of Object.entries(corsHeaders)) if (!h.has(k)) h.set(k, v);
+    return new Response(caller.body, { status: caller.status, headers: h });
+  }
+
   let userLanguage = 'en'; // Default fallback
   try {
     const reqBody = await req.json();
@@ -336,6 +345,10 @@ Make the definition simple and clear for children. The sample sentence should be
 }
 
 IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but the phonetic pronunciation must always be in English. Make the definition simple and clear for children. The sample sentence should be engaging and relatable to kids.`;
+
+    // Only a cache miss spends money. Over the limit the catch below answers from the
+    // free dictionary, so the child still sees a definition.
+    if (await chargeCall(caller, 'word-dictionary')) throw new Error('paid call limit reached');
 
     const { response, provider } = await chatCompletionWithFallback({
         model: 'gpt-4o-mini',

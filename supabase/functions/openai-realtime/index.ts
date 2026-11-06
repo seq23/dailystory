@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { logCost } from "../_shared/costLogger.ts";
+import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -43,6 +44,10 @@ serve(async (req) => {
     );
   }
   console.log('✅ Authenticated user:', user.id);
+  {
+    const refused = await paidCallRefusal(req, 'openai-realtime', corsHeaders, { allowGuests: false, signInFor: 'to talk with your reading helper' });
+    if (refused) return refused;
+  }
   // --- End Auth ---
 
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');

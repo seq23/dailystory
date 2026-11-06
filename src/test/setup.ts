@@ -5,8 +5,34 @@ import '@/i18n/config';
 import { vi } from 'vitest';
 
 // Browser storage belongs to JSDOM, including on Node versions with native storage.
+// Node 24+ ships its own localStorage, unavailable without --localstorage-file, and
+// the jsdom environment copies that undefined onto window: every test that touches
+// storage then dies on "Cannot read properties of undefined" (found 3 Nov 2026 on
+// Node 26; CI pins Node 20, which hid it). When the environment hands us no store,
+// install the Web Storage contract in memory rather than let a suite half-run.
+const memoryStorage = (): Storage => {
+  const map = new Map<string, string>();
+  return {
+    get length() { return map.size; },
+    key: (i: number) => [...map.keys()][i] ?? null,
+    getItem: (k: string) => (map.has(String(k)) ? map.get(String(k))! : null),
+    setItem: (k: string, v: string) => { map.set(String(k), String(v)); },
+    removeItem: (k: string) => { map.delete(String(k)); },
+    clear: () => { map.clear(); },
+  } as Storage;
+};
 for (const name of ['localStorage', 'sessionStorage'] as const) {
-  Object.defineProperty(globalThis, name, { configurable: true, value: window[name] });
+  const store = (window[name] as Storage | undefined) ?? memoryStorage();
+  Object.defineProperty(window, name, { configurable: true, value: store });
+  Object.defineProperty(globalThis, name, { configurable: true, value: store });
+}
+// A store that cannot round-trip a value is a broken harness, not a passing suite.
+for (const name of ['localStorage', 'sessionStorage'] as const) {
+  const store = globalThis[name];
+  store.setItem('__setup_probe__', '1');
+  if (store.getItem('__setup_probe__') !== '1') throw new Error(`TEST_SETUP_NO_${name.toUpperCase()}`);
+  store.removeItem('__setup_probe__');
+  if (store.getItem('__setup_probe__') !== null) throw new Error(`TEST_SETUP_${name.toUpperCase()}_NOT_CLEARABLE`);
 }
 
 // JSDOM has no media-query API; responsive components still need the browser contract.

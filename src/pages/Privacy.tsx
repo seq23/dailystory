@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 
 const Privacy = () => {
   useEffect(() => {
@@ -201,6 +202,7 @@ const Privacy = () => {
           <Link to="/terms" className="text-primary hover:underline">{uiText("Terms of Service")}</Link>
         </div>
       </section>
+      <SiteFooterNav />
     </main>
   );
 };

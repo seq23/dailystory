@@ -20,11 +20,12 @@ import {
   type ImageUserInfo,
 } from '../_shared/imagePrompt.ts';
 import { privacyLaneForRequest } from '../_shared/privacyLane.ts';
+import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
-    'authorization, x-client-info, apikey, content-type, x-requested-with',
+    'authorization, x-client-info, apikey, content-type, x-requested-with, x-t2r-guest',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
@@ -228,6 +229,10 @@ Deno.serve(async (req) => {
       timestamp: new Date().toISOString(),
     });
   }
+
+  // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
+  const refused = await paidCallRefusal(req, 'runware-generate-image', corsHeaders, { signInFor: 'to make pictures' });
+  if (refused) return refused;
 
   let payload: RequestPayload;
   try {

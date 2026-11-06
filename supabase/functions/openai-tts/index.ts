@@ -2,11 +2,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { logCost } from "../_shared/costLogger.ts";
+import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-t2r-guest',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
   'Access-Control-Max-Age': '600',
   'Vary': 'Origin, Access-Control-Request-Headers',
@@ -32,6 +33,10 @@ serve(async (req) => {
       }
     });
   }
+
+  // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
+  const refused = await paidCallRefusal(req, 'openai-tts', corsHeaders, { signInFor: 'to hear the reading voice' });
+  if (refused) return refused;
 
   try {
     console.log('OpenAI TTS function called');

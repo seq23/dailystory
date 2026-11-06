@@ -3,6 +3,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynamicCorsOptionsResponse } from "../_shared/corsAdvanced.js";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,7 +17,9 @@ serve(async (req) => {
   const healthResponse = handleHealthAndCors(req);
   if (healthResponse) return healthResponse;
 
-  
+  // Paid call: admins only (it changes the ElevenLabs account) (../_shared/paidCallGuard.ts).
+  const refused = await paidCallRefusal(req, 'elevenlabs-dictionary-manager', corsHeaders, { adminUserIds: adminUserIds(), signInFor: 'as an admin' });
+  if (refused) return refused;
 
   try {
     const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');

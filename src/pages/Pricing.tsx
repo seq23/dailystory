@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import PricingSection from "@/components/PricingSection";
 import { PLAN_PRICES } from "@/lib/freeStoryAllowance";
+import { SiteFooterNav } from "@/components/SiteFooterNav";
 
 const Pricing = () => {
   useEffect(() => {
@@ -67,6 +68,7 @@ const Pricing = () => {
   return (
     <main>
       <PricingSection />
+      <SiteFooterNav />
     </main>
   );
 };

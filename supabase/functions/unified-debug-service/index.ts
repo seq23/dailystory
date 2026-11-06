@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 
 // Inline CORS helpers to avoid external dependencies
 function createCorsResponse(data: any, status = 200): Response {
@@ -40,23 +41,13 @@ serve(async (req) => {
   const healthCorsResponse = handleHealthAndCors(req);
   if (healthCorsResponse) return healthCorsResponse;
 
-  // Auth check: require valid JWT
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return createCorsResponse({ error: 'Unauthorized' }, 401);
+  // Admins and the service role only (3 Nov 2026): this service reads prompt history
+  // (which can hold children's story details) and its visual-scene-debug operation
+  // makes a real, paid image. Any valid JWT, the public anon key included, used to pass.
+  {
+    const refused = await paidCallRefusal(req, 'unified-debug-service', corsHeaders, { adminUserIds: adminUserIds(), signInFor: 'as an admin' });
+    if (refused) return refused;
   }
-  try {
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-    const anonClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
-      global: { headers: { Authorization: authHeader } }
-    });
-    const token = authHeader.replace('Bearer ', '');
-    const { error: claimsError } = await anonClient.auth.getClaims(token);
-    if (claimsError) return createCorsResponse({ error: 'Unauthorized' }, 401);
-  } catch {
-    return createCorsResponse({ error: 'Unauthorized' }, 401);
-  }
-
 
   try {
 const { memoizedImport } = await import("../_shared/resilientLoader.ts");

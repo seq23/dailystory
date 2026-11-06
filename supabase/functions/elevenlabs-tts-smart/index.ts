@@ -1,10 +1,12 @@
 // Enhanced ElevenLabs TTS Smart — Flash v2.5 + persistent cache + latency optimization
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
+import { identifyCaller, chargeCall } from '../_shared/paidCallGuardDeno.ts';
+import { TTS_MAX_CHARACTERS } from '../_shared/languageVoiceMap.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-t2r-guest',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
   'Access-Control-Max-Age': '600',
   'Vary': 'Origin, Access-Control-Request-Headers',
@@ -141,10 +143,16 @@ async function handle(req: Request): Promise<Response> {
     });
   }
 
+  // Paid call: a signed-in user or a guest pass, never the anon key alone.
+  const caller = await identifyCaller(req, { signInFor: 'to hear the reading voice' });
+  if (caller instanceof Response) return caller;
+
   try {
-    const { text, voice_id, model_id, voice_settings, session_id: clientSessionId } = await req.json();
+    const { text: rawText, voice_id, model_id, voice_settings, session_id: clientSessionId } = await req.json();
     
-    if (!text) throw new Error("Text is required");
+    if (!rawText) throw new Error("Text is required");
+    // Cost guardrail, as in elevenlabs-tts: hard cap characters per request.
+    const text = String(rawText).slice(0, TTS_MAX_CHARACTERS);
 
     const elevenLabsApiKey = Deno.env.get("ELEVENLABS_API_KEY");
     if (!elevenLabsApiKey) throw new Error("ElevenLabs API key not configured");
@@ -196,6 +204,11 @@ async function handle(req: Request): Promise<Response> {
     }
     
     console.log('🔄 Cache MISS — generating via ElevenLabs Flash v2.5');
+
+    // Only a cache miss spends money, so only a miss is charged. Over the limit the
+    // client reads the page in the browser voice (useFallback), as on any refusal.
+    const limited = await chargeCall(caller, 'elevenlabs-tts-smart', { useFallback: true });
+    if (limited) return limited;
 
     // A refusal (out of credits or quota, 401/402/429) or a slow answer comes back
     // as { success: false, useFallback: true }; the client then reads the page once

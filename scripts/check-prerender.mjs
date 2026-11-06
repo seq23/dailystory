@@ -4,8 +4,9 @@
 // collect nothing (no <form>/<input>, COPPA). Run after `npm run build`.
 //
 // Also the Boss OS search-readiness rules time-2-read.com failed on 25 Oct 2026,
-// read from the same HTML a crawler gets: title 30-65 chars and unique; one meta
-// description of 120-160 chars; og:image on our own host and present in public/;
+// read from the same HTML a crawler gets: a unique title and one meta
+// description (lengths aim for 30-65 / 120-160; over is a note, under fails only
+// below 75% of the floor, owner ruling 2 Nov 2026); og:image on our own host and present in public/;
 // an Organization with name, url, logo and sameAs; WebPage on every page and
 // BreadcrumbList on inner pages; a priced SoftwareApplication on the homepage;
 // the homepage links /about; every sitemap URL within three clicks of the homepage;
@@ -21,7 +22,17 @@ const dist = process.argv[2] ?? "dist";
 const locs = [...readFileSync("public/sitemap.xml", "utf8").matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
 if (locs.length === 0) { console.error("PRERENDER_CHECK_NO_SITEMAP_URLS"); process.exit(1); }
 const fails = [];
+const notes = [];
 let checked = 0;
+let bylines = 0;
+// Owner ruling 2 Nov 2026 (no petty validation): over a ceiling never fails;
+// under a floor fails only below 75% of it. Probed so a re-tightening is red.
+const TITLE = [30, 65];
+const DESC = [120, 160];
+const failsFloor = (n, min) => n < Math.ceil(min * 0.75);
+if (failsFloor(500, TITLE[0]) || failsFloor(Math.ceil(TITLE[0] * 0.75), TITLE[0]) || !failsFloor(Math.ceil(DESC[0] * 0.75) - 1, DESC[0])) {
+  fails.push("LENGTH RULE: failsFloor must pass anything over its ceiling and fail only below 75% of the floor");
+}
 const decode = (s) => s.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 const titles = new Map();
 const linksOf = new Map();
@@ -50,12 +61,14 @@ for (const loc of locs) {
   if (types.includes("Article") && /<(form|input|textarea)\b/i.test(root?.[2] ?? "")) fails.push(`${path}: guide page collects data`);
   const title = decode(html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "");
   if (!title.includes("Time-2-Read")) fails.push(`${path}: title does not name Time-2-Read`);
-  if (title.length < 30 || title.length > 65) fails.push(`${path}: title is ${title.length} chars (30-65): "${title}"`);
+  if (failsFloor(title.length, TITLE[0])) fails.push(`${path}: title is ${title.length} chars, under 75% of the ${TITLE[0]} floor: "${title}"`);
+  else if (title.length < TITLE[0] || title.length > TITLE[1]) notes.push(`${path}: title is ${title.length} chars (aimed for ${TITLE[0]}-${TITLE[1]})`);
   if (titles.has(title)) fails.push(`${path}: title "${title}" is also on ${titles.get(title)}`);
   titles.set(title, path);
   const descs = [...html.matchAll(/<meta name="description" content="([^"]*)"/g)].map((m) => decode(m[1]));
   if (descs.length !== 1) fails.push(`${path}: ${descs.length} meta descriptions (want exactly 1)`);
-  else if (descs[0].length < 120 || descs[0].length > 160) fails.push(`${path}: description is ${descs[0].length} chars (120-160)`);
+  else if (failsFloor(descs[0].length, DESC[0])) fails.push(`${path}: description is ${descs[0].length} chars, under 75% of the ${DESC[0]} floor`);
+  else if (descs[0].length < DESC[0] || descs[0].length > DESC[1]) notes.push(`${path}: description is ${descs[0].length} chars (aimed for ${DESC[0]}-${DESC[1]})`);
   const ogImage = html.match(/<meta property="og:image" content="([^"]+)"/)?.[1] ?? "";
   if (!ogImage.startsWith(`${SITE}/`)) fails.push(`${path}: og:image is not on ${SITE}: ${ogImage || "missing"}`);
   if (!existsSync(join("public", new URL(ogImage).pathname.slice(1)))) fails.push(`${path}: og:image ${ogImage} is not in public/`);
@@ -73,6 +86,16 @@ for (const loc of locs) {
   }
   if (org?.logo && !String(org.logo).startsWith(`${SITE}/`)) fails.push(`${path}: Organization logo is not on ${SITE}`);
   if (!types.includes("WebPage")) fails.push(`${path}: no WebPage JSON-LD`);
+  // Search Readiness c6 (3 Nov 2026): a sampled page named no author or reviewer a
+  // reader or an answer engine could see. Every page carries the visible byline
+  // (src/components/PageByline.tsx, rendered by SiteFooterNav) and names the same
+  // entity in its schema.
+  const byline = (root?.[2] ?? "").match(/<a\b[^>]*rel="author"[^>]*>([\s\S]*?)<\/a>/);
+  const bylineName = (byline?.[1] ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  if (!bylineName) fails.push(`${path}: no visible rel="author" byline in the page's HTML (c6)`);
+  else { bylines++; if (!(root?.[2] ?? "").includes("Written and reviewed by")) fails.push(`${path}: the byline does not say who wrote and reviewed the page (c6)`); }
+  const schemaAuthors = nodes.flatMap((n) => [].concat(n.author ?? [])).map((a) => (typeof a === "string" ? a : a?.name)).filter(Boolean);
+  if (bylineName && !schemaAuthors.includes(bylineName)) fails.push(`${path}: schema names no author "${bylineName}" to match the visible byline (c6)`);
   if (path !== "/" && !types.includes("BreadcrumbList")) fails.push(`${path}: no BreadcrumbList JSON-LD`);
   if (path === "/") {
     if (!types.includes("WebSite")) fails.push("/: no WebSite JSON-LD");
@@ -98,5 +121,9 @@ for (const loc of locs) {
 // Bing Webmaster site-ownership tag (public code, not a secret) must survive the build.
 const home = existsSync(join(dist, "index.html")) ? readFileSync(join(dist, "index.html"), "utf8") : "";
 if (!/<meta name="msvalidate\.01" content="306F2E6DD99A91CBBA16C94091284F00"/.test(home)) fails.push("/: dist/index.html lost the msvalidate.01 Bing verification tag");
+// Rule 0: a run that checked no page, or found the byline on none, is a failure, not a pass.
+if (checked === 0) fails.push("PRERENDER_CHECK_NO_PAGES_CHECKED");
+if (bylines === 0) fails.push("PRERENDER_CHECK_NO_BYLINE_FOUND: no page carried a visible rel=\"author\" byline (c6)");
+for (const n of notes) console.warn(`note: ${n}`);
 if (fails.length) { console.error(`PRERENDER_CHECK_FAILED\n  ${fails.join("\n  ")}`); process.exit(1); }
-console.log(`prerender check: ${checked} pages carry real HTML, title, description, canonical and schema`);
+console.log(`prerender check: ${checked} pages carry real HTML, title, description, canonical and schema; ${bylines} carry a visible author byline`);
