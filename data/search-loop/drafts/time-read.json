@@ -1,0 +1,101 @@
+{
+  "h1": "What Is Time Read and How Does It Work?",
+  "title_lead": "What Is Time Read?",
+  "meta_description": "Time read is the minutes a child spends reading each day. Learn how to track it, what counts, and simple ways to build the habit at home.",
+  "direct_answer": "Time read is the total minutes a child spends looking at words and making meaning from text each day. It includes silent reading, reading aloud, and following along with audio while eyes stay on the page.",
+  "sections": [
+    {
+      "heading": "Why do schools and families track time read?",
+      "paragraphs": [
+        "Teachers often ask students to log minutes because regular practice builds fluency, vocabulary, and stamina. A daily log helps adults see patterns. It shows which days reading happened and which days it did not. That information lets a parent or teacher adjust the routine without guessing. The goal is not a perfect number. The goal is a steady habit that fits the child's life."
+      ],
+      "bullets": [
+        "Shows consistency over weeks",
+        "Highlights busy days that need a plan",
+        "Gives kids a visible record of effort"
+      ]
+    },
+    {
+      "heading": "What counts as time read?",
+      "paragraphs": [
+        "Any moment a child engages with text counts. Picture books, chapter books, graphic novels, magazines, and recipes all qualify. Reading aloud to a sibling counts. Reading silently in a beanbag counts. Following a print book while listening to the matching audiobook counts because the eyes stay on the words. Watching a movie or playing a video game with subtitles does not count unless the child is actively reading the text."
+      ],
+      "bullets": [
+        "Print books and e-books",
+        "Magazines and comics",
+        "Audio with matching text in view"
+      ]
+    },
+    {
+      "heading": "How much time read is typical by age?",
+      "paragraphs": [
+        "Pre-K children often start with five to ten minutes of shared reading. Early elementary students may build to fifteen or twenty minutes. Upper elementary and middle school readers often aim for twenty to thirty minutes. High school students benefit from thirty minutes or more. These are rough guides, not rules. Some days a child reads for an hour. Other days only five minutes happen. Both are normal."
+      ],
+      "bullets": [
+        "Pre-K: 5–10 minutes shared",
+        "K–2: 15–20 minutes",
+        "3–5: 20–30 minutes",
+        "6–10: 30+ minutes"
+      ]
+    },
+    {
+      "heading": "Simple ways to fit time read into a busy day",
+      "paragraphs": [
+        "Keep a basket of books in the car. Leave a graphic novel on the kitchen counter. Set a timer for ten minutes after dinner. Let the child pick the book and the spot. A headlamp makes reading in bed feel like an adventure. A weekend library trip refreshes the stack. The easiest routine is the one that requires no negotiation."
+      ],
+      "bullets": [
+        "Car basket for wait times",
+        "Timer after meals",
+        "Child chooses book and place"
+      ]
+    },
+    {
+      "heading": "When time read feels hard, what helps?",
+      "paragraphs": [
+        "Resistance usually means the book is too hard, too easy, or not interesting. Swap the title. Try a series with recurring characters. Try a funny magazine. Read the first chapter aloud together, then hand the book over. Celebrate the minutes logged, not the level reached. A streak of five-minute days beats one perfect hour once a week."
+      ],
+      "bullets": []
+    }
+  ],
+  "faq": [
+    {
+      "q": "How long should time read be for a 4-year-old?",
+      "a": "Aim for five to ten minutes of shared reading with a picture book. Keep it playful. Let the child turn pages and point at pictures. Stop before frustration starts. Consistency matters more than length."
+    },
+    {
+      "q": "Does listening to an audiobook count as time read?",
+      "a": "It counts when the child follows along with the printed text while listening. Eyes on the page build word recognition. Pure listening builds vocabulary and comprehension but does not practice decoding."
+    },
+    {
+      "q": "What if we miss a day?",
+      "a": "Missing a day is normal. Do not double up the next day. Just start fresh. A habit survives missed days when the routine is easy to return to. Keep books visible so restarting feels natural."
+    },
+    {
+      "q": "Should I correct mistakes during time read?",
+      "a": "If the mistake changes the meaning, wait for a natural pause and gently supply the word. If the meaning stays clear, let the child keep reading. Fluency grows when the flow is not constantly interrupted."
+    }
+  ],
+  "facts": [
+    {
+      "claim": "The National Assessment of Educational Progress reports that students who read for fun almost every day score higher on reading assessments than those who rarely read for fun.",
+      "source_url": "https://www.nationsreportcard.gov/reading/national/achievement/",
+      "source_name": "National Center for Education Statistics",
+      "verified": false,
+      "checked_status": 404
+    },
+    {
+      "claim": "The American Academy of Pediatrics recommends reading aloud to children from infancy through at least kindergarten to support language development.",
+      "source_url": "https://www.aap.org/en/patient-care/early-literacy/",
+      "source_name": "American Academy of Pediatrics",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "The Institute of Education Sciences identifies daily independent reading practice as a key component of effective literacy instruction.",
+      "source_url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/21",
+      "source_name": "Institute of Education Sciences",
+      "verified": true,
+      "checked_status": 200
+    }
+  ]
+}

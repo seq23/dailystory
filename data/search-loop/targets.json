@@ -1,0 +1,594 @@
+{
+  "schema": "search-loop-targets-v1",
+  "site": "time-2-read.com",
+  "week": "2026-W45",
+  "generated_at": "2026-11-06T23:12:03.875Z",
+  "sources": {
+    "search_console": "ok: 45 rows",
+    "bing_webmaster": "not read: BING_WEBMASTER_API_KEY is not set",
+    "easy_wins": "ok: 2 easy win(s) in Search Console",
+    "suggestqueries.google.com": "ok",
+    "api.bing.com": "ok",
+    "relevance_screen": "ok: kept 22 of 44 (free model)",
+    "top10": "not read: no BRAVE_SEARCH_API_KEY"
+  },
+  "targets": [
+    {
+      "query": "20 minute timer reading",
+      "variants": [],
+      "signals": {
+        "words": 4,
+        "question": false,
+        "gsc_position": 8,
+        "gsc_impressions": 2,
+        "gsc_page": "https://time-2-read.com/20-minute-reading-log",
+        "unanswered": {
+          "words": 4,
+          "covered": 0,
+          "parts_best_position": 4.5,
+          "parts_rows": 6
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 56.3,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 4-word question, and the site holds its parts at position 4.5",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "reading 20 minutes a day statistics",
+      "variants": [],
+      "signals": {
+        "words": 6,
+        "question": false,
+        "gsc_position": 8,
+        "gsc_impressions": 1,
+        "gsc_page": "https://time-2-read.com/is-reading-20-minutes-a-day-enough",
+        "unanswered": {
+          "words": 5,
+          "covered": 0,
+          "parts_best_position": 4.5,
+          "parts_rows": 6
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 54,
+        "can_be_one": 40
+      },
+      "score": 54,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "already ranks 8 in Search Console (1 impressions)",
+        "can-be-#1 score 40 too (taken by the striking lane's turn)"
+      ]
+    },
+    {
+      "query": "how many minutes should a 4th grader read per day",
+      "variants": [],
+      "signals": {
+        "words": 10,
+        "question": true,
+        "gsc_position": 30,
+        "gsc_impressions": 1,
+        "gsc_page": "https://time-2-read.com/is-reading-20-minutes-a-day-enough",
+        "unanswered": {
+          "words": 7,
+          "covered": 0,
+          "parts_best_position": 5.7,
+          "parts_rows": 2
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 19,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 7-word question, and the site holds its parts at position 5.7",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "personalised childrens books for 2 year olds",
+      "variants": [],
+      "signals": {
+        "words": 7,
+        "question": false,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 6,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 1
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 6-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "time read",
+      "variants": [],
+      "signals": {
+        "words": 2,
+        "question": false,
+        "gsc_position": 8.4,
+        "gsc_impressions": 9,
+        "gsc_page": "https://time-2-read.com/",
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 52.6,
+        "can_be_one": 0
+      },
+      "score": 52.6,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "already ranks 8.4 in Search Console (9 impressions)"
+      ]
+    },
+    {
+      "query": "kids books for 2 year olds",
+      "variants": [
+        "books for kids 2 years old"
+      ],
+      "signals": {
+        "words": 6,
+        "question": false,
+        "bing_suggest": true,
+        "unanswered": {
+          "words": 5,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 1
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 20,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 5-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "books for children 2 years old",
+      "variants": [
+        "childrens books for 2 year olds"
+      ],
+      "signals": {
+        "words": 6,
+        "question": false,
+        "bing_suggest": true,
+        "unanswered": {
+          "words": 5,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 1
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 20,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 5-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "reading time 2",
+      "variants": [
+        "time 2 read"
+      ],
+      "signals": {
+        "words": 3,
+        "question": false,
+        "gsc_position": 10,
+        "gsc_impressions": 1,
+        "gsc_page": "https://time-2-read.com/about",
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 40.4,
+        "can_be_one": 0
+      },
+      "score": 40.4,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "already ranks 10 in Search Console (1 impressions)"
+      ]
+    },
+    {
+      "query": "time 2 read workbook grade 0",
+      "variants": [],
+      "signals": {
+        "words": 6,
+        "question": false,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 6,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 6-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "time 2 read app",
+      "variants": [],
+      "signals": {
+        "words": 4,
+        "question": false,
+        "google_suggest": true,
+        "bing_suggest": true,
+        "unanswered": {
+          "words": 4,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 40,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 4-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "reading time grade 2",
+      "variants": [
+        "how to read time grade 2"
+      ],
+      "signals": {
+        "words": 4,
+        "question": false,
+        "bing_suggest": true,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 4,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 40,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)",
+        "can-be-#1 score 40 too (taken by the striking lane's turn)"
+      ]
+    },
+    {
+      "query": "time 2 read books",
+      "variants": [],
+      "signals": {
+        "words": 4,
+        "question": false,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 4,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 4-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "time 2 read grade 2 workbook",
+      "variants": [],
+      "signals": {
+        "words": 6,
+        "question": false,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 6,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 6-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "software for struggling readers",
+      "variants": [],
+      "signals": {
+        "words": 4,
+        "question": false,
+        "gsc_position": 17,
+        "gsc_impressions": 2,
+        "gsc_page": "https://time-2-read.com/reading-app-for-kids-struggling-to-read",
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 40,
+        "can_be_one": 0
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "already ranks 17 in Search Console (2 impressions)"
+      ]
+    },
+    {
+      "query": "time 2 read workbook grade 1",
+      "variants": [],
+      "signals": {
+        "words": 6,
+        "question": false,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 6,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 6-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "time 2 read grade 1",
+      "variants": [],
+      "signals": {
+        "words": 5,
+        "question": false,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 5,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 5-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "time 2 read grade 3",
+      "variants": [],
+      "signals": {
+        "words": 5,
+        "question": false,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 5,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 40
+      },
+      "score": 25,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)",
+        "can-be-#1 score 40 too (taken by the striking lane's turn)"
+      ]
+    },
+    {
+      "query": "time 2 read g01 workbook set of 3",
+      "variants": [],
+      "signals": {
+        "words": 8,
+        "question": false,
+        "bing_suggest": true,
+        "unanswered": {
+          "words": 7,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 20,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 7-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "reading time worksheet for grade 2",
+      "variants": [],
+      "signals": {
+        "words": 6,
+        "question": false,
+        "bing_suggest": true,
+        "unanswered": {
+          "words": 5,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 20,
+        "can_be_one": 40
+      },
+      "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 5-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "childrens books you can personalize",
+      "variants": [],
+      "signals": {
+        "words": 5,
+        "question": false,
+        "bing_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 20,
+        "can_be_one": 0
+      },
+      "score": 20,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ]
+    },
+    {
+      "query": "tiny read",
+      "variants": [],
+      "signals": {
+        "words": 2,
+        "question": false,
+        "gsc_position": 22,
+        "gsc_impressions": 1,
+        "gsc_page": "https://time-2-read.com/",
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 18.5,
+        "can_be_one": 0
+      },
+      "score": 18.5,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "already ranks 22 in Search Console (1 impressions)"
+      ]
+    },
+    {
+      "query": "time2read grade 3",
+      "variants": [],
+      "signals": {
+        "words": 3,
+        "question": false,
+        "bing_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 10,
+        "can_be_one": 0
+      },
+      "score": 10,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ]
+    }
+  ],
+  "strengthen": []
+}

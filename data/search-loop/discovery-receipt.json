@@ -1,0 +1,61 @@
+{
+  "schema": "search-loop-discovery-v1",
+  "site": "time-2-read.com",
+  "week": "2026-W45",
+  "generated_at": "2026-11-06T23:12:03.875Z",
+  "paid_calls": 0,
+  "cost_usd": 0,
+  "hosts": {
+    "searchconsole.googleapis.com": {
+      "calls": 1,
+      "ok": 1,
+      "failed": 0,
+      "cost_usd": 0
+    },
+    "suggestqueries.google.com": {
+      "calls": 40,
+      "ok": 40,
+      "failed": 0,
+      "cost_usd": 0
+    },
+    "api.bing.com": {
+      "calls": 40,
+      "ok": 40,
+      "failed": 0,
+      "cost_usd": 0
+    }
+  },
+  "sources": {
+    "search_console": "ok: 45 rows",
+    "bing_webmaster": "not read: BING_WEBMASTER_API_KEY is not set",
+    "easy_wins": "ok: 2 easy win(s) in Search Console",
+    "suggestqueries.google.com": "ok",
+    "api.bing.com": "ok",
+    "relevance_screen": "ok: kept 22 of 44 (free model)",
+    "top10": "not read: no BRAVE_SEARCH_API_KEY"
+  },
+  "notes": [
+    "autocomplete stopped at its budget of 80 calls"
+  ],
+  "competition": "not read: no BRAVE_SEARCH_API_KEY",
+  "lanes": {
+    "ratio": {
+      "can_be_one": 2,
+      "striking": 1
+    },
+    "can_be_one": 13,
+    "striking": 9,
+    "weights": {
+      "neighbour": 35,
+      "unanswered": 30,
+      "weak_top10": 40,
+      "demand": 10
+    }
+  },
+  "counts": {
+    "candidates": 44,
+    "targets": 22,
+    "strengthen_candidates": 0,
+    "dropped_shared_audience": 0
+  }
+}

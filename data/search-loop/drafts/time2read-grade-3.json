@@ -1,0 +1,109 @@
+{
+  "h1": "What Is Time-2-Read Grade 3 for Young Readers?",
+  "title_lead": "Time-2-Read Grade 3 Overview",
+  "meta_description": "Time-2-Read Grade 3 offers leveled stories and simple tools for ages 8 to 9. Build fluency and confidence with short daily reading practice.",
+  "direct_answer": "Time-2-Read Grade 3 is a reading program for children around ages 8 to 9 that provides leveled stories and simple tracking tools to support daily reading practice at home or in class.",
+  "sections": [
+    {
+      "heading": "What reading skills does Grade 3 focus on?",
+      "paragraphs": [
+        "Grade 3 is a pivot point. Children move from learning to read to reading to learn. Texts get longer. Sentences grow more complex. Vocabulary expands. Time-2-Read Grade 3 meets readers there with stories that match typical third-grade expectations. The passages use familiar sentence patterns and high-frequency words while introducing new terms in context. Kids practice reading with expression, pausing at punctuation, and holding meaning across several paragraphs. Each story is short enough to finish in one sitting. That builds stamina without frustration. The program does not teach phonics rules directly. Instead, it gives children many chances to apply what they already know in real text. Consistent practice with just-right books helps fluency grow naturally."
+      ],
+      "bullets": [
+        "Stories match typical third-grade text complexity",
+        "Focus on fluency, expression, and comprehension",
+        "Short passages build reading stamina",
+        "No phonics instruction, just applied practice"
+      ]
+    },
+    {
+      "heading": "How do the leveled stories work?",
+      "paragraphs": [
+        "Time-2-Read Grade 3 organizes stories into levels that correspond to common reading benchmarks for this age. You start at a comfortable level. The child reads a story aloud or silently. You note how it went. If the reading feels smooth and the child understands the plot, you move to the next level. If the child stumbles often or loses the thread, you stay at the current level for a few more stories. The platform tracks which stories have been read. It shows a simple history so you can see patterns over weeks. There are no timers, badges, or competitive leaderboards. The goal is steady progress, not speed. Parents and teachers decide the pace. Some kids read one story a day. Others read three on weekends. Both approaches work because the structure is flexible."
+      ],
+      "bullets": [
+        "Levels align with common third-grade benchmarks",
+        "Move up when reading feels smooth and comprehension is solid",
+        "Simple history tracks completed stories",
+        "Flexible pacing fits any schedule"
+      ]
+    },
+    {
+      "heading": "What does a typical session look like?",
+      "paragraphs": [
+        "A session takes ten to fifteen minutes. Open the program. Choose the current level. Pick a story the child has not read yet. The child reads aloud while you listen, or reads silently if they prefer. After reading, ask two or three open questions: What happened first? Why did the character do that? What do you think happens next? Keep it conversational. Mark the story complete. The dashboard updates automatically. That is it. No worksheets, no quizzes, no grading. The routine stays light so reading feels like a habit, not a chore. Many families slot this in after dinner or before bedtime. Teachers use it during independent reading blocks. The consistency matters more than the length."
+      ],
+      "bullets": [
+        "Ten to fifteen minutes per session",
+        "Read aloud or silently",
+        "Brief conversation checks understanding",
+        "No worksheets or quizzes required"
+      ]
+    },
+    {
+      "heading": "How can parents and teachers use it together?",
+      "paragraphs": [
+        "Time-2-Read Grade 3 works at home and in the classroom. A teacher can assign a level for the week. The parent sees the same level at home. The child reads the same stories in both places. The shared history means no duplicate effort. Teachers get a quick view of what each student finished. Parents see the same data. Conversations at conferences start from real reading records, not guesswork. If a child struggles with a level, the teacher can suggest staying put. The parent follows that guidance without confusion. If a child flies through, both adults see it and can move up together. The tool does not replace instruction. It gives both adults a common language about the child's reading life."
+      ],
+      "bullets": [
+        "Shared levels and history across home and school",
+        "Teachers and parents see the same progress data",
+        "Common language for conferences and check-ins",
+        "Supplements instruction, does not replace it"
+      ]
+    },
+    {
+      "heading": "What makes the content engaging for this age?",
+      "paragraphs": [
+        "Third graders have opinions. They like humor, mystery, animals, and kids solving problems. Time-2-Read Grade 3 stories reflect those interests. Characters feel real. Plots have a clear beginning, middle, and end. Illustrations are clean and support the text without giving everything away. Topics rotate so the child does not feel stuck in one genre. One week it is a backyard adventure. The next it is a folktale retelling. The next it is a simple science explanation. Variety keeps the routine fresh. The language respects the reader. It does not talk down. It stretches vocabulary just enough. Children often ask to read the next story before the session ends. That pull is the best sign the level fits."
+      ],
+      "bullets": [
+        "Genres include humor, mystery, animals, and realistic fiction",
+        "Clear story structure supports comprehension",
+        "Rotating topics prevent boredom",
+        "Language stretches vocabulary without frustration"
+      ]
+    }
+  ],
+  "faq": [
+    {
+      "q": "Can I use Time-2-Read Grade 3 with multiple children in my family?",
+      "a": "Yes. Each child gets a separate profile under one account. Profiles track individual levels, completed stories, and reading history. You switch between profiles with one tap. Progress stays private to each reader."
+    },
+    {
+      "q": "Do the stories align with state standards for third grade?",
+      "a": "The levels follow widely used readability frameworks that many state standards reference. Text complexity, vocabulary load, and sentence structure match typical third-grade expectations. The program does not claim formal alignment with any specific state document."
+    },
+    {
+      "q": "Is there a printable version of the stories?",
+      "a": "Stories are designed for on-screen reading to keep the tracking simple. You can print individual passages from the browser if you prefer paper. Printing removes the automatic history update for that story."
+    },
+    {
+      "q": "What if my child is reading above or below the Grade 3 level?",
+      "a": "Time-2-Read covers Pre-K through 10th grade. You can start at any level that fits your child right now. Move up or down at any time. The grade label is a starting guide, not a lock."
+    }
+  ],
+  "facts": [
+    {
+      "claim": "By the end of third grade, students are expected to read grade-level text with accuracy, appropriate rate, and expression.",
+      "source_url": "https://www.corestandards.org/ELA-Literacy/RF/3/",
+      "source_name": "Common Core State Standards Initiative",
+      "verified": false,
+      "checked_status": 404
+    },
+    {
+      "claim": "The National Assessment of Educational Progress measures reading proficiency at grade 4 as a key indicator of later academic success.",
+      "source_url": "https://www.nationsreportcard.gov/reading/",
+      "source_name": "National Center for Education Statistics",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "Repeated reading of connected text is a recognized practice for building fluency in elementary grades.",
+      "source_url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/14",
+      "source_name": "Institute of Education Sciences",
+      "verified": true,
+      "checked_status": 200
+    }
+  ]
+}

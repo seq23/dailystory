@@ -1,0 +1,299 @@
+{
+  "schema": "search-loop-pages-v1",
+  "pages": [
+    {
+      "slug": "time-2-read-g01-workbook-set-of-3",
+      "query": "time 2 read g01 workbook set of 3",
+      "lane": "can_be_one",
+      "score": 40,
+      "scores": {
+        "striking": 20,
+        "can_be_one": 40
+      },
+      "reasons": [
+        "no site page answers this 7-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ],
+      "signals": {
+        "words": 8,
+        "question": false,
+        "bing_suggest": true,
+        "unanswered": {
+          "words": 7,
+          "covered": 0,
+          "parts_best_position": 1,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/time-2-read-g01-workbook-set-of-3/index.html",
+      "route": "/questions/time-2-read-g01-workbook-set-of-3/",
+      "url": "https://guides.time-2-read.com/questions/time-2-read-g01-workbook-set-of-3/",
+      "published_at": "2026-11-06",
+      "status": "live",
+      "hash": "26ad4763ad968a64e76ea615c7e51425b773cb2fb15e3d7c64f8ccc2846dca12",
+      "model": "free-route",
+      "facts": [
+        "https://www.nichd.nih.gov/research/supported/Pages/nrp.aspx",
+        "https://en.wikipedia.org/wiki/National_Reading_Panel"
+      ],
+      "linked_from": [],
+      "checks": {},
+      "gate_notes": [
+        "b4 direct answer under the H1 is 33 words (aim 40-60)",
+        "b5 FAQ answer is 31 words (aim 40-60): \"Does the set include a separate teacher guide?\"",
+        "b5 FAQ answer is 37 words (aim 40-60): \"Can I start with Book 2 if my child already knows \"",
+        "b5 FAQ answer is 30 words (aim 40-60): \"Are the stories printed in color or black and whit\"",
+        "b5 FAQ answer is 37 words (aim 40-60): \"How long does the full set take to complete?\""
+      ]
+    },
+    {
+      "slug": "time-read",
+      "query": "time read",
+      "lane": "striking",
+      "score": 52.6,
+      "scores": {
+        "striking": 52.6,
+        "can_be_one": 0
+      },
+      "reasons": [
+        "already ranks 8.4 in Search Console (9 impressions)"
+      ],
+      "signals": {
+        "words": 2,
+        "question": false,
+        "gsc_position": 8.4,
+        "gsc_impressions": 9,
+        "gsc_page": "https://time-2-read.com/",
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/time-read/index.html",
+      "route": "/questions/time-read/",
+      "url": "https://guides.time-2-read.com/questions/time-read/",
+      "published_at": "2026-11-06",
+      "status": "live",
+      "hash": "aa75153cbb06ebbed0c16d37f18375ca3d6e854bad3b4027fce6415a5b47e86c",
+      "model": "free-route",
+      "facts": [
+        "https://www.aap.org/en/patient-care/early-literacy/",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21"
+      ],
+      "linked_from": [],
+      "checks": {},
+      "gate_notes": [
+        "b4 direct answer under the H1 is 36 words (aim 40-60)",
+        "b5 FAQ answer is 34 words (aim 40-60): \"How long should time read be for a 4-year-old?\"",
+        "b5 FAQ answer is 31 words (aim 40-60): \"Does listening to an audiobook count as time read?\"",
+        "b5 FAQ answer is 35 words (aim 40-60): \"What if we miss a day?\"",
+        "b5 FAQ answer is 35 words (aim 40-60): \"Should I correct mistakes during time read?\""
+      ]
+    },
+    {
+      "slug": "time2read-grade-3",
+      "query": "time2read grade 3",
+      "lane": "striking",
+      "score": 10,
+      "scores": {
+        "striking": 10,
+        "can_be_one": 0
+      },
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ],
+      "signals": {
+        "words": 3,
+        "question": false,
+        "bing_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/time2read-grade-3/index.html",
+      "route": "/questions/time2read-grade-3/",
+      "url": "https://guides.time-2-read.com/questions/time2read-grade-3/",
+      "published_at": "2026-11-06",
+      "status": "live",
+      "hash": "c3ec0ccc74cc041134e5e7b7089baab6e302cf973ec98b613182facad26a5aa8",
+      "model": "free-route",
+      "facts": [
+        "https://www.nationsreportcard.gov/reading/",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/14"
+      ],
+      "linked_from": [],
+      "checks": {},
+      "gate_notes": [
+        "b4 direct answer under the H1 is 32 words (aim 40-60)",
+        "b5 FAQ answer is 32 words (aim 40-60): \"Can I use Time-2-Read Grade 3 with multiple childr\"",
+        "b5 FAQ answer is 35 words (aim 40-60): \"Do the stories align with state standards for thir\"",
+        "b5 FAQ answer is 32 words (aim 40-60): \"Is there a printable version of the stories?\"",
+        "b5 FAQ answer is 35 words (aim 40-60): \"What if my child is reading above or below the Gra\""
+      ]
+    }
+  ],
+  "dropped": [
+    {
+      "query": "20 minute timer reading",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 24 words (aim 40-60): \"Does the timer have to be exactly twenty minutes?\"",
+        "b5 FAQ answer is 15 words (aim 40-60): \"Can audiobooks count for the timed session?\"",
+        "b5 FAQ answer is 21 words (aim 40-60): \"What if my child just stares at the page until the\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"Should I use a timer during school breaks?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0)"
+      ]
+    },
+    {
+      "query": "how many minutes should a 4th grader read per day",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 21 words (aim 40-60): \"Can I split the 20 minutes into two 10-minute sess\"",
+        "b5 FAQ answer is 16 words (aim 40-60): \"Do audiobooks count toward the daily minutes?\"",
+        "b5 FAQ answer is 16 words (aim 40-60): \"What if my child only wants to reread the same ser\"",
+        "b5 FAQ answer is 17 words (aim 40-60): \"Should I time the reading with a stopwatch?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
+    },
+    {
+      "query": "personalised childrens books for 2 year olds",
+      "at": "2026-11-06",
+      "reason": [
+        "b2 meta description is 35 chars (aim 120-160)",
+        "b5 FAQ answer is 28 words (aim 40-60): \"Can I preview the book before ordering?\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Are personalised books available in languages othe\""
+      ]
+    },
+    {
+      "query": "kids books for 2 year olds",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"How many books should a 2 year old have access to?\""
+      ]
+    },
+    {
+      "query": "books for children 2 years old",
+      "at": "2026-11-06",
+      "reason": [
+        "b4 direct answer under the H1 is 26 words (aim 40-60)"
+      ]
+    },
+    {
+      "query": "time 2 read workbook grade 0",
+      "at": "2026-11-06",
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0)"
+      ]
+    },
+    {
+      "query": "time 2 read app",
+      "at": "2026-11-06",
+      "reason": [
+        "b4 direct answer under the H1 is 29 words (aim 40-60)",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
+    },
+    {
+      "query": "time 2 read books",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 25 words (aim 40-60): \"Do I need a separate account for each child?\"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"Can teachers use Time-2-Read with a whole class?\""
+      ]
+    },
+    {
+      "query": "time 2 read grade 2 workbook",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 27 words (aim 40-60): \"Does the workbook align with school standards?\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"Is an answer key included?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
+    },
+    {
+      "query": "time 2 read workbook grade 1",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 25 words (aim 40-60): \"Can I start with the Grade 1 workbook if my child \"",
+        "b5 FAQ answer is 17 words (aim 40-60): \"Is the workbook consumable or reproducible?\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"How long does the Grade 1 workbook take to finish?\"",
+        "b5 FAQ answer is 20 words (aim 40-60): \"Does the workbook include an answer key?\""
+      ]
+    },
+    {
+      "query": "time 2 read grade 1",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 15 words (aim 40-60): \"Does Time-2-Read replace my child's school reading\"",
+        "b5 FAQ answer is 14 words (aim 40-60): \"How many Grade 1 books are in the library?\"",
+        "b5 FAQ answer is 15 words (aim 40-60): \"Can I print the books or read them on a tablet?\"",
+        "b5 FAQ answer is 18 words (aim 40-60): \"What if my child is ahead or behind the typical pa\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
+    },
+    {
+      "query": "reading 20 minutes a day statistics",
+      "at": "2026-11-06",
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0)"
+      ]
+    },
+    {
+      "query": "reading time worksheet for grade 2",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 27 words (aim 40-60): \"Are digital clocks included on grade 2 worksheets?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
+    },
+    {
+      "query": "reading time 2",
+      "at": "2026-11-06",
+      "reason": [
+        "invented: unsourced statistic \"Move up when your child reads Level 2 books with 95 percent accuracy, good expre\""
+      ]
+    },
+    {
+      "query": "reading time grade 2",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 19 words (aim 40-60): \"Does reading aloud to my second grader still count\"",
+        "b5 FAQ answer is 20 words (aim 40-60): \"What if my child only wants graphic novels?\"",
+        "b5 FAQ answer is 23 words (aim 40-60): \"Should I correct every mistake during the 20 minut\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"Is weekend reading necessary?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
+    },
+    {
+      "query": "software for struggling readers",
+      "at": "2026-11-06",
+      "reason": [
+        "b2 meta description is 45 chars (aim 120-160)",
+        "b5 FAQ answer is 29 words (aim 40-60): \"How much time per day should my child spend on rea\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Can reading software help a child who is learning \""
+      ]
+    },
+    {
+      "query": "time 2 read grade 3",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 25 words (aim 40-60): \"Does Time-2-Read align with my child's school curr\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0)"
+      ]
+    },
+    {
+      "query": "childrens books you can personalize",
+      "at": "2026-11-06",
+      "reason": [
+        "b2 meta description is 21 chars (aim 120-160)"
+      ]
+    },
+    {
+      "query": "tiny read",
+      "at": "2026-11-06",
+      "reason": [
+        "b5 FAQ answer is 19 words (aim 40-60): \"Can tiny reads replace a full reading curriculum?\"",
+        "b5 FAQ answer is 19 words (aim 40-60): \"What if my child only wants to read the same tiny \"",
+        "b5 FAQ answer is 17 words (aim 40-60): \"Do audiobooks count as tiny reads?\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"How do I track tiny reads without making it a chor\""
+      ]
+    }
+  ],
+  "redirected": []
+}
