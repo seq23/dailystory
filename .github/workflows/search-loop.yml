@@ -42,11 +42,15 @@ jobs:
       open_loops_business: time-2-read
       engine_ref: v1
       stage: ${{ inputs.stage || 'auto' }}
-      setup_command: node scripts/search-loop/engine-routing.mjs
+      setup_command: node scripts/search-loop/engine-routing.mjs && node scripts/search-loop/ai-measure.mjs
       post_build_command: node scripts/search-loop/claims-gate.mjs && node scripts/search-loop/build-guides-site.mjs
       commit_command: bash .github/scripts/search_loop_commit.sh
     secrets:
       BOSS_OPEN_LOOPS_TOKEN: ${{ secrets.BOSS_OPEN_LOOPS_TOKEN }}  # named stops -> Boss OS Open Loops (search-loop v1.7.0)
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      # Account Analytics: Read only. ai-measure.mjs reads the guides site's AI-bot and AI-referral
+      # counts from Workers Analytics Engine with it (time-2-read.com is not a Cloudflare zone).
+      CLOUDFLARE_API_TOKEN: ${{ secrets.SEARCH_LOOP_CF_ANALYTICS_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
       BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}

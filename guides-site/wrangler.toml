@@ -1,0 +1,11 @@
+# Cloudflare Pages project "time-2-read-guides" (guides.time-2-read.com), deployed by
+# .github/workflows/guides-deploy.yml from this directory so functions/ is picked up.
+# The Analytics Engine dataset counts AI-bot reads and AI-referral visits (free); see
+# functions/_middleware.js and docs/search/search-loop.md.
+name = "time-2-read-guides"
+pages_build_output_dir = "../dist-guides"
+compatibility_date = "2026-11-01"
+
+[[analytics_engine_datasets]]
+binding = "AI_LOG"
+dataset = "time2read_guides_ai"
