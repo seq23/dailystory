@@ -39,12 +39,14 @@ jobs:
   search-loop:
     uses: seq23/search-loop/.github/workflows/search-loop.yml@v1
     with:
+      open_loops_business: time-2-read
       engine_ref: v1
       stage: ${{ inputs.stage || 'auto' }}
       setup_command: node scripts/search-loop/engine-routing.mjs
       post_build_command: node scripts/search-loop/claims-gate.mjs && node scripts/search-loop/build-guides-site.mjs
       commit_command: bash .github/scripts/search_loop_commit.sh
     secrets:
+      BOSS_OPEN_LOOPS_TOKEN: ${{ secrets.BOSS_OPEN_LOOPS_TOKEN }}  # named stops -> Boss OS Open Loops (search-loop v1.7.0)
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
       BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}
