@@ -2,24 +2,24 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-06T07:43:51.614Z",
+  "collected_at": "2026-11-07T07:43:35.705Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-07",
-    "end_date": "2026-11-03",
+    "start_date": "2026-10-08",
+    "end_date": "2026-11-04",
     "days": 28
   },
   "totals": {
     "clicks": 3,
-    "impressions": 311,
-    "ctr": 0.0096,
-    "position": 15.11
+    "impressions": 347,
+    "ctr": 0.0086,
+    "position": 14.5
   },
-  "row_count": 45,
-  "query_count": 43,
+  "row_count": 46,
+  "query_count": 44,
   "page_count": 14,
-  "attributed_impressions": 154,
+  "attributed_impressions": 171,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
@@ -31,20 +31,20 @@
       "position": 54.5
     },
     {
-      "query": "time 2 read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 16,
-      "ctr": 0,
-      "position": 4.25
-    },
-    {
       "query": "time2read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 15,
+      "impressions": 18,
       "ctr": 0,
-      "position": 5.47
+      "position": 5.72
+    },
+    {
+      "query": "time 2 read",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 17,
+      "ctr": 0,
+      "position": 4.41
     },
     {
       "query": "time to read",
@@ -55,10 +55,18 @@
       "position": 7.79
     },
     {
+      "query": "20 minute reading timer",
+      "page": "https://time-2-read.com/20-minute-reading-log",
+      "clicks": 0,
+      "impressions": 12,
+      "ctr": 0,
+      "position": 5.58
+    },
+    {
       "query": "2 read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 10,
+      "impressions": 11,
       "ctr": 0,
       "position": 9
     },
@@ -66,17 +74,9 @@
       "query": "time read",
       "page": "https://time-2-read.com/",
       "clicks": 1,
-      "impressions": 9,
-      "ctr": 0.1111,
-      "position": 8.44
-    },
-    {
-      "query": "20 minute reading timer",
-      "page": "https://time-2-read.com/20-minute-reading-log",
-      "clicks": 0,
-      "impressions": 8,
-      "ctr": 0,
-      "position": 5.75
+      "impressions": 10,
+      "ctr": 0.1,
+      "position": 8.5
     },
     {
       "query": "reading time 2",
@@ -85,6 +85,14 @@
       "impressions": 6,
       "ctr": 0,
       "position": 8.67
+    },
+    {
+      "query": "reading timer 20 minutes",
+      "page": "https://time-2-read.com/20-minute-reading-log",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 6
     },
     {
       "query": "2read",
@@ -103,12 +111,28 @@
       "position": 58
     },
     {
-      "query": "reading timer 20 minutes",
+      "query": "20 min reading timer",
       "page": "https://time-2-read.com/20-minute-reading-log",
       "clicks": 0,
       "impressions": 3,
       "ctr": 0,
-      "position": 5.67
+      "position": 4.67
+    },
+    {
+      "query": "20 minute timer reading",
+      "page": "https://time-2-read.com/20-minute-reading-log",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 7.67
+    },
+    {
+      "query": "add and reading",
+      "page": "https://time-2-read.com/reading-for-kids-with-adhd",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 75.33
     },
     {
       "query": "stories for 2 year olds book",
@@ -119,36 +143,12 @@
       "position": 72.67
     },
     {
-      "query": "20 min reading timer",
-      "page": "https://time-2-read.com/20-minute-reading-log",
-      "clicks": 0,
-      "impressions": 2,
-      "ctr": 0,
-      "position": 4.5
-    },
-    {
       "query": "20 minute timer for reading",
       "page": "https://time-2-read.com/20-minute-reading-log",
       "clicks": 0,
       "impressions": 2,
       "ctr": 0,
       "position": 5
-    },
-    {
-      "query": "20 minute timer reading",
-      "page": "https://time-2-read.com/20-minute-reading-log",
-      "clicks": 0,
-      "impressions": 2,
-      "ctr": 0,
-      "position": 8
-    },
-    {
-      "query": "add and reading",
-      "page": "https://time-2-read.com/reading-for-kids-with-adhd",
-      "clicks": 0,
-      "impressions": 2,
-      "ctr": 0,
-      "position": 71
     },
     {
       "query": "best apps for struggling readers",
@@ -173,6 +173,14 @@
       "impressions": 2,
       "ctr": 0,
       "position": 48
+    },
+    {
+      "query": "reading 20 minutes a day statistics",
+      "page": "https://time-2-read.com/is-reading-20-minutes-a-day-enough",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 9
     },
     {
       "query": "sight word generator",
@@ -205,6 +213,14 @@
       "impressions": 2,
       "ctr": 0,
       "position": 3.5
+    },
+    {
+      "query": "2 reas",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
     },
     {
       "query": "2 year old books online",
@@ -285,14 +301,6 @@
       "impressions": 1,
       "ctr": 0,
       "position": 37
-    },
-    {
-      "query": "reading 20 minutes a day statistics",
-      "page": "https://time-2-read.com/is-reading-20-minutes-a-day-enough",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 8
     },
     {
       "query": "sight words 2 year olds",
