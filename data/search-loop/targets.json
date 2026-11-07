@@ -590,5 +590,24 @@
       ]
     }
   ],
-  "strengthen": []
+  "strengthen": [
+    {
+      "query": "childrens books you can personalize",
+      "page": "/questions/time-2-read-books/",
+      "url": "https://guides.time-2-read.com/questions/time-2-read-books/",
+      "score": 20,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "at": "2026-11-07"
+    },
+    {
+      "query": "reading time grade 2",
+      "page": "/questions/time2read-grade-3/",
+      "url": "https://guides.time-2-read.com/questions/time2read-grade-3/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-07"
+    }
+  ]
 }

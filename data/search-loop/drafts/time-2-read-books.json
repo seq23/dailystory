@@ -1,0 +1,105 @@
+{
+  "h1": "What Are Time-2-Read Books and How Do They Work?",
+  "title_lead": "Time-2-Read Books Explained",
+  "meta_description": "Learn what Time-2-Read books are, how the decodable series builds skills step by step, and where to start with a free week of lessons.",
+  "direct_answer": "Time-2-Read books are a structured series of decodable readers and workbooks that introduce phonics patterns in a careful sequence so children practice only the sounds and spellings they have already learned.",
+  "sections": [
+    {
+      "heading": "What makes these books decodable?",
+      "paragraphs": [
+        "Decodable books match the text to the phonics skills a child has been taught. A child who knows short vowels and a few consonants reads sentences that use only those elements. This prevents guessing from pictures or context. Each Time-2-Read title adds one new pattern at a time. The result is text the child can sound out independently. That independence builds confidence and fluency without frustration."
+      ],
+      "bullets": [
+        "One new phonics pattern per book set",
+        "No sight-word memorization required to start",
+        "Cumulative review built into every story",
+        "Aligned to the G01 Workbook Set of 3 scope"
+      ]
+    },
+    {
+      "heading": "How are the levels organized?",
+      "paragraphs": [
+        "The series moves from simple consonant-vowel-consonant words through blends, digraphs, long vowels, and multisyllable words. Early levels use short sentences and large print. Later levels increase sentence length and vocabulary while keeping the decodable principle. Parents and teachers can match a book to the exact skill a child is learning that week. The Grade 3 Overview page shows how the sequence extends into more advanced spelling patterns and morphology."
+      ],
+      "bullets": [
+        "Level 1: CVC words and basic consonants",
+        "Level 2: Blends and digraphs",
+        "Level 3: Long vowels and silent e",
+        "Level 4: R-controlled and vowel teams",
+        "Level 5: Multisyllable words and prefixes"
+      ]
+    },
+    {
+      "heading": "What comes in the workbook sets?",
+      "paragraphs": [
+        "Each workbook set pairs reading practice with spelling, handwriting, and comprehension activities. The G01 Workbook Set of 3 covers the first major chunk of the sequence. Pages are uncluttered so the child focuses on the target pattern. Dictation lines, word sorts, and short writing prompts reinforce the same sounds seen in the readers. Answer keys are included so you can check work quickly."
+      ],
+      "bullets": [
+        "Three coordinated workbooks per set",
+        "Spelling dictation matched to each reader",
+        "Handwriting lines sized for the age group",
+        "Comprehension questions that stay decodable"
+      ]
+    },
+    {
+      "heading": "How do I know where to start?",
+      "paragraphs": [
+        "A quick placement check takes five minutes. Have the child read a few lines from the start of each level. Stop when they miss more than two words in a sentence. Begin instruction at the previous level so the first week feels easy. The What Is Time Read? page includes a printable placement guide and a video walkthrough. You can also start a free week to try the routine before committing to a full set."
+      ],
+      "bullets": [
+        "Read a sample sentence from each level",
+        "Stop at the first sign of struggle",
+        "Start one level back for confidence",
+        "Free week includes placement and first lessons"
+      ]
+    },
+    {
+      "heading": "Can I use these alongside other programs?",
+      "paragraphs": [
+        "Yes. The books follow a standard phonics scope so they supplement most classroom curricula. Use the readers for extra fluency practice at home. Use the workbooks for targeted review of a specific pattern the class covered last month. Because every page is labeled with the skill, you can dip in and out without disrupting the school sequence. Many tutors keep a full set on hand for this reason."
+      ],
+      "bullets": []
+    }
+  ],
+  "faq": [
+    {
+      "q": "Are Time-2-Read books a full curriculum?",
+      "a": "They provide a complete phonics sequence with readers, workbooks, and placement tools. Many families use them as their primary reading program while others add them to a school curriculum for extra practice."
+    },
+    {
+      "q": "Can I use them with a school program?",
+      "a": "Yes. The scope follows common phonics progressions so the books reinforce what the classroom teaches. You can assign the matching reader for homework or use the workbook pages for review."
+    },
+    {
+      "q": "Do I need training to teach with them?",
+      "a": "No special training is required. Each book introduces one pattern with clear examples. The workbooks include scripted dictation and answer keys so you can open and teach the same day."
+    },
+    {
+      "q": "Are digital versions available?",
+      "a": "The core program is printed books and workbooks. Some families scan pages for personal use on a tablet, but the publisher does not currently sell a separate digital edition or app."
+    }
+  ],
+  "facts": [
+    {
+      "claim": "Decodable texts restrict words to phonics patterns the reader has already been taught.",
+      "source_url": "https://en.wikipedia.org/wiki/Decodable_text",
+      "source_name": "Wikipedia",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "Systematic phonics instruction improves word recognition and spelling for early readers.",
+      "source_url": "https://www.readingrockets.org/topics/phonics/articles/phonics-instruction",
+      "source_name": "Reading Rockets",
+      "verified": false,
+      "checked_status": 403
+    },
+    {
+      "claim": "The National Reading Panel identified phonemic awareness and phonics as essential components of reading instruction.",
+      "source_url": "https://www.nichd.nih.gov/research/supported/nrp",
+      "source_name": "National Institute of Child Health and Human Development",
+      "verified": true,
+      "checked_status": 200
+    }
+  ]
+}
