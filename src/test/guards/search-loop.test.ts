@@ -14,6 +14,8 @@ import { describe, expect, it } from "vitest";
 import { loadRules, violations, gateSite, selfTest } from "../../../scripts/search-loop/claims-gate.mjs";
 import { engineRouting } from "../../../scripts/search-loop/engine-routing.mjs";
 import { assemble } from "../../../scripts/search-loop/build-guides-site.mjs";
+import { dayFrom, measure, DATASET as READ_DATASET } from "../../../scripts/search-loop/ai-measure.mjs";
+import { rowFor, DATASET as WRITE_DATASET } from "../../../guides-site/functions/_middleware.js";
 
 const ROOT = join(__dirname, "../../..");
 const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
@@ -116,7 +118,8 @@ describe("the caller workflow, commit step and guides deploy", () => {
   });
 
   it("deploys the guides section to Cloudflare Pages, never through Lovable", () => {
-    expect(deploy).toContain("wrangler@4 pages deploy dist-guides");
+    // From guides-site/ so functions/ (the AI counter) and wrangler.toml (its binding) ship too.
+    expect(deploy).toContain("(cd guides-site && npx --yes wrangler@4 pages deploy ../dist-guides");
     expect(deploy).toContain("NAMED STOP [SECRET_MISSING_CLOUDFLARE_API_TOKEN]");
     expect(deploy).toMatch(/timeout-minutes: \d+/);
     expect(deploy.split("\n").filter((l) => !/^\s*#/.test(l)).join("\n")).not.toMatch(/lovable/i);
@@ -138,6 +141,8 @@ describe("the caller workflow, commit step and guides deploy", () => {
     const listing = readFileSync(join(dir, "out/questions/index.html"), "utf8");
     expect(listing).toContain('href="https://time-2-read.com/pricing">Start a free week</a>');
     expect(violations(listing, loadRules(cfg))).toEqual([]);
+    // Assets never invoke the AI counter (Function invocations stay on pages).
+    expect(JSON.parse(readFileSync(join(dir, "out/_routes.json"), "utf8"))).toEqual({ version: 1, include: ["/*"], exclude: ["/assets/*"] });
   });
 
   it("ignores the engine's scratch files", () => {
@@ -147,5 +152,94 @@ describe("the caller workflow, commit step and guides deploy", () => {
 
   it("the commit script is valid bash", () => {
     expect(() => execFileSync("bash", ["-n", join(ROOT, ".github/scripts/search_loop_commit.sh")])).not.toThrow();
+  });
+});
+
+// f11: AI-referral visits and AI-bot reads on guides.time-2-read.com. time-2-read.com is not a
+// Cloudflare zone, so the engine's zone reader cannot see it; a Pages middleware counts into
+// Analytics Engine and ai-measure.mjs writes the engine's daily row before the weekly report.
+describe("AI-bot reads and AI-referral visits are counted and read (search readiness f11)", () => {
+  const loopCaller = read(".github/workflows/search-loop.yml");
+  const html = { headers: new Headers({ "content-type": "text/html; charset=utf-8" }) };
+  const css = { headers: new Headers({ "content-type": "text/css" }) };
+  const req = (path: string, h: Record<string, string> = {}, method = "GET") => new Request(`https://guides.time-2-read.com${path}`, { method, headers: h });
+  const browser = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Safari/605.1.15";
+
+  it("the middleware keeps a referrer's hostname only and a user agent only when it is a crawler's", () => {
+    const visit = rowFor(req("/questions/x/?utm=1", { "user-agent": browser, referer: "https://chatgpt.com/c/abc?q=my+child+reads" }), html);
+    expect(visit.blobs).toEqual(["page", "", "chatgpt.com", "/questions/x/"]);
+    const bot = rowFor(req("/robots.txt", { "user-agent": "Mozilla/5.0 (compatible; GPTBot/1.2; +https://openai.com/gptbot)" }), { headers: new Headers({ "content-type": "text/plain" }) });
+    expect(bot.blobs[0]).toBe("other");
+    expect(bot.blobs[1]).toContain("GPTBot");
+    expect(rowFor(req("/questions/", { "user-agent": browser, referer: "https://guides.time-2-read.com/questions/" }), html).blobs[2]).toBe("");
+    expect(rowFor(req("/assets/guides.css", { "user-agent": browser }), css)).toBeNull();
+    expect(rowFor(req("/questions/", { "user-agent": "x" }, "POST"), html)).toBeNull();
+  });
+
+  it("writer, reader and Pages binding name the same dataset; the search loop runs the reader with an analytics token", () => {
+    const toml = read("guides-site/wrangler.toml");
+    expect(WRITE_DATASET).toBe(READ_DATASET);
+    expect(toml).toContain(`dataset = "${READ_DATASET}"`);
+    expect(toml).toContain('binding = "AI_LOG"');
+    expect(toml).toContain('pages_build_output_dir = "../dist-guides"');
+    expect(loopCaller).toMatch(/setup_command: .*node scripts\/search-loop\/ai-measure\.mjs/);
+    expect(loopCaller).toContain("CLOUDFLARE_API_TOKEN: ${{ secrets.SEARCH_LOOP_CF_ANALYTICS_TOKEN }}");
+    expect(loopCaller).toContain("CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}");
+  });
+
+  const lib = {
+    botFor: (ua: string) => (ua.includes("GPTBot") ? "GPTBot (OpenAI training)" : ua.includes("ClaudeBot") ? "ClaudeBot" : null),
+    aiEngineFor: (u: string) => (/chatgpt\.com/.test(u) ? "chatgpt" : /perplexity\.ai/.test(u) ? "perplexity" : null),
+    centralDate: () => "2026-11-07",
+  };
+
+  it("classifies with the engine's lists; a day with no page logged is not read, never 0", () => {
+    const rows = [
+      { kind: "page", ua: "", ref: "", path: "/questions/", n: "40" },
+      { kind: "page", ua: "", ref: "chatgpt.com", path: "/questions/a/", n: "3" },
+      { kind: "page", ua: "", ref: "perplexity.ai", path: "/questions/b/", n: "1" },
+      { kind: "other", ua: "", ref: "chatgpt.com", path: "/robots.txt", n: "5" },
+      { kind: "page", ua: "x GPTBot/1.2", ref: "", path: "/questions/a/", n: "7" },
+      { kind: "other", ua: "ClaudeBot/1.0", ref: "", path: "/sitemap.xml", n: "2" },
+      { kind: "page", ua: "SomeSEOBot/1.0", ref: "", path: "/questions/", n: "9" },
+    ];
+    const d = dayFrom(rows, lib);
+    expect(d.ai_visitors).toMatchObject({ total: 4, by_engine: { chatgpt: 3, perplexity: 1 }, by_path: { "/questions/a/": 3, "/questions/b/": 1 } });
+    expect(d.ai_bot_hits).toEqual({ total: 9, by_bot: { "GPTBot (OpenAI training)": 7, ClaudeBot: 2 } });
+    expect(dayFrom([{ kind: "other", ua: "x GPTBot", ref: "", path: "/robots.txt", n: "3" }], lib).not_read).toMatch(/no page request in 24 hours/);
+    expect(dayFrom([], lib).not_read).toBeTruthy();
+  });
+
+  const setup = (days: Record<string, unknown>) => {
+    const dir = mkdtempSync(join(tmpdir(), "t2r-ai-"));
+    writeFileSync(join(dir, "search-loop.config.json"), JSON.stringify(cfg));
+    mkdirSync(join(dir, "data/search-loop"), { recursive: true });
+    writeFileSync(join(dir, "data/search-loop/ai-daily.json"), JSON.stringify({ schema: "search-loop-ai-daily-v1", days }));
+    return { dir, daily: () => JSON.parse(readFileSync(join(dir, "data/search-loop/ai-daily.json"), "utf8")) };
+  };
+  const env = { CLOUDFLARE_ACCOUNT_ID: "acct", CLOUDFLARE_API_TOKEN: "tok" };
+  const answer = (status: number, body: unknown) => async () => new Response(JSON.stringify(body), { status });
+
+  it("writes today's row in the engine's shape over a not-read day, and leaves a fully read day alone", async () => {
+    const t = setup({ "2026-11-07": { not_read: "no free analytics source configured for this site (analytics.ai_referrals)" } });
+    const r = await measure({ root: t.dir, env, lib, fetchImpl: answer(200, { data: [{ kind: "page", ua: "", ref: "chatgpt.com", path: "/questions/a/", n: "2" }, { kind: "page", ua: "GPTBot", ref: "", path: "/", n: "5" }] }) });
+    expect(r).toMatchObject({ wrote: "2026-11-07", ai_visitors: 2, ai_bot_hits: 5 });
+    const day = t.daily().days["2026-11-07"];
+    expect(day.ai_visitors.total).toBe(2);
+    expect(day.ai_bot_hits.total).toBe(5);
+    expect(day.not_read).toBeUndefined();
+    const again = await measure({ root: t.dir, env, lib, fetchImpl: answer(200, { data: [] }) });
+    expect(again.skipped).toMatch(/already read/);
+    expect(t.daily().days["2026-11-07"].ai_bot_hits.total).toBe(5);
+  });
+
+  it("a missing token, a refused read or a silent counter names a note and writes nothing", async () => {
+    const before = { "2026-11-07": { not_read: "x" } };
+    for (const [e, f] of [[{}, answer(200, { data: [] })], [env, answer(403, { errors: [{ message: "Authentication error" }] })], [env, answer(200, { data: [] })]] as const) {
+      const t = setup(before);
+      const r = await measure({ root: t.dir, env: e, lib, fetchImpl: f });
+      expect(r.note).toMatch(/^NAMED NOTE \[AI_MEASURE_NOT_READ\]/);
+      expect(t.daily().days).toEqual(before);
+    }
   });
 });

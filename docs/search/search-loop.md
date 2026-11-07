@@ -51,3 +51,18 @@ To go live (both are account steps):
 
 `gh variable set SEARCH_LOOP_MODE --body slow -R seq23/search-loop` (normal | slow | off), or
 `"mode"` in the config (can only lower it).
+
+## AI-referral visits and AI-bot reads (search readiness f11, 7 Nov 2026)
+
+time-2-read.com is not a Cloudflare zone (its DNS is Google Cloud DNS), so the engine's zone
+analytics reader cannot see it and `analytics` stays `none` in `search-loop.config.json`. Instead:
+
+- `guides-site/functions/_middleware.js` (a Pages Function on guides.time-2-read.com) counts each
+  page request into the free Workers Analytics Engine dataset `time2read_guides_ai` (binding in
+  `guides-site/wrangler.toml`; assets are excluded by `_routes.json`). It keeps a referrer's
+  hostname only and a user agent only when it is a crawler's; no IP, cookie or query string.
+- `scripts/search-loop/ai-measure.mjs` runs as the engine's setup command, reads the last 24 hours
+  with `SEARCH_LOOP_CF_ANALYTICS_TOKEN` (Account Analytics: Read), classifies with the engine's own
+  bot and referrer lists and writes today's row of `data/search-loop/ai-daily.json`. The weekly
+  report sums it. A day with no page logged is "not read", never 0.
+- Guard: `src/test/guards/search-loop.test.ts`.

@@ -45,7 +45,9 @@ jobs:
             echo "$msg"; echo "$msg" >> "$GITHUB_STEP_SUMMARY"; exit 0
           fi
           npx --yes wrangler@4 pages project create "$PROJECT" --production-branch main 2>/dev/null || true
-          npx --yes wrangler@4 pages deploy dist-guides --project-name "$PROJECT" --branch main --commit-dirty=true
+          # From guides-site/ so its functions/ (the AI-bot and AI-referral counter) and
+          # wrangler.toml (the Analytics Engine binding) deploy with the pages.
+          (cd guides-site && npx --yes wrangler@4 pages deploy ../dist-guides --project-name "$PROJECT" --branch main --commit-dirty=true)
           # Attach the custom domain (idempotent; already attached answers an error we ignore).
           curl -fsS -X POST "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PROJECT}/domains" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json" \

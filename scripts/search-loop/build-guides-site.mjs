@@ -67,6 +67,9 @@ export function assemble(root = ROOT, outDir = path.join(ROOT, 'dist-guides')) {
   fs.writeFileSync(path.join(outDir, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${cfg.base_url}/sitemap.xml\n`);
   const merges = fs.existsSync(path.join(root, 'guides-site', '_redirects')) ? fs.readFileSync(path.join(root, 'guides-site', '_redirects'), 'utf8').trim() : '';
   fs.writeFileSync(path.join(outDir, '_redirects'), `/ ${cfg.output.url_prefix} 301\n${merges ? merges + '\n' : ''}`);
+  // Only pages and crawler-readable files run the counter (guides-site/functions/_middleware.js);
+  // the stylesheet and assets are served without a Function invocation.
+  fs.writeFileSync(path.join(outDir, '_routes.json'), JSON.stringify({ version: 1, include: ['/*'], exclude: ['/assets/*'] }, null, 2) + '\n');
   return { pages: pages.length, out: outDir };
 }
 
