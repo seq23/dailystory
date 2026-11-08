@@ -24,6 +24,7 @@ import FERPA from "@/pages/FERPA";
 import DataTransfers from "@/pages/DataTransfers";
 import Subprocessors from "@/pages/Subprocessors";
 import About from "@/pages/About";
+import { BookCompanion, BookCompanionIndex, COMPANION_BOOKS } from "@/pages/BookCompanion";
 import { SiteFooterNav } from "@/components/SiteFooterNav";
 export { pageGraph, ORGANIZATION, WEBSITE, OG_IMAGE_URL } from "@/seo/schema";
 
@@ -44,6 +45,8 @@ export const prerenderRoutes: { path: string; element: ReactElement }[] = [
   { path: "/data-transfers", element: <DataTransfers /> },
   { path: "/subprocessors", element: <Subprocessors /> },
   { path: "/about", element: <About /> },
+  { path: "/amazon", element: <BookCompanionIndex /> },
+  ...COMPANION_BOOKS.map((b) => ({ path: `/amazon/${b.slug}`, element: <BookCompanion slug={b.slug} /> })),
   ...landingPages.map((p) => ({ path: `/${p.slug}`, element: <LandingPage slug={p.slug} /> })),
 ];
 

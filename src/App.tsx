@@ -30,6 +30,7 @@ import VerifyConsent from "./pages/VerifyConsent";
 import DataTransfers from "./pages/DataTransfers";
 import Subprocessors from "./pages/Subprocessors";
 import About from "./pages/About";
+import { BookCompanion, BookCompanionIndex, COMPANION_BOOKS } from "./pages/BookCompanion";
 import { PromptStudio } from "./components/PromptStudio";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
@@ -125,6 +126,10 @@ const App = () => {
               <Route path="/cancel" element={<PaymentCancel />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/admin/voices" element={<VoiceAdmin />} />
+              <Route path="/amazon" element={<BookCompanionIndex />} />
+              {COMPANION_BOOKS.map((b) => (
+                <Route key={b.slug} path={`/amazon/${b.slug}`} element={<BookCompanion slug={b.slug} />} />
+              ))}
               {landingPages.map((p) => (
                 <Route
                   key={p.slug}
