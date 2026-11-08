@@ -179,7 +179,8 @@
         "b5 FAQ answer is 31 words (aim 40-60): \"What if my child only wants to read graphic novels\"",
         "b5 FAQ answer is 32 words (aim 40-60): \"Should I require a reading log for school?\"",
         "b5 FAQ answer is 31 words (aim 40-60): \"Is it okay to split the time into two shorter sess\""
-      ]
+      ],
+      "indexnow_at": "2026-11-08"
     },
     {
       "slug": "time-2-read-books",
@@ -242,7 +243,8 @@
       ],
       "extra_queries": [
         "childrens books you can personalize"
-      ]
+      ],
+      "indexnow_at": "2026-11-08"
     }
   ],
   "dropped": [
