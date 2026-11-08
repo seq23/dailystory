@@ -104,6 +104,15 @@ const FAQ = (count: number) => [
   },
 ];
 
+/** The page's one primary button: Premium, at its real price, to the pricing page. */
+const PremiumCta = ({ pos }: { pos: "top" | "end" }) => (
+  <p className="mb-2" data-book-cta={pos}>
+    <Link to="/pricing">
+      <Button size="lg">Start Premium — {PLAN_PRICES.monthly.label}/month ›</Button>
+    </Link>
+  </p>
+);
+
 export const BookCompanion = ({ slug }: { slug: string }) => {
   const { t } = useTranslation();
   const b = COMPANION_BOOKS.find((x) => x.slug === slug) ?? COMPANION_BOOKS[0];
@@ -115,7 +124,15 @@ export const BookCompanion = ({ slug }: { slug: string }) => {
         <p className="text-sm font-semibold uppercase tracking-wide text-primary mb-2">Kindle book companion</p>
         <h1 className="text-3xl md:text-4xl font-bold mb-4">You&rsquo;re reading {b.book}</h1>
         <p className="text-lg text-foreground/80 leading-relaxed mb-4">{b.definition}</p>
-        <p className="text-foreground/80 mb-8">Thank you for reading with your child. Here is the free next step.</p>
+        <p className="text-foreground/80 mb-4">
+          Thank you for reading with your child. Time-2-Read Premium makes a new illustrated story starring your child
+          every day, read aloud, at the level you choose.
+        </p>
+        <PremiumCta pos="top" />
+        <p className="text-sm text-foreground/70 mb-8">
+          {TRIAL_DAYS}-day free trial, then {PLAN_PRICES.monthly.label}/month or {PLAN_PRICES.annual.label}/year. Not ready? The
+          free next step is just below.
+        </p>
 
         <section className="space-y-4 text-foreground/80 leading-relaxed">
           <h2 className="text-2xl font-semibold text-foreground">What is the free next step?</h2>
@@ -131,7 +148,7 @@ export const BookCompanion = ({ slug }: { slug: string }) => {
           </ol>
           <p>
             <Link to="/">
-              <Button size="lg">Make a free story about your child</Button>
+              <Button size="lg" variant="outline">Make a free story about your child</Button>
             </Link>
           </p>
 
@@ -177,6 +194,9 @@ export const BookCompanion = ({ slug }: { slug: string }) => {
               <p>{f.a}</p>
             </div>
           ))}
+          <div className="pt-4">
+            <PremiumCta pos="end" />
+          </div>
           <p className="text-sm pt-4">
             Time-2-Read is a reading app, not a reading program or a treatment for any reading difficulty. Made by Spry
             Labs. <Link to="/about" className="underline hover:text-primary">{t("about.title")}</Link> ·{" "}

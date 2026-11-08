@@ -26,4 +26,12 @@ describe("Kindle book companion pages", () => {
     expect(PLAN_PRICES.monthly.label).toBe("$12.99");
     expect(FREE_STORY_LIMIT).toBe(3);
   });
+  it("the Premium button comes first and last, before the free step", () => {
+    const page = readFileSync("src/pages/BookCompanion.tsx", "utf8");
+    const top = page.indexOf('<PremiumCta pos="top" />'), end = page.indexOf('<PremiumCta pos="end" />');
+    expect(top).toBeGreaterThan(0);
+    expect(top).toBeLessThan(page.indexOf("What is the free next step?"));
+    expect(end).toBeGreaterThan(page.indexOf("Questions parents ask"));
+    expect(page).toMatch(/<Link to="\/pricing">\s*<Button size="lg">Start Premium — \{PLAN_PRICES\.monthly\.label\}\/month ›<\/Button>/);
+  });
 });
