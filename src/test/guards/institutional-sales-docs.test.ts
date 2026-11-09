@@ -39,10 +39,17 @@ describe("institutional sales claims stay honest", () => {
     const bullets = live.split("\n").filter((l) => l.startsWith("- "));
     expect(bullets.length).toBeGreaterThanOrEqual(10); // an empty section is a failure
     const unbuilt = /planned|proposal|not built|\bSSO\b|single sign-on|student sign-in|log ?in|live roster|Clever|ClassLink|institutional billing|district-wide|sponsor portal|reading gains?|grade jump|dyslexi/i;
-    const premiumOnly = /what happens next|3 choices|quizzes after reading|practice words|step up|keep going|guardrails/i;
+    const premiumOnly = /what happens next|3 choices|quizzes after reading|practice words|vocabulary list|step up|keep going|guardrails/i;
     for (const b of bullets) {
       expect(b).not.toMatch(unbuilt);
       if (premiumOnly.test(b)) expect(b, "Premium-only feature without its limit").toMatch(/Premium/);
+    }
+    // Vocabulary lists are two features: per-story words on every plan, the saved list on Premium.
+    const vocab = bullets.filter((b) => /vocabulary list|word list/i.test(b));
+    expect(vocab.length).toBeGreaterThanOrEqual(1);
+    for (const b of vocab) {
+      expect(b).toMatch(/every plan/i);
+      expect(b).toMatch(/saved list[^.]*Premium/i);
     }
     const dontImply = caps.split(/^## Do not imply\s*$/m)[1] ?? "";
     for (const term of [/SSO/, /student sign-in/i, /live roster connection/i, /institutional billing/i, /district-wide/i, /sponsor/i, /English/]) {

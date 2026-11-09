@@ -29,7 +29,6 @@ export const additionalOfferings: string[] = [
   "Saved stories, favorites, and collections",
   "Multiple child profiles",
   "Parent / Teacher dashboard with insights and analytics",
-  "Learning goals with weekly targets",
   "Vocabulary tracking and practice quizzes",
   "Comprehension questions after reading",
   "Mini-games to reinforce vocabulary and phonics",
@@ -43,11 +42,11 @@ export const additionalOfferings: string[] = [
   "Priority support",
 ];
 
+// Only what the code does today (8 Nov 2026): curriculum alignment, learning goals,
+// multi-seat licensing and SLAs were listed but never built. Truth: docs/sales/capabilities.md.
 export const enterpriseFeatures: string[] = [
   "Admin & educator dashboards",
-  "Classroom & multi-seat licensing",
-  "Curriculum alignment tools",
   "Assessment & reporting",
   "Bulk user management",
-  "Priority support & SLAs",
+  "Priority support",
 ];
