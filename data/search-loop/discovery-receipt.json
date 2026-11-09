@@ -1,8 +1,8 @@
 {
   "schema": "search-loop-discovery-v1",
   "site": "time-2-read.com",
-  "week": "2026-W45",
-  "generated_at": "2026-11-06T23:12:03.875Z",
+  "week": "2026-W46",
+  "generated_at": "2026-11-09T11:44:19.176Z",
   "paid_calls": 0,
   "cost_usd": 0,
   "hosts": {
@@ -26,12 +26,12 @@
     }
   },
   "sources": {
-    "search_console": "ok: 45 rows",
+    "search_console": "ok: 47 rows",
     "bing_webmaster": "not read: BING_WEBMASTER_API_KEY is not set",
     "easy_wins": "ok: 2 easy win(s) in Search Console",
     "suggestqueries.google.com": "ok",
     "api.bing.com": "ok",
-    "relevance_screen": "ok: kept 22 of 44 (free model)",
+    "relevance_screen": "ok: kept 14 of 39 (free model)",
     "top10": "not read: no BRAVE_SEARCH_API_KEY"
   },
   "notes": [
@@ -43,8 +43,8 @@
       "can_be_one": 2,
       "striking": 1
     },
-    "can_be_one": 13,
-    "striking": 9,
+    "can_be_one": 7,
+    "striking": 7,
     "weights": {
       "neighbour": 35,
       "unanswered": 30,
@@ -54,7 +54,7 @@
   },
   "counts": {
     "candidates": 44,
-    "targets": 22,
+    "targets": 14,
     "strengthen_candidates": 0,
     "dropped_shared_audience": 0
   }

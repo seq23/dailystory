@@ -245,6 +245,44 @@
         "childrens books you can personalize"
       ],
       "indexnow_at": "2026-11-08"
+    },
+    {
+      "slug": "kids-reading-timer",
+      "query": "kids reading timer",
+      "lane": "striking",
+      "score": 27.2,
+      "scores": {
+        "striking": 27.2,
+        "can_be_one": 0
+      },
+      "reasons": [
+        "already ranks 18.5 in Search Console (2 impressions)"
+      ],
+      "signals": {
+        "words": 3,
+        "question": false,
+        "gsc_position": 18.5,
+        "gsc_impressions": 2,
+        "gsc_page": "https://time-2-read.com/reading-app-with-timer-for-kids",
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/kids-reading-timer/index.html",
+      "route": "/questions/kids-reading-timer/",
+      "url": "https://guides.time-2-read.com/questions/kids-reading-timer/",
+      "published_at": "2026-11-09",
+      "status": "removed",
+      "hash": "c59eeb77750c5e23bda0d560c5a91c637bc852885ecb952829d1e0262a0f154e",
+      "model": "free-route",
+      "facts": [
+        "https://www.aap.org/en/patient-care/literacy-promotion/",
+        "https://www.nationsreportcard.gov/reading/nation/achievement/?grade=4",
+        "https://pubmed.ncbi.nlm.nih.gov/32041886/"
+      ],
+      "linked_from": [],
+      "checks": {},
+      "removed": {
+        "reason": "claims gate: no-screens \"no screen\""
+      }
     }
   ],
   "dropped": [
