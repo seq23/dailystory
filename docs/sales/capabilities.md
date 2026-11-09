@@ -18,7 +18,7 @@ The code wins over older docs: every line below was checked in the source on mai
 - Stories can be read aloud: a natural premium voice on Premium, the device's own voice on the free plan (once per page).
 - Tap any word to hear it, see what it means, break it into syllables or translate it.
 - A read-aloud coach listens as the child reads a sentence and gives feedback (5 sentences a day free, unlimited on Premium).
-- Parents and teachers add their own practice words, and the stories weave them in (Premium).
+- Parents and teachers add their own vocabulary lists and the stories weave every word in: up to 10 words for any story on every plan, highlighted as the child reads, and a saved list for each child that goes into every story on Premium.
 - Grade-level quizzes after reading check 8 skills, from sight words and phonics to the big picture, plus vocabulary mini-games (Premium).
 - A parent dashboard shows reading habit, comprehension by skill, vocabulary and game results for each child.
 - Readers earn points, badges and progress towers as they read (kept for the session on the free plan).
@@ -47,7 +47,7 @@ The code wins over older docs: every line below was checked in the source on mai
 | Narration | [narration routing](../../src/services/narrationRouter.ts), [voice configuration](../../src/config/ttsConfig.ts), [PRICING.md](../PRICING.md) | Premium voice on Premium; device voice on free | Free: once per page. No guaranteed premium-voice capacity; device voice is the fallback |
 | Word help | [word help](../../src/components/UnifiedInteractiveWord.tsx), [dictionary function](../../supabase/functions/word-dictionary) | Hear, meaning, syllables, translate | All plans |
 | Read-aloud coach | [ReadAloudCoach.tsx](../../src/components/ReadAloudCoach.tsx), [voice-to-text](../../supabase/functions/voice-to-text) | Speech-to-text feedback on a read sentence | Free: 5 sentences a day |
-| Practice words | [parent dashboard](../../src/components/ParentDashboard.tsx) ("Teacher Word List") | Adult-chosen words woven into stories, per child or default | Premium only |
+| Vocabulary lists | [practice words](../../supabase/functions/_shared/practiceWords.ts), [story form](../../src/components/forms/steps/FormStep3Personalization.tsx), [parent dashboard](../../src/components/ParentDashboard.tsx) ("Teacher Word List"), [story page merge](../../src/components/CleanStoryDisplay.tsx) | Words for one story (up to 10) must appear in it, are highlighted, and feed that story's quiz; a saved list per child (or a default for all children) joins every story | Per-story words: every plan. Saved list: Premium only. Quizzes: Premium only |
 | Quizzes and games | [quiz](../../src/components/ComprehensionQuiz.tsx), [quiz function](../../supabase/functions/generate-quiz), [session end](../../src/pages/SessionEnded.tsx), [MiniGames.tsx](../../src/components/MiniGames.tsx) | Grade-level quiz on 8 skills; mini-games | Premium only |
 | Family progress | [per-child progress](../../src/hooks/useChildProgressData.ts), [parent dashboard](../../src/components/ParentDashboard.tsx) | Reading habit, comprehension, vocabulary, game results | Vocabulary and saved-story totals are account-level, not per child. Use does not establish proficiency |
 | Rewards | [story page](../../src/components/CleanStoryDisplay.tsx), [progress towers](../../src/components/ModernProgressTowers.tsx) | Points, badges, progress towers, level-up message | Free: this session only |
