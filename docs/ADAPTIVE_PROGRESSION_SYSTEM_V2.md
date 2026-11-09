@@ -1,5 +1,12 @@
 # Adaptive Progression System V2 - Simplified Implementation
 
+> **Current truth (8 Nov 2026):** the automatic step-up is Premium only, for Reads at
+> 6th-10th, after one completed session of 6+ pages at 120+ WPM or 10+ pages at 80+ WPM.
+> A step-up is saved on the child's Reads at (`child_profiles.reading_grade`, the same field
+> as Make harder), so it carries into the next session and other devices; a parent's lock
+> stops it. Code: `src/lib/premiumStepUp.ts`; guard: `src/test/guards/premium-step-up.test.ts`.
+> The localStorage notes below are history.
+
 ## Overview
 The Adaptive Progression System V2 represents a major simplification of the expert grade level progression logic, removing complex quiz dependencies while maintaining effective user advancement and feedback.
 

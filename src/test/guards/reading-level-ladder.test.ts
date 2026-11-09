@@ -98,7 +98,11 @@ describe("the story page wiring", () => {
   });
 
   it("the choice is kept on the child", () => {
-    expect(handler).toMatch(/await onReadingGradeChange\(step\.grade\)/);
+    // The buttons and the automatic step-up share one saver, which writes to the child.
+    expect(handler).toMatch(/await persistReadingGrade\(step\.grade\)/);
+    const saver = page.slice(page.indexOf("const persistReadingGrade = async"), page.indexOf("const handleDifficultyChange = async"));
+    expect(saver).toMatch(/await onReadingGradeChange\(step\.grade\)/);
+    expect(saver).toMatch(/await saveReadingGradeWithoutChild\(supabase, user\.id, step\)/);
     expect(read("src/components/PremiumMyStoriesView.tsx")).toMatch(/onReadingGradeChange=\{activeChild \? \(grade\) => setChildReadingGrade\(activeChild\.id, grade\)/);
     expect(read("src/hooks/useChildProfiles.ts")).toMatch(/update\(\{ reading_grade: readingGrade \}/);
     const mig = readdirSync(join(ROOT, "supabase/migrations")).find((f) => f.endsWith("_child_reading_grade.sql"));
