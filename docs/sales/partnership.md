@@ -7,7 +7,9 @@ Pre-K-10th grade. Stories are English only; the UI has 8 languages.
 
 Support an adult-guided English reading routine across schools, libraries or
 after-school sites. The current family reader offers personalized AI stories,
-illustrations, narration, word help and quizzes on a device. A partner can help
+illustrations, levels that adjust (one tap, plus an automatic step-up on Premium
+at 6th-10th), pick-what-happens-next choices on Premium, narration, word help and
+quizzes on a device, and schools have a live reading workspace. A partner can help
 define the cohort, provide supervision and devices, and sustain the routine.
 No existing partner, endorsement or outcome is implied.
 
@@ -26,15 +28,20 @@ rules; there is no sponsor reporting portal in the reviewed source.
 
 ## Product and delivery boundary
 
-**Planned / PR #130** adds a school workspace for teacher-entered records and
-school-scoped reports. It is not merged or verified in production, does not
-automatically ingest family activity, and provides no student sign-in or
-institutional billing. Library and after-school roles require their own authority
-and operating review; school consent cannot simply be assumed to apply.
+The school workspace is live (merged 31 Oct 2026): teacher-recorded reading and
+assessments, CSV rosters, school-scoped reports, and linked classroom profiles.
+Each school is set up by us. Still planned, not built: student sign-in or SSO,
+live roster connections, copying home family accounts into school reports,
+institutional billing and a sponsor portal. Library and after-school roles require
+their own authority and operating review; school consent cannot simply be assumed
+to apply.
 
 Institutional pricing is [proposed from $10,000/month](pricing-proposal.md), with
-larger networks paying more. There is no promised revenue share, discount,
-referral payment or exclusivity. A written scope must establish obligations,
+larger networks paying more. A partner page may offer partner pricing for the
+partner's families and a revenue share on the families the partner brings. No
+amounts or percentages are stated until a buyer is in a real conversation; they
+are then set in the written scope. There is no exclusivity and no referral payment
+beyond that share. A written scope must establish obligations,
 funding, data terms, permitted communications and support capacity.
 
 ## A concrete first discussion

@@ -11,10 +11,11 @@ they do not establish attentive reading, independent proficiency or causal gains
 Vocabulary and saved-story totals in the child progress hook are account-level,
 so they must not be presented as uniquely attributable to an individual child.
 
-**Planned / PR #130:** school reports use teacher-entered minutes, completed
+**Live (merged 31 Oct 2026):** school reports use teacher-entered minutes, completed
 sessions, dates, School grade, Reads at and correct/total results for vocabulary,
-spelling, definitions, context and inference. They do not automatically ingest
-family reading or quizzes. A repeated completed session counts again; it is not
+spelling, definitions, context and inference. In-app reading from a linked classroom
+profile is shown separately, never added in. Home family accounts are never ingested;
+that is planned, not built. A repeated completed session counts again; it is not
 a distinct book. Imported grades do not manufacture a historical baseline.
 
 ## Proposed evaluation scorecard

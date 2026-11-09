@@ -15,10 +15,10 @@ accessibility review should precede a patron program.
 
 There is no library-card authentication, anonymous patron reporting, branch
 licensing, circulation integration or library-specific portal in the reviewed
-source. **Planned / PR #130** is a school workspace with teacher-entered records,
-not a deployed library product. The branch is not merged and does not automatically
-ingest family reading activity. Any adaptation to library roles and patron
-authority needs a separate scope and readiness review.
+source; those are planned, not built. The live school workspace has teacher-entered
+records for schools; it is not a library product and never ingests home family
+accounts. Any adaptation to library roles and patron authority needs a separate
+scope and readiness review.
 
 Do not share one family account across unrelated patrons. Library participation
 does not establish school authority or parental consent. Decide privately who

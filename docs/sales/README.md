@@ -1,6 +1,6 @@
 # Institutional sales packet
 
-Reviewed 2026-10-31. Audience: districts, schools, libraries and after-school
+Reviewed 2026-11-08. Audience: districts, schools, libraries and after-school
 networks serving ages 3-15, Pre-K-10th grade. Stories are English only; the UI
 has 8 languages. These documents contain no customer evidence or endorsements.
 
@@ -22,17 +22,15 @@ has 8 languages. These documents contain no customer evidence or endorsements.
 
 ## Release boundary
 
-**Current on main** means source exists at the reviewed baseline, not that this
-documentation review verified production behavior. **Planned / PR #130** means
-implemented on an open branch, not merged or production-ready. **Proposal** means
-commercial or delivery terms requiring an agreed scope; it is not a live plan.
-The [capability evidence](capabilities.md) pins both source revisions.
+**Live** means the code is on main and in the app; [capability evidence](capabilities.md)
+lists each feature with its file and any Premium-only limit. **Planned** means not
+built; the "Do not imply" list there names each one. **Proposal** means commercial
+or delivery terms requiring an agreed scope; it is not a live plan.
 
-The requested `docs/phase-8-institutions.md` and three institution privacy
-documents exist in PR #130, not at this packet's main baseline. Read them through
-the pinned links in [capability evidence](capabilities.md) and
-[the privacy review](../privacy/sales-review.md). This packet does not merge or
-deploy that work. Recheck the status before sending a buyer a quote.
+The school workspace (PR #130, merged 31 Oct 2026) is live; its design is in
+[docs/phase-8-institutions.md](../phase-8-institutions.md) and its privacy documents
+in [docs/privacy](../privacy/sales-review.md). Recheck capability evidence before
+sending a buyer a quote.
 
 ## Retired material
 

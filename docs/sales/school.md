@@ -11,18 +11,20 @@ the quiz. Stories and quizzes are generated with AI; staff should review suitabi
 and provide instruction. The current family product has adult-owned child profiles
 and parent progress views, rather than classroom student logins.
 
-## School workspace: planned / PR #130
+## School workspace: live
 
-The open branch lets assigned teachers manage class rosters and enter actual
-reading minutes, completion and dated level/skill observations. A school
-administrator can review classes within the school and assign existing adult
-accounts as teachers. Initial school/admin provisioning requires an authorized
-operator. The workspace is not yet merged or verified in production.
+Live since 31 Oct 2026. Assigned teachers manage class rosters (CSV import) and
+record reading minutes, completion and dated level/skill observations. A school
+administrator reviews classes within the school and assigns existing adult
+accounts as teachers. We set up each school and its first administrator. A
+classroom profile on a teacher's own account can be linked to a roster child, so
+its in-app reading and quizzes show in the class view, labelled *From the app* and
+kept apart from teacher records.
 
-Reading and quiz observations are teacher-entered. Family reading and quizzes do
-not automatically appear in the school workspace, and roster import does not
-create student sign-in accounts. Include staff entry time in the workload plan.
-School export and routine observation-correction workflows remain gaps to resolve.
+Home family accounts never appear in the school workspace, and roster import does
+not create student sign-in accounts. Include staff entry time in the workload plan.
+Planned, not built: student sign-in or SSO, live roster connections, school export
+and routine observation-correction workflows.
 
 ## Proposed scope and budget
 

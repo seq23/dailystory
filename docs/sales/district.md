@@ -13,16 +13,15 @@ against local requirements before selecting a cohort.
 
 ## What district leaders should expect
 
-**Planned / PR #130:** teachers enter reading sessions and dated assessments;
+**Live (merged 31 Oct 2026):** teachers enter reading sessions and dated assessments;
 school administrators review their own school's classes and teachers. CSV roster
-import is implemented on that branch. Remote roster adapters require existing
-authorized connections and live verification. Neither student SSO nor automatic
-family-to-school activity ingestion is included. The branch is not merged or
-production-verified.
+import works. Clever and ClassLink adapters exist in code but no live connection has
+been made, and any connection needs an existing authorized provider relationship.
+Planned, not built: student SSO and copying home family accounts into school reports.
 
 The tenancy boundary is a school. A central district dashboard, cross-school
 consolidated reporting, district role hierarchy and district-wide provisioning
-are not included in that release. A multi-school evaluation needs a separately
+are planned, not built. A multi-school evaluation needs a separately
 scoped operating plan; do not promise central access to all school records.
 
 ## Proposed buying process

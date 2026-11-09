@@ -4,8 +4,10 @@ For ages 3-15, Pre-K-10th grade. Stories are English only; the UI has 8 language
 
 ## What can readers do today?
 
-The current family reader offers personalized AI stories, illustrations, narration,
-word help, quizzes and adult progress views. Children are profiles inside adult
+The reader offers personalized AI stories, illustrations, levels that adjust with
+one tap (and on their own for Premium readers at 6th-10th), pick-what-happens-next
+choices, narration, word help, a read-aloud coach, quizzes and adult progress views;
+some are Premium only ([live today](capabilities.md#live-today)). Children are profiles inside adult
 accounts. School grade and Reads at can differ. Source presence does not replace
 a production acceptance check; see [capability evidence](capabilities.md).
 
@@ -23,10 +25,12 @@ multilingual story library or evidence of multilingual instructional efficacy.
 
 ## Is the institution workspace available now?
 
-**Planned / PR #130:** implemented on an open branch, not merged at this packet's
-baseline. It records teacher-entered sessions and assessments, with school/class
-access controls. Production deployment and real-school acceptance are unproven.
-It does not automatically ingest family reading activity or create student logins.
+Yes, the school workspace is live (merged 31 Oct 2026). It records teacher-entered
+sessions and assessments, with school/class access controls, CSV rosters and
+growth reports, and can show in-app reading from a linked classroom profile. We set
+up each school; no real school has been provisioned yet. It never ingests home
+family accounts and creates no student logins. Planned, not built: student sign-in
+or SSO and live roster connections.
 
 ## Can we import a roster or use SSO?
 

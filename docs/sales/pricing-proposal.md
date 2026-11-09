@@ -55,6 +55,7 @@ Do not start billing or purchase services based on this document.
 [Family pricing](../PRICING.md) describes the implemented consumer checkout.
 It does not grant institutional seats. Institutional billing, entitlement
 provisioning at this scale, district consolidation and library adaptations are
-not implemented. **Planned / PR #130** adds school records, not commercial plans.
+not implemented. The live school workspace adds school records, not commercial plans;
+institutional billing is planned, not built.
 Use [capability evidence](capabilities.md), [implementation gates](implementation.md)
 and [privacy review](privacy-security.md) to establish a deliverable scope first.
