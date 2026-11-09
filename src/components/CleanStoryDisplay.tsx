@@ -5,6 +5,7 @@ import { StoryAudioControls } from "@/components/story/StoryAudioControls";
 import { EXPERT_GRADES, GRADES, minimumGradeForGuardrail, type ExpertGrade, type Grade } from '@/lib/grades';
 import { readingStep, stepReadingGrade, startingReadingGrade, withReadingGrade, type ReadingStep } from '@/lib/readingLadder';
 import { saveReadingGradeWithoutChild } from '@/lib/readingGradeStore';
+import { applyPremiumStepUp } from '@/lib/premiumStepUp';
 import { pagesReadCount, saveLastReadStory } from '@/lib/lastReadStory';
 import { cleanWords, practiceWordsFromRequest } from '../../supabase/functions/_shared/practiceWords';
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
@@ -3298,41 +3299,37 @@ const handleDockCoach = () => {
       readingSpeed: wpm
     });
     
-    // Handle expert grade progression for premium users
+    // Automatic step-up: Premium, Reads at 6th-10th, parent lock respected. Saved on the
+    // child like Make harder, so the next session starts at the new level (src/lib/premiumStepUp.ts).
     if (isPremium && (currentDifficulty === 'expert' || currentDifficulty === 'advanced')) {
-      try {
-        const progressionResult = ExpertDifficultyManager.updateProgress(
-          userInfo,
-          expertGradeLevel,
-          {
-            readingSpeed: wpm,
-            pagesCompleted: pagesRead,
-            completed: true
-          }
-        );
-        
-        if (progressionResult?.progressed) {
-          // Show advancement celebration toast
+      const readGrade = levelRef.current.grade;
+      void applyPremiumStepUp({
+        grade: readGrade,
+        isPremium,
+        lockDifficulty,
+        session: { readingSpeed: wpm, pagesCompleted: pagesRead },
+        save: persistReadingGrade,
+      }).then((stepped) => {
+        if (stepped) {
+          levelRef.current = stepped;
+          setReadingGrade(stepped.grade);
+          if (stepped.expertGrade) setExpertGradeLevel(stepped.expertGrade);
           toast({
             title: "🎉 Congratulations!",
-            description: `Advanced to ${progressionResult.newLevel} Grade Level!`,
+            description: `Advanced to ${stepped.label}! Your next story starts there.`,
             variant: "default",
             duration: 5000,
           });
-          
-          // Update the UI state to reflect progression
-          setExpertGradeLevel(progressionResult.newLevel);
         } else if (wpm < 80) {
-          // Optional feedback for users who didn't advance
           toast({
             title: "Keep Practicing",
-            description: `Continue reading at ${expertGradeLevel} Grade Level`,
+            description: `Continue reading at ${readingStep(readGrade).label}`,
             duration: 3000,
           });
         }
-      } catch (error) {
-        DebugLogger.warn('performance', 'Failed to update expert progression', error);
-      }
+      }).catch((error) => {
+        DebugLogger.warn('performance', 'Failed to save the automatic step-up', error);
+      });
     }
     
     try { sessionStorage.removeItem('readingTimerPausedSeconds'); } catch {}
@@ -3936,6 +3933,22 @@ const handleRestartTimer = () => {
       }
     }, 5000);
   };
+  // Remember a Reads-at change: on the child (Premium), else on this device and profile.
+  // Used by Make easier/harder and by the automatic step-up.
+  const persistReadingGrade = async (grade: Grade) => {
+    const step = readingStep(grade);
+    DifficultyManager.storeDifficulty(safeUserInfo.name || 'guest', step.readingLevel, safeUserInfo);
+    if (onReadingGradeChange) {
+      await onReadingGradeChange(step.grade);
+    } else {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // The exact grade too, not only the broad level (src/lib/readingGradeStore.ts).
+        await saveReadingGradeWithoutChild(supabase, user.id, step);
+      }
+    }
+  };
+
   // "Make easier" / "Make harder": one grade per tap, Pre-K to 10th
   // (src/lib/readingLadder.ts; guard: src/test/guards/reading-level-ladder.test.ts).
   const handleDifficultyChange = async (direction: 'up' | 'down') => {
@@ -4000,18 +4013,8 @@ const handleRestartTimer = () => {
       duration: 3000,
     });
 
-    // Remember the choice: on the child (Premium), else on this device and profile.
-    DifficultyManager.storeDifficulty(safeUserInfo.name || 'guest', step.readingLevel, safeUserInfo);
     try {
-      if (onReadingGradeChange) {
-        await onReadingGradeChange(step.grade);
-      } else {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          // The exact grade too, not only the broad level (src/lib/readingGradeStore.ts).
-          await saveReadingGradeWithoutChild(supabase, user.id, step);
-        }
-      }
+      await persistReadingGrade(step.grade);
     } catch (e) {
       DebugLogger.warn('auth', 'Could not persist reading level', e);
     }
