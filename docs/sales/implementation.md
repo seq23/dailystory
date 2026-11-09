@@ -5,10 +5,9 @@ UI has 8 languages. This is a planning sequence, not a promised delivery date.
 
 ## Readiness before the clock starts
 
-The current family reader and **planned / PR #130** institution workspace are
-separate. The latter is unmerged at this review. Institution deployment requires
-schema, service and frontend release work plus authorized provisioning; code
-merge alone does not establish readiness. This sales documentation change does
+The family reader and the school workspace (live since 31 Oct 2026) are separate.
+Each school still needs authorized provisioning by us (its record and first
+administrator) and real-school acceptance; no real school has been provisioned yet. This sales documentation change does
 not authorize or perform those steps or any production database writes.
 
 Library adaptations, consolidated district reporting and institutional billing

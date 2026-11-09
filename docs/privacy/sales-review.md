@@ -1,18 +1,15 @@
 # Privacy evidence for sales review
 
-Reviewed 2026-10-31. This index supports the institutional sales packet; it is
+Reviewed 2026-11-08. This index supports the institutional sales packet; it is
 not a privacy policy, legal opinion, signed agreement or compliance attestation.
 
-## Institution evidence: planned / PR #130
+## Institution evidence (live on main, PR #130 merged 31 Oct 2026)
 
-The following requested privacy documents are absent from this packet's main
-baseline. They were read on the open institution branch at
-`d061c637dc568c7f73b7d6f4e96d5bebcb1bedea`; pinned links preserve the reviewed
-scope without importing an unmerged release:
+These privacy documents describe the school workspace now on main:
 
-- [Student data inventory](https://github.com/seq23/dailystory/blob/d061c637dc568c7f73b7d6f4e96d5bebcb1bedea/docs/privacy/data-inventory.md): school data, access, transmissions, deletion behavior and family-lane differences.
-- [Implementation readiness summary](https://github.com/seq23/dailystory/blob/d061c637dc568c7f73b7d6f4e96d5bebcb1bedea/docs/privacy/coppa-ferpa-readiness.md): control evidence and unresolved authority, consent, access, correction and contractual requirements.
-- [Draft agreement exhibit worksheet](https://github.com/seq23/dailystory/blob/d061c637dc568c7f73b7d6f4e96d5bebcb1bedea/docs/privacy/ndpa-exhibits-draft.md): preparation notes only; no agreement executed or accepted.
+- [Student data inventory](data-inventory.md): school data, access, transmissions, deletion behavior and family-lane differences.
+- [Implementation readiness summary](coppa-ferpa-readiness.md): control evidence and unresolved authority, consent, access, correction and contractual requirements.
+- [Draft agreement exhibit worksheet](ndpa-exhibits-draft.md): preparation notes only; no agreement executed or accepted.
 
 These sources describe teacher-entered school records, school/class access
 boundaries and authorized child deletion. They also disclose no automatic

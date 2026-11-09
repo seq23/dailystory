@@ -8,8 +8,9 @@ This is an implementation summary, not a certification or legal conclusion.
 
 Use [docs/privacy/sales-review.md](../privacy/sales-review.md) for the source
 inventory and pinned links to the institution data inventory, readiness summary
-and agreement worksheet. Those three documents belong to **planned / PR #130**,
-which is not merged at this packet's baseline.
+and agreement worksheet. Those three documents describe the school workspace,
+which is live on main (PR #130, merged 31 Oct 2026). Planned, not built: student
+sign-in or SSO and live roster data exchange.
 
 The current family product stores adult account information, child profiles and
 reading activity. Its AI story, illustration, narration and optional voice

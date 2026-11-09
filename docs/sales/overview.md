@@ -6,12 +6,17 @@ only; the UI has 8 languages. Designed for reading on a device with adult suppor
 
 ## Give each reader a reason to keep reading
 
-The current family product creates illustrated AI stories around a reader's
-preferences, offers word help and narration, and follows stories with quizzes.
-Adults can choose School grade and Reads at separately, manage child profiles,
-and review reading activity and quiz results. Narration depends on plan and
-service availability; device speech is the fallback. Adult supervision and
-content review remain part of implementation.
+Time2Read writes illustrated stories around each reader: their name, look,
+favorite things and the practice words an adult picks. Every child has a School
+grade and a separate Reads at level, and any story page can be made easier or
+harder with one tap. On Premium, readers at 6th-10th grade step up a level on
+their own after a strong session, readers pick what happens next from 3 choices,
+and stories keep going page after page. Readers tap any word to hear it, see its
+meaning or break it into syllables, can practise reading aloud with a coach, and
+on Premium take grade-level quizzes on 8 skills. Adults set guardrails and see
+reading habit, comprehension and vocabulary on a dashboard. Narration uses a
+premium voice on Premium and the device voice otherwise. Adult supervision and
+content review remain part of implementation. Full list: [what is live today](capabilities.md#live-today).
 
 ## Where it can fit
 
@@ -21,13 +26,19 @@ facilitated reading sessions and family orientation. After-school networks can
 plan a consistent practice routine across program sites. These are proposed uses,
 not descriptions of existing customer deployments or validated results.
 
-## Institutional workspace: planned / PR #130
+## School reading workspace: live
 
-The open institution change implements teacher-entered reading and assessment
-records, class rosters and school-scoped administrator reports. It is not live
-institutional access. It does not automatically import family reading activity,
-provide student sign-in, or include institutional billing. A district-wide tenant
-and consolidated district report are outside that release.
+Schools have their own workspace (merged 31 Oct 2026). Teachers run their own
+classes, import a roster from a CSV file, record reading sessions and dated level
+and quiz checks, and see student and class growth reports. School administrators
+see every class in their school and assign teachers. A classroom profile can be
+linked to a roster child so its in-app reading shows in the class view, kept
+apart from teacher records. School accounts use a stricter AI privacy lane with
+names masked and pictures off. We set up each school and its first administrator.
+
+Still planned, not built: student sign-in or SSO, live roster connections, copying
+home family accounts into school reports, institutional billing, and a district-wide
+dashboard or consolidated district report.
 
 ## Commercial and evaluation proposal
 
