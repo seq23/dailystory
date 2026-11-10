@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-09T07:44:18.842Z",
+  "collected_at": "2026-11-10T07:44:07.341Z",
   "sitemap_url": "https://time-2-read.com/sitemap.xml",
   "state": "REGISTERED",
   "submitted_this_run": false,
@@ -11,7 +11,7 @@
     {
       "path": "https://time-2-read.com/sitemap.xml",
       "lastSubmitted": "2026-10-16T21:07:24.032Z",
-      "lastDownloaded": "2026-11-03T13:24:08.072Z",
+      "lastDownloaded": "2026-11-10T05:25:42.890Z",
       "isPending": false,
       "errors": 0,
       "warnings": 0,

@@ -2,31 +2,31 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-09T07:43:23.330Z",
+  "collected_at": "2026-11-10T07:43:34.187Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-10",
-    "end_date": "2026-11-06",
+    "start_date": "2026-10-11",
+    "end_date": "2026-11-07",
     "days": 28
   },
   "totals": {
     "clicks": 5,
-    "impressions": 387,
-    "ctr": 0.0129,
-    "position": 14.18
+    "impressions": 407,
+    "ctr": 0.0123,
+    "position": 14.11
   },
   "row_count": 47,
   "query_count": 45,
   "page_count": 15,
-  "attributed_impressions": 191,
+  "attributed_impressions": 195,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
       "query": "time2read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 24,
+      "impressions": 26,
       "ctr": 0,
       "position": 5.54
     },
@@ -159,6 +159,14 @@
       "position": 72.67
     },
     {
+      "query": "2 reas",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 7
+    },
+    {
       "query": "best apps for struggling readers",
       "page": "https://time-2-read.com/reading-app-for-kids-struggling-to-read",
       "clicks": 0,
@@ -239,12 +247,12 @@
       "position": 3.5
     },
     {
-      "query": "2 reas",
-      "page": "https://time-2-read.com/",
+      "query": "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta",
+      "page": "https://time-2-read.com/bedtime-stories-about-your-childs-favorite-things",
       "clicks": 0,
-      "impressions": 1,
+      "impressions": 2,
       "ctr": 0,
-      "position": 10
+      "position": 6.5
     },
     {
       "query": "2 year old books online",
@@ -389,14 +397,6 @@
       "impressions": 1,
       "ctr": 0,
       "position": 97
-    },
-    {
-      "query": "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta",
-      "page": "https://time-2-read.com/bedtime-stories-about-your-childs-favorite-things",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 4
     }
   ]
 }
