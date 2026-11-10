@@ -620,6 +620,101 @@
         "b5 FAQ answer is 21 words (aim 40-60): \"Do I need a timer for tiny reads?\"",
         "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
       ]
+    },
+    {
+      "query": "reading 20 minutes a day statistics",
+      "at": "2026-11-10",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 26 words (aim 40-60)",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
+    },
+    {
+      "query": "time 2 read app",
+      "at": "2026-11-10",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 29 words (aim 40-60)",
+        "b5 FAQ answer is 28 words (aim 40-60): \"Is the app aligned to state standards?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"Can multiple children use one subscription?\"",
+        "b5 FAQ answer is 29 words (aim 40-60): \"Is there a free trial available?\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Does the app require an internet connection?\""
+      ]
+    },
+    {
+      "query": "time 2 read grade 2 workbook",
+      "at": "2026-11-10",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 28 words (aim 40-60)",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Is the Grade 2 workbook a physical book or a downl\"",
+        "b5 FAQ answer is 21 words (aim 40-60): \"Does it include an answer key?\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"How many weeks of instruction are in the workbook?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
+    },
+    {
+      "query": "time 2 read workbook grade 1",
+      "at": "2026-11-10",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 25 words (aim 40-60)",
+        "b5 FAQ answer is 16 words (aim 40-60): \"Is the Grade 1 workbook sold as single books or a \"",
+        "b5 FAQ answer is 12 words (aim 40-60): \"What age is the Grade 1 workbook designed for?\"",
+        "b5 FAQ answer is 15 words (aim 40-60): \"Do I need the Kindergarten set before starting Gra\"",
+        "b5 FAQ answer is 13 words (aim 40-60): \"Are the workbooks consumable?\""
+      ]
+    },
+    {
+      "query": "time 2 read grade 1",
+      "at": "2026-11-10",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 23 words (aim 40-60): \"How long does a Grade 1 lesson take each day?\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"Can I start Grade 1 if my child missed Kindergarte\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"Do I need to buy anything besides the workbook set\"",
+        "b5 FAQ answer is 20 words (aim 40-60): \"What if my child finishes the Grade 1 books early?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
+    },
+    {
+      "query": "reading time worksheet for grade 2",
+      "at": "2026-11-10",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 28 words (aim 40-60): \"How long should a Grade 2 reading worksheet take?\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"Can I use the same worksheet more than once?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"What if my child finds the questions too hard?\"",
+        "b5 FAQ answer is 21 words (aim 40-60): \"Do worksheets replace reading real books?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0)"
+      ]
+    },
+    {
+      "query": "reading time 2",
+      "at": "2026-11-10",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"What if my child refuses the second block?\"",
+        "b5 FAQ answer is 29 words (aim 40-60): \"How do I track progress without tests?\""
+      ]
+    },
+    {
+      "query": "time 2 read grade 3",
+      "at": "2026-11-10",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 28 words (aim 40-60): \"Are the workbooks consumable?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
+    },
+    {
+      "query": "tiny read",
+      "at": "2026-11-10",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1)"
+      ]
     }
   ],
   "redirected": [
