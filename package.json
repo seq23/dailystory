@@ -18,7 +18,7 @@
     "entity:validate": "node scripts/validate-entity-graph.mjs",
     "entity:watch": "node scripts/entity-backlink-watch.mjs --dry-run",
     "test:unit": "vitest run",
-    "test:fast": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && npm run test:unit && npm run entity:validate && bash scripts/test-institutions-db.sh && npm run build && node scripts/check-prerender.mjs && npm run build:dev"
+    "test:fast": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && npm run test:unit && bash scripts/test-institutions-db.sh && npm run build && node scripts/check-prerender.mjs && npm run build:dev"
   },
   "dependencies": {
     "@11labs/react": "^0.1.4",

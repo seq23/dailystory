@@ -6,7 +6,9 @@ Decided by Sequoia, 25 Oct 2026. This file is read by code:
 (`PLAN_PRICES`, used by PricingSection and StoryPaywall), PremiumUpgrade,
 SubscriptionManager, the locale files or `public/llms.txt` say anything else,
 or if `src/config/ttsConfig.ts` gives a tier a different voice than `free_voice` /
-`premium_voice` below. Change the price here and in those places in the same PR.
+`premium_voice` below. `src/test/guards/seo-surfaces.test.ts` (blocking, merge gate) fails if
+the homepage SoftwareApplication offer prices in `src/seo/schema.ts` differ from `PLAN_PRICES`.
+Change the price here and in those places in the same PR.
 
 ```pricing
 monthly_cents: 1299
