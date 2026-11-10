@@ -190,7 +190,7 @@ const Subprocessors = () => {
         {/* Risk tier sections */}
         {(["high", "medium", "low"] as const).map((tier) => {
           const tierProcessors = subprocessors.filter((s) => s.riskTier === tier);
-          const tierLabel = tier === "high" ? "High Risk — Processes Personal Data" : tier === "medium" ? "Medium Risk — Transient Data Processing" : "Low Risk — Infrastructure Only";
+          const tierLabel = tier === "high" ? "Which subprocessors handle personal data? (High risk)" : tier === "medium" ? "Which subprocessors only process data briefly? (Medium risk)" : "Which subprocessors only run infrastructure? (Low risk)";
 
           return (
             <div key={tier} className="mb-8">
@@ -239,7 +239,7 @@ const Subprocessors = () => {
         })}
 
         <article className="prose max-w-none dark:prose-invert mt-8">
-          <h2>Changes to Subprocessors</h2>
+          <h2>How will we tell you about changes to subprocessors?</h2>
           <p>
             We will update this page when subprocessors are added or removed. Enterprise customers
             with DPAs will be notified of material changes in advance.
