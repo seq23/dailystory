@@ -1,13 +1,13 @@
 // One source for the structured data every public page carries. The static shell
 // (index.html) repeats ORGANIZATION and WEBSITE so crawlers that do not run
-// JavaScript see them; src/test/guards/seo-surfaces.test.ts fails if the two drift.
+// JavaScript see them.
 // scripts/prerender-run.mjs adds pageGraph() to every prerendered page and
 // scripts/check-prerender.mjs fails CI if a page loses any of it.
 import { SITE_URL } from "@/config/site";
 import { PLAN_PRICES, FREE_STORY_LIMIT } from "@/lib/freeStoryAllowance";
 // The ONE definition of this site's identity (Search Readiness k1/k4). Everything
 // below derives from it, so the name, logo, profiles and parent cannot drift apart.
-// scripts/validate-entity-graph.mjs fails the merge gate if index.html disagrees.
+// scripts/validate-entity-graph.mjs (entity-backlink-watch) reports if index.html disagrees.
 import ENTITY from "./entity.json";
 
 export const ORG_ID = ENTITY["@id"];
