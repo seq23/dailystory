@@ -1,6 +1,7 @@
 // One source for the structured data every public page carries. The static shell
 // (index.html) repeats ORGANIZATION and WEBSITE so crawlers that do not run
-// JavaScript see them.
+// JavaScript see them. src/test/guards/seo-surfaces.test.ts fails if the offer
+// prices below differ from PLAN_PRICES.
 // scripts/prerender-run.mjs adds pageGraph() to every prerendered page and
 // scripts/check-prerender.mjs fails CI if a page loses any of it.
 import { SITE_URL } from "@/config/site";
