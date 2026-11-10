@@ -24,7 +24,9 @@ export function collectPages(root, cfg) {
     const html = fs.readFileSync(file, 'utf8');
     const h1 = ((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || [])[1] || slug).replace(/<[^>]+>/g, '').trim();
     const row = published.get(slug);
-    out.push({ slug, h1, url: `${cfg.base_url}${cfg.output.url_prefix}${slug}/`, lastmod: row?.strengthen?.at || row?.published_at || null });
+    out.push({ slug, h1, url: `${cfg.base_url}${cfg.output.url_prefix}${slug}/`, lastmod: [row?.published_at, row?.modified_at, row?.strengthen?.at].filter(Boolean).sort().at(-1) || null });
+    // ^ the day the words last changed: search-loop v1.10.0 sets modified_at on every rewrite, refresh
+    //   included, and never on a check that changed nothing (risk rule R-ADV-12).
   }
   return out;
 }
