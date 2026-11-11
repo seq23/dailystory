@@ -2,41 +2,41 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-10T07:43:34.187Z",
+  "collected_at": "2026-11-11T07:43:40.357Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-11",
-    "end_date": "2026-11-07",
+    "start_date": "2026-10-12",
+    "end_date": "2026-11-08",
     "days": 28
   },
   "totals": {
     "clicks": 5,
-    "impressions": 407,
-    "ctr": 0.0123,
-    "position": 14.11
+    "impressions": 415,
+    "ctr": 0.012,
+    "position": 14.22
   },
   "row_count": 47,
   "query_count": 45,
   "page_count": 15,
-  "attributed_impressions": 195,
+  "attributed_impressions": 201,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
       "query": "time2read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 26,
+      "impressions": 27,
       "ctr": 0,
-      "position": 5.54
+      "position": 5.52
     },
     {
       "query": "time 2 read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 20,
+      "impressions": 21,
       "ctr": 0,
-      "position": 4.75
+      "position": 4.86
     },
     {
       "query": "personalized books for 2 year olds",
@@ -50,9 +50,17 @@
       "query": "time to read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 16,
+      "impressions": 17,
       "ctr": 0,
-      "position": 8
+      "position": 7.76
+    },
+    {
+      "query": "2 read",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 12,
+      "ctr": 0,
+      "position": 9
     },
     {
       "query": "20 minute reading timer",
@@ -61,14 +69,6 @@
       "impressions": 12,
       "ctr": 0,
       "position": 5.58
-    },
-    {
-      "query": "2 read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 11,
-      "ctr": 0,
-      "position": 9
     },
     {
       "query": "time read",
@@ -149,6 +149,14 @@
       "impressions": 3,
       "ctr": 0,
       "position": 78.33
+    },
+    {
+      "query": "read along books for toddlers",
+      "page": "https://time-2-read.com/toddler-books",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 53.33
     },
     {
       "query": "stories for 2 year olds book",
@@ -309,14 +317,6 @@
       "impressions": 1,
       "ctr": 0,
       "position": 1
-    },
-    {
-      "query": "read along books for toddlers",
-      "page": "https://time-2-read.com/toddler-books",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 37
     },
     {
       "query": "sight words 2 year olds",

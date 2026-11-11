@@ -2861,6 +2861,245 @@
           "position": 97
         }
       }
+    },
+    {
+      "start_date": "2026-10-12",
+      "end_date": "2026-11-08",
+      "days": 28,
+      "collected_at": "2026-11-11T07:43:40.357Z",
+      "totals": {
+        "clicks": 5,
+        "impressions": 415,
+        "ctr": 0.012,
+        "position": 14.22
+      },
+      "queries": {
+        "time2read": {
+          "impressions": 27,
+          "clicks": 0,
+          "position": 5.52
+        },
+        "time 2 read": {
+          "impressions": 22,
+          "clicks": 0,
+          "position": 5.09
+        },
+        "personalized books for 2 year olds": {
+          "impressions": 18,
+          "clicks": 0,
+          "position": 54.5
+        },
+        "time to read": {
+          "impressions": 17,
+          "clicks": 0,
+          "position": 7.76
+        },
+        "2 read": {
+          "impressions": 12,
+          "clicks": 0,
+          "position": 9
+        },
+        "20 minute reading timer": {
+          "impressions": 12,
+          "clicks": 0,
+          "position": 5.58
+        },
+        "time read": {
+          "impressions": 11,
+          "clicks": 1,
+          "position": 8.45
+        },
+        "reading time 2": {
+          "impressions": 7,
+          "clicks": 0,
+          "position": 8.57
+        },
+        "reading timer 20 minutes": {
+          "impressions": 5,
+          "clicks": 0,
+          "position": 6
+        },
+        "2read": {
+          "impressions": 4,
+          "clicks": 0,
+          "position": 13
+        },
+        "add and reading": {
+          "impressions": 4,
+          "clicks": 0,
+          "position": 79.5
+        },
+        "time2read login": {
+          "impressions": 4,
+          "clicks": 0,
+          "position": 6.25
+        },
+        "toddler books online": {
+          "impressions": 4,
+          "clicks": 0,
+          "position": 58
+        },
+        "20 min reading timer": {
+          "impressions": 3,
+          "clicks": 0,
+          "position": 4.67
+        },
+        "20 minute timer for reading": {
+          "impressions": 3,
+          "clicks": 0,
+          "position": 6.33
+        },
+        "20 minute timer reading": {
+          "impressions": 3,
+          "clicks": 0,
+          "position": 7.67
+        },
+        "best reading apps for struggling readers": {
+          "impressions": 3,
+          "clicks": 0,
+          "position": 78.33
+        },
+        "read along books for toddlers": {
+          "impressions": 3,
+          "clicks": 0,
+          "position": 53.33
+        },
+        "stories for 2 year olds book": {
+          "impressions": 3,
+          "clicks": 0,
+          "position": 72.67
+        },
+        "2 reas": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 7
+        },
+        "best apps for struggling readers": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 54.5
+        },
+        "ccpa notice": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 38
+        },
+        "help reading app": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 44.5
+        },
+        "kids reading timer": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 18.5
+        },
+        "online books for toddlers": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 48
+        },
+        "reading 20 minutes a day statistics": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 9
+        },
+        "sight word generator": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 51.5
+        },
+        "software for struggling readers": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 17
+        },
+        "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta": {
+          "impressions": 2,
+          "clicks": 0,
+          "position": 6.5
+        },
+        "2 year old books online": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 63
+        },
+        "30 second short story": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 67
+        },
+        "ferpa compliance school emergency notification": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 39
+        },
+        "how many minutes should a 4th grader read per day": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 30
+        },
+        "kindergarten sight words": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 56
+        },
+        "level 2": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 1
+        },
+        "my year 2 daughter is behind with reading. should i use a reading app or find a tutor?": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 1
+        },
+        "sight words 2 year olds": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 42
+        },
+        "sight words for kg2": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 47
+        },
+        "story time for 2 year olds": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 48
+        },
+        "teaching adhd child to read": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 66
+        },
+        "time to read books": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 6
+        },
+        "time2read app": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 48
+        },
+        "timetoread": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 9
+        },
+        "tiny read": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 22
+        },
+        "very short bedtime stories": {
+          "impressions": 1,
+          "clicks": 0,
+          "position": 97
+        }
+      }
     }
   ]
 }
