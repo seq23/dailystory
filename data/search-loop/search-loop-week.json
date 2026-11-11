@@ -2,13 +2,13 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W46",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-10T11:43:32.100Z",
+  "generated_at": "2026-11-11T11:44:02.134Z",
   "state": "running",
   "published": 6,
   "indexed": "not read: no page old enough to inspect yet (14 days)",
   "pace": 10,
   "ai_visitors": 0,
-  "ai_bot_hits": 71,
+  "ai_bot_hits": 93,
   "conversions": "not read: no conversion source configured for this site (form fills / checkouts)",
   "wins": 0,
   "undone": 0,
@@ -35,7 +35,7 @@
     "why": "held at 20: no Search Console numbers to judge results (Search Console has no rows for 2026-09-12..2026-10-09, so there is nothing to compare the last 28 days with); the cap never grows without data"
   },
   "notes": [
-    "BUILD published 0 of quota 10: 9 draft(s) failed the gate and were dropped; 0 got no answer from the free model and stay queued"
+    "BUILD published 0 of quota 10: 0 draft(s) failed the gate and were dropped; 0 got no answer from the free model and stay queued"
   ],
   "lanes": {
     "ratio": {
@@ -63,5 +63,5 @@
     "weight_changes": [],
     "competition": "not read: no BRAVE_SEARCH_API_KEY"
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/42809776158"
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/43014346079"
 }
