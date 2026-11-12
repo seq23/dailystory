@@ -82,6 +82,9 @@
         "since": "2026-11-10T11:44:01.532Z",
         "until": "2026-11-11T11:44:01.532Z"
       }
+    },
+    "2026-11-12": {
+      "not_read": "no free analytics source configured for this site (analytics.ai_referrals)"
     }
   }
 }

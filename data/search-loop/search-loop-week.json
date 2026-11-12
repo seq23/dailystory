@@ -2,7 +2,7 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W46",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-11T11:44:02.134Z",
+  "generated_at": "2026-11-12T11:44:08.588Z",
   "state": "running",
   "published": 6,
   "indexed": "not read: no page old enough to inspect yet (14 days)",
@@ -63,5 +63,5 @@
     "weight_changes": [],
     "competition": "not read: no BRAVE_SEARCH_API_KEY"
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/43014346079"
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/43211663067"
 }
