@@ -2,39 +2,39 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-11T07:43:40.357Z",
+  "collected_at": "2026-11-12T07:43:35.211Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-12",
-    "end_date": "2026-11-08",
+    "start_date": "2026-10-13",
+    "end_date": "2026-11-09",
     "days": 28
   },
   "totals": {
     "clicks": 5,
-    "impressions": 415,
-    "ctr": 0.012,
-    "position": 14.22
+    "impressions": 426,
+    "ctr": 0.0117,
+    "position": 13.98
   },
   "row_count": 47,
   "query_count": 45,
   "page_count": 15,
-  "attributed_impressions": 201,
+  "attributed_impressions": 206,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
       "query": "time2read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 27,
+      "impressions": 29,
       "ctr": 0,
-      "position": 5.52
+      "position": 5.38
     },
     {
       "query": "time 2 read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 21,
+      "impressions": 22,
       "ctr": 0,
       "position": 4.86
     },
@@ -74,9 +74,9 @@
       "query": "time read",
       "page": "https://time-2-read.com/",
       "clicks": 1,
-      "impressions": 11,
-      "ctr": 0.0909,
-      "position": 8.45
+      "impressions": 12,
+      "ctr": 0.0833,
+      "position": 8.5
     },
     {
       "query": "reading time 2",
@@ -167,6 +167,14 @@
       "position": 72.67
     },
     {
+      "query": "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta",
+      "page": "https://time-2-read.com/bedtime-stories-about-your-childs-favorite-things",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 6.67
+    },
+    {
       "query": "2 reas",
       "page": "https://time-2-read.com/",
       "clicks": 0,
@@ -253,14 +261,6 @@
       "impressions": 2,
       "ctr": 0,
       "position": 3.5
-    },
-    {
-      "query": "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta",
-      "page": "https://time-2-read.com/bedtime-stories-about-your-childs-favorite-things",
-      "clicks": 0,
-      "impressions": 2,
-      "ctr": 0,
-      "position": 6.5
     },
     {
       "query": "2 year old books online",
