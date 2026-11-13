@@ -25,156 +25,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Smart AI Visual Function Monitoring
+      - name: Check function health (GET /health)
+        id: health
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/monitor/function-health.sh runware-generate-image runware-template-ab runware-template-cd
+
+      - name: Trigger targeted redeploy (on failure)
+        if: failure() && steps.health.outputs.failed != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILED: ${{ steps.health.outputs.failed }}
         run: |
-          echo "🏥 Smart monitoring with ERROR-001 fixes applied..."
-          
-          # Function configuration
-          BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
-          
-          # Priority functions for image generation cluster
-          FUNCTIONS=("ai-visual-scene-creator" "runware-generate-image" "runware-template-ab" "runware-template-cd" "clear-character-cache")
-          
-          echo "🔍 Testing ${#FUNCTIONS[@]} functions at $(date)..."
-          
-          # Smart deployment coordination - check if deployment is already running
-          echo "🔄 Checking for active deployments..."
-          ACTIVE_DEPLOYMENTS=$(curl -s \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs?status=in_progress&workflow_id=deploy-functions.yml" \
-            | jq -r '.workflow_runs | length')
-          
-          if [ "$ACTIVE_DEPLOYMENTS" -gt 0 ]; then
-            echo "⏳ Found $ACTIVE_DEPLOYMENTS active deployment(s) - skipping health check to avoid interference"
-            echo "✅ Deployment coordination: Allowing active deployment to complete"
-            exit 0
-          fi
-          echo "✅ No active deployments detected - proceeding with health check"
-          
-          # Circuit breaker reset - small delay before check
-          sleep 2
-          
-          # Initialize tracking variables
-          TOTAL_FUNCTIONS=${#FUNCTIONS[@]}
-          HEALTHY_FUNCTIONS=0
-          NETWORK_ERRORS=0
-          SERVER_ERRORS=0
-          FAILED_FUNCTIONS=()
-          
-          # Serial health checks to avoid race conditions (ERROR-001 fix)
-          for FUNCTION_NAME in "${FUNCTIONS[@]}"; do
-            echo ""
-            echo "🔍 Checking $FUNCTION_NAME..."
-            
-            # ERROR-001 FIX: Use HEAD /health to avoid CORS preflights
-            HEALTH_URL="$BASE_URL/$FUNCTION_NAME/health"
-            
-            ATTEMPTS=0
-            MAX_ATTEMPTS=2
-            SUCCESS=false
-            
-            while [ $ATTEMPTS -lt $MAX_ATTEMPTS ] && [ "$SUCCESS" = false ]; do
-              ATTEMPTS=$((ATTEMPTS + 1))
-              echo "  Attempt $ATTEMPTS/$MAX_ATTEMPTS (HEAD $HEALTH_URL)..."
-              
-              # ERROR-001 FIX: HEAD request with no auth headers (no preflight)
-              response=$(curl -s -o /dev/null -w "%{http_code}" \
-                -X HEAD "$HEALTH_URL" \
-                --max-time 10 \
-                --retry 0 || echo "000")
-              
-              case $response in
-                "200"|"201"|"202"|"204")
-                  echo "    ✅ $FUNCTION_NAME is healthy (HTTP $response)"
-                  SUCCESS=true
-                  HEALTHY_FUNCTIONS=$((HEALTHY_FUNCTIONS + 1))
-                  ;;
-                "404"|"405")
-                  echo "    ⚠️  $FUNCTION_NAME health endpoint not found (HTTP $response) - trying GET fallback"
-                  # Fallback to GET for functions not yet upgraded
-                  fallback_response=$(curl -s -o /dev/null -w "%{http_code}" \
-                    -X GET "$BASE_URL/$FUNCTION_NAME" \
-                    --max-time 10 || echo "000")
-                  if [ "$fallback_response" = "200" ] || [ "$fallback_response" = "201" ]; then
-                    echo "    ✅ $FUNCTION_NAME is healthy via GET fallback (HTTP $fallback_response)"
-                    SUCCESS=true
-                    HEALTHY_FUNCTIONS=$((HEALTHY_FUNCTIONS + 1))
-                  else
-                    echo "    ❌ $FUNCTION_NAME failed both HEAD and GET checks"
-                  fi
-                  ;;
-                "500"|"502"|"503"|"504")
-                  echo "    🔴 $FUNCTION_NAME server error (HTTP $response)"
-                  SERVER_ERRORS=$((SERVER_ERRORS + 1))
-                  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
-                    echo "    ⏳ Waiting 15s before retry..."
-                    sleep 15
-                  fi
-                  ;;
-                "000")
-                  # ERROR-001 FIX: Classify status 0 as network error, not server failure
-                  echo "    🌐 $FUNCTION_NAME network connectivity issue (timeout/DNS)"
-                  NETWORK_ERRORS=$((NETWORK_ERRORS + 1))
-                  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
-                    echo "    ⏳ Waiting 15s before retry..."
-                    sleep 15
-                  fi
-                  ;;
-                *)
-                  echo "    ⚠️  $FUNCTION_NAME unexpected response (HTTP $response)"
-                  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
-                    echo "    ⏳ Waiting 15s before retry..."
-                    sleep 15
-                  fi
-                  ;;
-              esac
-            done
-            
-            # Track failed functions for reporting
-            if [ "$SUCCESS" = false ]; then
-              FAILED_FUNCTIONS+=("$FUNCTION_NAME")
-            fi
-            
-            # Small delay between function checks to avoid overwhelming
-            sleep 1
-          done
-          
-          # Health summary
-          echo ""
-          echo "📊 HEALTH SUMMARY:"
-          echo "   Total Functions: $TOTAL_FUNCTIONS"
-          echo "   Healthy: $HEALTHY_FUNCTIONS"
-          echo "   Network Errors: $NETWORK_ERRORS"
-          echo "   Server Errors: $SERVER_ERRORS"
-          echo "   Failed: ${#FAILED_FUNCTIONS[@]}"
-          
-          # ERROR-001 FIX: Network errors don't fail the job
-          if [ $SERVER_ERRORS -gt 0 ] && [ ${#FAILED_FUNCTIONS[@]} -gt 0 ]; then
-            echo ""
-            echo "🚨 SERVER FAILURES DETECTED: ${FAILED_FUNCTIONS[*]}"
-            echo "⚡ Triggering targeted redeploy for failed functions"
-            
-            # Trigger deployment workflow with specific functions
-            PRIORITY_FUNCTIONS=$(IFS=,; echo "${FAILED_FUNCTIONS[*]}")
-            curl -X POST \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/deploy-functions.yml/dispatches \
-              -d '{"ref":"main","inputs":{"priority_functions":"'$PRIORITY_FUNCTIONS'"}}'
-              
-            echo "✅ Targeted redeploy triggered for: $PRIORITY_FUNCTIONS"
-            exit 1
-          elif [ $NETWORK_ERRORS -gt 0 ]; then
-            echo ""
-            echo "🌐 Network connectivity issues detected - not failing job (ERROR-001 fix)"
-            echo "   This is likely temporary and will resolve automatically"
-            exit 0
-          else
-            echo ""
-            echo "✅ All image generation functions are healthy - monitoring complete"
-            exit 0
-          fi
+          curl -s -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/deploy-functions.yml/dispatches" \
+            -d "{\"ref\":\"main\",\"inputs\":{\"priority_functions\":\"$FAILED\"}}"
+          echo "Targeted redeploy dispatched for $FAILED"
 
       - name: Create alert issue (on server failures only)
         if: failure()
