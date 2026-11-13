@@ -85,6 +85,25 @@
     },
     "2026-11-12": {
       "not_read": "no free analytics source configured for this site (analytics.ai_referrals)"
+    },
+    "2026-11-13": {
+      "ai_visitors": {
+        "total": 0,
+        "by_engine": {},
+        "by_path": {},
+        "source": "pages-analytics-engine"
+      },
+      "ai_bot_hits": {
+        "total": 24,
+        "by_bot": {
+          "ClaudeBot": 24
+        }
+      },
+      "pages_logged": 16,
+      "window": {
+        "since": "2026-11-12T11:44:08.244Z",
+        "until": "2026-11-13T11:44:08.244Z"
+      }
     }
   }
 }
