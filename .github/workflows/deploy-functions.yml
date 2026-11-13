@@ -51,8 +51,8 @@ jobs:
           ACTIVE_DEPLOYMENTS=$(curl -s \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs?status=in_progress&workflow_id=deploy-functions.yml" \
-            | jq -r '.workflow_runs | length' || echo "0")
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/deploy-functions.yml/runs?status=in_progress" \
+            | jq -r ".total_count // 0" || echo "0")
           
           if [ "$ACTIVE_DEPLOYMENTS" -gt 1 ]; then
             echo "⚠️  Found $ACTIVE_DEPLOYMENTS concurrent deployments"
