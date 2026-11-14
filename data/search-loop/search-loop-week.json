@@ -2,32 +2,19 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W46",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-13T11:44:09.512Z",
+  "generated_at": "2026-11-14T11:43:54.261Z",
   "state": "running",
-  "published": 3,
+  "published": 1,
   "indexed": "not read: no page old enough to inspect yet (14 days)",
   "pace": 10,
   "ai_visitors": 0,
-  "ai_bot_hits": 117,
+  "ai_bot_hits": 147,
   "conversions": "not read: no conversion source configured for this site (form fills / checkouts)",
   "wins": 0,
   "undone": 0,
   "merged": 0,
   "held_by_cap": 0,
-  "redirected": [
-    {
-      "query": "reading time grade 2",
-      "strengthen": "https://guides.time-2-read.com/questions/time2read-grade-3/",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-07"
-    },
-    {
-      "query": "childrens books you can personalize",
-      "strengthen": "https://guides.time-2-read.com/questions/time-2-read-books/",
-      "matched_by": "high token overlap (0.60 >= 0.6)",
-      "at": "2026-11-07"
-    }
-  ],
+  "redirected": [],
   "cap": {
     "max_live_pages": 20,
     "live": 5,
@@ -63,5 +50,5 @@
     "weight_changes": [],
     "competition": "not read: no BRAVE_SEARCH_API_KEY"
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/43419393283"
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/43591392527"
 }
