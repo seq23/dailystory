@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_url_inspection",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-14T07:43:59.683Z",
+  "collected_at": "2026-11-15T07:43:35.014Z",
   "state": "OK",
   "named_stop": null,
   "sitemap_url_count": 36,
@@ -14,14 +14,13 @@
   },
   "summary": {
     "by_coverage_state": {
-      "Submitted and indexed": 30,
+      "Submitted and indexed": 31,
       "Alternate page with proper canonical tag": 4,
-      "Discovered - currently not indexed": 1,
-      "URL is unknown to Google": 1
+      "Discovered - currently not indexed": 1
     },
     "by_verdict": {
-      "PASS": 30,
-      "NEUTRAL": 6
+      "PASS": 31,
+      "NEUTRAL": 5
     }
   },
   "truth_boundary": "Google index state per URL at inspected_at. Not a ranking or traffic measure; impressions are in gsc_truth.json.",
@@ -36,7 +35,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/",
       "userCanonical": "https://time-2-read.com/",
-      "inspected_at": "2026-11-14T07:43:34.223Z"
+      "inspected_at": "2026-11-15T07:43:10.506Z"
     },
     {
       "url": "https://time-2-read.com/pricing",
@@ -48,7 +47,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/pricing",
       "userCanonical": "https://time-2-read.com/pricing",
-      "inspected_at": "2026-11-14T07:43:46.856Z"
+      "inspected_at": "2026-11-15T07:43:22.533Z"
     },
     {
       "url": "https://time-2-read.com/about",
@@ -60,7 +59,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/about",
       "userCanonical": "https://time-2-read.com/about",
-      "inspected_at": "2026-11-14T07:43:34.119Z"
+      "inspected_at": "2026-11-15T07:43:10.485Z"
     },
     {
       "url": "https://time-2-read.com/privacy",
@@ -72,7 +71,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/privacy",
       "userCanonical": "https://time-2-read.com/privacy",
-      "inspected_at": "2026-11-14T07:43:47.035Z"
+      "inspected_at": "2026-11-15T07:43:22.873Z"
     },
     {
       "url": "https://time-2-read.com/terms",
@@ -84,7 +83,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/terms",
       "userCanonical": "https://time-2-read.com/terms",
-      "inspected_at": "2026-11-14T07:43:59.487Z"
+      "inspected_at": "2026-11-15T07:43:34.864Z"
     },
     {
       "url": "https://time-2-read.com/ccpa",
@@ -96,7 +95,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/ccpa",
       "userCanonical": "https://time-2-read.com/ccpa",
-      "inspected_at": "2026-11-14T07:43:34.183Z"
+      "inspected_at": "2026-11-15T07:43:10.245Z"
     },
     {
       "url": "https://time-2-read.com/accessibility",
@@ -108,7 +107,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/accessibility",
       "userCanonical": "https://time-2-read.com/accessibility",
-      "inspected_at": "2026-11-14T07:43:40.464Z"
+      "inspected_at": "2026-11-15T07:43:16.360Z"
     },
     {
       "url": "https://time-2-read.com/vendors",
@@ -120,7 +119,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/vendors",
       "userCanonical": "https://time-2-read.com/vendors",
-      "inspected_at": "2026-11-14T07:43:59.683Z"
+      "inspected_at": "2026-11-15T07:43:35.013Z"
     },
     {
       "url": "https://time-2-read.com/gdpr",
@@ -132,7 +131,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/gdpr",
       "userCanonical": "https://time2read.lovable.app/",
-      "inspected_at": "2026-11-14T07:43:53.168Z"
+      "inspected_at": "2026-11-15T07:43:28.639Z"
     },
     {
       "url": "https://time-2-read.com/ferpa",
@@ -144,7 +143,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/ferpa",
       "userCanonical": "https://time2read.lovable.app/",
-      "inspected_at": "2026-11-14T07:43:40.526Z"
+      "inspected_at": "2026-11-15T07:43:16.383Z"
     },
     {
       "url": "https://time-2-read.com/data-transfers",
@@ -156,19 +155,19 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/data-transfers",
       "userCanonical": "https://time-2-read.com/data-transfers",
-      "inspected_at": "2026-11-14T07:43:40.496Z"
+      "inspected_at": "2026-11-15T07:43:16.363Z"
     },
     {
       "url": "https://time-2-read.com/subprocessors",
       "verdict": "NEUTRAL",
-      "coverageState": "URL is unknown to Google",
+      "coverageState": "Discovered - currently not indexed",
       "lastCrawlTime": null,
       "indexingState": "INDEXING_STATE_UNSPECIFIED",
       "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
       "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
       "googleCanonical": null,
       "userCanonical": null,
-      "inspected_at": "2026-11-14T07:43:59.550Z"
+      "inspected_at": "2026-11-15T07:43:34.841Z"
     },
     {
       "url": "https://time-2-read.com/20-minute-reading-log",
@@ -180,7 +179,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/20-minute-reading-log",
       "userCanonical": "https://time-2-read.com/20-minute-reading-log",
-      "inspected_at": "2026-11-14T07:43:40.578Z"
+      "inspected_at": "2026-11-15T07:43:16.412Z"
     },
     {
       "url": "https://time-2-read.com/is-reading-20-minutes-a-day-enough",
@@ -192,7 +191,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/is-reading-20-minutes-a-day-enough",
       "userCanonical": "https://time-2-read.com/is-reading-20-minutes-a-day-enough",
-      "inspected_at": "2026-11-14T07:43:53.228Z"
+      "inspected_at": "2026-11-15T07:43:28.744Z"
     },
     {
       "url": "https://time-2-read.com/reading-app-with-timer-for-kids",
@@ -204,7 +203,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/reading-app-with-timer-for-kids",
       "userCanonical": "https://time-2-read.com/reading-app-with-timer-for-kids",
-      "inspected_at": "2026-11-14T07:43:53.465Z"
+      "inspected_at": "2026-11-15T07:43:28.894Z"
     },
     {
       "url": "https://time-2-read.com/reading-app-for-kids-struggling-to-read",
@@ -216,19 +215,19 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/reading-app-for-kids-struggling-to-read",
       "userCanonical": "https://time-2-read.com/reading-app-for-kids-struggling-to-read",
-      "inspected_at": "2026-11-14T07:43:53.254Z"
+      "inspected_at": "2026-11-15T07:43:28.886Z"
     },
     {
       "url": "https://time-2-read.com/high-interest-low-level-stories",
-      "verdict": "NEUTRAL",
-      "coverageState": "Discovered - currently not indexed",
-      "lastCrawlTime": null,
-      "indexingState": "INDEXING_STATE_UNSPECIFIED",
-      "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
-      "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
-      "googleCanonical": null,
-      "userCanonical": null,
-      "inspected_at": "2026-11-14T07:43:40.520Z"
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-11-14T21:01:36Z",
+      "indexingState": "INDEXING_ALLOWED",
+      "robotsTxtState": "ALLOWED",
+      "pageFetchState": "SUCCESSFUL",
+      "googleCanonical": "https://time-2-read.com/high-interest-low-level-stories",
+      "userCanonical": "https://time-2-read.com/high-interest-low-level-stories",
+      "inspected_at": "2026-11-15T07:43:16.619Z"
     },
     {
       "url": "https://time-2-read.com/bedtime-stories-about-your-childs-favorite-things",
@@ -240,7 +239,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/bedtime-stories-about-your-childs-favorite-things",
       "userCanonical": "https://time-2-read.com/bedtime-stories-about-your-childs-favorite-things",
-      "inspected_at": "2026-11-14T07:43:34.210Z"
+      "inspected_at": "2026-11-15T07:43:10.250Z"
     },
     {
       "url": "https://time-2-read.com/sight-word-story-generator",
@@ -252,7 +251,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/sight-word-story-generator",
       "userCanonical": "https://time-2-read.com/sight-word-story-generator",
-      "inspected_at": "2026-11-14T07:43:54.291Z"
+      "inspected_at": "2026-11-15T07:43:29.055Z"
     },
     {
       "url": "https://time-2-read.com/reading-for-kids-with-adhd",
@@ -264,7 +263,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/reading-for-kids-with-adhd",
       "userCanonical": "https://time-2-read.com/reading-for-kids-with-adhd",
-      "inspected_at": "2026-11-14T07:43:47.243Z"
+      "inspected_at": "2026-11-15T07:43:22.742Z"
     },
     {
       "url": "https://time-2-read.com/reading-app-for-esl-kids",
@@ -276,7 +275,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/reading-app-for-esl-kids",
       "userCanonical": "https://time-2-read.com/reading-app-for-esl-kids",
-      "inspected_at": "2026-11-14T07:43:47.842Z"
+      "inspected_at": "2026-11-15T07:43:22.940Z"
     },
     {
       "url": "https://time-2-read.com/my-child-hates-reading",
@@ -288,7 +287,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/my-child-hates-reading",
       "userCanonical": "https://time-2-read.com/my-child-hates-reading",
-      "inspected_at": "2026-11-14T07:43:46.842Z"
+      "inspected_at": "2026-11-15T07:43:22.645Z"
     },
     {
       "url": "https://time-2-read.com/stories-where-your-child-is-the-main-character",
@@ -300,7 +299,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/stories-where-your-child-is-the-main-character",
       "userCanonical": "https://time-2-read.com/stories-where-your-child-is-the-main-character",
-      "inspected_at": "2026-11-14T07:43:59.541Z"
+      "inspected_at": "2026-11-15T07:43:34.868Z"
     },
     {
       "url": "https://time-2-read.com/free-books-for-kindergarteners",
@@ -312,7 +311,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.lovable.app/free-books-for-kindergarteners",
       "userCanonical": "https://time-2-read.lovable.app/free-books-for-kindergarteners",
-      "inspected_at": "2026-11-14T07:43:41.425Z"
+      "inspected_at": "2026-11-15T07:43:16.823Z"
     },
     {
       "url": "https://time-2-read.com/kindergarten-sight-words",
@@ -324,7 +323,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/kindergarten-sight-words",
       "userCanonical": "https://time-2-read.lovable.app/kindergarten-sight-words",
-      "inspected_at": "2026-11-14T07:43:46.798Z"
+      "inspected_at": "2026-11-15T07:43:22.508Z"
     },
     {
       "url": "https://time-2-read.com/toddler-books",
@@ -336,7 +335,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/toddler-books",
       "userCanonical": "https://time-2-read.com/toddler-books",
-      "inspected_at": "2026-11-14T07:43:54.139Z"
+      "inspected_at": "2026-11-15T07:43:29.018Z"
     },
     {
       "url": "https://time-2-read.com/books-for-kindergarten",
@@ -348,7 +347,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.lovable.app/books-for-kindergarten",
       "userCanonical": "https://time-2-read.lovable.app/books-for-kindergarten",
-      "inspected_at": "2026-11-14T07:43:40.811Z"
+      "inspected_at": "2026-11-15T07:43:16.520Z"
     },
     {
       "url": "https://time-2-read.com/first-grade-books",
@@ -360,7 +359,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/first-grade-books",
       "userCanonical": "https://time-2-read.lovable.app/first-grade-books",
-      "inspected_at": "2026-11-14T07:43:34.181Z"
+      "inspected_at": "2026-11-15T07:43:10.301Z"
     },
     {
       "url": "https://time-2-read.com/books-for-5-year-olds",
@@ -372,7 +371,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/books-for-5-year-olds",
       "userCanonical": "https://time-2-read.lovable.app/books-for-5-year-olds",
-      "inspected_at": "2026-11-14T07:43:34.083Z"
+      "inspected_at": "2026-11-15T07:43:10.216Z"
     },
     {
       "url": "https://time-2-read.com/books-for-4-year-olds",
@@ -384,7 +383,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.lovable.app/books-for-4-year-olds",
       "userCanonical": "https://time-2-read.lovable.app/books-for-4-year-olds",
-      "inspected_at": "2026-11-14T07:43:41.443Z"
+      "inspected_at": "2026-11-15T07:43:16.645Z"
     },
     {
       "url": "https://time-2-read.com/books-for-6-year-olds",
@@ -396,7 +395,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/books-for-6-year-olds",
       "userCanonical": "https://time-2-read.com/books-for-6-year-olds",
-      "inspected_at": "2026-11-14T07:43:34.207Z"
+      "inspected_at": "2026-11-15T07:43:10.315Z"
     },
     {
       "url": "https://time-2-read.com/read-aloud-books-for-kindergarten",
@@ -408,7 +407,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.lovable.app/read-aloud-books-for-kindergarten",
       "userCanonical": "https://time-2-read.lovable.app/read-aloud-books-for-kindergarten",
-      "inspected_at": "2026-11-14T07:43:53.210Z"
+      "inspected_at": "2026-11-15T07:43:28.645Z"
     },
     {
       "url": "https://time-2-read.com/books-for-toddlers",
@@ -420,7 +419,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/books-for-toddlers",
       "userCanonical": "https://time-2-read.com/books-for-toddlers",
-      "inspected_at": "2026-11-14T07:43:47.795Z"
+      "inspected_at": "2026-11-15T07:43:22.754Z"
     },
     {
       "url": "https://time-2-read.com/books-for-preschoolers",
@@ -432,7 +431,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/books-for-preschoolers",
       "userCanonical": "https://time-2-read.com/books-for-preschoolers",
-      "inspected_at": "2026-11-14T07:43:34.128Z"
+      "inspected_at": "2026-11-15T07:43:10.246Z"
     },
     {
       "url": "https://time-2-read.com/leveled-readers",
@@ -444,7 +443,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/leveled-readers",
       "userCanonical": "https://time-2-read.com/leveled-readers",
-      "inspected_at": "2026-11-14T07:43:46.841Z"
+      "inspected_at": "2026-11-15T07:43:22.725Z"
     },
     {
       "url": "https://time-2-read.com/short-bedtime-stories-for-kids",
@@ -456,7 +455,7 @@
       "pageFetchState": "SUCCESSFUL",
       "googleCanonical": "https://time-2-read.com/short-bedtime-stories-for-kids",
       "userCanonical": "https://time-2-read.lovable.app/short-bedtime-stories-for-kids",
-      "inspected_at": "2026-11-14T07:43:53.767Z"
+      "inspected_at": "2026-11-15T07:43:28.921Z"
     }
   ]
 }
