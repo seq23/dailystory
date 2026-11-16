@@ -1,8 +1,8 @@
 {
   "schema": "search-loop-discovery-v1",
   "site": "time-2-read.com",
-  "week": "2026-W46",
-  "generated_at": "2026-11-09T11:44:19.176Z",
+  "week": "2026-W47",
+  "generated_at": "2026-11-16T11:45:18.396Z",
   "paid_calls": 0,
   "cost_usd": 0,
   "hosts": {
@@ -26,16 +26,24 @@
     }
   },
   "sources": {
-    "search_console": "ok: 47 rows",
+    "search_console": "ok: 49 rows",
     "bing_webmaster": "not read: BING_WEBMASTER_API_KEY is not set",
-    "easy_wins": "ok: 2 easy win(s) in Search Console",
+    "easy_wins": "ok: 3 easy win(s) in Search Console",
     "suggestqueries.google.com": "ok",
     "api.bing.com": "ok",
-    "relevance_screen": "ok: kept 14 of 39 (free model)",
+    "relevance_screen": "ok: kept 115 of 150 (free model)",
     "top10": "not read: no BRAVE_SEARCH_API_KEY"
   },
+  "seeds": {
+    "planned": 183,
+    "asked": 40,
+    "topics": 12,
+    "topics_asked": 12,
+    "priority_topics": 0,
+    "priority_targets": 0
+  },
   "notes": [
-    "autocomplete stopped at its budget of 80 calls"
+    "autocomplete stopped at its budget of 80 calls (40 of 183 planned questions asked)"
   ],
   "competition": "not read: no BRAVE_SEARCH_API_KEY",
   "lanes": {
@@ -43,8 +51,8 @@
       "can_be_one": 2,
       "striking": 1
     },
-    "can_be_one": 7,
-    "striking": 7,
+    "can_be_one": 54,
+    "striking": 61,
     "weights": {
       "neighbour": 35,
       "unanswered": 30,
@@ -53,9 +61,9 @@
     }
   },
   "counts": {
-    "candidates": 44,
-    "targets": 14,
+    "candidates": 277,
+    "targets": 115,
     "strengthen_candidates": 0,
-    "dropped_shared_audience": 0
+    "dropped_shared_audience": 14
   }
 }

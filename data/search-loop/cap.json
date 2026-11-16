@@ -1,9 +1,9 @@
 {
   "schema": "search-loop-cap-v1",
-  "max_live_pages": 20,
+  "max_live_pages": 22,
   "config_value": null,
-  "reason": "held at 20: no Search Console numbers to judge results (Search Console has no rows for 2026-09-12..2026-10-09, so there is nothing to compare the last 28 days with); the cap never grows without data",
-  "last_eval_week": "2026-W46",
+  "reason": "up from 20 to 22: Google impressions 505 in the last 28 days beat 19 in the 28 before",
+  "last_eval_week": "2026-W47",
   "history": [
     {
       "at": "2026-11-06T23:12:38.813Z",
@@ -24,7 +24,18 @@
       "from": 20,
       "to": 20,
       "reason": "held at 20: no Search Console numbers to judge results (Search Console has no rows for 2026-09-12..2026-10-09, so there is nothing to compare the last 28 days with); the cap never grows without data"
+    },
+    {
+      "at": "2026-11-16T11:45:18.396Z",
+      "week": "2026-W47",
+      "from": 20,
+      "to": 22,
+      "reason": "up from 20 to 22: Google impressions 505 in the last 28 days beat 19 in the 28 before"
     }
   ],
-  "held": {}
+  "held": {},
+  "impressions": {
+    "last_28": 505,
+    "prev_28": 19
+  }
 }
