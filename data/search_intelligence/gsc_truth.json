@@ -2,24 +2,24 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-16T07:56:08.591Z",
+  "collected_at": "2026-11-17T07:43:44.807Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-17",
-    "end_date": "2026-11-13",
+    "start_date": "2026-10-18",
+    "end_date": "2026-11-14",
     "days": 28
   },
   "totals": {
     "clicks": 6,
-    "impressions": 505,
-    "ctr": 0.0119,
-    "position": 12.46
+    "impressions": 514,
+    "ctr": 0.0117,
+    "position": 12.35
   },
   "row_count": 48,
   "query_count": 46,
   "page_count": 15,
-  "attributed_impressions": 236,
+  "attributed_impressions": 238,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
@@ -34,9 +34,9 @@
       "query": "time 2 read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 29,
+      "impressions": 28,
       "ctr": 0,
-      "position": 5.34
+      "position": 5.46
     },
     {
       "query": "time to read",
@@ -55,12 +55,12 @@
       "position": 8.5
     },
     {
-      "query": "personalized books for 2 year olds",
-      "page": "https://time-2-read.com/books-for-toddlers",
+      "query": "2 read",
+      "page": "https://time-2-read.com/",
       "clicks": 0,
       "impressions": 14,
       "ctr": 0,
-      "position": 53.64
+      "position": 8.86
     },
     {
       "query": "20 minute reading timer",
@@ -71,12 +71,12 @@
       "position": 5.92
     },
     {
-      "query": "2 read",
-      "page": "https://time-2-read.com/",
+      "query": "personalized books for 2 year olds",
+      "page": "https://time-2-read.com/books-for-toddlers",
       "clicks": 0,
-      "impressions": 11,
+      "impressions": 12,
       "ctr": 0,
-      "position": 9.36
+      "position": 54.42
     },
     {
       "query": "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta",
@@ -95,6 +95,14 @@
       "position": 8.57
     },
     {
+      "query": "ccpa notice",
+      "page": "https://time-2-read.com/ccpa",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 34.4
+    },
+    {
       "query": "reading timer 20 minutes",
       "page": "https://time-2-read.com/20-minute-reading-log",
       "clicks": 0,
@@ -109,14 +117,6 @@
       "impressions": 4,
       "ctr": 0,
       "position": 79.5
-    },
-    {
-      "query": "ccpa notice",
-      "page": "https://time-2-read.com/ccpa",
-      "clicks": 0,
-      "impressions": 4,
-      "ctr": 0,
-      "position": 34.5
     },
     {
       "query": "toddler books online",
@@ -255,6 +255,22 @@
       "position": 17
     },
     {
+      "query": "timetoread",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 25.5
+    },
+    {
+      "query": "20 minute reading timer for kids",
+      "page": "https://time-2-read.com/20-minute-reading-log",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10
+    },
+    {
       "query": "30 second short story",
       "page": "https://time-2-read.com/short-bedtime-stories-for-kids",
       "clicks": 0,
@@ -351,14 +367,6 @@
       "position": 10
     },
     {
-      "query": "time to read books",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 6
-    },
-    {
       "query": "time to reading",
       "page": "https://time-2-read.com/",
       "clicks": 0,
@@ -381,14 +389,6 @@
       "impressions": 1,
       "ctr": 0,
       "position": 3
-    },
-    {
-      "query": "timetoread",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 9
     },
     {
       "query": "tiny read",
