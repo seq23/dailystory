@@ -2,13 +2,13 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W47",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-16T11:45:18.396Z",
-  "state": "running",
-  "published": 1,
+  "generated_at": "2026-11-17T11:43:40.261Z",
+  "state": "slow",
+  "published": 2,
   "indexed": "not read: no page old enough to inspect yet (14 days)",
-  "pace": 10,
+  "pace": 3,
   "ai_visitors": 0,
-  "ai_bot_hits": 100,
+  "ai_bot_hits": 76,
   "conversions": "not read: no conversion source configured for this site (form fills / checkouts)",
   "wins": 0,
   "undone": 0,
@@ -20,21 +20,25 @@
       "strengthen": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
       "matched_by": "high token overlap (0.60 >= 0.6)",
       "at": "2026-11-16"
+    },
+    {
+      "query": "how long should you read a book a day",
+      "strengthen": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "at": "2026-11-17"
     }
   ],
   "cap": {
     "max_live_pages": 22,
-    "live": 6,
-    "room": 16,
+    "live": 7,
+    "room": 15,
     "why": "up from 20 to 22: Google impressions 505 in the last 28 days beat 19 in the 28 before"
   },
   "notes": [
-    "FIND bing_webmaster: not read: BING_WEBMASTER_API_KEY is not set",
-    "FIND top10: not read: no BRAVE_SEARCH_API_KEY",
-    "cap: up from 20 to 22: Google impressions 505 in the last 28 days beat 19 in the 28 before",
+    "NAMED NOTE [FREE_MODEL_RATE_LIMITED] the free model route is rate-limited or exhausted (every free lane is out — gemini: not read: GEMINI_API_KEY is not passed; openrouter: endpoint answered HTTP 200 with no JSON (application/json \"\n         \n\n         \n\n         \n\n      \"); closed for the run; workers: Workers AI refused the token (HTTP 401) (openrouter:nemotron-3-ultra-550b-a55b:free:non-JSON 200 application/json \"\n         \n\n         \n\n         \n\n      \")); this run dropped itself to slow for today",
     "BUILD distinct gate: 1 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
     "BUILD gate notes (not blocking): 1 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
-    "IndexNow: 1 new page(s) not live yet; submitted when they answer 200"
+    "CHECK runs weekly in mode=slow; last ran 2026-11-16"
   ],
   "lanes": {
     "ratio": {
@@ -42,7 +46,7 @@
       "striking": 1
     },
     "can_be_one": {
-      "pages": 4,
+      "pages": 5,
       "measured": 0,
       "top3": 0,
       "hit_rate": "not read: no page in this lane has reached its 2-week check yet"
@@ -62,5 +66,5 @@
     "weight_changes": [],
     "competition": "not read: no BRAVE_SEARCH_API_KEY"
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/43860494616"
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/44076567884"
 }

@@ -2817,6 +2817,15 @@
   ],
   "strengthen": [
     {
+      "query": "how long should you read a book a day",
+      "page": "/questions/how-long-should-a-child-read-a-day/",
+      "url": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "at": "2026-11-17"
+    },
+    {
       "query": "how long should children read a day",
       "page": "/questions/how-long-should-a-child-read-a-day/",
       "url": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
