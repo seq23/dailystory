@@ -2,24 +2,24 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-17T07:43:44.807Z",
+  "collected_at": "2026-11-18T07:43:05.539Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-18",
-    "end_date": "2026-11-14",
+    "start_date": "2026-10-19",
+    "end_date": "2026-11-15",
     "days": 28
   },
   "totals": {
     "clicks": 6,
-    "impressions": 514,
-    "ctr": 0.0117,
-    "position": 12.35
+    "impressions": 519,
+    "ctr": 0.0116,
+    "position": 11.64
   },
-  "row_count": 48,
-  "query_count": 46,
-  "page_count": 15,
-  "attributed_impressions": 238,
+  "row_count": 47,
+  "query_count": 45,
+  "page_count": 16,
+  "attributed_impressions": 234,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
@@ -42,9 +42,9 @@
       "query": "time to read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 23,
+      "impressions": 25,
       "ctr": 0,
-      "position": 7.48
+      "position": 7.68
     },
     {
       "query": "time read",
@@ -55,14 +55,6 @@
       "position": 8.5
     },
     {
-      "query": "2 read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 14,
-      "ctr": 0,
-      "position": 8.86
-    },
-    {
       "query": "20 minute reading timer",
       "page": "https://time-2-read.com/20-minute-reading-log",
       "clicks": 0,
@@ -71,12 +63,20 @@
       "position": 5.92
     },
     {
-      "query": "personalized books for 2 year olds",
-      "page": "https://time-2-read.com/books-for-toddlers",
+      "query": "2 read",
+      "page": "https://time-2-read.com/",
       "clicks": 0,
       "impressions": 12,
       "ctr": 0,
-      "position": 54.42
+      "position": 8.83
+    },
+    {
+      "query": "personalized books for 2 year olds",
+      "page": "https://time-2-read.com/books-for-toddlers",
+      "clicks": 0,
+      "impressions": 10,
+      "ctr": 0,
+      "position": 55.7
     },
     {
       "query": "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta",
@@ -90,9 +90,9 @@
       "query": "reading time 2",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 7,
+      "impressions": 8,
       "ctr": 0,
-      "position": 8.57
+      "position": 8.13
     },
     {
       "query": "ccpa notice",
@@ -117,14 +117,6 @@
       "impressions": 4,
       "ctr": 0,
       "position": 79.5
-    },
-    {
-      "query": "toddler books online",
-      "page": "https://time-2-read.com/toddler-books",
-      "clicks": 0,
-      "impressions": 4,
-      "ctr": 0,
-      "position": 58.25
     },
     {
       "query": "20 min reading timer",
@@ -191,6 +183,14 @@
       "position": 21
     },
     {
+      "query": "toddler books online",
+      "page": "https://time-2-read.com/toddler-books",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 60.33
+    },
+    {
       "query": "2 reas",
       "page": "https://time-2-read.com/",
       "clicks": 0,
@@ -221,14 +221,6 @@
       "impressions": 2,
       "ctr": 0,
       "position": 18.5
-    },
-    {
-      "query": "online books for toddlers",
-      "page": "https://time-2-read.com/toddler-books",
-      "clicks": 0,
-      "impressions": 2,
-      "ctr": 0,
-      "position": 48
     },
     {
       "query": "reading 20 minutes a day statistics",
@@ -292,7 +284,15 @@
       "clicks": 0,
       "impressions": 1,
       "ctr": 0,
-      "position": 39
+      "position": 41
+    },
+    {
+      "query": "high interest low level reading books",
+      "page": "https://time-2-read.com/high-interest-low-level-stories",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 58
     },
     {
       "query": "how many minutes should a 4th grader read per day",
@@ -397,14 +397,6 @@
       "impressions": 1,
       "ctr": 0,
       "position": 22
-    },
-    {
-      "query": "very short bedtime stories",
-      "page": "https://time-2-read.com/short-bedtime-stories-for-kids",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 97
     }
   ]
 }
