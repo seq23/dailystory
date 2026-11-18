@@ -2817,6 +2817,87 @@
   ],
   "strengthen": [
     {
+      "query": "reading timer 20 minutes",
+      "page": "/questions/set-a-20-min-timer-for-reading/",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "20 minute reading timer with music",
+      "page": "/questions/set-a-20-min-timer-for-reading/",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "20 minute reading timer",
+      "page": "/questions/set-a-20-min-timer-for-reading/",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.80 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "ai story book generator for kids",
+      "page": "/questions/ai-story-generator-for-kids-free/",
+      "url": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "ai kids story video generator",
+      "page": "/questions/ai-story-generator-for-kids-free/",
+      "url": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "set timer 7 minutes for reading",
+      "page": "/questions/set-a-20-min-timer-for-reading/",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.80 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "set a timer 30 minutes for reading",
+      "page": "/questions/set-a-20-min-timer-for-reading/",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "time 20 minutes timer",
+      "page": "/questions/set-a-20-min-timer-for-reading/",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "reading timer 15 minutes",
+      "page": "/questions/reading-15-minute-timer/",
+      "url": "https://guides.time-2-read.com/questions/reading-15-minute-timer/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
       "query": "how long should you read a book a day",
       "page": "/questions/how-long-should-a-child-read-a-day/",
       "url": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",

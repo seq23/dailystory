@@ -2,13 +2,13 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W47",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-17T11:43:40.261Z",
+  "generated_at": "2026-11-18T11:44:38.739Z",
   "state": "slow",
-  "published": 2,
+  "published": 5,
   "indexed": "not read: no page old enough to inspect yet (14 days)",
   "pace": 3,
   "ai_visitors": 0,
-  "ai_bot_hits": 76,
+  "ai_bot_hits": 54,
   "conversions": "not read: no conversion source configured for this site (form fills / checkouts)",
   "wins": 0,
   "undone": 0,
@@ -26,19 +26,74 @@
       "strengthen": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
       "matched_by": "high token overlap (0.60 >= 0.6)",
       "at": "2026-11-17"
+    },
+    {
+      "query": "reading timer 15 minutes",
+      "strengthen": "https://guides.time-2-read.com/questions/reading-15-minute-timer/",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "time 20 minutes timer",
+      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "set a timer 30 minutes for reading",
+      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "set timer 7 minutes for reading",
+      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "matched_by": "high token overlap (0.80 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "ai kids story video generator",
+      "strengthen": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "ai story book generator for kids",
+      "strengthen": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "20 minute reading timer",
+      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "matched_by": "high token overlap (0.80 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "20 minute reading timer with music",
+      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
+    },
+    {
+      "query": "reading timer 20 minutes",
+      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-18"
     }
   ],
   "cap": {
     "max_live_pages": 22,
-    "live": 7,
-    "room": 15,
+    "live": 10,
+    "room": 12,
     "why": "up from 20 to 22: Google impressions 505 in the last 28 days beat 19 in the 28 before"
   },
   "notes": [
-    "NAMED NOTE [FREE_MODEL_RATE_LIMITED] the free model route is rate-limited or exhausted (every free lane is out — gemini: not read: GEMINI_API_KEY is not passed; openrouter: endpoint answered HTTP 200 with no JSON (application/json \"\n         \n\n         \n\n         \n\n      \"); closed for the run; workers: Workers AI refused the token (HTTP 401) (openrouter:nemotron-3-ultra-550b-a55b:free:non-JSON 200 application/json \"\n         \n\n         \n\n         \n\n      \")); this run dropped itself to slow for today",
-    "BUILD distinct gate: 1 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
-    "BUILD gate notes (not blocking): 1 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
-    "CHECK runs weekly in mode=slow; last ran 2026-11-16"
+    "NAMED NOTE [FREE_MODEL_RATE_LIMITED] the free model route is rate-limited or exhausted (every free lane is out — gemini: not read: GEMINI_API_KEY is not passed (openrouter:nemotron-3-ultra-550b-a55b:free:cut short by the call budget, all::call budget 240s used)); this run dropped itself to slow for today",
+    "BUILD distinct gate: 9 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
+    "BUILD gate notes (not blocking): 3 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
+    "CHECK runs weekly in mode=slow; last ran 2026-11-16",
+    "IndexNow: 4 new page(s) not live yet; submitted when they answer 200"
   ],
   "lanes": {
     "ratio": {
@@ -46,13 +101,13 @@
       "striking": 1
     },
     "can_be_one": {
-      "pages": 5,
+      "pages": 7,
       "measured": 0,
       "top3": 0,
       "hit_rate": "not read: no page in this lane has reached its 2-week check yet"
     },
     "striking": {
-      "pages": 3,
+      "pages": 4,
       "measured": 0,
       "top3": 0,
       "hit_rate": "not read: no page in this lane has reached its 2-week check yet"
@@ -66,5 +121,5 @@
     "weight_changes": [],
     "competition": "not read: no BRAVE_SEARCH_API_KEY"
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/44076567884"
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/44297394951"
 }

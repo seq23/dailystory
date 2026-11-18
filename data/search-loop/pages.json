@@ -392,6 +392,160 @@
         "b5 FAQ answer is 36 words (aim 40-60): \"Can we split the ten minutes into two five-minute \"",
         "b5 FAQ answer is 34 words (aim 40-60): \"Does listening to an audiobook count as the ten mi\""
       ]
+    },
+    {
+      "slug": "set-a-20-min-timer-for-reading",
+      "query": "set a 20 min timer for reading",
+      "lane": "can_be_one",
+      "score": 40,
+      "scores": {
+        "striking": 20,
+        "can_be_one": 40
+      },
+      "reasons": [
+        "no site page answers this 5-word question, and the site holds its parts at position 4.7",
+        "people search it (autocomplete or impressions)"
+      ],
+      "signals": {
+        "words": 7,
+        "question": false,
+        "bing_suggest": true,
+        "unanswered": {
+          "words": 5,
+          "covered": 0.2,
+          "parts_best_position": 4.7,
+          "parts_rows": 6
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/set-a-20-min-timer-for-reading/index.html",
+      "route": "/questions/set-a-20-min-timer-for-reading/",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "published_at": "2026-11-18",
+      "status": "live",
+      "hash": "2487a4dbd54254e7556734e7eedb52b4f2d9c48406047b4a998b6e2c8c6ac0b2",
+      "model": "free-route",
+      "facts": [
+        "https://www.aap.org/en/patient-care/literacy-promotion/",
+        "https://www.commonsense.org/education/articles/media-use-by-tweens-and-teens"
+      ],
+      "linked_from": [],
+      "checks": {},
+      "gate_notes": [
+        "b5 FAQ answer is 35 words (aim 40-60): \"Can I pause the timer for interruptions?\"",
+        "b5 FAQ answer is 31 words (aim 40-60): \"Should the timer be visible to the child?\"",
+        "b5 FAQ answer is 34 words (aim 40-60): \"Is 20 minutes the right length for every age?\"",
+        "b5 FAQ answer is 31 words (aim 40-60): \"What if we miss a day?\""
+      ],
+      "extra_queries": [
+        "time 20 minutes timer",
+        "set a timer 30 minutes for reading",
+        "set timer 7 minutes for reading",
+        "20 minute reading timer",
+        "20 minute reading timer with music",
+        "reading timer 20 minutes"
+      ]
+    },
+    {
+      "slug": "reading-15-minute-timer",
+      "query": "reading 15 minute timer",
+      "lane": "can_be_one",
+      "score": 40,
+      "scores": {
+        "striking": 20,
+        "can_be_one": 40
+      },
+      "reasons": [
+        "no site page answers this 4-word question, and the site holds its parts at position 4.7",
+        "people search it (autocomplete or impressions)"
+      ],
+      "signals": {
+        "words": 4,
+        "question": false,
+        "bing_suggest": true,
+        "unanswered": {
+          "words": 4,
+          "covered": 0.25,
+          "parts_best_position": 4.7,
+          "parts_rows": 5
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/reading-15-minute-timer/index.html",
+      "route": "/questions/reading-15-minute-timer/",
+      "url": "https://guides.time-2-read.com/questions/reading-15-minute-timer/",
+      "published_at": "2026-11-18",
+      "status": "live",
+      "hash": "c5e3047f6dff49a834530660b8ae69a94b20f88b8c11a946190d7f97ae6dc728",
+      "model": "free-route",
+      "facts": [
+        "https://en.wikipedia.org/wiki/Habit_formation",
+        "https://en.wikipedia.org/wiki/Pomodoro_Technique"
+      ],
+      "linked_from": [],
+      "checks": {},
+      "gate_notes": [
+        "b5 FAQ answer is 31 words (aim 40-60): \"Can I use the timer for audiobooks?\"",
+        "b5 FAQ answer is 32 words (aim 40-60): \"Should I require a summary after every session?\"",
+        "b5 FAQ answer is 30 words (aim 40-60): \"What if we miss a day?\"",
+        "b5 FAQ answer is 34 words (aim 40-60): \"Does the timer work for older students too?\""
+      ],
+      "extra_queries": [
+        "reading timer 15 minutes"
+      ]
+    },
+    {
+      "slug": "ai-story-generator-for-kids-free",
+      "query": "ai story generator for kids free",
+      "lane": "striking",
+      "score": 40,
+      "scores": {
+        "striking": 40,
+        "can_be_one": 40
+      },
+      "reasons": [
+        "autocomplete demand (google/bing)",
+        "can-be-#1 score 40 too (taken by the striking lane's turn)"
+      ],
+      "signals": {
+        "words": 6,
+        "question": false,
+        "google_suggest": true,
+        "bing_suggest": true,
+        "unanswered": {
+          "words": 5,
+          "covered": 0,
+          "parts_best_position": 7.3,
+          "parts_rows": 1
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/ai-story-generator-for-kids-free/index.html",
+      "route": "/questions/ai-story-generator-for-kids-free/",
+      "url": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
+      "published_at": "2026-11-18",
+      "status": "removed",
+      "hash": "2cfbb688547d477f8eeb459c85cf087e50d4b86a30c2391f2b5d5eac9417f350",
+      "model": "free-route",
+      "facts": [
+        "https://en.wikipedia.org/wiki/Large_language_model",
+        "https://www.aap.org/en/patient-care/literacy-promotion/"
+      ],
+      "linked_from": [],
+      "checks": {},
+      "gate_notes": [
+        "b4 direct answer under the H1 is 36 words (aim 40-60)",
+        "b5 FAQ answer is 35 words (aim 40-60): \"Do I need to create an account to use a free AI st\"",
+        "b5 FAQ answer is 34 words (aim 40-60): \"Can I choose a specific reading level for the stor\"",
+        "b5 FAQ answer is 36 words (aim 40-60): \"Are the stories unique each time I generate?\""
+      ],
+      "extra_queries": [
+        "ai kids story video generator",
+        "ai story book generator for kids"
+      ],
+      "removed": {
+        "reason": "claims gate: medical \"Treat\""
+      }
     }
   ],
   "dropped": [
@@ -1173,6 +1327,156 @@
         "b5 FAQ answer is 28 words (aim 40-60): \"Are leveled books the same as phonics decodable bo\"",
         "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.corestandards.org/ELA-Literacy/RF/K/ (HTTP 404); https://www.ala.org/tools/atoz/early-readers (HTTP 404)"
       ]
+    },
+    {
+      "query": "kids level 1 reading books free",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 25 words (aim 40-60): \"Are free Level 1 books lower quality than ones I b\"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"Can I print free ebooks for my child to hold?\"",
+        "b5 FAQ answer is 28 words (aim 40-60): \"Do I need a separate app for each ebook source?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"What if my child memorizes the free books quickly?\""
+      ]
+    },
+    {
+      "query": "easy stories to read for 5 year olds",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 24 words (aim 40-60): \"Should my 5 year old read aloud or silently?\"",
+        "b5 FAQ answer is 28 words (aim 40-60): \"How many easy books should we have at home?\"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"Can comic books or graphic novels count as easy st\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.readingrockets.org/topics/choosing-and-using-kids-books/articles/choosing-books-children (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.edweek.org/teaching-learning/what-are-decodable-books-and-why-are-they-important/2023/03 (HTTP 404); https://ies.ed.gov/ncee/wwc/Docs/PracticeGuide/wwc_found_reading_040717.pdf (HTTP 404)"
+      ]
+    },
+    {
+      "query": "short stories to read to 10 year olds",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 27 words (aim 40-60): \"Are graphic novels considered short stories?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.gutenberg.org/ (HTTP 503); https://www.ala.org/awardsgrants/newbery-medal (HTTP 404)"
+      ]
+    },
+    {
+      "query": "20 minute reading timer for kids",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 28 words (aim 40-60): \"What if my child finishes a book before the timer \"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Can I split the twenty minutes into two chunks?\"",
+        "b5 FAQ answer is 23 words (aim 40-60): \"Should I read aloud during the timer or let them r\"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"What kind of timer is best for a distracted child?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.nea.org/reading-facts (HTTP 404); https://www.ed.gov/reading (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "20 minute silent reading timer",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 28 words (aim 40-60): \"What if my child finishes a book before the timer \"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Does the timer replace reading aloud together?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.nationsreportcard.gov/reading/national/achievement/ (HTTP 404); https://www.readingrockets.org/topics/reading-aloud/articles/reading-aloud-builds-knowledge (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www2.ed.gov/parents/read/resources/readingtips/part_pg4.html (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "how to improve 2nd grade reading",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 21 words (aim 40-60): \"How many minutes should a second grader read each \"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"My child guesses words instead of sounding them ou\"",
+        "b5 FAQ answer is 19 words (aim 40-60): \"Are graphic novels real reading?\"",
+        "b5 FAQ answer is 18 words (aim 40-60): \"What if my child only wants to reread the same boo\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.understood.org/en/articles/developmental-milestones-reading-skills-by-age (HTTP 404); https://www.readingrockets.org/article/reading-aloud-builds-knowledge (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "ai story generator for kids",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 21 words (aim 40-60): \"Are AI story generators free to use?\"",
+        "b5 FAQ answer is 19 words (aim 40-60): \"Can the stories be printed for classroom use?\"",
+        "b5 FAQ answer is 13 words (aim 40-60): \"Do these tools work offline?\"",
+        "b5 FAQ answer is 13 words (aim 40-60): \"What age range do AI story generators support?\""
+      ]
+    },
+    {
+      "query": "reading time 2 minutes",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 23 words (aim 40-60): \"Does two minutes really make a difference?\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"What if my child wants to stop before the timer?\"",
+        "b5 FAQ answer is 20 words (aim 40-60): \"Should I correct mistakes during the two minutes?\"",
+        "b5 FAQ answer is 23 words (aim 40-60): \"Can audiobooks count for the two minutes?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://publications.aap.org/pediatrics/article/134/2/404/32962/Literacy-Promotion-An-Essential-Component-of (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "should my kid have a bedtime story",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 25 words (aim 40-60)",
+        "b5 FAQ answer is 26 words (aim 40-60): \"Should I stop reading aloud once my child reads fl\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"Can audiobooks replace a parent reading aloud?\"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"What if my child wants the same book every night?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.nea.org/advocating-for-change/new-from-nea/reading-aloud-children-builds-literacy-skills (HTTP 404); https://www.sleepfoundation.org/children/bedtime-routine-for-kids (HTTP 404)"
+      ]
+    },
+    {
+      "query": "stories to read to kids at bedtime",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 27 words (aim 40-60)",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Can audiobooks replace read-aloud time?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"My 12-year-old says they are too old. What now?\""
+      ]
+    },
+    {
+      "query": "silent reading timer 20 minutes",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.nationsreportcard.gov/reading/national/achievement/ (HTTP 404); https://publications.aap.org/pediatrics/article/134/2/404/32629/Literacy-Promotion-An-Essential-Component-of (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "reading time for kids",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 28 words (aim 40-60)",
+        "b5 FAQ answer is 14 words (aim 40-60): \"Does listening to an audiobook count as reading ti\"",
+        "b5 FAQ answer is 17 words (aim 40-60): \"What if my child only wants graphic novels?\"",
+        "b5 FAQ answer is 13 words (aim 40-60): \"How do I handle days when we simply run out of tim\"",
+        "b5 FAQ answer is 17 words (aim 40-60): \"Should I require a reading log or timer?\""
+      ]
+    },
+    {
+      "query": "help second grader read better",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://ies.ed.gov/ncee/wwc/Docs/InterventionReports/wwc_repeatedreading_071514.pdf (HTTP 404); https://www.ala.org/aasl/sites/ala.org.aasl/files/content/aaslissues/positionstatements/AASL_Position%20Statement_Independent%20Reading_2020.pdf (HTTP 404); https://www.readingrockets.org/article/reading-aloud-builds-knowledge (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "help my 2nd grader read better",
+      "at": "2026-11-18",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 27 words (aim 40-60): \"How many minutes should a second grader read each \"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"My child only wants graphic novels. Is that okay?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"Should I correct every mistake when my child reads\"",
+        "b5 FAQ answer is 28 words (aim 40-60): \"What if my second grader still guesses at words in\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.nea.org/advocating-for-change/new-from-nea/reading-fluency-norms (HTTP 404); https://www.readingrockets.org/article/choosing-books-children (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
     }
   ],
   "redirected": [
@@ -1214,6 +1518,96 @@
       "kind": "page",
       "matched_by": "high token overlap (0.60 >= 0.6)",
       "matched_text": "How Long Should a Child Read Each Day? — Time-2-Read",
+      "stage": "draft"
+    },
+    {
+      "query": "reading timer 15 minutes",
+      "at": "2026-11-18",
+      "url": "https://guides.time-2-read.com/questions/reading-15-minute-timer/",
+      "route": "/questions/reading-15-minute-timer/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "matched_text": "reading 15 minute timer",
+      "stage": "search"
+    },
+    {
+      "query": "time 20 minutes timer",
+      "at": "2026-11-18",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "route": "/questions/set-a-20-min-timer-for-reading/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "matched_text": "How Do I Set a 20 Minute Timer for Reading?",
+      "stage": "draft"
+    },
+    {
+      "query": "set a timer 30 minutes for reading",
+      "at": "2026-11-18",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "route": "/questions/set-a-20-min-timer-for-reading/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "matched_text": "How Do I Set a 20 Minute Timer for Reading?",
+      "stage": "draft"
+    },
+    {
+      "query": "set timer 7 minutes for reading",
+      "at": "2026-11-18",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "route": "/questions/set-a-20-min-timer-for-reading/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.80 >= 0.6)",
+      "matched_text": "How Do I Set a 20 Minute Timer for Reading?",
+      "stage": "draft"
+    },
+    {
+      "query": "ai kids story video generator",
+      "at": "2026-11-18",
+      "url": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
+      "route": "/questions/ai-story-generator-for-kids-free/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "matched_text": "ai story generator for kids free",
+      "stage": "search"
+    },
+    {
+      "query": "ai story book generator for kids",
+      "at": "2026-11-18",
+      "url": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
+      "route": "/questions/ai-story-generator-for-kids-free/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "matched_text": "ai story generator for kids free",
+      "stage": "search"
+    },
+    {
+      "query": "20 minute reading timer",
+      "at": "2026-11-18",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "route": "/questions/set-a-20-min-timer-for-reading/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.80 >= 0.6)",
+      "matched_text": "How Do I Set a 20 Minute Timer for Reading?",
+      "stage": "search"
+    },
+    {
+      "query": "20 minute reading timer with music",
+      "at": "2026-11-18",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "route": "/questions/set-a-20-min-timer-for-reading/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "matched_text": "How Do I Set a 20 Minute Timer for Reading?",
+      "stage": "search"
+    },
+    {
+      "query": "reading timer 20 minutes",
+      "at": "2026-11-18",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "route": "/questions/set-a-20-min-timer-for-reading/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "matched_text": "How Do I Set a 20 Minute Timer for Reading?",
       "stage": "draft"
     }
   ]
