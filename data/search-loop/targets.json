@@ -2817,6 +2817,24 @@
   ],
   "strengthen": [
     {
+      "query": "how long should you read a day",
+      "page": "/questions/how-long-should-a-child-read-a-day/",
+      "url": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
+      "score": 25,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-19"
+    },
+    {
+      "query": "how many minutes should you read a day",
+      "page": "/questions/how-many-minutes-should-a-4th-grader-read-per-day/",
+      "url": "https://guides.time-2-read.com/questions/how-many-minutes-should-a-4th-grader-read-per-day/",
+      "score": 30,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "at": "2026-11-19"
+    },
+    {
       "query": "reading timer 20 minutes",
       "page": "/questions/set-a-20-min-timer-for-reading/",
       "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",

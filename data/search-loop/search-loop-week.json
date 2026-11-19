@@ -2,11 +2,11 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W47",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-18T11:44:38.739Z",
-  "state": "slow",
-  "published": 5,
+  "generated_at": "2026-11-19T19:37:26.510Z",
+  "state": "running",
+  "published": 7,
   "indexed": "not read: no page old enough to inspect yet (14 days)",
-  "pace": 3,
+  "pace": 10,
   "ai_visitors": 0,
   "ai_bot_hits": 54,
   "conversions": "not read: no conversion source configured for this site (form fills / checkouts)",
@@ -80,20 +80,29 @@
       "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
       "matched_by": "high token overlap (0.67 >= 0.6)",
       "at": "2026-11-18"
+    },
+    {
+      "query": "how many minutes should you read a day",
+      "strengthen": "https://guides.time-2-read.com/questions/how-many-minutes-should-a-4th-grader-read-per-day/",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "at": "2026-11-19"
+    },
+    {
+      "query": "how long should you read a day",
+      "strengthen": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-19"
     }
   ],
   "cap": {
     "max_live_pages": 22,
-    "live": 10,
-    "room": 12,
+    "live": 11,
+    "room": 11,
     "why": "up from 20 to 22: Google impressions 505 in the last 28 days beat 19 in the 28 before"
   },
   "notes": [
-    "NAMED NOTE [FREE_MODEL_RATE_LIMITED] the free model route is rate-limited or exhausted (every free lane is out — gemini: not read: GEMINI_API_KEY is not passed (openrouter:nemotron-3-ultra-550b-a55b:free:cut short by the call budget, all::call budget 240s used)); this run dropped itself to slow for today",
-    "BUILD distinct gate: 9 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
-    "BUILD gate notes (not blocking): 3 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
-    "CHECK runs weekly in mode=slow; last ran 2026-11-16",
-    "IndexNow: 4 new page(s) not live yet; submitted when they answer 200"
+    "BUILD distinct gate: 2 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
+    "BUILD gate notes (not blocking): 2 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json"
   ],
   "lanes": {
     "ratio": {
@@ -101,7 +110,7 @@
       "striking": 1
     },
     "can_be_one": {
-      "pages": 7,
+      "pages": 9,
       "measured": 0,
       "top3": 0,
       "hit_rate": "not read: no page in this lane has reached its 2-week check yet"
@@ -121,5 +130,5 @@
     "weight_changes": [],
     "competition": "not read: no BRAVE_SEARCH_API_KEY"
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/44297394951"
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/44600210710"
 }

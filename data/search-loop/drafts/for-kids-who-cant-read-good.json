@@ -1,0 +1,106 @@
+{
+  "h1": "What Can I Do When My Child Struggles to Read?",
+  "title_lead": "Help for Kids Who Struggle to Read",
+  "meta_description": "Practical, encouraging steps to support a child who finds reading hard. Build confidence, find the right books, and make reading time work for your family.",
+  "direct_answer": "Reading difficulty is when a child cannot yet match letters to sounds, blend words smoothly, or understand what they read at an expected level. It is a skill gap, not a character flaw, and it improves with the right practice.",
+  "sections": [
+    {
+      "heading": "Why does reading feel so hard for my child?",
+      "paragraphs": [
+        "Reading asks the brain to do several things at once. A child must recognize letters, connect them to sounds, blend those sounds into words, and hold the meaning in memory. If one of those steps is shaky, the whole process stalls. Some children need more explicit practice with sounds. Others need more time to build vocabulary or background knowledge. Stress, fatigue, or books that are too difficult can also make reading feel impossible. Watching where the breakdown happens helps you choose the next right step."
+      ],
+      "bullets": [
+        "Notice if they guess words from pictures instead of sounding them out.",
+        "Check if they skip small words like 'the' or 'and'.",
+        "See if they read slowly but understand when you read aloud.",
+        "Watch for frustration that shuts down the session quickly."
+      ]
+    },
+    {
+      "heading": "How do I find books that actually work right now?",
+      "paragraphs": [
+        "The right book lets a child read most words correctly on the first try. Aim for texts where they know ninety percent of the words. Decodable books match the sound patterns they have learned. High-interest low-level books keep older kids engaged without babyish topics. Graphic novels and audiobooks count as real reading. They build comprehension and vocabulary while decoding skills catch up. Visit the library together and let your child choose five books. Choice builds ownership."
+      ],
+      "bullets": [
+        "Use the five-finger rule: zero to one unknown words per page is easy.",
+        "Two to three unknown words is a good instructional level.",
+        "Four or more unknown words means the book is too hard for now.",
+        "Reread favorite books to build fluency and confidence."
+      ]
+    },
+    {
+      "heading": "What daily habits move the needle without battles?",
+      "paragraphs": [
+        "Short, consistent practice beats long, occasional sessions. Ten to fifteen minutes a day builds momentum. Pick a calm time, not right before bed if everyone is tired. Sit side by side so you both see the text. Take turns reading sentences or pages. If a word stops them, give the sound, blend it together, and move on. Keep the tone light. Celebrate the effort, not just the accuracy. A simple chart with stickers for days completed can make progress visible."
+      ],
+      "bullets": [
+        "Set a timer so the end is predictable.",
+        "Let them hold the book and turn pages.",
+        "Use a finger or bookmark under each line.",
+        "End with you reading a fun chapter aloud."
+      ]
+    },
+    {
+      "heading": "When should I ask for extra help?",
+      "paragraphs": [
+        "Trust your gut. If daily practice does not bring noticeable ease after a few months, talk to the teacher. Ask for specific data: phonics screening results, fluency rates, comprehension checks. Schools can provide tiered interventions. Private tutors or reading specialists offer another layer. Look for someone who uses structured literacy approaches. Early action prevents the gap from widening. You are not failing by asking for help; you are advocating."
+      ],
+      "bullets": []
+    },
+    {
+      "heading": "How do I protect their confidence while skills grow?",
+      "paragraphs": [
+        "Struggling readers often feel stupid. Separate reading ability from intelligence. Talk about the brain growing like a muscle. Share stories of people you know who learned to read later. Praise specific actions: \"You sounded out 'fantastic' all by yourself.\" Avoid comparisons with siblings or classmates. Keep a list of books they have finished. Watching the list grow proves progress. Your steady belief becomes their inner voice."
+      ],
+      "bullets": []
+    }
+  ],
+  "faq": [
+    {
+      "q": "Can audiobooks count as real reading practice?",
+      "a": "Yes. Audiobooks build vocabulary, comprehension, and story sense while decoding skills develop. They expose kids to complex language they cannot yet read alone. Listening along with the text connects print to sound."
+    },
+    {
+      "q": "Should I make my child reread the same book?",
+      "a": "Rereading builds fluency, speed, and confidence. Each pass frees mental energy for meaning instead of decoding. Three to four reads of a short text is a sweet spot for growth."
+    },
+    {
+      "q": "What if my child guesses words instead of sounding them out?",
+      "a": "Prompt them to look at all the letters. Cover the ending and blend the first sounds. Say the word together if needed, then have them reread the sentence. Guessing fades when decoding works reliably."
+    },
+    {
+      "q": "How do I help an older child who feels embarrassed?",
+      "a": "Choose high-interest, low-reading-level books that look like peer novels. Graphic novels and verse novels are great bridges. Let them read privately or with headphones. Frame practice as skill-building, not remediation."
+    }
+  ],
+  "facts": [
+    {
+      "claim": "The National Reading Panel identified phonemic awareness, phonics, fluency, vocabulary, and comprehension as the five essential components of reading instruction.",
+      "source_url": "https://www.nichd.nih.gov/research/supported/nrp",
+      "source_name": "National Institute of Child Health and Human Development",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "Decodable texts contain a high proportion of words that follow the letter-sound relationships a student has been taught.",
+      "source_url": "https://en.wikipedia.org/wiki/Decodable_text",
+      "source_name": "Wikipedia",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "Reading aloud to children of all ages builds vocabulary and background knowledge that supports independent reading comprehension.",
+      "source_url": "https://www.readingrockets.org/topics/reading-aloud/articles/reading-aloud-builds-knowledge",
+      "source_name": "Reading Rockets",
+      "verified": false,
+      "checked_status": 403
+    },
+    {
+      "claim": "Structured literacy instruction is explicit, systematic, and cumulative, teaching phonology, sound-symbol association, syllables, morphology, syntax, and semantics.",
+      "source_url": "https://dyslexiaida.org/what-is-structured-literacy/",
+      "source_name": "International Dyslexia Association",
+      "verified": false,
+      "checked_status": 403
+    }
+  ]
+}

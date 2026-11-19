@@ -1,0 +1,99 @@
+{
+  "h1": "Can a Reading App Help a Struggling Reader?",
+  "title_lead": "Can a Reading App Help a Struggling Reader?",
+  "meta_description": "A reading app can support a struggling reader with practice, feedback, and level-appropriate text. It works best alongside books and adult guidance.",
+  "direct_answer": "A reading app is a digital tool that gives a child structured practice with decoding, fluency, and comprehension. It adapts to the child's level and offers immediate feedback while they read.",
+  "sections": [
+    {
+      "heading": "What does a reading app actually do?",
+      "paragraphs": [
+        "A reading app presents text on a screen and listens or watches as a child reads. Many apps highlight words, read aloud for modeling, and pause when a child hesitates. Some use speech recognition to catch errors and prompt a retry. Others adjust the difficulty of the next passage based on how the last one went. The goal is to give the child more successful reading minutes without waiting for an adult to sit beside them every time.",
+        "Apps cannot replace a teacher or a parent who talks about the story. They do not build background knowledge the way a conversation does. They work as a supplement that adds volume and consistency to a child's reading diet."
+      ],
+      "bullets": [
+        "Highlights words as they are spoken",
+        "Offers instant correction on misread words",
+        "Adjusts text difficulty in real time",
+        "Tracks minutes and accuracy for the adult"
+      ]
+    },
+    {
+      "heading": "When does an app help the most?",
+      "paragraphs": [
+        "An app shines when a child needs many repetitions to master a phonics pattern or build automaticity. It helps during the gap between school instruction and bedtime reading. It helps when a parent is cooking dinner but wants the child to practice aloud. It helps a reluctant reader who feels less pressure reading to a tablet than to a person. The child gets immediate, neutral feedback that does not carry frustration or fatigue.",
+        "The benefit fades if the child taps through without attending. An adult still needs to check the data, listen occasionally, and talk about what was read. That conversation turns raw practice into comprehension growth."
+      ],
+      "bullets": []
+    },
+    {
+      "heading": "What features matter for a struggling reader?",
+      "paragraphs": [
+        "Look for an app that uses a clear scope and sequence for phonics. The text should be decodable at the child's current stage, not full of words they have not been taught. Speech recognition must be accurate enough to avoid false corrections. The interface should be calm, without pop-ups or rewards that pull attention away from the words. Data exported to the adult should show accuracy, rate, and specific error patterns, not just a star count.",
+        "A good app also lets the adult assign specific passages or skills. That way the practice aligns with what the child is learning in class or at home."
+      ],
+      "bullets": [
+        "Decodable text aligned to a phonics scope",
+        "Accurate speech recognition",
+        "Low-distraction interface",
+        "Detailed error reports for the adult"
+      ]
+    },
+    {
+      "heading": "How do you fit an app into a real routine?",
+      "paragraphs": [
+        "Set a consistent window of ten to fifteen minutes, four or five days a week. Treat it like piano scales: short, focused, and expected. Sit nearby for the first few sessions to teach the child how to use the tools. Then step back but stay curious. Ask one question about the passage when the timer ends. Use the app's report to choose a follow-up activity, such as rereading a tricky page together or writing a sentence with a missed word.",
+        "Keep physical books in the mix. The app builds fluency; the book builds stamina and the joy of turning pages. Both belong in the day."
+      ],
+      "bullets": []
+    },
+    {
+      "heading": "What are the limits of an app?",
+      "paragraphs": [
+        "An app cannot diagnose why a child struggles. It cannot teach a new concept the way a human can explain, model, and adjust in the moment. It cannot have a rich discussion that builds vocabulary and critical thinking. If a child has significant gaps, the app may reinforce errors without an adult noticing. Screen fatigue is real; balance digital minutes with print, audio, and conversation.",
+        "Think of the app as a reliable practice partner, not the whole reading program. The adult remains the architect of the child's progress."
+      ],
+      "bullets": []
+    }
+  ],
+  "faq": [
+    {
+      "q": "How much time should a child spend on a reading app each day?",
+      "a": "Ten to fifteen focused minutes, four or five days a week, works well for most children. Consistency matters more than length. Watch for fatigue and stop before the child loses attention."
+    },
+    {
+      "q": "Do reading apps work for older struggling readers?",
+      "a": "Yes, if the app offers age-appropriate content and respects the reader's maturity. Look for apps that let an older student control the pace and choose topics that match their interests."
+    },
+    {
+      "q": "What if my child guesses words instead of sounding them out?",
+      "a": "Choose an app that requires accurate decoding before moving on. Some apps mask pictures until the word is read correctly. Sit beside the child occasionally to model the strategy you want."
+    },
+    {
+      "q": "How do I know the app is actually helping?",
+      "a": "Check the weekly report for rising accuracy and steadier rate on the same level. Listen to the child read a real book aloud. You should hear fewer hesitations and more expression over time."
+    }
+  ],
+  "facts": [
+    {
+      "claim": "The National Reading Panel identified phonemic awareness, phonics, fluency, vocabulary, and comprehension as essential components of reading instruction.",
+      "source_url": "https://www.nichd.nih.gov/research/supported/nrp",
+      "source_name": "National Institute of Child Health and Human Development",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "The Institute of Education Sciences recommends using technology to provide individualized practice and immediate feedback for foundational reading skills.",
+      "source_url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/21",
+      "source_name": "Institute of Education Sciences",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "Common Sense Media evaluates educational apps for learning quality, privacy, and age appropriateness.",
+      "source_url": "https://www.commonsense.org/education/reviews",
+      "source_name": "Common Sense Media",
+      "verified": true,
+      "checked_status": 200
+    }
+  ]
+}
