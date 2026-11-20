@@ -2,33 +2,33 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-19T16:46:15.600Z",
+  "collected_at": "2026-11-20T16:21:41.010Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-20",
-    "end_date": "2026-11-16",
+    "start_date": "2026-10-21",
+    "end_date": "2026-11-17",
     "days": 28
   },
   "totals": {
-    "clicks": 6,
-    "impressions": 528,
-    "ctr": 0.0114,
-    "position": 11.53
+    "clicks": 7,
+    "impressions": 544,
+    "ctr": 0.0129,
+    "position": 11.37
   },
-  "row_count": 47,
-  "query_count": 45,
+  "row_count": 48,
+  "query_count": 46,
   "page_count": 16,
-  "attributed_impressions": 234,
+  "attributed_impressions": 236,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
       "query": "time2read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 33,
+      "impressions": 34,
       "ctr": 0,
-      "position": 5.76
+      "position": 5.82
     },
     {
       "query": "time 2 read",
@@ -36,7 +36,7 @@
       "clicks": 0,
       "impressions": 29,
       "ctr": 0,
-      "position": 5.52
+      "position": 5.69
     },
     {
       "query": "time to read",
@@ -44,15 +44,15 @@
       "clicks": 0,
       "impressions": 25,
       "ctr": 0,
-      "position": 7.92
+      "position": 8.04
     },
     {
       "query": "time read",
       "page": "https://time-2-read.com/",
       "clicks": 1,
-      "impressions": 19,
-      "ctr": 0.0526,
-      "position": 8.47
+      "impressions": 20,
+      "ctr": 0.05,
+      "position": 8.5
     },
     {
       "query": "20 minute reading timer",
@@ -68,7 +68,7 @@
       "clicks": 0,
       "impressions": 12,
       "ctr": 0,
-      "position": 8.83
+      "position": 8.25
     },
     {
       "query": "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta",
@@ -82,9 +82,9 @@
       "query": "personalized books for 2 year olds",
       "page": "https://time-2-read.com/books-for-toddlers",
       "clicks": 0,
-      "impressions": 9,
+      "impressions": 8,
       "ctr": 0,
-      "position": 55.89
+      "position": 55.63
     },
     {
       "query": "reading time 2",
@@ -325,6 +325,14 @@
       "impressions": 1,
       "ctr": 0,
       "position": 43
+    },
+    {
+      "query": "read aloud books for toddlers",
+      "page": "https://time-2-read.com/toddler-books",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 41
     },
     {
       "query": "sight words 2 year olds",
