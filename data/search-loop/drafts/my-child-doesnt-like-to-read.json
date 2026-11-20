@@ -1,0 +1,121 @@
+{
+  "h1": "Why Doesn't My Child Like to Read?",
+  "title_lead": "Why Doesn't My Child Like to Read?",
+  "meta_description": "Common reasons kids resist reading and simple ways to help them find books they enjoy. Build a reading habit without pressure.",
+  "direct_answer": "Reading reluctance is a common response when books feel too hard, too boring, or too much like schoolwork. It means a child avoids reading for pleasure even when they can decode words. This resistance often comes from mismatched books, pressure, or lack of choice.",
+  "sections": [
+    {
+      "heading": "What makes reading feel like a chore?",
+      "paragraphs": [
+        "Many children associate reading with assignments, logs, and tests. When every book comes with a worksheet, the joy disappears. Kids need time to read just for fun. If reading always equals work, they will avoid it. Step back and let them read without a follow-up task.",
+        "Pressure to perform can also backfire. Comments about speed, level, or expression turn a story into a performance. Children shut down when they feel judged. Keep the focus on the story, not the skill. A relaxed atmosphere invites curiosity."
+      ],
+      "bullets": [
+        "Remove required logs for pleasure reading",
+        "Stop correcting every misread word",
+        "Let them abandon books they dislike",
+        "Read aloud together without quizzing"
+      ]
+    },
+    {
+      "heading": "Could the books be the wrong fit?",
+      "paragraphs": [
+        "A book that is too hard frustrates a child. A book that is too easy bores them. Both make reading feel pointless. Watch for signs like skipping pages, guessing words, or complaining about length. These signals mean the level needs adjusting. The right book feels manageable and interesting.",
+        "Interest matters as much as level. A child who loves dinosaurs will push through a harder text about fossils. A child who loves jokes will read a silly poem collection. Follow their passions first. Reading level grows when motivation stays high."
+      ],
+      "bullets": [
+        "Use the five-finger rule to check difficulty",
+        "Visit the library without a required list",
+        "Try graphic novels, magazines, or audiobooks",
+        "Let them reread favorites as often as they want"
+      ]
+    },
+    {
+      "heading": "How can I make reading time work at home?",
+      "paragraphs": [
+        "A consistent, short window beats a long, sporadic session. Ten minutes after dinner or before bed builds a habit. Protect this time from siblings, screens, and chores. A predictable slot signals that reading matters in your family rhythm. Consistency creates expectation.",
+        "Environment shapes willingness. A cozy corner, a special lamp, or a basket of chosen books invites browsing. Keep books visible in the kitchen, car, and bathroom. Access removes friction. When a book is within reach, a child might pick it up."
+      ],
+      "bullets": [
+        "Set a timer for 10 to 15 minutes daily",
+        "Create a dedicated reading spot",
+        "Keep books in every room",
+        "Model reading your own books nearby"
+      ]
+    },
+    {
+      "heading": "When does choice make the difference?",
+      "paragraphs": [
+        "Control is a powerful motivator. Children who choose their own books read more and enjoy it more. Let them pick at the library, the bookstore, or from a curated shelf at home. Even 'junk' reading builds fluency and confidence. Ownership changes the dynamic from obligation to opportunity.",
+        "Audiobooks count as reading. Listening builds vocabulary, comprehension, and narrative sense. It helps kids access stories above their decoding level. Pair audio with a physical copy for eye-tracking practice. This bridge keeps them engaged with complex plots while skills catch up."
+      ],
+      "bullets": [
+        "Give a monthly book budget or library card",
+        "Subscribe to a kid-focused magazine",
+        "Try audiobooks during car rides",
+        "Swap books with friends or cousins"
+      ]
+    },
+    {
+      "heading": "What if my child still resists every day?",
+      "paragraphs": [
+        "Persistent resistance may signal an unseen hurdle. Vision issues, processing differences, or anxiety can hide behind 'I don't like it.' Watch for headaches, eye rubbing, or meltdowns at reading time. These patterns deserve a conversation with a teacher or pediatrician. Early screening prevents years of struggle.",
+        "You are not alone. Many families face this phase. Progress often looks like two steps forward, one step back. Celebrate the forward steps. A child who reads one joke, one comic panel, or one fact about sharks is reading. That counts."
+      ],
+      "bullets": [
+        "Note patterns and share with the teacher",
+        "Request a vision screening at school",
+        "Keep a simple log of what they choose",
+        "Focus on connection over correction"
+      ]
+    }
+  ],
+  "faq": [
+    {
+      "q": "Should I reward my child for reading?",
+      "a": "Small, intrinsic rewards work better than prizes. A new bookmark, a trip to the library, or extra read-aloud time ties the reward to the activity. Avoid paying per book or minute. That turns reading into a transaction. Keep the focus on the story experience."
+    },
+    {
+      "q": "What if my child reads well but still refuses?",
+      "a": "Strong decoders often resist because they crave autonomy or deeper content. Offer advanced topics in accessible formats like graphic nonfiction or magazines. Let them read below their tested level for fun. Confidence and choice matter more than level labels."
+    },
+    {
+      "q": "How do I handle required school reading?",
+      "a": "Separate assigned reading from choice reading. Do required books at a set time with support. Protect a different window for books they pick. This boundary prevents school tasks from poisoning their view of all reading. They learn to manage both."
+    },
+    {
+      "q": "When should I seek extra support?",
+      "a": "If daily reading causes tears, avoidance, or physical complaints for several weeks, talk to the teacher. Ask about classroom observations and screening tools. Early information helps you advocate. Support is not failure. It is a path to easier reading."
+    }
+  ],
+  "facts": [
+    {
+      "claim": "Children who select their own reading material read more frequently and show greater motivation.",
+      "source_url": "https://www.readingrockets.org/article/let-children-choose-their-own-books",
+      "source_name": "Reading Rockets",
+      "verified": false,
+      "checked_status": 403
+    },
+    {
+      "claim": "Listening to audiobooks develops vocabulary and comprehension skills similar to print reading.",
+      "source_url": "https://www.apa.org/monitor/2016/09/audiobooks",
+      "source_name": "American Psychological Association",
+      "verified": false,
+      "checked_status": 404
+    },
+    {
+      "claim": "Regular reading aloud to children builds language skills and positive associations with books.",
+      "source_url": "https://www.aap.org/en/patient-care/literacy-promotion/",
+      "source_name": "American Academy of Pediatrics",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "Access to books at home correlates with higher reading achievement across income levels.",
+      "source_url": "https://nces.ed.gov/pubs2011/2011004.pdf",
+      "source_name": "National Center for Education Statistics",
+      "verified": true,
+      "checked_status": 200
+    }
+  ]
+}

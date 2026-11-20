@@ -209,6 +209,23 @@
         "since": "2026-11-18T19:37:25.305Z",
         "until": "2026-11-19T19:37:25.305Z"
       }
+    },
+    "2026-11-20": {
+      "ai_visitors": {
+        "total": 0,
+        "by_engine": {},
+        "by_path": {},
+        "source": "pages-analytics-engine"
+      },
+      "ai_bot_hits": {
+        "total": 0,
+        "by_bot": {}
+      },
+      "pages_logged": 23,
+      "window": {
+        "since": "2026-11-19T19:14:57.949Z",
+        "until": "2026-11-20T19:14:57.949Z"
+      }
     }
   }
 }

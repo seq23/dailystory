@@ -1,0 +1,105 @@
+{
+  "h1": "When Kids Don't Like Reading: What Parents Can Do",
+  "title_lead": "When Kids Don't Like Reading",
+  "meta_description": "Practical ways to help a child who avoids books. Find the right fit, lower the pressure, and build a reading habit that sticks.",
+  "direct_answer": "Reading reluctance is a common response when books feel too hard, too boring, or too much like schoolwork. It signals a mismatch between the child and the material, not a character flaw or a fixed inability.",
+  "sections": [
+    {
+      "heading": "Why does my child avoid books?",
+      "paragraphs": [
+        "Children turn away from reading for reasons that make sense to them. The text might be too dense. The topic might feel irrelevant. The pressure to perform can suck the joy out of a story. Some kids associate reading only with homework or testing. Others have not yet found a genre that matches their world. Fatigue, vision comfort, and competing interests all play a part. Naming the reason helps you respond with empathy instead of frustration."
+      ],
+      "bullets": [
+        "Books feel too difficult or too easy",
+        "Topics do not match current interests",
+        "Reading feels like a chore or test",
+        "No quiet time or comfortable spot",
+        "Screens offer instant feedback"
+      ]
+    },
+    {
+      "heading": "How can I lower the pressure at home?",
+      "paragraphs": [
+        "Make reading low-stakes. Leave books face-up on the coffee table. Keep a basket in the car. Read aloud while they build Legos or draw. Let them quit a book they dislike without a lecture. Model your own reading for pleasure. When reading is part of the background rhythm of the day, it stops being a performance. Consistency matters more than duration. Ten minutes of choice beats thirty minutes of conflict."
+      ],
+      "bullets": [
+        "Read aloud daily, even to older kids",
+        "Allow abandoning books freely",
+        "Keep books visible and accessible",
+        "Separate reading from rewards or logs"
+      ]
+    },
+    {
+      "heading": "What counts as real reading?",
+      "paragraphs": [
+        "Graphic novels build inference and visual literacy. Audiobooks develop vocabulary, comprehension, and narrative sense. Magazines, manuals, recipes, and game guides all require decoding and understanding. Rereading favorites builds fluency and confidence. Dismissing these formats narrows the door. Welcoming them widens the path. The goal is a child who chooses text for information or joy. Format is secondary."
+      ],
+      "bullets": [
+        "Graphic novels and comics",
+        "Audiobooks and read-alouds",
+        "Magazines and nonfiction articles",
+        "Rereading beloved titles"
+      ]
+    },
+    {
+      "heading": "How do I find the right book match?",
+      "paragraphs": [
+        "Start with what they love. A child who watches dinosaur documentaries might devour a field guide. A gamer might choose a choose-your-own-adventure novel. Visit the library without an agenda. Let them browse covers. Use the five-finger rule: open a page, count unknown words. Five or more means save it for later. Librarians are matchmakers. Ask for read-alikes based on the last book they enjoyed."
+      ],
+      "bullets": [
+        "Follow current obsessions and hobbies",
+        "Use the five-finger difficulty check",
+        "Ask a librarian for read-alikes",
+        "Try series books for momentum"
+      ]
+    },
+    {
+      "heading": "When should I seek extra support?",
+      "paragraphs": [
+        "If avoidance pairs with consistent difficulty decoding, slow fluency, or trouble remembering what was read, talk to the teacher. Ask for a quick screening or classroom observation. Early conversation opens doors to targeted practice. Many schools offer reading specialists or intervention blocks. You are not asking for a label. You are asking for information that helps you advocate. Partnership with the school keeps the plan consistent."
+      ],
+      "bullets": []
+    }
+  ],
+  "faq": [
+    {
+      "q": "Do audiobooks count as real reading?",
+      "a": "Yes. Audiobooks build vocabulary, background knowledge, and comprehension structures without the decoding load. They expose children to complex syntax and rich language they might not yet read independently. Listening while following the text can strengthen word recognition. Many educators use them as a core accessibility tool."
+    },
+    {
+      "q": "My child only reads graphic novels. Is that okay?",
+      "a": "Graphic novels require readers to integrate images and text, track dialogue, and infer meaning across panels. They often contain sophisticated vocabulary and narrative arcs. Rereading them builds fluency. Treat them as a legitimate gateway. Offer related prose titles nearby, but do not ban the format."
+    },
+    {
+      "q": "How much reading time is enough each day?",
+      "a": "There is no universal minute count. Consistency beats length. Ten to twenty minutes of self-selected reading most days builds the habit. Protect the time from interruption. Let the child set the timer. If they keep going, great. If they stop, the routine remains intact for tomorrow."
+    },
+    {
+      "q": "Should I reward my child for reading?",
+      "a": "External rewards can undermine intrinsic motivation over time. Instead, make reading its own reward. Create a cozy nook. Celebrate finishing a book with a related activity like cooking a recipe from the story or drawing a character. Keep the focus on the experience, not the tally."
+    }
+  ],
+  "facts": [
+    {
+      "claim": "The National Assessment of Educational Progress reports that students who read for fun almost every day score higher on reading assessments than those who never read for fun.",
+      "source_url": "https://www.nationsreportcard.gov/reading/national/achievement/",
+      "source_name": "National Center for Education Statistics",
+      "verified": false,
+      "checked_status": 404
+    },
+    {
+      "claim": "The American Academy of Pediatrics recommends reading aloud to children from infancy through at least kindergarten to support language development and literacy skills.",
+      "source_url": "https://www.aap.org/en/patient-care/literacy-promotion/",
+      "source_name": "American Academy of Pediatrics",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "Research summarized by the Institute of Education Sciences finds that providing access to a wide variety of reading materials and allowing student choice increases reading motivation and frequency.",
+      "source_url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/19",
+      "source_name": "Institute of Education Sciences",
+      "verified": true,
+      "checked_status": 200
+    }
+  ]
+}

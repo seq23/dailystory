@@ -2,13 +2,13 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W47",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-19T19:37:26.510Z",
+  "generated_at": "2026-11-20T19:14:58.413Z",
   "state": "running",
-  "published": 7,
-  "indexed": "not read: no page old enough to inspect yet (14 days)",
+  "published": 12,
+  "indexed": "not read: URL Inspection: HTTP 403 You do not own this site, or the inspected URL is not part of this property.",
   "pace": 10,
   "ai_visitors": 0,
-  "ai_bot_hits": 54,
+  "ai_bot_hits": 30,
   "conversions": "not read: no conversion source configured for this site (form fills / checkouts)",
   "wins": 0,
   "undone": 0,
@@ -92,17 +92,24 @@
       "strengthen": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
       "matched_by": "high token overlap (0.67 >= 0.6)",
       "at": "2026-11-19"
+    },
+    {
+      "query": "kids bedtime story in english",
+      "strengthen": "https://guides.time-2-read.com/questions/tell-me-a-bedtime-story-for-kids/",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "at": "2026-11-20"
     }
   ],
   "cap": {
     "max_live_pages": 22,
-    "live": 11,
-    "room": 11,
+    "live": 15,
+    "room": 7,
     "why": "up from 20 to 22: Google impressions 505 in the last 28 days beat 19 in the 28 before"
   },
   "notes": [
-    "BUILD distinct gate: 2 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
-    "BUILD gate notes (not blocking): 2 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json"
+    "BUILD distinct gate: 1 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
+    "BUILD gate notes (not blocking): 5 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
+    "not read: index status for the pages 14-42 days old (URL Inspection: HTTP 403 You do not own this site, or the inspected URL is not part of this property.)"
   ],
   "lanes": {
     "ratio": {
@@ -110,16 +117,16 @@
       "striking": 1
     },
     "can_be_one": {
-      "pages": 9,
-      "measured": 0,
+      "pages": 12,
+      "measured": 1,
       "top3": 0,
-      "hit_rate": "not read: no page in this lane has reached its 2-week check yet"
+      "hit_rate": 0
     },
     "striking": {
-      "pages": 4,
-      "measured": 0,
+      "pages": 6,
+      "measured": 2,
       "top3": 0,
-      "hit_rate": "not read: no page in this lane has reached its 2-week check yet"
+      "hit_rate": 0
     },
     "weights": {
       "neighbour": 35,
@@ -130,5 +137,5 @@
     "weight_changes": [],
     "competition": "not read: no BRAVE_SEARCH_API_KEY"
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/44600210710"
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/44800330530"
 }
