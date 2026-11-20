@@ -68,7 +68,7 @@ const collectionPages: LandingPageConfig[] = [
     heroImage: heroDiverse,
     heroImageAlt: "Diverse kindergarteners reading an illustrated story together",
     intro: [
-      "Finding free books for kindergarteners that actually hold their attention can be hard. Time-2-Read creates brand-new, fully illustrated stories tailored to your child's name, interests, and reading level — instantly, and free to start.",
+      "Finding free books for kindergarteners that actually hold their attention can be hard. Time-2-Read creates brand-new, fully illustrated stories made around your child's name, interests, and reading level — instantly, and free to start.",
       "Every story includes friendly illustrations on every page and built-in read-aloud narration, so even pre-readers can follow along and build confidence.",
     ],
     benefits: [

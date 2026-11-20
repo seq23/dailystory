@@ -8,7 +8,7 @@ export const VoiceSetupGuide = () => {
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span> {uiText("🎤 Voice Commands Setup Required")} </span>
+          <span> {uiText("Voice Commands Setup Required")} </span>
         </CardTitle>
         <CardDescription>
           Configure your ElevenLabs agent to enable voice commands like "play story", "next page", etc.
@@ -76,7 +76,7 @@ export const VoiceSetupGuide = () => {
 
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
           <p className="text-sm text-amber-800">
-            <strong> {uiText("💡 Tip:")} </strong> Watch the browser console for debug logs.
+            <strong> {uiText("Tip:")} </strong> Watch the browser console for debug logs.
             You should see "🔧 AGENT TOOL CALL" when ElevenLabs calls your tools.
           </p>
         </div>

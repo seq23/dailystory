@@ -224,7 +224,7 @@ export const AchievementPopup: React.FC<AchievementPopupProps> = ({
                 "transform hover:scale-105"
               )}
             >
-               {uiText("Awesome! 🎉")} </button>
+               {uiText("Awesome!")} </button>
           </div>
         </CardContent>
 
