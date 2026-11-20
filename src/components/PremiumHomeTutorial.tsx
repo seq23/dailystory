@@ -45,7 +45,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       bg: "bg-blue-50 dark:bg-blue-950",
       action: "stories",
       steps: [
-        uiText("Tap the ✨ New Story button at the top"),
+        uiText("Tap the New Story button at the top"),
         uiText("Optionally add a special request (e.g. \"a story about dinosaurs\")"),
         uiText("Watch as pages generate one-by-one with illustrations"),
         uiText("Navigate forward & backward through the story at any time"),
@@ -60,7 +60,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       color: "text-purple-600",
       bg: "bg-purple-50 dark:bg-purple-950",
       steps: [
-        uiText("Look for the ✨ wand icon while reading a story"),
+        uiText("Look for the wand icon while reading a story"),
         uiText("Tap it to start a fresh story without leaving the session"),
         uiText("Great for when your child wants \"another one!\"")
       ]
@@ -150,7 +150,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
   const faqs = [
     {
       q: uiText("How do I create a new story?"),
-      a: uiText("Go to \"My Stories\" from the sidebar, then tap the ✨ New Story button at the top. You can optionally add a special request like \"a story about space\" or \"include my dog named Buddy.\" The AI will generate a personalized, illustrated story page by page.")
+      a: uiText("Go to \"My Stories\" from the sidebar, then tap the New Story button at the top. You can optionally add a special request like \"a story about space\" or \"include my dog named Buddy.\" The AI will generate a personalized, illustrated story page by page.")
     },
     {
       q: uiText("Can my child read the same story again?"),
@@ -174,7 +174,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
     },
     {
       q: uiText("How do I give feedback or report a problem?"),
-      a: uiText("Look for the feedback sticker in the bottom-right corner of any screen! 👉 It's always there. Tap it to send us a message, report a bug, suggest a feature, or just say hi. We read every submission.")
+      a: uiText("Look for the feedback sticker in the bottom-right corner of any screen! It's always there. Tap it to send us a message, report a bug, suggest a feature, or just say hi. We read every submission.")
     },
     {
       q: uiText("Can stories be generated in other languages?"),
@@ -289,18 +289,18 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
               <MessageSquare className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
-              <h3 className="text-lg font-bold mb-1">{uiText("💬 We'd Love Your Feedback!")}</h3>
+              <h3 className="text-lg font-bold mb-1">{uiText("We'd Love Your Feedback!")}</h3>
               <p className="text-muted-foreground">
                 {uiText("See that little")} <strong>{uiText("feedback sticker in the bottom-right corner")}</strong> {uiText("of your screen? It's on every page! Tap it anytime to:")}
               </p>
               <ul className="mt-3 space-y-1 text-sm">
-                <li className="flex items-center gap-2">{uiText("✅ Report a bug or issue")}</li>
-                <li className="flex items-center gap-2">{uiText("💡 Suggest a new feature")}</li>
-                <li className="flex items-center gap-2">{uiText("⭐ Tell us what you love")}</li>
-                <li className="flex items-center gap-2">{uiText("❓ Ask a question")}</li>
+                <li className="flex items-center gap-2">{uiText("Report a bug or issue")}</li>
+                <li className="flex items-center gap-2">{uiText("Suggest a new feature")}</li>
+                <li className="flex items-center gap-2">{uiText("Tell us what you love")}</li>
+                <li className="flex items-center gap-2">{uiText("Ask a question")}</li>
               </ul>
               <p className="text-sm text-muted-foreground mt-3 font-medium">
-                {uiText("👉 Look for it in the")} <strong>{uiText("bottom-right corner")}</strong> {uiText("of any screen — it's always there!")}
+                {uiText("Look for it in the")} <strong>{uiText("bottom-right corner")}</strong> {uiText("of any screen — it's always there!")}
               </p>
             </div>
           </div>
@@ -333,7 +333,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
 
       {/* Bottom CTA */}
       <div className="text-center pb-8">
-        <p className="text-muted-foreground mb-4">{uiText("Ready to dive in?")}</p>
+        <p className="text-muted-foreground mb-4">{uiText("Ready to start?")}</p>
         <Button 
           onClick={() => onNavigate("stories")} 
           size="lg" 

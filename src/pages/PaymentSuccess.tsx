@@ -36,18 +36,18 @@ const PaymentSuccess = () => {
         </h1>
 
         <p className="text-muted-foreground text-lg">
-           {uiText("Your subscription is now active. Enjoy unlimited stories, saving to your library, and AI-powered quizzes.")} </p>
+           {uiText("Your subscription is now active. Enjoy unlimited stories, saving to your library, and reading quizzes.")} </p>
 
         <div className="bg-card border border-border rounded-xl p-6 space-y-3">
           <h2 className="font-semibold text-foreground flex items-center justify-center gap-2">
             <BookOpen className="w-5 h-5 text-primary" />
              {uiText("What's unlocked")} </h2>
           <ul className="text-sm text-muted-foreground space-y-2 text-left">
-            <li> {uiText("✅ Unlimited story sessions — no timer")} </li>
-            <li> {uiText("✅ Live page-by-page generation")} </li>
-            <li> {uiText("✅ Save stories to your library")} </li>
-            <li> {uiText("✅ AI comprehension quizzes")} </li>
-            <li> {uiText("✅ \"Finish Story\" with AI endings")} </li>
+            <li> {uiText("Unlimited story sessions — no timer")} </li>
+            <li> {uiText("Live page-by-page generation")} </li>
+            <li> {uiText("Save stories to your library")} </li>
+            <li> {uiText("AI comprehension quizzes")} </li>
+            <li> {uiText("\"Finish Story\" with AI endings")} </li>
           </ul>
         </div>
 

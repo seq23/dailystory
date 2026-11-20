@@ -47,7 +47,7 @@ const subprocessors: Subprocessor[] = [
   },
   {
     name: "OpenAI",
-    purpose: "AI-powered story text generation",
+    purpose: "Writes the story text with an AI model",
     dataProcessed: "Story prompts only — no personal information",
     location: "United States",
     dpaStatus: "signed",

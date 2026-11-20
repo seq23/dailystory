@@ -319,7 +319,7 @@ const getDifficultyLabel = (level: ReadingLevel | null) => {
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg p-6 space-y-4">
               <div className="flex items-center justify-center gap-2">
                 <Crown className="w-6 h-6 text-amber-600" />
-                <h3 className="text-lg font-bold text-amber-700">{t("sessionEnded.unlockPremium", "Unlock Premium Benefits!")}</h3>
+                <h3 className="text-lg font-bold text-amber-700">{t("sessionEnded.unlockPremium", "Premium benefits")}</h3>
               </div>
                <div className="space-y-2 text-sm text-amber-600">
                   <div className="flex items-center gap-2">

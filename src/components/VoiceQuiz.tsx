@@ -429,7 +429,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
 
                 {waitingForAnswer && (
                   <div className="text-sm text-gray-600">
-                     {uiText("🎤 Listening for your answer... Say \"A\", \"B\", \"C\", or \"D\"")} </div>
+                     {uiText("Listening for your answer... Say \"A\", \"B\", \"C\", or \"D\"")} </div>
                 )}
 
                 {showResult && (

@@ -554,7 +554,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
 
                  <p className="text-sm text-muted-foreground">
                    {celebrationMode 
-                     ? t('progress.celebration', '🎉 Amazing progress! 🎉')
+                     ? t('progress.celebration', 'Amazing progress!')
                      : t('progress.subtitle', 'Keep climbing higher!')
                    }
                  </p>
@@ -675,7 +675,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                 {userType === 'premium' ? (
                   <div className="mt-4 text-center">
                     <p className="text-xs text-amber-600 font-medium">
-                       {uiText("✨ Progress saved permanently ✨")} </p>
+                       {uiText("Progress saved permanently")} </p>
                   </div>
                 ) : (
                   <div className="mt-4 text-center">

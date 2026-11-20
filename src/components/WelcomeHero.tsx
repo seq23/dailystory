@@ -91,7 +91,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             <div className="flex items-center gap-1 flex-1 justify-center min-w-0 px-2">
               <img 
                 src={logoImage} 
-                alt={uiText("Time-2-Read - Interactive reading platform for children with AI-powered stories")}
+                alt={uiText("Time-2-Read - Interactive reading platform for children with personalized stories")}
                 className="w-7 h-7 flex-shrink-0 drop-shadow-lg"
               />
               <div className="flex items-center font-comic mobile-text-fixed truncate">
