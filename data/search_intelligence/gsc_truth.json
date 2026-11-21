@@ -2,33 +2,33 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-20T16:21:41.010Z",
+  "collected_at": "2026-11-21T15:35:57.595Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-21",
-    "end_date": "2026-11-17",
+    "start_date": "2026-10-22",
+    "end_date": "2026-11-18",
     "days": 28
   },
   "totals": {
-    "clicks": 7,
-    "impressions": 544,
-    "ctr": 0.0129,
-    "position": 11.37
+    "clicks": 8,
+    "impressions": 545,
+    "ctr": 0.0147,
+    "position": 11.06
   },
   "row_count": 48,
   "query_count": 46,
   "page_count": 16,
-  "attributed_impressions": 236,
+  "attributed_impressions": 234,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
       "query": "time2read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 34,
+      "impressions": 36,
       "ctr": 0,
-      "position": 5.82
+      "position": 6.14
     },
     {
       "query": "time 2 read",
@@ -36,23 +36,23 @@
       "clicks": 0,
       "impressions": 29,
       "ctr": 0,
-      "position": 5.69
+      "position": 5.59
     },
     {
       "query": "time to read",
       "page": "https://time-2-read.com/",
-      "clicks": 0,
+      "clicks": 1,
       "impressions": 25,
-      "ctr": 0,
-      "position": 8.04
+      "ctr": 0.04,
+      "position": 7.88
     },
     {
       "query": "time read",
       "page": "https://time-2-read.com/",
       "clicks": 1,
-      "impressions": 20,
-      "ctr": 0.05,
-      "position": 8.5
+      "impressions": 19,
+      "ctr": 0.0526,
+      "position": 8.47
     },
     {
       "query": "20 minute reading timer",
@@ -74,25 +74,25 @@
       "query": "write a bedtime story for my kid who’s obsessed with dinosaurs and pasta",
       "page": "https://time-2-read.com/bedtime-stories-about-your-childs-favorite-things",
       "clicks": 0,
-      "impressions": 10,
+      "impressions": 11,
       "ctr": 0,
-      "position": 7.2
+      "position": 7.55
     },
     {
       "query": "personalized books for 2 year olds",
       "page": "https://time-2-read.com/books-for-toddlers",
       "clicks": 0,
-      "impressions": 8,
+      "impressions": 7,
       "ctr": 0,
-      "position": 55.63
+      "position": 55
     },
     {
       "query": "reading time 2",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 8,
+      "impressions": 7,
       "ctr": 0,
-      "position": 8.13
+      "position": 7.43
     },
     {
       "query": "ccpa notice",
@@ -167,14 +167,6 @@
       "position": 53.33
     },
     {
-      "query": "stories for 2 year olds book",
-      "page": "https://time-2-read.com/toddler-books",
-      "clicks": 0,
-      "impressions": 3,
-      "ctr": 0,
-      "position": 72.67
-    },
-    {
       "query": "time2read app",
       "page": "https://time-2-read.com/",
       "clicks": 0,
@@ -231,20 +223,20 @@
       "position": 9
     },
     {
-      "query": "sight word generator",
-      "page": "https://time-2-read.com/kindergarten-sight-words",
-      "clicks": 0,
-      "impressions": 2,
-      "ctr": 0,
-      "position": 51.5
-    },
-    {
       "query": "software for struggling readers",
       "page": "https://time-2-read.com/reading-app-for-kids-struggling-to-read",
       "clicks": 0,
       "impressions": 2,
       "ctr": 0,
       "position": 17
+    },
+    {
+      "query": "stories for 2 year olds book",
+      "page": "https://time-2-read.com/toddler-books",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 83
     },
     {
       "query": "timetoread",
@@ -303,6 +295,14 @@
       "position": 30
     },
     {
+      "query": "it's time to read",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 3
+    },
+    {
       "query": "level 2",
       "page": "https://time-2-read.com/",
       "clicks": 0,
@@ -333,6 +333,14 @@
       "impressions": 1,
       "ctr": 0,
       "position": 41
+    },
+    {
+      "query": "sight word generator",
+      "page": "https://time-2-read.com/kindergarten-sight-words",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 47
     },
     {
       "query": "sight words 2 year olds",
@@ -397,14 +405,6 @@
       "impressions": 1,
       "ctr": 0,
       "position": 3
-    },
-    {
-      "query": "tiny read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 22
     }
   ]
 }
