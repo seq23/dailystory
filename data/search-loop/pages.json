@@ -784,6 +784,9 @@
         "b5 FAQ answer is 33 words (aim 40-60): \"Can a 3-year-old use it?\"",
         "b5 FAQ answer is 33 words (aim 40-60): \"Do I need to supervise my child?\"",
         "b5 FAQ answer is 34 words (aim 40-60): \"Will this teach my child to read?\""
+      ],
+      "extra_queries": [
+        "ai story generator for kids"
       ]
     },
     {
@@ -912,6 +915,48 @@
         "b5 FAQ answer is 38 words (aim 40-60): \"How long should a bedtime story last?\"",
         "b5 FAQ answer is 37 words (aim 40-60): \"What if my child wants a scary story at bedtime?\"",
         "b5 FAQ answer is 36 words (aim 40-60): \"Can teachers use bedtime stories in class?\""
+      ]
+    },
+    {
+      "slug": "kids-level-1-reading-books-free",
+      "query": "kids level 1 reading books free",
+      "lane": "can_be_one",
+      "score": 40,
+      "scores": {
+        "striking": 20,
+        "can_be_one": 40
+      },
+      "reasons": [
+        "no site page answers this 6-word question, and the site holds its parts at position 6",
+        "people search it (autocomplete or impressions)"
+      ],
+      "signals": {
+        "words": 6,
+        "question": false,
+        "bing_suggest": true,
+        "unanswered": {
+          "words": 6,
+          "covered": 0.17,
+          "parts_best_position": 6,
+          "parts_rows": 1
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/kids-level-1-reading-books-free/index.html",
+      "route": "/questions/kids-level-1-reading-books-free/",
+      "url": "https://guides.time-2-read.com/questions/kids-level-1-reading-books-free/",
+      "published_at": "2026-11-21",
+      "status": "live",
+      "hash": "e409991033693cd672fea19399d8c25479ac6ad2d02aa533d18ddac3057329fa",
+      "model": "free-route",
+      "facts": [
+        "https://openlibrary.org/",
+        "https://en.wikipedia.org/wiki/International_Children%27s_Digital_Library"
+      ],
+      "linked_from": [],
+      "checks": {},
+      "gate_notes": [
+        "b4 direct answer under the H1 is 32 words (aim 40-60)"
       ]
     }
   ],
@@ -2243,6 +2288,166 @@
         "b4 direct answer under the H1 is 29 words (aim 40-60)",
         "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.sciencedirect.com/science/article/pii/S0749596X22000786 (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.hasbroucktindal.com/hasbrouck-tindal-oral-reading-fluency-data (no answer); https://www.nationsreportcard.gov/reading/national/achievement/ (HTTP 404)"
       ]
+    },
+    {
+      "query": "students who read 20 minutes a day",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 28 words (aim 40-60): \"Can I split the time across two sittings?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.nationsreportcard.gov/reading/national/achievement/ (HTTP 404); https://www.corestandards.org/ELA-Literacy/ (HTTP 404)"
+      ]
+    },
+    {
+      "query": "how many books to read a month",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 10 words (aim 40-60): \"Should I count books read aloud to my child?\"",
+        "b5 FAQ answer is 11 words (aim 40-60): \"Do graphic novels and audiobooks count toward a mo\"",
+        "b5 FAQ answer is 14 words (aim 40-60): \"What if my child reads only one long book all mont\"",
+        "b5 FAQ answer is 13 words (aim 40-60): \"How do I keep a monthly habit going during busy we\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.nationsreportcard.gov/reading/national/achievement/ (HTTP 404); https://www.corestandards.org/ELA-Literacy/ (HTTP 404); https://www.oecd.org/en/publications/pisa-2022-results-volume-i_53f23881-en.html (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "how much time do you read books",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "invented: unsourced statistic \"Choose a title they can read with about 95 percent accuracy.\""
+      ]
+    },
+    {
+      "query": "importance of reading 20 minutes a day",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 27 words (aim 40-60)",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Does it have to be exactly twenty minutes every da\"",
+        "b5 FAQ answer is 21 words (aim 40-60): \"What counts as reading during that time?\"",
+        "b5 FAQ answer is 19 words (aim 40-60): \"My child reads at school. Is home reading still ne\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"How do I keep the habit going on weekends and holi\""
+      ]
+    },
+    {
+      "query": "books that are 20 minutes long",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"How many pages is a 20-minute book?\"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"Can picture books work for a 20-minute block?\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"What if my child reads slower than average?\"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"Should I time every reading session?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.nationsreportcard.gov/reading/national/achievement/ (HTTP 404); https://www.literacyworldwide.org/get-resources/literacy-glossary/independent-reading (HTTP 404)"
+      ]
+    },
+    {
+      "query": "listen to 20 books in 20 days",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 24 words (aim 40-60): \"Can we count picture books and short stories towar\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Does listening count as real reading for school lo\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"How do I keep track of titles for a teacher or por\""
+      ]
+    },
+    {
+      "query": "best reading program for kids app",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"Should I pay for a subscription or use a free app?\""
+      ]
+    },
+    {
+      "query": "level reading books for kindergarten",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "invented: unsourced statistic \"Teachers assess children several times a year to find the level where they read \""
+      ]
+    },
+    {
+      "query": "how to improve 2nd grade reading",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 28 words (aim 40-60)",
+        "b5 FAQ answer is 23 words (aim 40-60): \"My child reads fast but misses details. What helps\"",
+        "b5 FAQ answer is 21 words (aim 40-60): \"Are graphic novels okay for second grade reading p\"",
+        "b5 FAQ answer is 29 words (aim 40-60): \"How do I know if a book is the right level?\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"Should I correct every mistake when my child reads\""
+      ]
+    },
+    {
+      "query": "silent reading timer 20 minutes",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 28 words (aim 40-60): \"Should I require a specific book during the timed \"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"Can I use a silent timer for partner reading?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.timetimer.com/pages/how-it-works (HTTP 404)"
+      ]
+    },
+    {
+      "query": "reading time for kids",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 25 words (aim 40-60): \"Does listening to audiobooks count as reading time\"",
+        "b5 FAQ answer is 20 words (aim 40-60): \"What if my child only wants to reread the same boo\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"Should I require reading on weekends and holidays?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"How do I know if the level is right?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.nationsreportcard.gov/reading/national/achievement/ (HTTP 404)"
+      ]
+    },
+    {
+      "query": "help second grader read better",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.readingrockets.org/teaching/reading101-course/modules/fluency/introduction (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.healthychildren.org/English/ages-stages/gradeschool/school/Pages/Reading-With-Your-Child.aspx (HTTP 404); https://www.scholastic.com/parents/books-and-reading/reading-resources/developing-reading-skills/choosing-books-right-reading-level.html (HTTP 404)"
+      ]
+    },
+    {
+      "query": "help my 2nd grader read better",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 29 words (aim 40-60)",
+        "b5 FAQ answer is 24 words (aim 40-60): \"Is it okay to read aloud to a second grader?\""
+      ]
+    },
+    {
+      "query": "how to teach 2nd grader to read",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.corestandards.org/ELA-Literacy/RF/2/ (HTTP 404); https://www.readingrockets.org/article/choosing-books-right-level (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.ala.org/alsc/publications-resources/book-lists/graphic-novels-reading-list (HTTP 404)"
+      ]
+    },
+    {
+      "query": "how well should a second grader read",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 28 words (aim 40-60): \"How can I help with fluency at home?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"What if my child comprehends well but reads slowly\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.nationsreportcard.gov/reading/national/fluency/ (HTTP 404); https://www.corestandards.org/ELA-Literacy/RF/2/4/ (HTTP 404)",
+        "invented: unsourced statistic \"Ask what the classroom data shows for accuracy, rate, and comprehension.\""
+      ]
+    },
+    {
+      "query": "summer reading list for kids",
+      "at": "2026-11-21",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 24 words (aim 40-60): \"How many books should be on a summer list?\"",
+        "b5 FAQ answer is 15 words (aim 40-60): \"Should I require specific titles from a school lis\"",
+        "b5 FAQ answer is 13 words (aim 40-60): \"Do audiobooks count as reading?\"",
+        "b5 FAQ answer is 20 words (aim 40-60): \"What if my child only wants graphic novels?\""
+      ]
     }
   ],
   "redirected": [
@@ -2404,6 +2609,16 @@
       "kind": "engine",
       "matched_by": "high token overlap (0.60 >= 0.6)",
       "matched_text": "tell me a bedtime story for kids",
+      "stage": "search"
+    },
+    {
+      "query": "ai story generator for kids",
+      "at": "2026-11-21",
+      "url": "https://guides.time-2-read.com/questions/ai-story-maker-for-kids/",
+      "route": "/questions/ai-story-maker-for-kids/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "matched_text": "ai story maker for kids",
       "stage": "search"
     }
   ]

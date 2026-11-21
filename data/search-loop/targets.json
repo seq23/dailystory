@@ -2817,6 +2817,15 @@
   ],
   "strengthen": [
     {
+      "query": "ai story generator for kids",
+      "page": "/questions/ai-story-maker-for-kids/",
+      "url": "https://guides.time-2-read.com/questions/ai-story-maker-for-kids/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "at": "2026-11-21"
+    },
+    {
       "query": "kids bedtime story in english",
       "page": "/questions/tell-me-a-bedtime-story-for-kids/",
       "url": "https://guides.time-2-read.com/questions/tell-me-a-bedtime-story-for-kids/",

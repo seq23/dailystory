@@ -2,13 +2,13 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W47",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-20T19:14:58.413Z",
-  "state": "running",
-  "published": 12,
-  "indexed": "not read: URL Inspection: HTTP 403 You do not own this site, or the inspected URL is not part of this property.",
-  "pace": 10,
+  "generated_at": "2026-11-21T18:11:43.826Z",
+  "state": "slow",
+  "published": 13,
+  "indexed": "not read: no page old enough to inspect yet (14 days)",
+  "pace": 3,
   "ai_visitors": 0,
-  "ai_bot_hits": 30,
+  "ai_bot_hits": 0,
   "conversions": "not read: no conversion source configured for this site (form fills / checkouts)",
   "wins": 0,
   "undone": 0,
@@ -98,6 +98,12 @@
       "strengthen": "https://guides.time-2-read.com/questions/tell-me-a-bedtime-story-for-kids/",
       "matched_by": "high token overlap (0.60 >= 0.6)",
       "at": "2026-11-20"
+    },
+    {
+      "query": "ai story generator for kids",
+      "strengthen": "https://guides.time-2-read.com/questions/ai-story-maker-for-kids/",
+      "matched_by": "high token overlap (0.60 >= 0.6)",
+      "at": "2026-11-21"
     }
   ],
   "cap": {
@@ -107,9 +113,11 @@
     "why": "up from 20 to 22: Google impressions 505 in the last 28 days beat 19 in the 28 before"
   },
   "notes": [
+    "NAMED NOTE [FREE_MODEL_RATE_LIMITED] the free model route is rate-limited or exhausted (every free lane is out — gemini: not read: GEMINI_API_KEY is not passed (openrouter:nemotron-3-ultra-550b-a55b:free:cut short by the call budget, all::call budget 240s used)); this run dropped itself to slow for today",
     "BUILD distinct gate: 1 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
-    "BUILD gate notes (not blocking): 5 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
-    "not read: index status for the pages 14-42 days old (URL Inspection: HTTP 403 You do not own this site, or the inspected URL is not part of this property.)"
+    "BUILD gate notes (not blocking): 1 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
+    "CHECK runs weekly in mode=slow; last ran 2026-11-20",
+    "IndexNow: 5 new page(s) not live yet; submitted when they answer 200"
   ],
   "lanes": {
     "ratio": {
@@ -117,7 +125,7 @@
       "striking": 1
     },
     "can_be_one": {
-      "pages": 12,
+      "pages": 13,
       "measured": 1,
       "top3": 0,
       "hit_rate": 0
@@ -137,5 +145,5 @@
     "weight_changes": [],
     "competition": "not read: no BRAVE_SEARCH_API_KEY"
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/44800330530"
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/44934151530"
 }
