@@ -233,7 +233,7 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white">
+        <CardHeader className="bg-gradient-to-r from-green-700 to-blue-600 text-white">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Target className="w-5 h-5" />

@@ -6,7 +6,6 @@ import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import leftPageImage from "@/assets/story-illustration-14.jpg";
 import { Check, RefreshCcw, Wand2, Sparkles } from "lucide-react";
 import ReadAloudCoach from "@/components/ReadAloudCoach";
-import VoiceCommandController from "@/components/VoiceCommandController";
 import { freeFeatures, premiumFeatures, additionalOfferings } from "@/constants/featureLists";
 import MagicRefreshIcon from "@/components/icons/MagicRefreshIcon";
 const sampleText = `Luna and Max found a hidden door in the library. When they pushed it open, a tiny breeze carried the scent of pine trees and warm cookies. “Ready?” Max whispered. Luna nodded, and together they stepped into a world of stories.`;
@@ -78,6 +77,21 @@ const StylePreview: React.FC = () => {
       </header>
 
       <main className="max-w-5xl mx-auto grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {/* The story header's guest badge, exactly as a free-trial reader sees it (no story needed to view it) */}
+        <article className="md:col-span-2 xl:col-span-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>Story header badge</CardTitle>
+              <CardDescription>Shown beside the avatar during a free trial.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Badge variant="guest">Free Trial</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </article>
+
         {/* Free Trial Desktop (Exact) */}
         <article className="md:col-span-2 xl:col-span-3">
           <Card className="h-full">
@@ -395,18 +409,6 @@ const StylePreview: React.FC = () => {
                   <CardContent>
                     {/* @ts-ignore demo import below */}
                     <ReadAloudCoach />
-                  </CardContent>
-                </Card>
-              </div>
-              <div>
-                <Card className="border-muted/50">
-                  <CardHeader>
-                    <CardTitle className="text-base">Voice commands (Premium)</CardTitle>
-                    <CardDescription>Try a command like “Next page”</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {/* @ts-ignore demo import below */}
-                    <VoiceCommandController />
                   </CardContent>
                 </Card>
               </div>

@@ -49,7 +49,7 @@ export const ValidationFeedback: React.FC<ValidationFeedbackProps> = ({
               <Shield className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
               <div>
                 <p className="font-medium text-amber-800 dark:text-amber-200 mb-2">
-                   {uiText("🛡️ Protecting Your Child's Privacy")} </p>
+                   {uiText("Protecting Your Child's Privacy")} </p>
                 <p className="text-amber-700 dark:text-amber-300 mb-2">
                    {uiText("For your child's safety, please avoid sharing:")} </p>
                 <ul className="list-disc list-inside space-y-1 text-xs text-amber-700 dark:text-amber-300 mb-3">

@@ -303,14 +303,14 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                     <Button 
                       onClick={() => startCheckout("annual")} 
                       disabled={loading}
-                      className="w-full bg-green-600 hover:bg-green-700"
+                      className="w-full bg-green-700 hover:bg-green-800"
                     >
                       {uiText("Subscribe Annually")}
                     </Button>
                   </CardContent>
                 </Card>
               </div>
-              <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">{uiText("🔒 Secure checkout in US dollars, by Stripe.")}</p>
+              <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">{uiText("Secure checkout in US dollars, by Stripe.")}</p>
               </div>
             )}
           </CardContent>

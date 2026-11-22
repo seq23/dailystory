@@ -30,7 +30,10 @@ jobs:
           npx vite preview --port 4173 --strictPort &
           npx --yes wait-on@8.0.1 http://localhost:4173 --timeout 60000
           PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts e2e/story-choices.spec.ts --project=chromium --retries=1
-      # One upload, pass or fail: the report and every capture (start-here-phone.png at 390 px).
+          # The story page voice commands at phone width, light and dark (fake microphone).
+          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/story-voice.spec.ts --project=chromium --retries=1
+      # One upload, pass or fail: the report and every capture (start-here-phone.png at
+      # 390 px, the story page voice-*.png light and dark).
       - if: always()
         uses: actions/upload-artifact@v4
         with:

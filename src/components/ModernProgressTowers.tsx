@@ -42,6 +42,15 @@ interface TowerData {
   getMaxValue: (isPremium: boolean) => number;
 }
 
+// The round tower markers: each colour's gradient and the icon colour drawn on it
+// (checked for 4.5:1 by src/test/guards/white-text-on-gradients.test.ts).
+export const towerMarker = {
+  blue: { gradient: 'from-blue-600 to-blue-800', fg: 'text-white' },
+  green: { gradient: 'from-green-700 to-green-800', fg: 'text-white' },
+  gold: { gradient: 'from-yellow-300 to-amber-400', fg: 'text-amber-950' },
+  purple: { gradient: 'from-purple-600 to-purple-800', fg: 'text-white' },
+} as const;
+
 export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   userId,
   userType = 'premium',
@@ -524,7 +533,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                     )}
                     {/* Achievement Counter Badge */}
                     {(userStats.achievements.length > 0 || recentAchievements.length > 0) && (
-                      <div className="ml-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-xs px-2 py-1 rounded-full font-bold shadow-md">
+                      <div className="ml-2 bg-gradient-to-r from-amber-300 to-amber-400 text-amber-950 text-xs px-2 py-1 rounded-full font-bold shadow-md">
                         🏆 {userStats.achievements.length}
                       </div>
                     )}
@@ -554,7 +563,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
 
                  <p className="text-sm text-muted-foreground">
                    {celebrationMode 
-                     ? t('progress.celebration', '🎉 Amazing progress! 🎉')
+                     ? t('progress.celebration', 'Amazing progress!')
                      : t('progress.subtitle', 'Keep climbing higher!')
                    }
                  </p>
@@ -675,7 +684,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                 {userType === 'premium' ? (
                   <div className="mt-4 text-center">
                     <p className="text-xs text-amber-600 font-medium">
-                       {uiText("✨ Progress saved permanently ✨")} </p>
+                       {uiText("Progress saved permanently")} </p>
                   </div>
                 ) : (
                   <div className="mt-4 text-center">
@@ -700,13 +709,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                       className={cn(
                         "w-10 h-10 rounded-full flex items-center justify-center",
                         "transition-all duration-300 shadow-lg border-2 border-white/50",
-                        `bg-gradient-to-br ${
-                          tower.color === 'blue' ? 'from-blue-400 to-blue-600' :
-                          tower.color === 'green' ? 'from-green-400 to-green-600' :
-                          tower.color === 'gold' ? 'from-yellow-400 to-amber-500' :
-                          'from-purple-400 to-purple-600'
-                        }`,
-                        "text-white",
+                        `bg-gradient-to-br ${towerMarker[tower.color].gradient} ${towerMarker[tower.color].fg}`,
                         isMobile && "w-8 h-8",
                         isTablet && "w-9 h-9",
                         isActive && "ring-2 ring-primary/50 scale-110",

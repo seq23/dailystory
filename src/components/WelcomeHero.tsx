@@ -91,7 +91,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             <div className="flex items-center gap-1 flex-1 justify-center min-w-0 px-2">
               <img 
                 src={logoImage} 
-                alt={uiText("Time-2-Read - Interactive reading platform for children with AI-powered stories")}
+                alt={uiText("Time-2-Read - Interactive reading platform for children with personalized stories")}
                 className="w-7 h-7 flex-shrink-0 drop-shadow-lg"
               />
               <div className="flex items-center font-comic mobile-text-fixed truncate">
@@ -354,7 +354,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                 variant="hero" 
                 size="xl" 
                 onClick={onGetStarted}
-                className={`relative rounded-full bg-gradient-to-r from-[hsl(var(--primary))] via-[hsl(var(--brand-purple))] to-[hsl(var(--accent))] text-white hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden ${
+                className={`relative rounded-full bg-gradient-to-r from-[hsl(200_90%_35%)] to-[hsl(271_80%_50%)] text-white hover:scale-105 shadow-glow transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 group overflow-hidden ${
                   isShaking ? 'animate-bounce-gentle' : ''
                 } hover:animate-none`}
               >

@@ -174,6 +174,25 @@ describe("story generation and the expensive functions", () => {
     expect((await guardPaidCall(post(), "runware-generate-image", deps)).refusal?.status).toBe(401);
   });
 
+  it("a guest's voice clip is refused at the server: voice-to-text is signed-in only (R-KID-02)", async () => {
+    // A guest client that skips the hidden mic and calls voice-to-text directly.
+    const { pass } = await issueGuestPass(SERVICE, 1_800_000_000);
+    const guest = () => post({ Authorization: `Bearer ${ANON}`, [GUEST_PASS_HEADER]: pass });
+    const deps = fakeDeps();
+    for (const opts of [{}, { allowGuests: false }]) {
+      const r = await guardPaidCall(guest(), "voice-to-text", deps, opts);
+      expect(r.refusal?.status).toBe(401);
+      expect(await r.refusal!.json()).toMatchObject({ code: "SIGN_IN_REQUIRED" });
+    }
+    expect([...deps.counts.keys()]).toEqual([]);
+    expect(GUEST_PAID_FUNCTIONS as readonly string[]).not.toContain("voice-to-text");
+    // Outage: the sign-in check cannot be reached, so the call is refused, never let through.
+    const down = { ...fakeDeps(), getUserId: async () => { throw new Error("auth down"); } };
+    expect((await guardPaidCall(post({ Authorization: `Bearer ${USER_TOKEN}` }), "voice-to-text", down, { allowGuests: false })).refusal?.status).toBe(401);
+    // A signed-in account still gets through.
+    expect((await guardPaidCall(post({ Authorization: `Bearer ${USER_TOKEN}` }), "voice-to-text", fakeDeps(), { allowGuests: false })).refusal).toBeNull();
+  });
+
   it("a guest pass does not open the signed-in-only live voice", async () => {
     const { pass } = await issueGuestPass(SERVICE, 1_800_000_000);
     const r = await guardPaidCall(post({ [GUEST_PASS_HEADER]: pass }), "openai-realtime", fakeDeps());
@@ -195,7 +214,7 @@ describe("request size", () => {
 describe("every paid function is wired to the guard", () => {
   const guestFns = [...GUEST_PAID_FUNCTIONS];
   const adminFns = ["elevenlabs-dictionary-manager", "generate-fallback-images", "unified-debug-service", "system-diagnostics"];
-  const signedInFns = ["openai-realtime"];
+  const signedInFns = ["openai-realtime", "voice-to-text"];
 
   it("guards before the paid API, and lets the guest pass header through CORS", () => {
     expect(guestFns.length).toBeGreaterThan(0);
@@ -217,6 +236,7 @@ describe("every paid function is wired to the guard", () => {
       }
     }
     for (const fn of adminFns) expect(read(`supabase/functions/${fn}/index.ts`)).toMatch(/adminUserIds:\s*adminUserIds\(\)/);
+    for (const fn of signedInFns) expect(read(`supabase/functions/${fn}/index.ts`), fn).toMatch(/paidCallRefusal\(req, '[a-z-]+', corsHeaders, \{ allowGuests: false\b/);
   });
 
   it("the TTS functions charge only on a cache miss, never on cached audio", () => {

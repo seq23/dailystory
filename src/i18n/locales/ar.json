@@ -54,7 +54,7 @@
       "upgrade": "تابع مع معلوماتك المحفوظة واكتشف القصص غير المحدودة",
       "join": "اكتشف القصص الشخصية غير المحدودة والميزات المتقدمة"
     },
-    "trialInfoSaved": "✨ تم ملء معلوماتك من التجربة المجانية تلقائياً!",
+    "trialInfoSaved": "تم ملء معلوماتك من التجربة المجانية تلقائياً!",
     "tabs": {
       "createAccount": "إنشاء حساب",
       "signIn": "تسجيل الدخول"
@@ -166,11 +166,11 @@
         "createAccount": "إنشاء حساب",
         "title": "اكتشف مزايا الاشتراك المميز!",
         "features": {
-          "unlimitedTime": "✨ وقت قراءة بلا حدود",
-          "thousandsStories": "📚 آلاف القصص",
-          "personalizedPath": "🎯 مسار تعلّم مخصّص",
-          "progressTracking": "📊 متابعة مفصّلة للتقدّم",
-          "achievements": "🏆 إنجازات ومكافآت القراءة"
+          "unlimitedTime": "وقت قراءة بلا حدود",
+          "thousandsStories": "آلاف القصص",
+          "personalizedPath": "مسار تعلّم مخصّص",
+          "progressTracking": "متابعة مفصّلة للتقدّم",
+          "achievements": "إنجازات ومكافآت القراءة"
         },
         "upgradeNow": "اشترك الآن"
       },
@@ -189,7 +189,7 @@
     },
     "session": {
       "sessionStarted": {
-        "title": "بدأ وقت القراءة المجاني! 📚",
+        "title": "بدأ وقت القراءة المجاني!",
         "description": "لديك 20 دقيقة من القراءة المجانية. استمتع بها!"
       },
       "title": "مغامرة {userName} القرائية",
@@ -201,7 +201,7 @@
     "timer": {
       "freeTime": "وقت مجاني"
     },
-    "freeTrial": "🎁 تجربة مجانية",
+    "freeTrial": "تجربة مجانية",
     "progress": {
       "readingProgress": "تقدّم القراءة: {percent}%"
     }
@@ -235,7 +235,7 @@
       "nativeLanguage": {
         "label": "ما هي لغتك الأم؟",
         "placeholder": "اختر لغتك الأولى",
-        "translationInfo": "🌟 اختيار ممتاز! عند قراءة القصص، يمكنك تمرير الماوس فوق أي كلمة لسماع نطقها ورؤية ترجمتها بلغتك الأم."
+        "translationInfo": "اختيار ممتاز! عند قراءة القصص، يمكنك تمرير الماوس فوق أي كلمة لسماع نطقها ورؤية ترجمتها بلغتك الأم."
       },
       "learningGoal": {
         "label": "ما هو هدفك من التعلم؟",
@@ -249,28 +249,6 @@
       "readingAbility": {
         "label": "ما مستوى القراءة المناسب لك؟",
         "placeholder": "اختر مستوى القراءة",
-        "levels": {
-          "beginner": {
-            "title": "ما قبل القراءة (3-5 سنوات)",
-            "description": "تعلم الحروف والأصوات"
-          },
-          "easy": {
-            "title": "قراءة سهلة",
-            "description": "(روضة-صف أول: كلمات بسيطة وجمل قصيرة)"
-          },
-          "medium": {
-            "title": "قراءة متوسطة",
-            "description": "(صف ثاني-رابع: مفردات ومجل متوسطة)"
-          },
-          "hard": {
-            "title": "قراءة متقدمة",
-            "description": "(صف خامس-ثامن: مفردات متقدمة وجمل معقدة)"
-          },
-          "expert": {
-            "title": "قراءة خبير",
-            "description": "(صف تاسع-ثاني عشر: مفردات متخصصة وكتابة متطورة)"
-          }
-        },
         "learnMore": {
           "description": "مستوياتنا مبنية على أبحاث تعليمية مثبتة وقوائم كلمات دولتش البصرية، مما يضمن محتوى مناسب للعمر يدعم تطوير القراءة.",
           "title": "حول مستويات القراءة"
@@ -419,27 +397,27 @@
   },
   "tutorial": {
     "timer": {
-      "title": "⏰ مؤقت القراءة",
+      "title": "مؤقت القراءة",
       "description": "يُظهر هذا وقت قراءتك! انقر على زر التشغيل لبدء/إيقاف مؤقتك مؤقتاً. استخدم زر الناقص لتقليل الوقت عند الحاجة."
     },
     "navigation": {
-      "title": "📖 التنقل في الصفحات",
+      "title": "التنقل في الصفحات",
       "description": "استخدم أزرار السابق والتالي للتنقل بين صفحات القصة. عداد الصفحات يُظهر موقعك الحالي."
     },
     "audio": {
-      "title": "🎵 القراءة الصوتية",
+      "title": "القراءة الصوتية",
       "description": "انقر لسماع القصة مقروءة بصوت عالٍ! مثالي للمتابعة وتعلم النطق."
     },
     "addPages": {
-      "title": "➕ إضافة صفحات أخرى",
+      "title": "إضافة صفحات أخرى",
       "description": "تريد الاستمرار في المغامرة؟ انقر على هذا الزر لإضافة 5 صفحات أخرى لقصتك!"
     },
     "difficulty": {
-      "title": "🎯 مستوى القراءة",
+      "title": "مستوى القراءة",
       "description": "اجعل القصة أسهل أو أصعب فوراً! السهم لأعلى يجعلها أصعب، السهم لأسفل يجعلها أسهل لتناسب مستوى قراءتك."
     },
     "progressTowers": {
-      "title": "📊 أبراج التقدم",
+      "title": "أبراج التقدم",
       "description": "تتبع إنجازاتك في القراءة! شاهد أبراجك تنمو بينما تقرأ الكلمات وتكمل الصفحات وتتعلم مفردات جديدة. انقر للتوسع ومشاهدة تقدمك التفصيلي!"
     },
     "step": "الدليل",
@@ -450,7 +428,7 @@
     "finish": "إنهاء",
     "startReading": "ابدأ القراءة!",
     "magicWand": {
-      "title": "🪄 العصا السحرية",
+      "title": "العصا السحرية",
       "description": {
         "free": "للحساب المجاني: أنشئ قصصًا جديدة في الصفحة الأخيرة لتواصل القراءة!",
         "premium": "للحساب المميز: اضغط على العصا السحرية لتجديد القصة متى شئت!"
@@ -488,8 +466,8 @@
     "readsAt": "ما مستوى القراءة المناسب لك؟",
     "levelUp": "مستوى أعلى!",
     "freeTrialLimitReached": {
-      "title": "📚 انتهت جلسة القراءة المجانية",
-      "message": "🚀 واصل القراءة بلا حدود! انتهت جلستك المجانية. اشترك في الباقة المميزة لوقت قراءة غير محدود ومزايا متقدّمة وقصص مخصّصة."
+      "title": "انتهت جلسة القراءة المجانية",
+      "message": "واصل القراءة بلا حدود! انتهت جلستك المجانية. اشترك في الباقة المميزة لوقت قراءة غير محدود ومزايا متقدّمة وقصص مخصّصة."
     },
     "progressMilestones": "تقدّمك في هذه الجلسة",
     "levelProgress": "انتقلت من المستوى {{from}} إلى المستوى {{to}}!",
@@ -507,7 +485,7 @@
   "readingLevel": {
     "easier": "أسهل",
     "harder": "أصعب",
-    "tutorialTitle": "💡 نصيحة: اجعل القصص أسهل أو أصعب!",
+    "tutorialTitle": "نصيحة: اجعل القصص أسهل أو أصعب!",
     "tutorialText": "انقر على هذه الأزرار لضبط الصعوبة"
   },
   "floatingTimer": {
@@ -520,12 +498,12 @@
     "congratulations": "تهانينا!",
     "sessionComplete": "لقد أكملت جلسة القراءة!",
     "sequentialTooltips": {
-      "startPause": "🎯 انقر لبدء/إيقاف مؤقت القراءة مؤقتاً!",
-      "reduceTime": "⏰ تقليل الوقت بـ 5 دقائق!",
-      "endSession": "🔚 انقر لإنهاء جلسة القراءة!",
-      "increaseTime": "➕ إضافة 15 دقيقة (الحد الأقصى 60)",
-      "dismissTimer": "🙈 إخفاء المؤقّت؛ يستمر في العمل",
-      "collapse": "🫥 تصغير المؤقّت"
+      "startPause": "انقر لبدء/إيقاف مؤقت القراءة مؤقتاً!",
+      "reduceTime": "تقليل الوقت بـ 5 دقائق!",
+      "endSession": "انقر لإنهاء جلسة القراءة!",
+      "increaseTime": "إضافة 15 دقيقة (الحد الأقصى 60)",
+      "dismissTimer": "إخفاء المؤقّت؛ يستمر في العمل",
+      "collapse": "تصغير المؤقّت"
     },
     "confirmEnd": {
       "title": "هل أنت متأكد؟",
@@ -554,7 +532,7 @@
     "upgrade": "ترقية",
     "upgradeTooltip": "ترقى إلى بريميوم للحصول على تشغيل صوتي غير محدود",
     "freeAudioUsed": "تم استخدام الصوت المجاني",
-    "extendedPagesNeedPremium": "🔒 الصفحات الممتدة تحتاج بريميوم",
+    "extendedPagesNeedPremium": "الصفحات الممتدة تحتاج بريميوم",
     "audioError": "خطأ في الصوت",
     "mobileAudioError": "لا يمكن تشغيل الصوت. على الأجهزة المحمولة، تأكد من تمكين الصوت وحاول مرة أخرى.",
     "audioPlayError": "لا يمكن تشغيل الصوت. يرجى المحاولة مرة أخرى.",
@@ -587,19 +565,19 @@
     "readingProgress": "تقدم القراءة",
     "previous": "← السابق",
     "next": "التالي ←",
-    "finish": "🎉 إنهاء القصة",
+    "finish": "إنهاء القصة",
     "storyCompletedToast": {
-      "title": "🎉 اكتملت القصة!",
+      "title": "اكتملت القصة!",
       "descriptionWords": "رائع! لقد قرأت {{wordsRead}} كلمة وأكملت القصة!",
       "descriptionWordsTime": "عمل رائع! قرأت {{wordsRead}} كلمة في {{minutes}} دقيقة."
     },
     "addPagesSuccess": {
-      "title": "تمت إضافة 5 صفحات أخرى! 📚",
+      "title": "تمت إضافة 5 صفحات أخرى!",
       "description": "تم توسيع قصتك!"
     },
     "addMorePages": "إضافة صفحات أخرى",
     "addPagesTooltip": "+ 5 صفحات - متاح فقط في الصفحة الأخيرة",
-    "addPagesAlert": "⏰ أضف صفحات أخرى الآن!",
+    "addPagesAlert": "أضف صفحات أخرى الآن!",
     "addPagesDisabled": "الوصول إلى الصفحة الأخيرة لإضافة المزيد",
     "header": "مغامرة القراءة",
     "endSession": "إنهاء الجلسة",
@@ -621,12 +599,12 @@
       "expert": "الصف السادس - العاشر"
     },
     "magicWandSuccess": {
-      "title": "✨ القصة الجديدة جاهزة!",
+      "title": "القصة الجديدة جاهزة!",
       "description": "مغامرتك الجديدة بانتظارك!"
     },
     "generateNewStory": "إنشاء قصة جديدة",
-    "magicWandTooltip": "🪄 إنشاء مغامرة جديدة",
-    "magicWandActive": "✨ العصا جاهزة؛ قصة جديدة بانتظارك!",
+    "magicWandTooltip": "إنشاء مغامرة جديدة",
+    "magicWandActive": "العصا جاهزة؛ قصة جديدة بانتظارك!",
     "magicWandOnLastPage": "أكمل حتى الصفحة الأخيرة لإنشاء قصة جديدة",
     "decreaseDifficulty": "اجعله أسهل",
     "increaseDifficulty": "اجعله أصعب"
@@ -811,6 +789,17 @@
       "minLevelReached": "أدنى مستوى هو {minDifficulty}.",
       "minExpertGradeReached": "أدنى صف متقدّم هو {minExpertGrade}.",
       "minBelowAllowed": "النزول عن الحد الأدنى المحدّد لهذه الجلسة"
+    },
+    "voice": {
+      "button": "الأوامر الصوتية",
+      "stopListening": "إيقاف الاستماع",
+      "listening": "أستمع…",
+      "hint": "قل «الصفحة التالية» أو «رجوع» أو «اقرأ لي» أو «توقف».",
+      "notUnderstood": "لم أفهم ذلك",
+      "micBlocked": "الميكروفون مغلق",
+      "micBlockedHelp": "اسمح للميكروفون لهذا الموقع من إعدادات المتصفح، ثم اضغط على الميكروفون مرة أخرى.",
+      "unavailable": "الأوامر الصوتية لا تعمل الآن",
+      "unavailableHelp": "أزرار الصفحة ما زالت تعمل."
     }
   },
   "parent": {
@@ -886,7 +875,7 @@
       "practiceWords": "لنتدرب على هذه الكلمات: {{words}}. ",
       "syllables": "لنحلل {{word}}: {{syllables}}"
     },
-    "pass": "🎉 قراءة مثالية!",
+    "pass": "قراءة مثالية!",
     "navigation": {
       "next": "رائع! لننتقل إلى الجملة التالية. إليها: \"{{sentence}}\"",
       "previous": "لنعود لممارسة هذه الجملة: \"{{sentence}}\""
@@ -901,7 +890,9 @@
     "feedbackStatus": "مدرّبك يُعدّ ملاحظاته…",
     "charlotteScope": "يساعدك مدرّب القراءة على بعض الكلمات الصعبة التي تصادفك",
     "syllableDemo": "استمع كيف أجزّئ «{{word}}»",
-    "privacy": "لا نحتفظ بالتسجيلات. يُحذف الصوت بعد تقديم الملاحظات."
+    "privacy": "لا نحتفظ بالتسجيلات. يُحذف الصوت بعد تقديم الملاحظات.",
+    "signIn": "سجّل الدخول لتتدرّب على القراءة بصوت عالٍ.",
+    "noSpeech": "لم أسمعك. اضغط «ابدأ القراءة» واقرأ الجملة بصوت عالٍ."
   },
   "postSession": {
     "quizTitle": "اختبار الفهم",
@@ -1177,7 +1168,7 @@
     "pages": "الصفحات المقروءة",
     "vocabulary": "المفردات",
     "time": "دقائق",
-    "celebration": "🎉 تقدّم رائع! 🎉",
+    "celebration": "تقدّم رائع!",
     "subtitle": "واصل التقدّم!",
     "recentAchievements": "الإنجازات الأخيرة"
   },
@@ -1280,7 +1271,7 @@
     "day_streak": "أيام متتالية",
     "performance_summary": "ملخّص الأداء",
     "comprehension_quizzes": "الفهم (الاختبارات)",
-    "game_performance": "🎮 أداء الألعاب",
+    "game_performance": "أداء الألعاب",
     "quizzes_taken": "الاختبارات المنجزة",
     "games_played": "ألعاب لُعبت",
     "stories_saved": "قصص محفوظة",
@@ -1320,24 +1311,24 @@
     "total_time": "الوقت الإجمالي",
     "words": "كلمات",
     "games": "ألعاب",
-    "reading_habit": "📖 عادة القراءة",
-    "outstanding_streak": "🔥 سلسلة رائعة!",
+    "reading_habit": "عادة القراءة",
+    "outstanding_streak": "سلسلة رائعة!",
     "has_read_for": "قرأ لمدة",
     "days_straight_longest_ever": "أيام متتالية (الأطول:",
     "this_consistency_builds_strong_literacy_foundations": "). هذا الانتظام يبني أساسًا قويًا للقراءة.",
-    "good_momentum": "📈 تقدّم مشجّع!",
+    "good_momentum": "تقدّم مشجّع!",
     "has_a": "لديه سلسلة من",
     "day_streak_going_best": "أيام (الأفضل:",
     "days_try_to_beat_the_record": "أيام). حاول تجاوز الرقم السابق!",
-    "getting_started": "🌱 بداية الطريق",
+    "getting_started": "بداية الطريق",
     "read": "قرأ",
     "encourage_reading_at_the_same_time_each_day_to_build_a_habit": ". شجّع القراءة في الوقت نفسه يوميًا لبناء عادة.",
-    "no_active_streak": "⏰ لا توجد سلسلة قراءة حالية",
+    "no_active_streak": "لا توجد سلسلة قراءة حالية",
     "hasn_t_read_recently_even_10_minutes_today_can_restart_their_streak": "لم يقرأ مؤخرًا. عشر دقائق اليوم قد تبدأ سلسلة جديدة!",
     "this_week": "هذا الأسبوع",
     "total_minutes_across": "دقيقة إجمالًا خلال",
     "active_day": "يوم قراءة",
-    "comprehension_analysis": "🧠 تحليل الفهم",
+    "comprehension_analysis": "تحليل الفهم",
     "no_quizzes_taken_yet_after_reading_a_story_try_the_comprehension_quiz_to_track_understandi": "لا توجد اختبارات بعد. جرّب اختبار الفهم بعد قراءة قصة لمتابعة الاستيعاب!",
     "average": "المتوسط:",
     "across": "% في",
@@ -1345,13 +1336,13 @@
     "reading_skills": "مهارات القراءة",
     "recent_trend": "الاتجاه الأخير",
     "last_3_quizzes": "آخر 3 اختبارات:",
-    "vocabulary": "📚 المفردات",
+    "vocabulary": "المفردات",
     "no_vocabulary_words_tracked_yet_tap_highlighted_words_while_reading_to_start": "لا توجد مفردات مسجّلة بعد. اضغط على الكلمات المميّزة أثناء القراءة لتبدأ!",
     "words_encountered": "الكلمات المصادفة",
     "no_games_played_yet_learning_games_reinforce_vocabulary_and_comprehension": "لم تُلعب أي ألعاب بعد. تعزّز الألعاب المفردات والفهم!",
     "avg_across": "% متوسطًا في",
     "game": "لعبة",
-    "recommendations": "💡 توصيات",
+    "recommendations": "توصيات",
     "personalized_suggestions_for": "اقتراحات مخصّصة لـ",
     "set_a_daily_reading_reminder_even_10_minutes_builds_long_term_literacy": "اضبط تذكيرًا يوميًا للقراءة. حتى عشر دقائق تبني مهارات مستديمة.",
     "try_the_comprehension_quiz_after_each_story_it_helps_with_recall_and_understanding": "جرّب اختبار الفهم بعد كل قصة؛ فهو يساعد على التذكّر والاستيعاب.",
@@ -1375,7 +1366,7 @@
     "add_a_word_then_press_enter": "أضف كلمة ثم اضغط إدخال",
     "50_words_changes_apply_after_you_save": "/50 كلمة • تُطبّق التغييرات بعد الحفظ.",
     "clear_list": "مسح القائمة",
-    "currently_editing": "📝 جارٍ تعديل:",
+    "currently_editing": "جارٍ تعديل:",
     "up_to_50_words_saved_20_used_per_story": "• يُحفظ حتى 50 كلمة، وتُستخدم 20 في كل قصة.",
     "set_reading_guardrails_for_your_child_s_story_experience": "حدّد ضوابط القراءة لقصص طفلك",
     "when_turned_on_your_child_cannot_change_the_reading_difficulty_level_themselves": "عند تفعيله، لا يستطيع طفلك تغيير صعوبة القراءة بنفسه.",
@@ -1444,15 +1435,15 @@
     "what_you_can_do": "ما يمكنك فعله",
     "go_to": "الذهاب إلى",
     "how_to_use_it": "طريقة الاستخدام",
-    "we_d_love_your_feedback": "💬 يسعدنا سماع رأيك!",
+    "we_d_love_your_feedback": "يسعدنا سماع رأيك!",
     "see_that_little": "هل ترى زر",
     "feedback_sticker_in_the_bottom_right_corner": "الملاحظات الصغير أسفل الشاشة",
     "of_your_screen_it_s_on_every_page_tap_it_anytime_to": "؟ تجده في كل صفحة! اضغط عليه من أجل:",
-    "report_a_bug_or_issue": "✅ الإبلاغ عن مشكلة",
-    "suggest_a_new_feature": "💡 اقتراح ميزة جديدة",
-    "tell_us_what_you_love": "⭐ أخبرنا بما يعجبك",
-    "ask_a_question": "❓ طرح سؤال",
-    "look_for_it_in_the": "👉 ابحث عنه في",
+    "report_a_bug_or_issue": "الإبلاغ عن مشكلة",
+    "suggest_a_new_feature": "اقتراح ميزة جديدة",
+    "tell_us_what_you_love": "أخبرنا بما يعجبك",
+    "ask_a_question": "طرح سؤال",
+    "look_for_it_in_the": "ابحث عنه في",
     "bottom_right_corner": "الزاوية السفلية",
     "of_any_screen_it_s_always_there": "من كل شاشة؛ إنه موجود دائمًا!",
     "frequently_asked_questions": "الأسئلة الشائعة",
@@ -1466,7 +1457,7 @@
     "read_aloud_phonics_help_and_word_highlighting": "قراءة صوتية ومساعدة على الأصوات وتمييز الكلمات",
     "includes_heygetonmylevel_reading_practice_free": "يشمل تدريبًا مجانيًا على القراءة مع HeyGetOnMyLevel",
     "tap_a_plan_to_try_again": "اضغط على باقة للمحاولة مجددًا.",
-    "secure_checkout_in_us_dollars_by_stripe": "🔒 دفع آمن بالدولار الأمريكي عبر Stripe.",
+    "secure_checkout_in_us_dollars_by_stripe": "دفع آمن بالدولار الأمريكي عبر Stripe.",
     "card_required_to_start_the_trial_includes": "لبدء التجربة تحتاج إلى بطاقة. يشمل",
     "reading_practice_free_schools_and_classrooms": "تدريبًا مجانيًا على القراءة. للمدارس والفصول:",
     "contact_us": "تواصل معنا",
@@ -1516,7 +1507,7 @@
     "days_remaining_in_your_grace_period": "أيام من المهلة.",
     "sending": "جارٍ الإرسال…",
     "resend": "إعادة الإرسال",
-    "welcome_to_premium": "🎉 مرحبًا بك في الاشتراك المميز!",
+    "welcome_to_premium": "مرحبًا بك في الاشتراك المميز!",
     "activated_successfully": "تم تفعيله بنجاح.",
     "your": "الخاصة بك",
     "days_of_premium_access_expires_on": "أيام الاشتراك المميز تنتهي في",
@@ -1532,7 +1523,7 @@
     "code": "✓ الرمز",
     "accepted": "مقبول",
     "of_premium_start_as_soon_as_you_create_your_account_no_card_needed": "من الاشتراك المميز تبدأ فور إنشاء الحساب. دون بطاقة.",
-    "no_payment_required": "🎉 لا حاجة للدفع!",
+    "no_payment_required": "لا حاجة للدفع!",
     "your_discount_code_will_give_you_90_days_of_free_premium_access_starting_when_you_first_lo": "يمنحك رمزك 90 يومًا مجانًا من الاشتراك المميز بدءًا من أول تسجيل دخول.",
     "voice_personalization_commands": "تخصيص الصوت والأوامر الصوتية",
     "reading_assessment_feedback": "تقييم القراءة والملاحظات",
@@ -1614,7 +1605,7 @@
     "per_month_or": "شهريًا، أو",
     "per_year": "سنويًا",
     "day_free_trial": "أيام تجربة مجانية",
-    "secure_checkout_in_us_dollars_by_stripe_have_a_code_use_it_when_you_sign_up": "🔒 دفع آمن بالدولار الأمريكي عبر Stripe. لديك رمز؟ استخدمه عند التسجيل.",
+    "secure_checkout_in_us_dollars_by_stripe_have_a_code_use_it_when_you_sign_up": "دفع آمن بالدولار الأمريكي عبر Stripe. لديك رمز؟ استخدمه عند التسجيل.",
     "includes": "يشمل",
     "reading_practice_free": "تدريبًا مجانيًا على القراءة",
     "schools": "المدارس",
@@ -1724,13 +1715,13 @@
     "failed_to_update_account_status_please_try_again": "تعذّر تحديث حالة الحساب. حاول مجددًا.",
     "consent_withdrawn_non_essential_data_processing_has_been_stopped": "تم سحب الموافقة وإيقاف معالجة البيانات غير الضرورية.",
     "failed_to_withdraw_consent_please_try_again": "تعذّر سحب الموافقة. حاول مجددًا.",
-    "tap_the_new_story_button_at_the_top": "اضغط ✨ قصة جديدة في الأعلى",
+    "tap_the_new_story_button_at_the_top": "اضغط قصة جديدة في الأعلى",
     "optionally_add_a_special_request_e_g_a_story_about_dinosaurs": "يمكنك إضافة طلب مثل «قصة عن الديناصورات»",
     "watch_as_pages_generate_one_by_one_with_illustrations": "شاهد الصفحات المصوّرة تتكوّن واحدة تلو الأخرى",
     "navigate_forward_backward_through_the_story_at_any_time": "تنقّل للأمام والخلف في القصة متى شئت",
     "tap_finish_story_when_your_child_is_ready_for_an_ending": "اضغط «إنهاء القصة» عندما يريد طفلك خاتمة",
     "save_the_story_to_your_library_to_re_read_later": "احفظ القصة في مكتبتك لقراءتها لاحقًا!",
-    "look_for_the_wand_icon_while_reading_a_story": "ابحث عن أيقونة العصا ✨ أثناء القراءة",
+    "look_for_the_wand_icon_while_reading_a_story": "ابحث عن أيقونة العصا أثناء القراءة",
     "tap_it_to_start_a_fresh_story_without_leaving_the_session": "اضغطها لبدء قصة جديدة في الجلسة نفسها",
     "great_for_when_your_child_wants_another_one": "رائع عندما يطلب طفلك «واحدة أخرى!»",
     "tap_save_story_at_the_end_of_any_reading_session": "اضغط «حفظ القصة» في نهاية جلسة القراءة",
@@ -1755,7 +1746,7 @@
     "update_payment_method_or_cancel_subscription": "حدّث طريقة الدفع أو ألغِ الاشتراك",
     "apply_discount_codes": "استخدم رموز الخصم",
     "how_do_i_create_a_new_story": "كيف أنشئ قصة جديدة؟",
-    "go_to_my_stories_from_the_sidebar_then_tap_the_new_story_button_at_the_top_you_can_optiona": "اذهب إلى «قصصي» واضغط ✨ قصة جديدة. يمكنك طلب موضوع كالفضاء أو إدراج حيوانك الأليف. تتكوّن القصة المصوّرة صفحة بصفحة.",
+    "go_to_my_stories_from_the_sidebar_then_tap_the_new_story_button_at_the_top_you_can_optiona": "اذهب إلى «قصصي» واضغط قصة جديدة. يمكنك طلب موضوع كالفضاء أو إدراج حيوانك الأليف. تتكوّن القصة المصوّرة صفحة بصفحة.",
     "can_my_child_read_the_same_story_again": "هل يمكن لطفلي إعادة قراءة القصة؟",
     "yes_after_finishing_a_story_tap_save_story_to_add_it_to_your_library_you_can_re_read_saved": "نعم! عند الانتهاء اضغط «حفظ القصة». يمكنك قراءتها من المكتبة بصورها الأصلية.",
     "do_stories_ever_end": "هل للقصص نهاية؟",
@@ -1877,7 +1868,7 @@
     "reading_corner_for_serious_readers": "ركن محبّي القراءة",
     "generating_next_page": "نُعدّ الصفحة التالية…",
     "weaving_more_story_magic": "ننسج المزيد من سحر القصص…",
-    "here_s_how_this_one_ends_don_t_forget_to_save": "إليك نهاية القصة! لا تنسَ الحفظ 😊",
+    "here_s_how_this_one_ends_don_t_forget_to_save": "إليك نهاية القصة! لا تنسَ الحفظ",
     "finish_story": "إنهاء القصة!",
     "want_more_go_to_the_next_page_to_add_new_parts_to_this_story": "تريد المزيد؟ انتقل للصفحة التالية لإضافة أجزاء جديدة!",
     "creating_magic": "نصنع السحر…",
@@ -1894,9 +1885,9 @@
     "extra_return_to_home": "العودة إلى الرئيسية",
     "extra_your_subscription_is_now_active_enjoy_unlimited_stories_saving_to_your_library_and_ai_powered_quizzes": "اشتراكك نشط الآن. استمتع بقصص بلا حدود، واحفظها في مكتبتك، وجرّب أسئلة الفهم بالذكاء الاصطناعي.",
     "extra_what_s_unlocked": "المزايا المتاحة الآن",
-    "extra_unlimited_story_sessions_no_timer": "✅ جلسات قراءة بلا حدود وبلا مؤقّت",
-    "extra_ai_comprehension_quizzes": "✅ أسئلة فهم بالذكاء الاصطناعي",
-    "extra_finish_story_with_ai_endings": "✅ نهايات بالذكاء الاصطناعي عند اختيار «إنهاء القصة»",
+    "extra_unlimited_story_sessions_no_timer": "جلسات قراءة بلا حدود وبلا مؤقّت",
+    "extra_ai_comprehension_quizzes": "أسئلة فهم بالذكاء الاصطناعي",
+    "extra_finish_story_with_ai_endings": "نهايات بالذكاء الاصطناعي عند اختيار «إنهاء القصة»",
     "extra_redirecting_in": "سيتم الانتقال خلال",
     "extra_seconds": "ثوانٍ…",
     "extra_payment_cancelled": "أُلغي الدفع",
@@ -1912,8 +1903,8 @@
     "extra_something_went_wrong": "حدث خطأ ما",
     "extra_refresh_page": "تحديث الصفحة",
     "extra_timer_tap_to_show_timer_buttons": "المؤقّت: اضغط لإظهار الأزرار",
-    "extra_time_low": "🚨 الوقت يكاد ينتهي!",
-    "extra_try_premium": "⏱️ جرّب الاشتراك المميّز",
+    "extra_time_low": "الوقت يكاد ينتهي!",
+    "extra_try_premium": "جرّب الاشتراك المميّز",
     "extra_5_min": "٥ دقائق",
     "extra_15_min": "١٥ دقيقة",
     "extra_no_timer": "بلا مؤقّت",
@@ -1925,7 +1916,7 @@
     "extra_current_level": "المستوى الحالي",
     "extra_total_points": "مجموع النقاط",
     "extra_more_badges": "شارات أخرى",
-    "extra_progress_saved_permanently": "✨ تم حفظ تقدّمك بشكل دائم ✨",
+    "extra_progress_saved_permanently": "تم حفظ تقدّمك بشكل دائم",
     "extra_session_progress_upgrade_to_save_forever": "تقدّم الجلسة • رقِّ اشتراكك لحفظه دائمًا",
     "extra_speaking": "جارٍ التحدث",
     "extra_listening": "جارٍ الاستماع",
@@ -2023,27 +2014,27 @@
     "extra_take_text_quiz_instead": "الإجابة كتابةً بدلًا من الصوت",
     "extra_connected_to_buddy": "متّصل برفيق القراءة",
     "extra_disconnected": "غير متّصل",
-    "extra_listening_for_your_answer_say_a_b_c_or_d": "🎤 أستمع لإجابتك… قل \"A\" أو \"B\" أو \"C\" أو \"D\"",
+    "extra_listening_for_your_answer_say_a_b_c_or_d": "أستمع لإجابتك… قل \"A\" أو \"B\" أو \"C\" أو \"D\"",
     "extra_not_quite_right": "✗ ليست الإجابة الصحيحة",
     "extra_moving_to_next_question": "ننتقل إلى السؤال التالي…",
-    "extra_help_me_read": "🎯 ساعدني على القراءة",
+    "extra_help_me_read": "ساعدني على القراءة",
     "extra_charlotte_s_here_to_help_you_practice": "مساعد القراءة هنا ليتدرّب معك!",
-    "extra_words_that_need_practice": "📚 كلمات تحتاج إلى تدريب",
+    "extra_words_that_need_practice": "كلمات تحتاج إلى تدريب",
     "extra_let_s_work_on_these_tricky_words_together": "لنتدرّب معًا على هذه الكلمات الصعبة!",
-    "extra_hear_charlotte_say_it": "🔊 استمع إلى مساعد القراءة",
-    "extra_practice_with_me": "🗣️ تدرّب معي (",
-    "extra_read_this_sentence_out_loud": "📖 اقرأ هذه الجملة بصوت عالٍ",
-    "extra_charlotte_is_getting_ready": "🎙️ مساعد القراءة يستعد…",
+    "extra_hear_charlotte_say_it": "استمع إلى مساعد القراءة",
+    "extra_practice_with_me": "تدرّب معي (",
+    "extra_read_this_sentence_out_loud": "اقرأ هذه الجملة بصوت عالٍ",
+    "extra_charlotte_is_getting_ready": "مساعد القراءة يستعد…",
     "extra_listen_to_charlotte_first": "استمع إلى مساعد القراءة أولًا!",
-    "extra_start_reading": "🎤 ابدأ القراءة!",
+    "extra_start_reading": "ابدأ القراءة!",
     "extra_stop_all_sounds": "إيقاف جميع الأصوات",
-    "extra_stop_reading": "⏹️ إيقاف القراءة",
+    "extra_stop_reading": "إيقاف القراءة",
     "extra_daily_limit_reached_upgrade_for_more": "بلغت الحد اليومي، رقِّ اشتراكك للمزيد!",
-    "extra_how_you_did": "🎯 كيف كان أداؤك",
+    "extra_how_you_did": "كيف كان أداؤك",
     "extra_charlotte_s_feedback": "ملاحظات مساعد القراءة:",
-    "extra_amazing_job_perfect_reading": "🎉 أحسنت! قراءة رائعة!",
-    "extra_good_try_keep_practicing_you_re_getting_better": "💪 محاولة جيّدة! واصل التدريب، فأنت تتحسّن!",
-    "extra_tip": "💡 نصيحة:",
+    "extra_amazing_job_perfect_reading": "أحسنت! قراءة رائعة!",
+    "extra_good_try_keep_practicing_you_re_getting_better": "محاولة جيّدة! واصل التدريب، فأنت تتحسّن!",
+    "extra_tip": "نصيحة:",
     "extra_children_s_privacy_protection": "حماية خصوصية الأطفال",
     "extra_we_comply_with_coppa_children_s_online_privacy_protection_act_to_keep_young_readers_safe": "نلتزم بقانون COPPA لحماية خصوصية الأطفال على الإنترنت للحفاظ على سلامة القرّاء الصغار.",
     "extra_this_account_is_for_a_child_under_13_years_old": "هذا الحساب لطفل دون ١٣ عامًا",
@@ -2061,7 +2052,7 @@
     "extra_next_slide": "الشريحة التالية",
     "extra_show_less": "عرض أقل",
     "extra_show_more": "عرض المزيد",
-    "extra_awesome": "رائع! 🎉",
+    "extra_awesome": "رائع!",
     "extra_toggle_sidebar": "فتح القائمة الجانبية أو إغلاقها",
     "extra_remove": "إزالة",
     "extra_content_not_suitable_for_children": "محتوى غير مناسب للأطفال",
@@ -2112,10 +2103,10 @@
     "extra_please_use_child_friendly_themes_like_adventure_friendship_or_magic": "اختر موضوعات مناسبة للأطفال مثل «المغامرة» أو «الصداقة» أو «السحر».",
     "extra_example_ocean_brave_explore": "مثال: محيط، شجاع، يستكشف",
     "extra_use_educational_words_like_ocean_explore_or_friendship": "استخدم كلمات تعليمية مثل «محيط» أو «يستكشف» أو «صداقة».",
-    "extra_voice_commands_setup_required": "🎤 يلزم إعداد الأوامر الصوتية",
+    "extra_voice_commands_setup_required": "يلزم إعداد الأوامر الصوتية",
     "extra_voice_commands_are_a_premium_feature": "الأوامر الصوتية ميزة مميّزة",
     "extra_upgrade_to_premium_for_unlimited_audio_plays_per_page": "رقِّ اشتراكك للاستماع إلى كل صفحة بلا حدود",
-    "extra_protecting_your_child_s_privacy": "🛡️ حماية خصوصية طفلك",
+    "extra_protecting_your_child_s_privacy": "حماية خصوصية طفلك",
     "extra_for_your_child_s_safety_please_avoid_sharing": "لسلامة طفلك، تجنّب مشاركة:",
     "extra_phone_numbers_addresses_or_contact_information": "أرقام الهواتف أو العناوين أو بيانات الاتصال",
     "extra_full_names_birthdates_or_personal_details": "الأسماء الكاملة أو تواريخ الميلاد أو التفاصيل الشخصية",
@@ -2151,7 +2142,7 @@
     "extra_premium_readers_can_go_completely_hands_free_while_your_child_reads_they_can_speak_simple_commands_to_navigate_pages_hear_words_read_aloud_get_definitions_pause_or_resume_narration_and_more_no_tapping_required_just_say_a_command_and_the_app_responds_instantly": "مع الاشتراك المميّز، يمكن لطفلك القراءة بلا لمس الشاشة. يكفي أن يطلب بصوته التنقّل بين الصفحات أو سماع الكلمات ومعانيها أو إيقاف السرد ومتابعته.",
     "extra_say_play_story_stop_reading_next_page_previous_page_or_help_with_word": "قل بالإنجليزية: \"play story\" أو \"stop reading\" أو \"next page\" أو \"previous page\" أو \"help with [كلمة]\"",
     "extra_say_things_like_start_reading_next_page": "قل بالإنجليزية \"Start reading\" أو \"Next page\"",
-    "extra_1st_come_stories_and_2nd_comes_images_together_they_take_just_under_a_minute": "⏰ القصة أولًا ثم الصور. كل ذلك يستغرق أقل من دقيقة!",
+    "extra_1st_come_stories_and_2nd_comes_images_together_they_take_just_under_a_minute": "القصة أولًا ثم الصور. كل ذلك يستغرق أقل من دقيقة!",
     "extra_mixing_up_the_perfect_image": "جارٍ إعداد صورة رائعة…",
     "extra_backup_mode": "الوضع البديل",
     "extra_emergency": "خيار الطوارئ",
@@ -2185,8 +2176,8 @@
     "extra_creating_your_reading_adventure": "جارٍ إنشاء مغامرة قراءتك…",
     "extra_creating_your_reading_adventure_username": "ننشئ مغامرة قراءتك يا {{userName}}!",
     "extra_welcome_to_premium": "مرحبًا بك في الاشتراك المميّز!",
-    "extra_live_page_by_page_generation": "✅ إنشاء القصة صفحةً بصفحة",
-    "extra_save_stories_to_your_library": "✅ احفظ القصص في مكتبتك",
+    "extra_live_page_by_page_generation": "إنشاء القصة صفحةً بصفحة",
+    "extra_save_stories_to_your_library": "احفظ القصص في مكتبتك",
     "child_school": "الصف الدراسي: {{grade}}",
     "child_reads_at": "يقرأ بمستوى {{grade}}",
     "child_age": "العمر {{age}} سنوات",
@@ -2203,7 +2194,7 @@
     "extra_comprehension_questions_after_reading": "أسئلة فهم بعد القراءة",
     "extra_reading_timer_and_progress_tracking": "مؤقّت قراءة ومتابعة التقدّم",
     "extra_vocabulary_word_bank_and_review_activities": "بنك مفردات وأنشطة مراجعة",
-    "extra_voice_commands_for_navigation_and_controls": "أوامر صوتية للتنقّل والتحكّم",
+    "extra_voice_commands_for_navigation_and_controls": "أوامر صوتية لتقليب الصفحة والرجوع والقراءة بصوت عالٍ والإيقاف",
     "extra_priority_support": "دعم ذو أولوية",
     "extra_admin_educator_dashboards": "لوحات للمشرفين والمعلّمين",
     "extra_curriculum_alignment_tools": "أدوات توافق مع المناهج",
@@ -2257,7 +2248,7 @@
     "alias_dc85af8f2b": "جارٍ الحفظ…",
     "alias_b4e39af188": "جارٍ التبديل…",
     "alias_642776c02c": "أكّد كلمة المرور الجديدة",
-    "alias_56718aa8da": "🎮 أداء الألعاب",
+    "alias_56718aa8da": "أداء الألعاب",
     "alias_4f7363e9cb": "الاختبارات المنجزة",
     "alias_f1f99ed654": "ألعاب لُعبت",
     "alias_27d86c5196": "ألعاب لُعبت",
@@ -2342,7 +2333,7 @@
     "generating": "نُعدّ أسئلة عن قصتك…",
     "title": "اختبار القصة",
     "hear": "اضغط للاستماع",
-    "rightAnswer": "نعم، أحسنت! 🌟",
+    "rightAnswer": "نعم، أحسنت!",
     "goodTry": "محاولة جيدة! الإجابة هي: {{answer}}",
     "check": "تحقّق من إجابتي",
     "next": "السؤال التالي",

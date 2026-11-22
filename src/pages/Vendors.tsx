@@ -29,7 +29,7 @@ const vendors: VendorInfo[] = [
   },
   {
     name: "OpenAI",
-    description: "AI-powered story generation",
+    description: "Writes the stories with an AI model",
     icon: <Brain className="w-5 h-5" />,
     dataShared: ["Child's name (first name only)", "Age/grade level", "Reading preferences", "Story prompts"],
     purpose: "Generate personalized stories based on user preferences and reading level",

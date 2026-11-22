@@ -57,6 +57,8 @@ interface StoryNavigationControlsProps {
   onAudioStateChange?: (playing: boolean, loading: boolean) => void;
   onAudioPlayed?: (page: number) => void;
   onUpgrade?: () => void;
+  /** The story page's microphone (StoryVoiceCommands), beside the page number. */
+  voiceControl?: React.ReactNode;
 }
 
 export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = ({
@@ -80,7 +82,8 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
   audioPlayedPage,
   onAudioStateChange,
   onAudioPlayed,
-  onUpgrade
+  onUpgrade,
+  voiceControl
 }) => {
   const handleNext = () => {
     DebugLogger.log('ui', 'Navigation: Next page requested', { currentPage, totalPages });
@@ -140,6 +143,8 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
           <span className="hidden sm:inline"> {uiText("Page")} </span>{currentPage + 1}  {uiText("of")} {totalPages}
         </span>
+
+        {voiceControl}
         
         {/* Help Me Read Button - Right of page numbers - Guest Users Only */}
         {!isPremium && onUpgrade && (
@@ -156,7 +161,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
               {/* Help Me Read Coach for guests would be limited - show upgrade prompt */}
               <div className="p-6 text-center">
                 <GraduationCap className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2"> {uiText("Unlock Reading Help")} </h3>
+                <h3 className="text-lg font-semibold mb-2"> {uiText("Get Reading Help")} </h3>
                 <p className="text-muted-foreground mb-4">
                    {uiText("Get personalized reading assistance with our premium features.")} </p>
                 <Button onClick={onUpgrade} variant="default">

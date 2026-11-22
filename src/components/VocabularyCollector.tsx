@@ -179,7 +179,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
   return (
     <div className="fixed inset-0 z-50 flex items-stretch justify-center p-0 bg-black/50 xl:items-center xl:p-4">
       <Card className="w-full h-full rounded-none overflow-hidden xl:w-[min(90vw,42rem)] xl:h-auto xl:rounded-xl">
-        <CardHeader className="sticky top-0 z-20 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+        <CardHeader className="sticky top-0 z-20 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="w-5 h-5" />

@@ -33,7 +33,7 @@ vi.mock("@/integrations/supabase/client", () => ({
     },
     functions: {
       invoke: async () => ({
-        data: { clever: "not_connected", classlink: "not_connected" },
+        data: { classlink: "not_connected" },
         error: null,
       }),
     },

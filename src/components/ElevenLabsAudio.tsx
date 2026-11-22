@@ -8,11 +8,7 @@ import { useVoiceIntegration } from "@/hooks/useVoiceIntegration";
 
 import { Play, Square, Crown, Mic, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-// Removed: import { audioSyncService } from "@/services/audioSyncService";
-import { VoiceCommandController } from "@/components/VoiceCommandController";
-import type { VoiceCommandControllerHandle } from "@/components/VoiceCommandController";
 import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
@@ -43,7 +39,6 @@ interface ElevenLabsAudioProps {
 export interface ElevenLabsAudioHandle {
   play: () => Promise<void> | void;
   stop: () => void;
-  toggleVoiceCommands: () => void;
   isPlaying: boolean;
 }
 
@@ -61,7 +56,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   onAudioStateChange
 }: ElevenLabsAudioProps, ref) => {
   const { t } = useTranslation();
-  const { isMobileOrTablet, isCapacitor, hasTouchCapability } = useIsMobile();
+  const { isMobileOrTablet, isCapacitor } = useIsMobile();
   const { handleVoiceToggle, isConnected: voiceConnected, isConnecting: voiceConnecting } = useVoiceIntegration();
   const { toast, dismiss } = useToast();
 
@@ -88,22 +83,10 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     isPremium
   });
 
-  // Voice command state (kept local as it's UI-specific)
-  const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
+  // The Buddy conversation's live mic state, for its button.
   const [vcStatus, setVcStatus] = useState<'idle'|'listening'|'processing'>('idle');
   const [vcLevel, setVcLevel] = useState(0);
   
-  const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
-  const restoredRef = useRef(false);
-  const voiceEnabledRef = useRef(false);
-  const restartTimeoutRef = useRef<number | null>(null);
-  const voiceTipsShownRef = useRef(false);
-  const burstCounterRef = useRef(0);
-  const lastBurstTsRef = useRef(0);
-  const lastTapRef = useRef<number>(0);
-
-  const emitStatus = (s: 'idle'|'listening'|'processing') =>
-    window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
 
   // Enhanced playAudio that checks permissions and marks pages
   const playAudio = async () => {
@@ -160,169 +143,14 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     };
   }, []);
 
-  // Stop voice commands on unmount
-  useEffect(() => {
-    return () => {
-      try { vcRef.current?.stop?.(); } catch {}
-      try { emitStatus('idle'); } catch {}
-    };
-  }, []);
-
-  // Restore voice command state from session
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem('t2r_voice_commands');
-      const userDisabled = (window as any).__t2r_vc_user_disabled === true;
-      if (isPremium && saved === '1' && !userDisabled && !restoredRef.current) {
-        (window as any).__t2r_vc_user_disabled = false;
-        setVoiceCommandsEnabled(true);
-        voiceEnabledRef.current = true;
-        restoredRef.current = true;
-      }
-    } catch {}
-  }, [isPremium]);
-
-  useEffect(() => {
-    if (voiceCommandsEnabled && vcStatus === 'listening' && !voiceTipsShownRef.current) {
-      toast({
-        title: t("audioReading.voiceCommandsEnabled", "Voice Commands Enabled"),
-        description: t("audioReading.voiceCommandsHint", "Try: 'next page', 'pause', 'continue', 'read slower'"),
-        duration: 3500,
-        action: (
-          <ToastAction altText={t('audioReading.openVoiceHelp','Open voice commands help')} onClick={() => { window.location.href = '/pricing#voice'; }}>
-            {t('audioReading.fullList','Full list')}
-          </ToastAction>
-        ),
-      });
-      voiceTipsShownRef.current = true;
-    }
-  }, [voiceCommandsEnabled, vcStatus, toast, t]);
-
-  // Support global voice events (toggle and hard stop)
-  useEffect(() => {
-    const toggleHandler = () => toggleVoiceCommands();
-    const stopHandler = () => {
-      if (voiceCommandsEnabled) {
-        try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
-        ;(window as any).__t2r_vc_user_disabled = true;
-        ;(window as any).__t2r_voice_force_off = true;
-        voiceEnabledRef.current = false;
-        setVoiceCommandsEnabled(false);
-        emitStatus('idle');
-        setVcStatus('idle');
-        setVcLevel(0);
-        try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } })); } catch {}
-        try { vcRef.current?.stop?.(); } catch {}
-      }
-    };
-    window.addEventListener('voice:toggle', toggleHandler as EventListener);
-    window.addEventListener('voice:stop', stopHandler as EventListener);
-    return () => {
-      window.removeEventListener('voice:toggle', toggleHandler as EventListener);
-      window.removeEventListener('voice:stop', stopHandler as EventListener);
-    };
-  }, [voiceCommandsEnabled]);
-
-  // Premium voice commands toggle
-  const toggleVoiceCommands = () => {
-    // Debounce rapid taps to avoid race conditions
-    const now = Date.now();
-    if (now - (lastBurstTsRef.current || 0) < 350) return;
-    lastBurstTsRef.current = now;
-
-    if (!isPremium) {
-      onUpgrade?.();
-      return;
-    }
-
-    if (voiceCommandsEnabled) {
-      // Turn OFF: set flags first to prevent any late onstart from flipping UI back
-      try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
-      ;(window as any).__t2r_vc_user_disabled = true;
-      ;(window as any).__t2r_voice_force_off = true;
-      voiceEnabledRef.current = false;
-      setVoiceCommandsEnabled(false);
-      emitStatus('idle');
-      setVcStatus('idle');
-      setVcLevel(0);
-      try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } })); } catch {}
-      try { window.dispatchEvent(new CustomEvent('voice:stop')); } catch {}
-      if (restartTimeoutRef.current) {
-        clearTimeout(restartTimeoutRef.current);
-        restartTimeoutRef.current = null;
-      }
-      try { vcRef.current?.stop?.(); } catch {}
-      return;
-    }
-
-    const hasWebSpeech = typeof window !== 'undefined' && ((('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)));
-    const pointerFine = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(pointer: fine)').matches : false;
-    const isHybridDesktop = hasTouchCapability && !isMobileOrTablet && pointerFine;
-    const useWebSpeech = hasWebSpeech && !isMobileOrTablet && (pointerFine || !hasTouchCapability);
-
-    if (useWebSpeech) {
-      try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
-      ;(window as any).__t2r_vc_user_disabled = false;
-      ;(window as any).__t2r_voice_force_off = false;
-      setVoiceCommandsEnabled(true);
-      voiceEnabledRef.current = true;
-      emitStatus('listening');
-      setVcStatus('listening');
-      return;
-    }
-
-    // Headless Whisper path (no modal)
-    try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
-    ;(window as any).__t2r_vc_user_disabled = false;
-    ;(window as any).__t2r_voice_force_off = false;
-    setVoiceCommandsEnabled(true);
-    voiceEnabledRef.current = true;
-    emitStatus('listening');
-    setVcStatus('listening');
-    vcRef.current?.start?.();
-  };
 
   // Expose imperative methods to parent (e.g., bottom dock)
   useImperativeHandle(ref, () => ({
     play: playAudio,
     stop: stopAudio,
-    toggleVoiceCommands,
     get isPlaying() { return isPlaying; }
   }), [isPlaying]);
 
-  const handleHeadlessCommand = (cmd: string) => {
-    try {
-      // Voice command processing not available in audioSyncService
-      const result = null;
-      DebugLogger.log('audio', 'Headless voice command processed', { cmd, result });
-      if (result && result.recognized && typeof result.action === 'function') {
-        window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'processing' } }));
-        try {
-          result.action();
-          toast({ title: t('audioReading.voiceCommandRun', 'Command executed'), description: cmd, duration: 1500 });
-        } finally {
-          window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } }));
-        }
-      } else {
-        toast({ title: t('audioReading.voiceNotRecognized', 'Not recognized'), description: t('audioReading.tryCommand', "Try 'next page' or 'pause'"), duration: 2000 });
-      }
-    } catch (e) {
-      DebugLogger.error('audio', 'Headless voice processing failed', e);
-      toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
-     } finally {
-        if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
-          if (restartTimeoutRef.current) {
-            clearTimeout(restartTimeoutRef.current);
-            restartTimeoutRef.current = null;
-          }
-          restartTimeoutRef.current = window.setTimeout(() => {
-            if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
-              try { vcRef.current?.start?.(); } catch (e) { DebugLogger.warn('audio', 'Headless restart failed', e); }
-            }
-          }, 250);
-        }
-     }
-  };
 
   // Voice vocabulary events handler
   useEffect(() => {
@@ -521,8 +349,6 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
         </TooltipProvider>
       )}
 
-{/* Headless voice controller (no UI) */}
-<VoiceCommandController ref={vcRef} headless onCommand={handleHeadlessCommand} />
 {/* TTSDebugOverlay integrated into UnifiedDebugMonitor */}
     </div>
   );

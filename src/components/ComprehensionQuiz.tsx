@@ -238,7 +238,7 @@ export const ComprehensionQuiz = ({
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-lg">
-        <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Star className="w-5 h-5" />
@@ -316,7 +316,7 @@ export const ComprehensionQuiz = ({
                 <div className={`p-3 rounded-lg border ${selectedAnswer === currentQ.correctAnswer ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
                   <p className="font-semibold mb-1">
                     {selectedAnswer === currentQ.correctAnswer
-                      ? t('comprehension.rightAnswer', 'Yes, you got it! 🌟')
+                      ? t('comprehension.rightAnswer', 'Yes, you got it!')
                       : t('comprehension.goodTry', 'Good try! The answer is: {{answer}}', { answer: currentQ.options[currentQ.correctAnswer] })}
                   </p>
                   {currentQ.explanation && <p className="text-sm text-gray-700">💡 {currentQ.explanation}</p>}

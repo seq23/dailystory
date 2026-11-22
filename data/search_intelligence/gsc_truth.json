@@ -2,24 +2,24 @@
   "schema_version": "1.0",
   "truth_source": "google_search_console_search_analytics",
   "property": "https://time-2-read.com/",
-  "collected_at": "2026-11-21T15:35:57.595Z",
+  "collected_at": "2026-11-22T15:40:05.176Z",
   "state": "OK",
   "named_stop": null,
   "window": {
-    "start_date": "2026-10-22",
-    "end_date": "2026-11-18",
+    "start_date": "2026-10-23",
+    "end_date": "2026-11-19",
     "days": 28
   },
   "totals": {
-    "clicks": 8,
-    "impressions": 545,
-    "ctr": 0.0147,
-    "position": 11.06
+    "clicks": 9,
+    "impressions": 547,
+    "ctr": 0.0165,
+    "position": 10.79
   },
   "row_count": 48,
   "query_count": 46,
-  "page_count": 16,
-  "attributed_impressions": 234,
+  "page_count": 15,
+  "attributed_impressions": 231,
   "truth_boundary": "Rows are query x page for the window. Search Console withholds anonymised queries from query rows, so attributed_impressions is below totals.impressions; the property total is the headline number.",
   "rows": [
     {
@@ -34,17 +34,17 @@
       "query": "time 2 read",
       "page": "https://time-2-read.com/",
       "clicks": 0,
-      "impressions": 29,
+      "impressions": 33,
       "ctr": 0,
-      "position": 5.59
+      "position": 5.73
     },
     {
       "query": "time to read",
       "page": "https://time-2-read.com/",
       "clicks": 1,
-      "impressions": 25,
-      "ctr": 0.04,
-      "position": 7.88
+      "impressions": 23,
+      "ctr": 0.0435,
+      "position": 7.74
     },
     {
       "query": "time read",
@@ -52,7 +52,7 @@
       "clicks": 1,
       "impressions": 19,
       "ctr": 0.0526,
-      "position": 8.47
+      "position": 8.42
     },
     {
       "query": "20 minute reading timer",
@@ -79,28 +79,28 @@
       "position": 7.55
     },
     {
-      "query": "personalized books for 2 year olds",
-      "page": "https://time-2-read.com/books-for-toddlers",
-      "clicks": 0,
-      "impressions": 7,
-      "ctr": 0,
-      "position": 55
-    },
-    {
-      "query": "reading time 2",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 7,
-      "ctr": 0,
-      "position": 7.43
-    },
-    {
       "query": "ccpa notice",
       "page": "https://time-2-read.com/ccpa",
       "clicks": 0,
       "impressions": 6,
       "ctr": 0,
       "position": 34.33
+    },
+    {
+      "query": "reading time 2",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 7.17
+    },
+    {
+      "query": "personalized books for 2 year olds",
+      "page": "https://time-2-read.com/books-for-toddlers",
+      "clicks": 0,
+      "impressions": 5,
+      "ctr": 0,
+      "position": 55.8
     },
     {
       "query": "reading timer 20 minutes",
@@ -141,14 +141,6 @@
       "impressions": 3,
       "ctr": 0,
       "position": 7.67
-    },
-    {
-      "query": "2read",
-      "page": "https://time-2-read.com/",
-      "clicks": 0,
-      "impressions": 3,
-      "ctr": 0,
-      "position": 11.67
     },
     {
       "query": "best reading apps for struggling readers",
@@ -255,12 +247,12 @@
       "position": 10
     },
     {
-      "query": "30 second short story",
-      "page": "https://time-2-read.com/short-bedtime-stories-for-kids",
+      "query": "2read",
+      "page": "https://time-2-read.com/",
       "clicks": 0,
       "impressions": 1,
       "ctr": 0,
-      "position": 67
+      "position": 14
     },
     {
       "query": "can a reading app help a struggling reader?",
@@ -405,6 +397,14 @@
       "impressions": 1,
       "ctr": 0,
       "position": 3
+    },
+    {
+      "query": "times read",
+      "page": "https://time-2-read.com/",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 12
     }
   ]
 }

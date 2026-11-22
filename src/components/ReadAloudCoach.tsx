@@ -13,6 +13,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 import type { SupportedLanguage } from "@/types/multilingual";
 import { useTranslation } from "react-i18next";
+import { startSpeechMeter } from "@/lib/voice/speechMeter";
+import { useSignedIn } from "@/hooks/useSignedIn";
 
 interface ReadAloudCoachProps {
   targetText?: string;
@@ -56,6 +58,9 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   autoIntroduce = true,
 }) => {
   const { t } = useTranslation();
+  // A child's voice goes to speech-to-text only from a signed-in (consenting) account;
+  // voice-to-text refuses guests too (risk rule R-KID-02).
+  const signedIn = useSignedIn();
   // Reading coach now works for ALL languages - no restrictions!
 
   const originalText =
@@ -72,6 +77,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   const [idx, setIdx] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
+  const [noSpeech, setNoSpeech] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [passed, setPassed] = useState<boolean | null>(null);
   const [paceTip, setPaceTip] = useState<string>("");
@@ -301,6 +307,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   };
 
   const startRecording = useCallback(async () => {
+    if (!signedIn) return;
     if (limitReached) return;
     if (attempts >= MAX_ATTEMPTS_PER_SENTENCE) return;
 
@@ -311,8 +318,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     }
 
     pauseStoryIfPlaying();
+    setNoSpeech(false);
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // A clip with no speech in it is never sent (Whisper invents words for silence).
+    const meter = startSpeechMeter(stream);
     const supported = getSupportedMimeType();
     if (supported) mimeTypeRef.current = supported;
     const options = supported ? { mimeType: supported } : undefined;
@@ -327,6 +337,15 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     recorder.onstop = async () => {
       try {
         if (autoStopTORef.current) { clearTimeout(autoStopTORef.current); autoStopTORef.current = null; }
+        // Also reached by the 10 s auto-stop, not only the Stop button: mic off, button back.
+        setIsRecording(false);
+        meter.stop();
+        try { stream.getTracks().forEach((t) => t.stop()); } catch { /* already stopped */ }
+        if (meter.heard === false) {
+          setNoSpeech(true);
+          setTimeout(resumeStoryIfNeeded, 450);
+          return;
+        }
         const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
         const base64 = await blobToBase64(blob);
         const { data, error } = await supabase.functions.invoke("voice-to-text", {
@@ -416,7 +435,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     autoStopTORef.current = window.setTimeout(() => {
       try { recorder.stop(); } catch {}
     }, SENTENCE_MAX_MS);
-  }, [attempts, idx, sentences, limitReached, incDailyCount]);
+  }, [attempts, idx, sentences, limitReached, incDailyCount, signedIn]);
 
   const stopRecording = useCallback(() => {
     try { mediaRecorderRef.current?.stop(); } catch {}
@@ -426,8 +445,10 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   // Quick 2-second check for a single word
   const checkWordPronunciation = async (word: string): Promise<boolean> => {
+    if (!signedIn) return false;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const meter = startSpeechMeter(stream);
       const supported = getSupportedMimeType();
       const options = supported ? { mimeType: supported } : undefined;
       const recorder = new MediaRecorder(stream, options as MediaRecorderOptions);
@@ -438,6 +459,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         recorder.onstop = async () => {
           try { clearTimeout(stopAfter); } catch {}
           try { stream.getTracks().forEach(t=>t.stop()); } catch {}
+          meter.stop();
+          if (meter.heard === false) { resolve(""); return; }
           const blob = new Blob(chunks, { type: supported || "audio/webm" });
           const base64 = await blobToBase64(blob);
           const { data } = await supabase.functions.invoke("voice-to-text", { body: { audio: base64, mimeType: supported || "audio/webm" } });
@@ -646,7 +669,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <CardTitle className="text-lg sm:text-xl text-primary"> {uiText("🎯 Help Me Read")} </CardTitle>
+              <CardTitle className="text-lg sm:text-xl text-primary"> {uiText("Help Me Read")} </CardTitle>
               <CardDescription className="text-sm"> {uiText("Charlotte's here to help you practice!")} </CardDescription>
             </div>
             <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
@@ -670,7 +693,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
           {topWords.length > 0 && (
             <div className="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
               <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-200 mb-2 flex items-center gap-2">
-                 {uiText("📚 Words That Need Practice")} </h3>
+                 {uiText("Words That Need Practice")} </h3>
               <p className="text-sm text-orange-700 dark:text-orange-300 mb-4">
                  {uiText("Let's work on these tricky words together!")} </p>
               
@@ -693,14 +716,14 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                         className="w-full text-sm font-medium h-12" 
                         onClick={() => onHearCharlotteSayIt(word)}
                       >
-                         {uiText("🔊 Hear Charlotte Say It")} </Button>
+                         {uiText("Hear Charlotte Say It")} </Button>
                       <Button 
                         size="lg" 
                         className="w-full text-sm font-medium h-12" 
                         onClick={() => onSayWithMe(word)} 
                         disabled={(wordTries[word] || 0) >= WORD_MICRO_ATTEMPTS}
                       >
-                         {uiText("🗣️ Practice With Me (")} {(wordTries[word] || 0)}/{WORD_MICRO_ATTEMPTS})
+                         {uiText("Practice With Me (")} {(wordTries[word] || 0)}/{WORD_MICRO_ATTEMPTS})
                       </Button>
                     </div>
                   </div>
@@ -714,7 +737,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
             <div className="font-bold leading-relaxed text-xl sm:text-2xl md:text-3xl text-gray-800 dark:text-gray-200 break-words mb-2">
               {currentSentence}
             </div>
-            <div className="text-sm text-blue-700 dark:text-blue-300"> {uiText("📖 Read this sentence out loud")} </div>
+            <div className="text-sm text-blue-700 dark:text-blue-300"> {uiText("Read this sentence out loud")} </div>
           </div>
 
         {/* Charlotte readiness and controls */}
@@ -723,30 +746,38 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
             <div className="bg-purple-50 dark:bg-purple-950/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
               <div className="flex items-center justify-center gap-2 text-purple-800 dark:text-purple-200">
                 <div className="animate-spin w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full"></div>
-                <span className="font-medium"> {uiText("🎙️ Charlotte is getting ready...")} </span>
+                <span className="font-medium"> {uiText("Charlotte is getting ready...")} </span>
               </div>
               <p className="text-sm text-purple-600 dark:text-purple-300 mt-2">
                  {uiText("Listen to Charlotte first!")} </p>
             </div>
           )}
           
-          {charlotteReady && !charlotteIntroducing && (
+          {noSpeech && !isRecording && (
+            <p className="text-sm text-muted-foreground" data-testid="coach-no-speech"> {t('coach.noSpeech', 'I didn’t hear you. Tap Start Reading and read the sentence out loud.')} </p>
+          )}
+
+          {charlotteReady && !charlotteIntroducing && !signedIn && (
+            <p className="text-sm text-muted-foreground" data-testid="coach-sign-in"> {t('coach.signIn', 'Sign in to practise reading out loud.')} </p>
+          )}
+
+          {charlotteReady && !charlotteIntroducing && signedIn && (
             <div className="flex flex-wrap items-center justify-center gap-3">
               {!isRecording ? (
                 <>
                   <Button 
                     size="lg" 
                     onClick={startRecording} 
-                    className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-4 text-lg h-14" 
+                    className="bg-green-700 hover:bg-green-800 text-white font-semibold px-8 py-4 text-lg h-14" 
                     disabled={limitReached || attempts >= MAX_ATTEMPTS_PER_SENTENCE}
                   >
-                    <Mic className="w-5 h-5 mr-2" />  {uiText("🎤 Start Reading!")} </Button>
+                    <Mic className="w-5 h-5 mr-2" />  {uiText("Start Reading!")} </Button>
                   <Button size="sm" variant="destructive" onClick={stopAllAudio} className="gap-2">
                     <StopCircle className="w-4 h-4" />  {uiText("Stop All Sounds")} </Button>
                 </>
               ) : (
                 <Button size="lg" onClick={stopRecording} variant="outline" className="bg-red-50 border-red-300 text-red-700 font-semibold px-8 py-4 text-lg h-14">
-                  <StopCircle className="w-5 h-5 mr-2" />  {uiText("⏹️ Stop Reading")} </Button>
+                  <StopCircle className="w-5 h-5 mr-2" />  {uiText("Stop Reading")} </Button>
               )}
 
               <Button
@@ -779,7 +810,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         {transcript && (
           <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
             <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-3 flex items-center gap-2">
-               {uiText("🎯 How You Did")} </h3>
+               {uiText("How You Did")} </h3>
             
             <div className="space-y-3">
               <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-200 dark:border-green-700">
@@ -794,14 +825,14 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                      {uiText("Charlotte's Feedback:")} </div>
                   {passed ? (
                     <div className="text-green-600 dark:text-green-400 font-medium text-lg">
-                       {uiText("🎉 Amazing job! Perfect reading!")} </div>
+                       {uiText("Amazing job! Perfect reading!")} </div>
                   ) : (
                     <div className="space-y-2">
                       <div className="text-orange-600 dark:text-orange-400 font-medium">
-                         {uiText("💪 Good try! Keep practicing - you're getting better!")} </div>
+                         {uiText("Good try! Keep practicing - you're getting better!")} </div>
                       {paceTip && (
                         <div className="text-blue-600 dark:text-blue-400 text-sm">
-                           {uiText("💡 Tip:")} {paceTip}
+                           {uiText("Tip:")} {paceTip}
                         </div>
                       )}
                     </div>

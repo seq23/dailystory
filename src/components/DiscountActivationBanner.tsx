@@ -47,7 +47,7 @@ export const DiscountActivationBanner = () => {
       <AlertDescription className="text-green-800 pr-8">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <span className="font-medium">{uiText("🎉 Welcome to Premium!")}</span> {discountDetails.description} {uiText("activated successfully.")}
+            <span className="font-medium">{uiText("Welcome to Premium!")}</span> {discountDetails.description} {uiText("activated successfully.")}
             <span className="text-green-700"> {uiText("Your")} {discountDetails.durationDays} {uiText("days of premium access expires on")} {formattedEndDate}.</span>
           </div>
           <Button
