@@ -25,6 +25,7 @@ interface AchievementPopupProps {
 const rarityConfig = {
   common: {
     gradient: 'from-gray-500 to-gray-700',
+    fg: 'text-white',
     glow: 'shadow-gray-500/30',
     border: 'border-gray-300',
     particles: 'text-gray-400',
@@ -32,6 +33,7 @@ const rarityConfig = {
   },
   rare: {
     gradient: 'from-blue-600 to-blue-800',
+    fg: 'text-white',
     glow: 'shadow-blue-500/40',
     border: 'border-blue-300',
     particles: 'text-blue-400',
@@ -39,13 +41,15 @@ const rarityConfig = {
   },
   epic: {
     gradient: 'from-purple-600 to-purple-800',
+    fg: 'text-white',
     glow: 'shadow-purple-500/50',
     border: 'border-purple-300',
     particles: 'text-purple-400',
     bg: 'from-purple-50 to-purple-100'
   },
   legendary: {
-    gradient: 'from-yellow-700 via-amber-700 to-orange-700',
+    gradient: 'from-yellow-300 via-amber-300 to-amber-400',
+    fg: 'text-amber-950',
     glow: 'shadow-amber-500/60',
     border: 'border-amber-300',
     particles: 'text-amber-400',
@@ -181,7 +185,7 @@ export const AchievementPopup: React.FC<AchievementPopupProps> = ({
             <div className="mb-4">
               <span className={cn(
                 "inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
-                `bg-gradient-to-r ${rarity.gradient} text-white`,
+                `bg-gradient-to-r ${rarity.gradient} ${rarity.fg}`,
                 "shadow-lg"
               )}>
                 {achievement.rarity}
@@ -191,8 +195,8 @@ export const AchievementPopup: React.FC<AchievementPopupProps> = ({
             {/* Icon */}
             <div className={cn(
               "mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center",
-              `bg-gradient-to-br ${rarity.gradient}`,
-              "text-white shadow-lg",
+              `bg-gradient-to-br ${rarity.gradient} ${rarity.fg}`,
+              "shadow-lg",
               "animate-bounce"
             )}>
               <IconComponent className="w-8 h-8" />
@@ -219,8 +223,8 @@ export const AchievementPopup: React.FC<AchievementPopupProps> = ({
               onClick={handleClose}
               className={cn(
                 "px-6 py-2 rounded-lg font-medium transition-all duration-200",
-                `bg-gradient-to-r ${rarity.gradient}`,
-                "text-white shadow-lg hover:shadow-xl",
+                `bg-gradient-to-r ${rarity.gradient} ${rarity.fg}`,
+                "shadow-lg hover:shadow-xl",
                 "transform hover:scale-105"
               )}
             >

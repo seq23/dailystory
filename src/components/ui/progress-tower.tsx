@@ -22,7 +22,8 @@ const colorThemes = {
     ring: 'ring-blue-300',
     bg: 'bg-blue-500/10',
     text: 'text-blue-600',
-    premium: 'from-blue-600 via-cyan-700 to-blue-700'
+    premium: 'from-blue-600 via-cyan-700 to-blue-700',
+    fg: 'text-white'
   },
   green: {
     gradient: 'from-green-700 via-green-700 to-green-800',
@@ -30,15 +31,17 @@ const colorThemes = {
     ring: 'ring-green-300',
     bg: 'bg-green-500/10',
     text: 'text-green-600',
-    premium: 'from-green-700 via-emerald-700 to-green-700'
+    premium: 'from-green-700 via-emerald-700 to-green-700',
+    fg: 'text-white'
   },
   gold: {
-    gradient: 'from-yellow-700 via-amber-700 to-orange-700',
+    gradient: 'from-yellow-300 via-amber-300 to-amber-400',
     glow: 'shadow-amber-500/50',
     ring: 'ring-amber-300',
     bg: 'bg-amber-500/10',
     text: 'text-amber-600',
-    premium: 'from-yellow-700 via-amber-700 to-orange-700'
+    premium: 'from-yellow-300 via-amber-400 to-amber-500',
+    fg: 'text-amber-950'
   },
   purple: {
     gradient: 'from-purple-600 via-purple-700 to-purple-800',
@@ -46,7 +49,8 @@ const colorThemes = {
     ring: 'ring-purple-300',
     bg: 'bg-purple-500/10',
     text: 'text-purple-600',
-    premium: 'from-purple-600 via-violet-600 to-purple-700'
+    premium: 'from-purple-600 via-violet-600 to-purple-700',
+    fg: 'text-white'
   }
 };
 
@@ -123,8 +127,8 @@ export const ProgressTower: React.FC<ProgressTowerProps> = ({
       <div className={cn(
         "relative mb-3 p-3 rounded-full backdrop-blur-sm border",
         "transition-all duration-300",
-        isPremium ? `bg-gradient-to-br ${theme.premium}` : `bg-gradient-to-br ${theme.gradient}`,
-        "text-white shadow-lg",
+        isPremium ? `bg-gradient-to-br ${theme.premium} ${theme.fg}` : `bg-gradient-to-br ${theme.gradient} ${theme.fg}`,
+        "shadow-lg",
         celebrating && `ring-4 ${theme.ring} ${theme.glow}`,
         "group-hover:scale-105"
       )}>

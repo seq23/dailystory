@@ -701,12 +701,11 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                         "w-10 h-10 rounded-full flex items-center justify-center",
                         "transition-all duration-300 shadow-lg border-2 border-white/50",
                         `bg-gradient-to-br ${
-                          tower.color === 'blue' ? 'from-blue-600 to-blue-800' :
-                          tower.color === 'green' ? 'from-green-700 to-green-800' :
-                          tower.color === 'gold' ? 'from-yellow-700 to-amber-700' :
-                          'from-purple-600 to-purple-800'
+                          tower.color === 'blue' ? 'from-blue-600 to-blue-800 text-white' :
+                          tower.color === 'green' ? 'from-green-700 to-green-800 text-white' :
+                          tower.color === 'gold' ? 'from-yellow-300 to-amber-400 text-amber-950' :
+                          'from-purple-600 to-purple-800 text-white'
                         }`,
-                        "text-white",
                         isMobile && "w-8 h-8",
                         isTablet && "w-9 h-9",
                         isActive && "ring-2 ring-primary/50 scale-110",

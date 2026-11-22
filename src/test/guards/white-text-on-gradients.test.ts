@@ -68,22 +68,36 @@ describe("text on gradients", () => {
       .split("\n")
       .flatMap((c, i, lines) => {
         if (/\bbg-gradient-to-/.test(c) && textColour(c)) return [{ p, c, text: textColour(c)! }];
-        // A gradient read from a map (`bg-gradient-to-r ${rarity.gradient}`) with white text on a
-        // neighbouring line of the same cn(): the map's entries for that key (`gradient: '...'`)
-        // in the same file are checked too.
-        // An inline choice (`bg-gradient-to-br ${\n a ? 'from-..' : 'from-..'\n}`): its branches are checked.
+        // An inline choice (`bg-gradient-to-br ${\n a ? 'from-.. text-white' : 'from-.. text-amber-950'\n}`):
+        // each branch is checked against the text colour it sets, or white when the element sets white.
         if (/\bbg-gradient-to-\w+ \$\{\s*$/.test(c)) {
           const end = lines.findIndex((l, j) => j > i && /^\s*\}/.test(l));
           const body = lines.slice(i + 1, end < 0 ? i + 1 : end);
           const around = lines.slice(Math.max(0, i - 2), (end < 0 ? i : end) + 3).join(" ");
-          return /\btext-white\b/.test(around) ? body.map((l) => ({ p, c: l, text: WHITE })) : [];
+          const fallback = /\btext-white\b/.test(around) ? WHITE : undefined;
+          return body.flatMap((l) => {
+            const text = textColour(l) ?? fallback;
+            return text ? [{ p, c: l, text }] : [];
+          });
         }
-        const near = lines.slice(Math.max(0, i - 2), i + 3).join(" ");
-        if (!/\btext-white\b/.test(near)) return [];
+        // A gradient read from a map (`bg-gradient-to-r ${rarity.gradient} ${rarity.fg}`): every entry
+        // of that key in the same file is checked, against the `fg:` text colour of its own entry when
+        // the element uses it, or white when the element sets text-white.
         const keys = [...c.matchAll(/\bbg-gradient-to-\w+ \$\{\w+\.(\w+)\}/g)].map((m) => m[1]);
-        return lines
-          .filter((l) => keys.some((k) => new RegExp(`\\b${k}:\\s*['"\`]`).test(l)))
-          .map((l) => ({ p, c: l, text: WHITE }));
+        if (!keys.length) return [];
+        const near = lines.slice(Math.max(0, i - 2), i + 3).join(" ");
+        const usesFg = /\$\{\w+\.fg\}/.test(near);
+        if (!usesFg && !/\btext-white\b/.test(near)) return [];
+        return lines.flatMap((l, j) => {
+          if (!keys.some((k) => new RegExp(`\\b${k}:\\s*['"\`]`).test(l))) return [];
+          if (!usesFg) return [{ p, c: l, text: WHITE }];
+          let start = j;
+          while (start > 0 && !/\{\s*$/.test(lines[start])) start--;
+          const stop = lines.findIndex((x, n) => n > j && /^\s*\}/.test(x));
+          const fg = lines.slice(start, stop).find((x) => /\bfg:\s*['"`]/.test(x));
+          const text = fg && textColour(fg);
+          return [{ p, c: l, text: text ?? `no fg colour in the entry for ${l.trim()}` }];
+        });
       }),
   );
 
@@ -100,6 +114,7 @@ describe("text on gradients", () => {
   it("every stop behind the text is a fixed colour at 4.5:1 or better against it", () => {
     const bad: string[] = [];
     for (const { p, c, text } of classStrings) {
+      if (!/^#[0-9a-f]{6}$/i.test(text)) { bad.push(`${p}: ${text}`); continue; }
       for (const stop of c.match(/\b(?:from|via|to)-\[hsl\(.*?\)\]/g) ?? []) {
         const m = stop.match(/hsl\((\d+(?:\.\d+)?)_(\d+(?:\.\d+)?)%_(\d+(?:\.\d+)?)%\)/);
         if (!m) { bad.push(`${p}: ${stop} (a theme token can change colour; use a fixed hsl)`); continue; }
