@@ -104,7 +104,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
   };
 
   return (
-    <div className="story-navigation-controls flex items-center justify-between w-full gap-2">
+    <div className="story-navigation-controls flex items-center justify-between w-full gap-1 sm:gap-2">
       {/* Previous Button */}
       <Button
         onClick={handlePrevious}
@@ -118,8 +118,9 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         <span className="sm:hidden"> {uiText("Back")} </span>
       </Button>
 
-      {/* Center Controls with Audio Buttons */}
-      <div className="flex items-center gap-3 min-w-0">
+      {/* Center Controls: takes only the space between Back and Next, and wraps the mic under the page number when that
+          space is too narrow, so it can never sit on Next (320 px, 22 Nov 2026; tighter gaps alone still overlapped 6 px) */}
+      <div className="flex flex-1 flex-wrap items-center justify-center gap-x-1 gap-y-1 sm:gap-x-3 min-w-0">
         {/* Read to Me Button - Left of page numbers - Guest Users Only */}
         {!isPremium && audioEngineRef && onAudioStateChange && onAudioPlayed && (
           <div className="xl:flex hidden">
@@ -173,7 +174,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
       </div>
 
       {/* Next Button */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         <Button
           onClick={handleNext}
           disabled={!canGoNext || isLoadingNextPage}
