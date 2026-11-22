@@ -66,7 +66,7 @@ begin
       tz := p_time_zone;
     end if;
   end if;
-  d := (now() at time zone coalesce(tz, 'UTC'))::date;
+  d := (now() at time zone 'UTC')::date;
 
   select count(*) into used from public.read_aloud_practice where user_id = p_user and day = d;
   select clips into n from public.read_aloud_practice where user_id = p_user and day = d and sentence_key = p_sentence;
