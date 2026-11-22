@@ -29,9 +29,23 @@ test('Premium choices fit a phone, drive the next page, and disappear after Fini
   await expect(page.getByTestId('story-text-scroll-mobile')).toBeVisible({ timeout: 20_000 });
   const chip = page.getByTestId('start-here-coach').first();
   await expect(chip).toBeVisible();
-  const chipBox = (await chip.boundingBox())!;
-  expect(chipBox.x).toBeGreaterThanOrEqual(0);
-  expect(chipBox.x + chipBox.width).toBeLessThanOrEqual(390);
+  // Whole on screen AND not cut by any parent that clips (the old chip sat at x >= 0 but
+  // a parent with overflow hidden cut "Start here!" in half).
+  const cut = await chip.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const out: string[] = [];
+    if (r.left < 0 || r.right > window.innerWidth) out.push(`viewport ${Math.round(r.left)}..${Math.round(r.right)}`);
+    for (let p = el.parentElement; p; p = p.parentElement) {
+      const cs = getComputedStyle(p);
+      if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue;
+      const b = p.getBoundingClientRect();
+      if (r.left < b.left - 0.5 || r.right > b.right + 0.5 || r.top < b.top - 0.5 || r.bottom > b.bottom + 0.5) {
+        out.push(`${p.tagName}.${String(p.className).slice(0, 40)} ${Math.round(b.left)}..${Math.round(b.right)} cuts ${Math.round(r.left)}..${Math.round(r.right)}`);
+      }
+    }
+    return out;
+  });
+  expect(cut, 'Start here! chip is cut off').toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: testInfo.outputPath('start-here-phone.png') });
   const choices = page.getByRole('region', { name: 'Pick what happens next' });
