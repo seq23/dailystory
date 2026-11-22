@@ -24,6 +24,16 @@ test('Premium choices fit a phone, drive the next page, and disappear after Fini
   const dialog = page.getByTestId('new-story-dialog');
   await dialog.getByRole('button', { name: /\+ space/i }).click();
   await dialog.getByTestId('write-story').click();
+  // The "Start here!" chip by the New Story button stays on a 390 px screen (it used
+  // to run off the left edge, cutting off "Start here!" and the story title).
+  await expect(page.getByTestId('story-text-scroll-mobile')).toBeVisible({ timeout: 20_000 });
+  const chip = page.getByTestId('start-here-coach').first();
+  await expect(chip).toBeVisible();
+  const chipBox = (await chip.boundingBox())!;
+  expect(chipBox.x).toBeGreaterThanOrEqual(0);
+  expect(chipBox.x + chipBox.width).toBeLessThanOrEqual(390);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await page.screenshot({ path: testInfo.outputPath('start-here-phone.png') });
   const choices = page.getByRole('region', { name: 'Pick what happens next' });
   await expect(choices).toBeVisible({ timeout: 20_000 });
   const buttons = choices.getByRole('button');

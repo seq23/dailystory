@@ -246,30 +246,18 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
         )}
       </Button>
       {showCoach && (
-        <span className="absolute top-1/2 -translate-y-1/2 left-0 -translate-x-[calc(100%+8px)] flex items-center gap-1.5 md:gap-2 pointer-events-none z-30 motion-safe:animate-enter">
-          <span className="rounded-full bg-primary/90 text-primary-foreground text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-2.5 md:py-1 shadow-sm">
+        // Phone and tablet: under the button, pointing up, so it never runs off the left
+        // edge (at 390 px the button sits near the left, 22 Nov 2026). Desktop: to its left.
+        <span
+          data-testid="start-here-coach"
+          className="absolute z-30 pointer-events-none motion-safe:animate-enter flex flex-col-reverse items-center gap-0.5 top-full mt-1 left-1/2 -translate-x-1/2 md:flex-row md:gap-2 md:top-1/2 md:mt-0 md:left-0 md:-translate-y-1/2 md:-translate-x-[calc(100%+8px)]"
+        >
+          <span className="whitespace-nowrap rounded-full bg-primary/90 text-primary-foreground text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-2.5 md:py-1 shadow-sm">
             {t("labels.startHere", "Start here!")}
           </span>
-          {/* Mobile/Tablet arrow */}
-          <svg
-            className="h-8 w-[64px] md:hidden text-destructive drop-shadow-sm overflow-visible"
-            viewBox="0 0 120 60"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <defs>
-              <marker id="arrowhead-sm" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L6,3 L0,6 Z" fill="currentColor" />
-              </marker>
-            </defs>
-            <path
-              d="M8,40 C 42,62 76,62 108,40"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3.2"
-              strokeLinecap="round"
-              markerEnd="url(#arrowhead-sm)"
-            />
+          {/* Mobile/Tablet: a small caret up to the button */}
+          <svg className="h-2 w-3 md:hidden text-primary/90" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
+            <path d="M6,0 L12,8 L0,8 Z" fill="currentColor" />
           </svg>
           {/* Desktop arrow */}
           <svg
