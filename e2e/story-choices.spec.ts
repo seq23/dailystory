@@ -46,6 +46,39 @@ test('Premium choices fit a phone, drive the next page, and disappear after Fini
     return out;
   });
   expect(cut, 'Start here! chip is cut off').toEqual([]);
+  // It covers neither the story title nor the button (it sits under the button), and
+  // "Start here!" is readable: 12 px or more, 4.5:1 or better against its own fill.
+  const fit = await chip.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const hit = (b: DOMRect) => r.left < b.right && b.left < r.right && r.top < b.bottom && b.top < r.bottom;
+    const titles = [...document.querySelectorAll('h1')].map((h) => h.getBoundingClientRect()).filter((b) => b.width > 0 && b.height > 0);
+    const button = el.parentElement!.querySelector('button')!.getBoundingClientRect();
+    const text = el.querySelector('span')!;
+    const cs = getComputedStyle(text);
+    const rgb = (c: string) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+    const lum = (c: string) => {
+      const [R, G, B] = rgb(c).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+      return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+    };
+    const [a, b] = [lum(cs.color), lum(cs.backgroundColor)].sort((x, y) => y - x);
+    const alpha = Number((cs.backgroundColor.match(/rgba\([^)]*,\s*([\d.]+)\)/) ?? [])[1] ?? 1);
+    return {
+      titles: titles.length,
+      overTitle: titles.some(hit),
+      belowButton: r.top >= button.bottom - 1,
+      overButton: hit(button),
+      fontPx: parseFloat(cs.fontSize),
+      contrast: (a + 0.05) / (b + 0.05),
+      opaqueFill: alpha === 1,
+    };
+  });
+  expect(fit.titles, 'a story title is on screen to check against').toBeGreaterThan(0);
+  expect(fit.overTitle, 'Start here! chip covers the story title').toBe(false);
+  expect(fit.overButton, 'Start here! chip covers the New Story button').toBe(false);
+  expect(fit.belowButton, 'Start here! chip sits under the New Story button').toBe(true);
+  expect(fit.fontPx).toBeGreaterThanOrEqual(12);
+  expect(fit.opaqueFill, 'Start here! has a solid fill of its own').toBe(true);
+  expect(fit.contrast).toBeGreaterThanOrEqual(4.5);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: testInfo.outputPath('start-here-phone.png') });
   const choices = page.getByRole('region', { name: 'Pick what happens next' });

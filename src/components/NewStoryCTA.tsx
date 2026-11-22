@@ -246,39 +246,17 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
         )}
       </Button>
       {showCoach && (
-        // Phone and tablet: under the button, pointing up, so it never runs off the left
-        // edge (at 390 px the button sits near the left, 22 Nov 2026). Desktop: to its left.
+        // One placement at every width: under the button, pointing up. To its left it ran
+        // off a phone's edge and covered long story titles on wide screens (22 Nov 2026).
         <span
           data-testid="start-here-coach"
-          className="absolute z-30 pointer-events-none motion-safe:animate-enter flex flex-col-reverse items-center gap-0.5 top-full mt-1 left-1/2 -translate-x-1/2 md:flex-row md:gap-2 md:top-1/2 md:mt-0 md:left-0 md:-translate-y-1/2 md:-translate-x-[calc(100%+8px)]"
+          className="absolute z-30 pointer-events-none motion-safe:animate-enter flex flex-col-reverse items-center top-full mt-1 left-1/2 -translate-x-1/2"
         >
-          <span className="whitespace-nowrap rounded-full bg-primary/90 text-primary-foreground text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-2.5 md:py-1 shadow-sm">
+          <span className="whitespace-nowrap rounded-full border-2 border-primary bg-background text-foreground text-xs font-semibold px-2.5 py-0.5 shadow-md">
             {t("labels.startHere", "Start here!")}
           </span>
-          {/* Mobile/Tablet: a small caret up to the button */}
-          <svg className="h-2 w-3 md:hidden text-primary/90" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
+          <svg className="h-2 w-3 -mb-px text-primary" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
             <path d="M6,0 L12,8 L0,8 Z" fill="currentColor" />
-          </svg>
-          {/* Desktop arrow */}
-          <svg
-            className="hidden md:block h-10 w-[96px] text-destructive drop-shadow-sm overflow-visible"
-            viewBox="0 0 140 72"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <defs>
-              <marker id="arrowhead-lg" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor" />
-              </marker>
-            </defs>
-            <path
-              d="M10,48 C 54,72 98,72 132,48"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="4.0"
-              strokeLinecap="round"
-              markerEnd="url(#arrowhead-lg)"
-            />
           </svg>
         </span>
       )}

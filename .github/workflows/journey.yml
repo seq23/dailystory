@@ -30,17 +30,10 @@ jobs:
           npx vite preview --port 4173 --strictPort &
           npx --yes wait-on@8.0.1 http://localhost:4173 --timeout 60000
           PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts e2e/story-choices.spec.ts --project=chromium --retries=1
-      - if: failure()
+      # One upload, pass or fail: the report and every capture (start-here-phone.png at 390 px).
+      - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: journey-report
           path: test-results/
-          retention-days: 7
-      # The 390 px capture of the reader header with the "Start here!" chip, for review.
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: start-here-phone
-          path: test-results/**/start-here-phone.png
-          if-no-files-found: ignore
           retention-days: 7
