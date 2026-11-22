@@ -1,5 +1,5 @@
 // Guest pass for the signed-out sample story (3 Nov 2026).
-// The paid functions (reading voice, speech-to-text, translation, spelling, quiz) no
+// The paid functions (reading voice, translation, spelling, quiz) no
 // longer answer the public anon key alone: supabase/functions/_shared/paidCallGuard.ts.
 // A signed-in child's calls carry the session token as before. A signed-out guest's
 // calls get a short-lived signed pass from the guest-pass function, added here as the
@@ -13,7 +13,6 @@ export const GUEST_PAID_FUNCTIONS = [
   "elevenlabs-tts",
   "elevenlabs-tts-smart",
   "openai-tts",
-  "voice-to-text",
   "elevenlabs-agent-signed-url",
   "translate-universal",
   "correct-spelling",

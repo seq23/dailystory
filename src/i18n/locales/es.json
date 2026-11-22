@@ -249,28 +249,6 @@
       "readingAbility": {
         "label": "¿Qué tan bien lees?",
         "placeholder": "Selecciona tu nivel de lectura",
-        "levels": {
-          "beginner": {
-            "title": "Pre-lector (3-5 años)",
-            "description": "Aprendiendo letras y sonidos"
-          },
-          "easy": {
-            "title": "Estoy empezando a leer",
-            "description": "Palabras simples y oraciones cortas"
-          },
-          "medium": {
-            "title": "Puedo leer libros simples",
-            "description": "Oraciones más largas y párrafos"
-          },
-          "hard": {
-            "title": "Puedo leer libros por capítulos",
-            "description": "Historias complejas y vocabulario"
-          },
-          "expert": {
-            "title": "Me encanta leer libros grandes",
-            "description": "Vocabulario y conceptos avanzados"
-          }
-        },
         "learnMore": {
           "description": "Nuestros niveles se basan en investigación educativa probada y listas de palabras Dolch, asegurando contenido apropiado para la edad.",
           "title": "Acerca de los niveles de lectura"
@@ -974,7 +952,9 @@
     "feedbackStatus": "Tu guía está preparando sus consejos…",
     "charlotteScope": "Tu guía te ayuda con las palabras que te cuestan al leer",
     "syllableDemo": "Escucha cómo separo «{{word}}»",
-    "privacy": "No guardamos grabaciones. El audio se elimina después de darte los consejos."
+    "privacy": "No guardamos grabaciones. El audio se elimina después de darte los consejos.",
+    "signIn": "Inicia sesión para practicar la lectura en voz alta.",
+    "noSpeech": "No te escuché. Toca «Empieza a leer» y lee la oración en voz alta."
   },
   "postSession": {
     "quizTitle": "Cuestionario de comprensión",

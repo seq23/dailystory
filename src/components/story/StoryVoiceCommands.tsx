@@ -6,13 +6,25 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { VoiceCommandController, type VoiceCommandControllerHandle } from '@/components/VoiceCommandController';
 import { parseStoryVoiceCommand, type StoryVoiceCommand } from '@/lib/voice/storyVoiceCommands';
+import { useSignedIn } from '@/hooks/useSignedIn';
 
 /**
  * The story page's microphone: tap, say "next page", "go back", "read to me" or
  * "stop", and the reader does it. One clip per tap; it ends on silence (or 7 s).
  * The button is the only listening sign (a red dot), so nothing covers the page.
+ * Signed-in accounts only: a child's voice goes to speech-to-text only with a
+ * consenting account (risk rule R-KID-02); voice-to-text refuses guests too.
  */
-export function StoryVoiceCommands({ onCommand, className }: {
+export function StoryVoiceCommands(props: {
+  onCommand: (command: StoryVoiceCommand) => void;
+  className?: string;
+}) {
+  // Signed out, or the session cannot be read: no microphone at all.
+  const signedIn = useSignedIn();
+  return signedIn ? <StoryVoiceMic {...props} /> : null;
+}
+
+function StoryVoiceMic({ onCommand, className }: {
   onCommand: (command: StoryVoiceCommand) => void;
   className?: string;
 }) {

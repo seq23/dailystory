@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DebugLogger } from "@/services/DebugLogger";
+import { startSpeechMeter, type SpeechMeter } from "@/lib/voice/speechMeter";
 
 /**
  * The story page's microphone, with no UI of its own (StoryVoiceCommands is the
@@ -39,7 +40,6 @@ export interface VoiceCommandControllerHandle {
   stop: () => void;
 }
 
-const SPEECH_LEVEL = 0.06;
 const QUIET_AFTER_SPEECH_MS = 800;
 const MAX_CLIP_MS = 7000;
 
@@ -62,20 +62,17 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
     const disposedRef = useRef(false);
     const recorderRef = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
-    const audioContextRef = useRef<AudioContext | null>(null);
-    const rafRef = useRef<number | null>(null);
+    const meterRef = useRef<SpeechMeter | null>(null);
     const maxTimerRef = useRef<number | null>(null);
     const startingRef = useRef(false);
 
     const setStatus = (s: VoiceCommandStatus) => { if (!disposedRef.current) props.current.onStatus?.(s); };
 
     const releaseMic = () => {
-      if (rafRef.current != null) { try { cancelAnimationFrame(rafRef.current); } catch { /* gone */ } }
-      rafRef.current = null;
+      meterRef.current?.stop();
+      meterRef.current = null;
       if (maxTimerRef.current != null) clearTimeout(maxTimerRef.current);
       maxTimerRef.current = null;
-      try { void audioContextRef.current?.close(); } catch { /* already closed */ }
-      audioContextRef.current = null;
       try { streamRef.current?.getTracks().forEach((t) => t.stop()); } catch { /* already stopped */ }
       streamRef.current = null;
     };
@@ -113,39 +110,13 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
         if (disposedRef.current) { stream.getTracks().forEach((t) => t.stop()); return; }
         streamRef.current = stream;
 
-        // heard: null = no level meter on this browser, so we cannot tell; send the clip.
-        const clip = { heard: null as boolean | null, quietSince: null as number | null };
-        try {
-          const Ctor: typeof AudioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
-          const ctx = new Ctor();
-          audioContextRef.current = ctx;
-          const analyser = ctx.createAnalyser();
-          analyser.fftSize = 2048;
-          ctx.createMediaStreamSource(stream).connect(analyser);
-          const buffer = new Uint8Array(analyser.frequencyBinCount);
-          clip.heard = false;
-          const tick = () => {
-            if (audioContextRef.current !== ctx) return;
-            analyser.getByteTimeDomainData(buffer);
-            let sum = 0;
-            for (let i = 0; i < buffer.length; i++) { const v = (buffer[i] - 128) / 128; sum += v * v; }
-            const level = Math.min(1, Math.sqrt(sum / buffer.length) * 2);
-            const now = performance.now();
-            if (level > SPEECH_LEVEL) { clip.heard = true; clip.quietSince = null; }
-            else if (clip.heard) {
-              clip.quietSince ??= now;
-              if (now - clip.quietSince > QUIET_AFTER_SPEECH_MS) { finish(false); return; }
-            }
-            rafRef.current = requestAnimationFrame(tick);
-          };
-          rafRef.current = requestAnimationFrame(tick);
-        } catch (e) {
-          DebugLogger.warn('audio', 'voice command: level meter unavailable', e);
-          clip.heard = null;
-        }
+        // Speech heard? null = no level meter on this browser, so we cannot tell; send the clip.
+        const clip = startSpeechMeter(stream, { quietAfterSpeechMs: QUIET_AFTER_SPEECH_MS, onQuietAfterSpeech: () => finish(false) });
+        meterRef.current = clip;
 
-        const mimeType = supportedMimeType() || "audio/webm";
-        const recorder = new MediaRecorder(stream, supportedMimeType() ? { mimeType } : undefined);
+        const supported = supportedMimeType();
+        const mimeType = supported || "audio/webm";
+        const recorder = new MediaRecorder(stream, supported ? { mimeType } : undefined);
         recorderRef.current = recorder;
         const chunks: BlobPart[] = [];
         recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };

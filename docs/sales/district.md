@@ -15,7 +15,9 @@ against local requirements before selecting a cohort.
 
 **Live (merged 31 Oct 2026):** teachers enter reading sessions and dated assessments;
 school administrators review their own school's classes and teachers. CSV roster
-import works at any grade. A ClassLink (OneRoster) connection is built, awaiting its
+import takes every child, whatever the grade: TK is read as Pre-K, and 11th, 12th
+and ungraded children are kept with the grade not recorded (stories go up to 10th
+grade). A ClassLink (OneRoster) connection is built, awaiting its
 first school connection: it is not live with any school yet, and it needs the
 district's existing ClassLink relationship. No paid rostering service is used.
 Planned, not built: student SSO and copying home family accounts into school reports.

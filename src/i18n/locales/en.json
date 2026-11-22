@@ -950,7 +950,9 @@
       "comfort": "That's okay! Keep practicing \"{{word}}\" and you'll get it. Don't worry, it takes time!"
     },
     "syllableDemo": "Listen to how I break down \"{{word}}\"",
-    "privacy": "We don’t store recordings. Audio is discarded after feedback."
+    "privacy": "We don’t store recordings. Audio is discarded after feedback.",
+    "signIn": "Sign in to practise reading out loud.",
+    "noSpeech": "I didn’t hear you. Tap Start Reading and read the sentence out loud."
   },
   "vocabulary": {
     "title": "My Vocabulary Collection",

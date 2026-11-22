@@ -6,8 +6,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { parseStoryVoiceCommand } from '@/lib/voice/storyVoiceCommands';
 import { VOICE_COMMAND_PROMPTS, commandTranscript, voiceCommandLanguage } from '../../../supabase/functions/_shared/voiceCommandPrompt';
 
-const mocks = vi.hoisted(() => ({ invoke: vi.fn(), toast: vi.fn() }));
-vi.mock('@/integrations/supabase/client', () => ({ supabase: { functions: { invoke: (...a: any[]) => mocks.invoke(...a) } } }));
+const SIGNED_IN = { data: { session: { user: { id: 'u1' } } }, error: null };
+const mocks = vi.hoisted(() => ({ invoke: vi.fn(), toast: vi.fn(), getSession: vi.fn() }));
+vi.mock('@/integrations/supabase/client', () => ({ supabase: {
+  functions: { invoke: (...a: any[]) => mocks.invoke(...a) },
+  auth: { getSession: () => mocks.getSession(), onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }) },
+} }));
 vi.mock('@/services/CharlotteVoiceService', () => ({ CharlotteVoiceService: { getInstance: () => ({ getStatus: () => ({ isPlaying: false }), stop: () => {} }) } }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 
@@ -99,6 +103,7 @@ describe('the microphone hears a clip and hands it over', () => {
       return real(fn, ms);
     }) as any);
     mocks.invoke.mockResolvedValue({ data: { text: 'Next page.' }, error: null });
+    mocks.getSession.mockResolvedValue(SIGNED_IN);
   });
   afterEach(() => { cleanup(); vi.restoreAllMocks(); delete (window as any).AudioContext; mocks.invoke.mockReset(); mocks.toast.mockReset(); });
 
@@ -183,7 +188,7 @@ describe('the microphone hears a clip and hands it over', () => {
 
   it('while listening the button shows a live microphone with one small red dot, and no toast covers the page', async () => {
     render(<StoryVoiceCommands onCommand={vi.fn()} />);
-    const button = screen.getByRole('button', { name: 'Voice commands' });
+    const button = await screen.findByRole('button', { name: 'Voice commands' });
     await act(async () => { fireEvent.click(button); });
     const listening = screen.getByRole('button', { name: 'Stop listening' });
     expect(listening).toHaveAttribute('aria-pressed', 'true');
@@ -196,7 +201,7 @@ describe('the microphone hears a clip and hands it over', () => {
   it('the story button turns what was said into a page action, and says so when it did not understand', async () => {
     const onCommand = vi.fn();
     render(<StoryVoiceCommands onCommand={onCommand} />);
-    const button = screen.getByRole('button', { name: 'Voice commands' });
+    const button = await screen.findByRole('button', { name: 'Voice commands' });
     await act(async () => { fireEvent.click(button); });
     await act(async () => { timers[0][0](); await new Promise((r) => setTimeout(r, 20)); });
     expect(onCommand).toHaveBeenCalledWith('next');
@@ -206,6 +211,34 @@ describe('the microphone hears a clip and hands it over', () => {
     await act(async () => { timers[1][0](); await new Promise((r) => setTimeout(r, 20)); });
     expect(onCommand).toHaveBeenCalledTimes(1);
     expect(mocks.toast).toHaveBeenLastCalledWith(expect.objectContaining({ title: 'I didn’t catch that' }));
+  });
+});
+
+describe('a signed-out guest never gets a microphone (parental consent, R-KID-02)', () => {
+  beforeEach(() => {
+    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: vi.fn() } });
+  });
+  afterEach(() => { cleanup(); mocks.getSession.mockReset(); mocks.invoke.mockReset(); });
+
+  it.each([
+    ['a guest (no session)', () => mocks.getSession.mockResolvedValue({ data: { session: null }, error: null })],
+    ['the sign-in check failing', () => mocks.getSession.mockRejectedValue(new Error('auth down'))],
+    ['the sign-in check returning an error', () => mocks.getSession.mockResolvedValue({ data: { session: null }, error: new Error('bad') })],
+  ])('%s: no mic on the story page, and the microphone is never opened', async (_case, arrange) => {
+    arrange();
+    const view = render(<StoryVoiceCommands onCommand={vi.fn()} />);
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+    expect(mocks.getSession).toHaveBeenCalled();
+    expect(screen.queryByTestId('story-voice-commands')).toBeNull();
+    expect(view.container.querySelector('button')).toBeNull();
+    expect(navigator.mediaDevices.getUserMedia).not.toHaveBeenCalled();
+    expect(mocks.invoke).not.toHaveBeenCalled();
+  });
+
+  it('a signed-in account gets the mic', async () => {
+    mocks.getSession.mockResolvedValue(SIGNED_IN);
+    render(<StoryVoiceCommands onCommand={vi.fn()} />);
+    expect(await screen.findByTestId('story-voice-commands')).toBeTruthy();
   });
 });
 

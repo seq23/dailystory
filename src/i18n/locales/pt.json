@@ -312,28 +312,6 @@
       "readingAbility": {
         "label": "Que nível de leitura é adequado para você?",
         "placeholder": "Escolha seu nível de leitura",
-        "levels": {
-          "beginner": {
-            "title": "Pré-leitor (3-5 anos)",
-            "description": "Aprendendo letras e sons"
-          },
-          "easy": {
-            "title": "Leitura Fácil",
-            "description": "(K-1ª série: Palavras simples e frases curtas)"
-          },
-          "medium": {
-            "title": "Leitura Intermediária",
-            "description": "(2ª-4ª série: Vocabulário e frases moderadas)"
-          },
-          "hard": {
-            "title": "Leitura Avançada",
-            "description": "(5ª-8ª série: Vocabulário avançado e frases complexas)"
-          },
-          "expert": {
-            "title": "Leitura Expert",
-            "description": "(9ª-12ª série: Vocabulário expert e escrita sofisticada)"
-          }
-        },
         "storyDisplay": {
           "header": {
             "tagline": "Aventuras de Leitura para Crianças",
@@ -1029,7 +1007,9 @@
     "feedbackStatus": "Seu orientador está preparando as dicas…",
     "charlotteScope": "Seu orientador ajuda com algumas palavras difíceis da leitura",
     "syllableDemo": "Ouça como separo «{{word}}»",
-    "privacy": "Não guardamos gravações. O áudio é descartado após as dicas."
+    "privacy": "Não guardamos gravações. O áudio é descartado após as dicas.",
+    "signIn": "Entre na sua conta para praticar a leitura em voz alta.",
+    "noSpeech": "Não ouvi você. Toque em “Comece a ler” e leia a frase em voz alta."
   },
   "postSession": {
     "quizTitle": "Questionário de compreensão",

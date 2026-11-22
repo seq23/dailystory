@@ -14,8 +14,8 @@ sign-in or SSO and live roster data exchange.
 
 The current family product stores adult account information, child profiles and
 reading activity. Its AI story, illustration and narration features can transmit
-content to configured services. Voice commands and the read-aloud coach send a
-short clip, recorded only after a tap on the microphone (a voice command is at most
+content to configured services. Voice commands and the read-aloud coach (signed-in
+accounts only) send a short clip, recorded only after a tap on the microphone (a voice command is at most
 7 seconds), to OpenAI for speech-to-text; OpenAI is listed as a subprocessor for
 this. Time2Read stores neither the recording nor the transcript. Free-text requests may
 contain personal information. Do not describe the family product as collecting

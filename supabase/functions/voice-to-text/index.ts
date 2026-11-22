@@ -66,8 +66,10 @@ serve(async (req) => {
 
   
 
-  // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'voice-to-text', corsHeaders, { maxBodyBytes: 8 * 1024 * 1024, signInFor: 'so we can hear you read' });
+  // Paid call, signed-in accounts only: a child's voice is sent to OpenAI only from an
+  // account with parental consent on record (risk rule R-KID-02), so a guest pass is
+  // refused here, not just hidden in the UI (../_shared/paidCallGuard.ts).
+  const refused = await paidCallRefusal(req, 'voice-to-text', corsHeaders, { allowGuests: false, maxBodyBytes: 8 * 1024 * 1024, signInFor: 'so we can hear you read' });
   if (refused) return refused;
 
   try {

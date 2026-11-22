@@ -6,6 +6,8 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { GRADES } from "../../../supabase/functions/_shared/grades";
+import { rosterGrade } from "../../../supabase/functions/_shared/institutionRoster";
 
 const root = resolve(__dirname, "../../..");
 const read = (file: string) => readFileSync(join(root, file), "utf8");
@@ -70,5 +72,21 @@ describe("institutional sales claims stay honest", () => {
     expect(pricing).toMatch(/Proposal only/);
     expect(pricing).toMatch(/not implemented/);
     expect(read("docs/sales/privacy-security.md")).toMatch(/not a certification or legal conclusion/);
+  });
+
+  it("never sells grades the stories do not cover (stories stop at 10th; 11th-12th import ungraded)", () => {
+    // The code: stories go up to GRADES' last grade; a roster 11th/12th grader is kept with no grade.
+    expect(GRADES[GRADES.length - 1]).toBe("10");
+    expect(rosterGrade("11")).toBeNull();
+    expect(rosterGrade("12")).toBeNull();
+    expect(rosterGrade("TK")).toBe("PreK");
+    const sentences = packet.flatMap((name) =>
+      read(`docs/sales/${name}`).replace(/\s+/g, " ").split(/(?<=[.!?;])\s+/).map((text) => ({ name, text })));
+    const highSchool = sentences.filter(({ text }) => /\b1[12]th\b|\b(?:TK|Pre-?K|K)\s*(?:-|–|to)\s*12\b|\bany grade\b/i.test(text));
+    expect(highSchool.length).toBeGreaterThanOrEqual(3); // the roster lines are still there to check
+    for (const { name, text } of highSchool) {
+      expect(text, name).not.toMatch(/\b(?:TK|Pre-?K|K)\s*(?:-|–|to)\s*12(?:th)?\b|\bany grade\b/i);
+      expect(text, `${name}: an 11th/12th mention says the grade is not recorded`).toMatch(/grade not recorded/i);
+    }
   });
 });

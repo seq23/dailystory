@@ -48,7 +48,7 @@ const subprocessors: Subprocessor[] = [
   {
     name: "OpenAI",
     purpose: "AI-powered story text generation; speech-to-text for voice commands and read-aloud practice",
-    dataProcessed: "Story prompts; short voice clips recorded only after a tap on the microphone (not stored by Time-2-Read; API data not used for training, kept up to 30 days by OpenAI for abuse monitoring)",
+    dataProcessed: "Story prompts; short voice clips recorded only after a tap on the microphone by a signed-in account (not stored by Time-2-Read; OpenAI does not train on API data, and its API data-controls page, https://developers.openai.com/api/docs/guides/your-data, checked 22 Nov 2026, lists speech-to-text with no abuse-monitoring retention)",
     location: "United States",
     dpaStatus: "signed",
     privacyUrl: "https://openai.com/policies/privacy-policy",

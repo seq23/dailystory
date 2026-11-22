@@ -249,28 +249,6 @@
       "readingAbility": {
         "label": "À quel point lisez-vous bien ?",
         "placeholder": "Sélectionnez votre niveau de lecture",
-        "levels": {
-          "beginner": {
-            "title": "Pré-lecteur (3-5 ans)",
-            "description": "Apprendre les lettres et sons"
-          },
-          "easy": {
-            "title": "Je commence à lire",
-            "description": "Mots simples et phrases courtes"
-          },
-          "medium": {
-            "title": "Je peux lire des livres simples",
-            "description": "Phrases plus longues et paragraphes"
-          },
-          "hard": {
-            "title": "Je peux lire des livres à chapitres",
-            "description": "Histoires complexes et vocabulaire"
-          },
-          "expert": {
-            "title": "J'adore lire de gros livres",
-            "description": "Vocabulaire et concepts avancés"
-          }
-        },
         "learnMore": {
           "description": "Nos niveaux sont basés sur des recherches éducatives éprouvées et des listes de mots Dolch, garantissant un contenu adapté à l'âge.",
           "title": "À propos des niveaux de lecture"
@@ -986,7 +964,9 @@
       "success": "Parfait ! Vous avez très bien prononcé « {{word}} » !",
       "encourage": "Presque ! Il vous reste {{tries}} essai. Touchez le bouton vert pour m’écouter encore, puis réessayez.",
       "comfort": "Ce n’est pas grave ! Continuez à travailler « {{word}} », vous y arriverez. Cela prend du temps !"
-    }
+    },
+    "signIn": "Connecte-toi pour t’entraîner à lire à voix haute.",
+    "noSpeech": "Je ne t’ai pas entendu. Touche « Commence à lire » et lis la phrase à voix haute."
   },
   "postSession": {
     "quizTitle": "Quiz de compréhension",

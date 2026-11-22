@@ -34,7 +34,9 @@ or SSO and live roster connections.
 
 ## Can we import a roster or use SSO?
 
-Yes for CSV: preview, then import, at any grade (TK to 12th or ungraded). A
+Yes for CSV: preview, then import. Every child imports, whatever the grade: TK is
+read as Pre-K, and 11th, 12th and ungraded children are kept with the grade not
+recorded (stories go up to 10th grade). A
 ClassLink (OneRoster) connection is built, awaiting its first school connection;
 it needs the district's existing ClassLink authorization, our server configuration
 and a live test before it counts as live. No paid rostering service is used, and
