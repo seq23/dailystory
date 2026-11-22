@@ -260,13 +260,13 @@ useEffect(() => {
           {/* Free user upgrade hint when time is low */}
           {!isPremium && timeRemaining <= 300 && (
             <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-xs px-2 py-1 rounded-full shadow-lg whitespace-nowrap">
-               {uiText("🚨 Time Low!")} </div>
+               {uiText("Time Low!")} </div>
           )}
           
           {/* Upgrade hint for free users */}
           {!isPremium && (
             <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-lg opacity-70 whitespace-nowrap">
-               {uiText("⏱️ Try Premium")} </div>
+               {uiText("Try Premium")} </div>
           )}
           
 
@@ -601,7 +601,7 @@ useEffect(() => {
               setExpiredAcknowledged(true);
               onSessionEnded({ ...sessionStats, startVoiceQuiz: true });
             }}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
           >
             🎤 {t('timer.expired.quizWithBuddy', 'Quiz with Buddy')}
           </Button>

@@ -622,7 +622,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                   {/* Discount Success Message */}
                   {isFreeDiscount && (
                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <h3 className="font-semibold text-green-800 mb-1">{uiText("🎉 No Payment Required!")}</h3>
+                      <h3 className="font-semibold text-green-800 mb-1">{uiText("No Payment Required!")}</h3>
                       <p className="text-sm text-green-700">
                         {uiText("Your discount code will give you 90 days of free premium access starting when you first log in.")}
                       </p>
@@ -733,7 +733,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                       <Button
                         type="button"
                         onClick={handleCreateAndPay}
-                        className="w-full bg-green-600 hover:bg-green-700"
+                        className="w-full bg-green-700 hover:bg-green-800"
                         disabled={loading || !signUpData.email}
                       >
                         {loading ? t("loginScreen.form.buttons.processing") : `${t("loginScreen.steps.createAndPay", "Create Account & Pay")} - ${signUpData.selectedPlan === "monthly" ? t("loginScreen.payment.monthly") : t("loginScreen.payment.annual")}`}
@@ -741,7 +741,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                       <p className="text-xs text-gray-500 text-center mt-2">
                         {t("loginScreen.payment.instruction")}
                       </p>
-                      <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">{uiText("🔒 Secure checkout in US dollars, by Stripe.")}</p>
+                      <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">{uiText("Secure checkout in US dollars, by Stripe.")}</p>
                     </div>
                   )}
                 </div>

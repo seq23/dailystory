@@ -53,8 +53,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 220 25% 15%;
 
-    /* Vibrant primary colors - cheerful blue */
-    --primary: 200 90% 55%;
+    /* Primary blue: deep enough that white button text and blue links on white reach 4.5:1 */
+    --primary: 200 90% 35%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 200 95% 70%;
 
@@ -73,7 +73,7 @@ All colors MUST be HSL.
     /* Semantic colors for consistent UI */
     --success: 120 70% 50%;
     --success-foreground: 0 0% 100%;
-    --info: 200 90% 55%;
+    --info: 200 90% 35%;
     --info-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 38 80% 15%;
@@ -81,7 +81,7 @@ All colors MUST be HSL.
     --fun-foreground: 0 0% 100%;
     
     /* Gentle coral destructive */
-    --destructive: 15 85% 65%;
+    --destructive: 15 85% 42%;
     --destructive-foreground: 0 0% 100%;
 
     /* Light borders */
@@ -91,7 +91,7 @@ All colors MUST be HSL.
     --brand-purple: 271 80% 57%;
 
     /* Magical gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(200 90% 55%), hsl(220 85% 65%));
+    --gradient-primary: linear-gradient(135deg, hsl(200 90% 35%), hsl(220 80% 42%));
     --gradient-secondary: linear-gradient(135deg, hsl(160 75% 85%), hsl(180 70% 80%));
     --gradient-hero: linear-gradient(135deg, hsl(200 90% 55%), hsl(220 85% 65%), hsl(280 80% 70%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 40% 98%));

@@ -4619,7 +4619,7 @@ const handleRestartTimer = () => {
                     <p className="text-lg font-bold mb-4 px-4 py-2 rounded-full animate-pulse leading-tight" aria-live="polite">
                       <span className="inline-flex items-center gap-2">
                         <FriendlyUpArrowIcon size={22} className="text-destructive shrink-0 align-middle -translate-y-[1px]" />
-                        {uiText("Here's how this one ends! Don't forget to save 😊")}
+                        {uiText("Here's how this one ends! Don't forget to save")}
                       </span>
                     </p>
 

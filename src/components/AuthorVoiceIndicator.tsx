@@ -22,15 +22,15 @@ export const AuthorVoiceIndicator: React.FC<VoiceStyleIndicatorProps> = ({
       case 'beginner':
         return 'bg-gradient-to-r from-red-100 to-yellow-100 text-red-700 border-red-200';
       case 'easy':
-        return 'bg-gradient-to-r from-green-100 to-purple-100 text-green-700 border-green-200';
+        return 'bg-gradient-to-r from-green-100 to-purple-100 text-green-800 border-green-200';
       case 'medium':
-        return 'bg-gradient-to-r from-orange-100 to-pink-100 text-orange-700 border-orange-200';
+        return 'bg-gradient-to-r from-orange-100 to-pink-100 text-orange-800 border-orange-200';
       case 'hard':
         return 'bg-gradient-to-r from-blue-100 to-amber-100 text-blue-700 border-blue-200';
       case 'expert':
         return 'bg-gradient-to-r from-slate-100 to-teal-100 text-slate-700 border-slate-200';
       default:
-        return 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200';
+        return 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-purple-200';
     }
   };
 

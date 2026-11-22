@@ -15,38 +15,44 @@ interface ProgressTowerProps {
   className?: string;
 }
 
-const colorThemes = {
+// Each colour's gradient (and premium gradient) and the icon colour drawn on it (checked
+// for 4.5:1 by src/test/guards/white-text-on-gradients.test.ts).
+export const colorThemes = {
   blue: {
-    gradient: 'from-blue-400 via-blue-500 to-blue-600',
+    gradient: 'from-blue-600 via-blue-700 to-blue-800',
     glow: 'shadow-blue-500/50',
     ring: 'ring-blue-300',
     bg: 'bg-blue-500/10',
     text: 'text-blue-600',
-    premium: 'from-blue-500 via-cyan-500 to-blue-700'
+    premium: 'from-blue-600 via-cyan-700 to-blue-700',
+    fg: 'text-white'
   },
   green: {
-    gradient: 'from-green-400 via-green-500 to-green-600',
+    gradient: 'from-green-700 via-green-700 to-green-800',
     glow: 'shadow-green-500/50',
     ring: 'ring-green-300',
     bg: 'bg-green-500/10',
     text: 'text-green-600',
-    premium: 'from-green-500 via-emerald-500 to-green-700'
+    premium: 'from-green-700 via-emerald-700 to-green-700',
+    fg: 'text-white'
   },
   gold: {
-    gradient: 'from-yellow-400 via-amber-500 to-orange-500',
+    gradient: 'from-yellow-300 via-amber-300 to-amber-400',
     glow: 'shadow-amber-500/50',
     ring: 'ring-amber-300',
     bg: 'bg-amber-500/10',
     text: 'text-amber-600',
-    premium: 'from-yellow-500 via-amber-500 to-orange-600'
+    premium: 'from-yellow-300 via-amber-400 to-amber-500',
+    fg: 'text-amber-950'
   },
   purple: {
-    gradient: 'from-purple-400 via-purple-500 to-purple-600',
+    gradient: 'from-purple-600 via-purple-700 to-purple-800',
     glow: 'shadow-purple-500/50',
     ring: 'ring-purple-300',
     bg: 'bg-purple-500/10',
     text: 'text-purple-600',
-    premium: 'from-purple-500 via-violet-500 to-purple-700'
+    premium: 'from-purple-600 via-violet-600 to-purple-700',
+    fg: 'text-white'
   }
 };
 
@@ -123,8 +129,8 @@ export const ProgressTower: React.FC<ProgressTowerProps> = ({
       <div className={cn(
         "relative mb-3 p-3 rounded-full backdrop-blur-sm border",
         "transition-all duration-300",
-        isPremium ? `bg-gradient-to-br ${theme.premium}` : `bg-gradient-to-br ${theme.gradient}`,
-        "text-white shadow-lg",
+        isPremium ? `bg-gradient-to-br ${theme.premium} ${theme.fg}` : `bg-gradient-to-br ${theme.gradient} ${theme.fg}`,
+        "shadow-lg",
         celebrating && `ring-4 ${theme.ring} ${theme.glow}`,
         "group-hover:scale-105"
       )}>

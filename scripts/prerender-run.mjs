@@ -68,5 +68,19 @@ for (const { path } of prerenderRoutes) {
   writeFileSync(file, out);
   written.push(`${path} (${chars} chars, ${r.jsonLd.length} ld)`);
 }
-console.log(`prerendered ${written.length} pages:\n  ${written.join("\n  ")}`);
+// App routes (sign-in) stay client-rendered, but ship as a real file holding the app shell, so the
+// address exists on any static host, not only behind Lovable's fallback (which serves this same
+// shell). 404.html is the shell titled and noindexed as a missing page; the app's NotFound route
+// draws it. Lovable ignores 404.html (heygetonmylevel ships one); a static host answers 404 with it.
+for (const appRoute of ["/auth"]) {
+  const file = join(distDir, appRoute.slice(1), "index.html");
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, template);
+}
+const notFound = template
+  .replace(/<title>[^<]*<\/title>/, "<title>Page not found | Time-2-Read</title>")
+  .replace("</head>", `    <meta name="robots" content="noindex" />\n  </head>`);
+if (notFound === template) { console.error("PRERENDER_404_TEMPLATE the shell has no <title> to rename"); process.exit(1); }
+writeFileSync(join(distDir, "404.html"), notFound);
+console.log(`prerendered ${written.length} pages:\n  ${written.join("\n  ")}\n  /auth (app shell)\n  404.html`);
 process.exit(0);

@@ -24,7 +24,7 @@ const DataTransfers = () => {
     {
       name: "OpenAI (AI Story Generation, Speech-to-Text)",
       location: "United States",
-      purpose: "AI-powered story text generation; turning short voice clips into text for voice commands and read-aloud practice",
+      purpose: "Writes the story text with an AI model; turns short voice clips into text for voice commands and read-aloud practice",
       safeguards: "Data Processing Agreement, no training on user data via API",
       website: "https://openai.com/policies/privacy-policy",
     },

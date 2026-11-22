@@ -161,7 +161,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
               {/* Help Me Read Coach for guests would be limited - show upgrade prompt */}
               <div className="p-6 text-center">
                 <GraduationCap className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2"> {uiText("Unlock Reading Help")} </h3>
+                <h3 className="text-lg font-semibold mb-2"> {uiText("Get Reading Help")} </h3>
                 <p className="text-muted-foreground mb-4">
                    {uiText("Get personalized reading assistance with our premium features.")} </p>
                 <Button onClick={onUpgrade} variant="default">

@@ -621,26 +621,26 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
 
                     {/* Reading Habit */}
                     <Card>
-                      <CardHeader><CardTitle>{uiText("📖 Reading Habit")}</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{uiText("Reading Habit")}</CardTitle></CardHeader>
                       <CardContent className="space-y-3">
                         {progress.currentStreak >= 7 ? (
                           <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary">
-                            <h4 className="font-semibold text-foreground">{uiText("🔥 Outstanding Streak!")}</h4>
+                            <h4 className="font-semibold text-foreground">{uiText("Outstanding Streak!")}</h4>
                             <p className="text-muted-foreground">{childLabel} {uiText("has read for")} {progress.currentStreak} {uiText("days straight (longest ever:")} {progress.longestStreak}{uiText("). This consistency builds strong literacy foundations.")}</p>
                           </div>
                         ) : progress.currentStreak >= 3 ? (
                           <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary">
-                            <h4 className="font-semibold text-foreground">{uiText("📈 Good Momentum!")}</h4>
+                            <h4 className="font-semibold text-foreground">{uiText("Good Momentum!")}</h4>
                             <p className="text-muted-foreground">{childLabel} {uiText("has a")} {progress.currentStreak}{uiText("-day streak going (best:")} {progress.longestStreak} {uiText("days). Try to beat the record!")}</p>
                           </div>
                         ) : progress.currentStreak > 0 ? (
                           <div className="p-4 bg-accent/30 rounded-lg border-l-4 border-primary/60">
-                            <h4 className="font-semibold text-foreground">{uiText("🌱 Getting Started")}</h4>
+                            <h4 className="font-semibold text-foreground">{uiText("Getting Started")}</h4>
                             <p className="text-muted-foreground">{childLabel} {uiText("read")} {progress.currentStreak === 1 ? uiText("yesterday or today") : `${progress.currentStreak} days in a row`}{uiText(". Encourage reading at the same time each day to build a habit.")}</p>
                           </div>
                         ) : (
                           <div className="p-4 bg-muted rounded-lg border-l-4 border-muted-foreground/40">
-                            <h4 className="font-semibold text-foreground">{uiText("⏰ No Active Streak")}</h4>
+                            <h4 className="font-semibold text-foreground">{uiText("No Active Streak")}</h4>
                             <p className="text-muted-foreground">{childLabel} {uiText("hasn't read recently. Even 10 minutes today can restart their streak!")}</p>
                           </div>
                         )}
@@ -664,7 +664,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
 
                     {/* Comprehension */}
                     <Card>
-                      <CardHeader><CardTitle>{uiText("🧠 Comprehension Analysis")}</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{uiText("Comprehension Analysis")}</CardTitle></CardHeader>
                       <CardContent className="space-y-3">
                         {progress.quizzesTaken === 0 ? (
                           <div className="p-4 bg-muted rounded-lg">
@@ -733,7 +733,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     {/* Vocabulary & Games */}
                     <div className="grid md:grid-cols-2 gap-6">
                       <Card>
-                        <CardHeader><CardTitle>{uiText("📚 Vocabulary")}</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>{uiText("Vocabulary")}</CardTitle></CardHeader>
                         <CardContent>
                           {progress.wordsLearned === 0 ? (
                             <p className="text-muted-foreground text-sm">{uiText("No vocabulary words tracked yet. Tap highlighted words while reading to start!")}</p>
@@ -753,7 +753,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                       </Card>
 
                       <Card>
-                        <CardHeader><CardTitle>{uiText("🎮 Game Performance")}</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>{uiText("Game Performance")}</CardTitle></CardHeader>
                         <CardContent>
                           {progress.gamesPlayed === 0 ? (
                             <p className="text-muted-foreground text-sm">{uiText("No games played yet. Learning games reinforce vocabulary and comprehension!")}</p>
@@ -776,7 +776,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                     {/* Actionable Recommendations */}
                     <Card>
                       <CardHeader>
-                        <CardTitle>{uiText("💡 Recommendations")}</CardTitle>
+                        <CardTitle>{uiText("Recommendations")}</CardTitle>
                         <CardDescription>{uiText("Personalized suggestions for")} {childLabel}</CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -881,7 +881,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {uiText("📝 Currently editing:")} <strong>{activeChild ? activeChild.display_name : uiText("Default (all children)")}</strong> {uiText("• Up to 50 words saved, 20 used per story.")}
+                  {uiText("Currently editing:")} <strong>{activeChild ? activeChild.display_name : uiText("Default (all children)")}</strong> {uiText("• Up to 50 words saved, 20 used per story.")}
                 </p>
               </CardContent>
             </Card>
