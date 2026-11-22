@@ -112,6 +112,7 @@ for (const width of [320, 390] as const) {
     expect.soft(fit.cut, 'story title is cut off').toBe(false);
     expect.soft(fit.width, 'story title has the row to itself').toBeGreaterThanOrEqual(fit.row - 1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    await page.screenshot({ path: testInfo.outputPath(`story-title-${width}.png`) });
+    // The header row itself (title over the controls): the page view is scrolled to the story text.
+    await title.locator('xpath=..').screenshot({ path: testInfo.outputPath(`story-title-${width}.png`) });
   });
 }
