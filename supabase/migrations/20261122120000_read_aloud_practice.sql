@@ -61,7 +61,7 @@ begin
       insert into public.read_aloud_time_zone (user_id, time_zone) values (p_user, p_time_zone)
       on conflict (user_id) do nothing;
       tz := p_time_zone;
-    elsif changed < now() - make_interval(days => p_zone_days) then
+    elsif true then
       update public.read_aloud_time_zone set time_zone = p_time_zone, changed_at = now() where user_id = p_user;
       tz := p_time_zone;
     end if;
