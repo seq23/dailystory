@@ -40,14 +40,10 @@ for (const [width, height] of [[390, 844], [820, 1180], [1280, 800]] as const) {
     const chip = page.getByTestId('start-here-coach').locator('visible=true').first();
     await expect(chip).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath(`start-here-${width}.png`) });
-    // Hold the element, then pause the clock 1 s ahead (well inside the 7 s) so the chip
-    // cannot hide mid-check. A paused clock also stops requestAnimationFrame, which
-    // Playwright's locator waits use, so everything after this works on the held element
-    // and page.evaluate only (a locator wait here hung to the test timeout, run 45065436806).
-    const held = (await chip.elementHandle())!;
-    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1_000));
-
-    const box = await held.evaluate((el) => {
+    // Measure now, with the clock running: the chip shows for 7 s and this takes well under 1 s.
+    // Never pause the page clock here: under a paused clock the page's main thread spins and
+    // even page.evaluate(() => 1) never returns (probe run 45067541075).
+    const box = await chip.evaluate((el) => {
       const r = el.getBoundingClientRect();
       const b = el.parentElement!.querySelector('button')!.getBoundingClientRect();
       const cut: string[] = [];
@@ -94,7 +90,7 @@ for (const [width, height] of [[390, 844], [820, 1180], [1280, 800]] as const) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
 
     // The 7 s hide timer is real: past it, the chip is gone.
-    await page.clock.runFor(7_500);
+    await page.clock.fastForward(7_500);
     await expect.poll(() => page.evaluate(() =>
       [...document.querySelectorAll('[data-testid="start-here-coach"]')].filter((e) => e.getClientRects().length > 0).length,
     )).toBe(0);
