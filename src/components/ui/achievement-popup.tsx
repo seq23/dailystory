@@ -24,28 +24,28 @@ interface AchievementPopupProps {
 
 const rarityConfig = {
   common: {
-    gradient: 'from-gray-400 to-gray-600',
+    gradient: 'from-gray-500 to-gray-700',
     glow: 'shadow-gray-500/30',
     border: 'border-gray-300',
     particles: 'text-gray-400',
     bg: 'from-gray-50 to-gray-100'
   },
   rare: {
-    gradient: 'from-blue-400 to-blue-600',
+    gradient: 'from-blue-600 to-blue-800',
     glow: 'shadow-blue-500/40',
     border: 'border-blue-300',
     particles: 'text-blue-400',
     bg: 'from-blue-50 to-blue-100'
   },
   epic: {
-    gradient: 'from-purple-400 to-purple-600',
+    gradient: 'from-purple-600 to-purple-800',
     glow: 'shadow-purple-500/50',
     border: 'border-purple-300',
     particles: 'text-purple-400',
     bg: 'from-purple-50 to-purple-100'
   },
   legendary: {
-    gradient: 'from-yellow-400 via-amber-500 to-orange-500',
+    gradient: 'from-yellow-700 via-amber-700 to-orange-700',
     glow: 'shadow-amber-500/60',
     border: 'border-amber-300',
     particles: 'text-amber-400',

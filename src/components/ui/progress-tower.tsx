@@ -17,36 +17,36 @@ interface ProgressTowerProps {
 
 const colorThemes = {
   blue: {
-    gradient: 'from-blue-400 via-blue-500 to-blue-600',
+    gradient: 'from-blue-600 via-blue-700 to-blue-800',
     glow: 'shadow-blue-500/50',
     ring: 'ring-blue-300',
     bg: 'bg-blue-500/10',
     text: 'text-blue-600',
-    premium: 'from-blue-500 via-cyan-500 to-blue-700'
+    premium: 'from-blue-600 via-cyan-700 to-blue-700'
   },
   green: {
-    gradient: 'from-green-400 via-green-500 to-green-600',
+    gradient: 'from-green-700 via-green-700 to-green-800',
     glow: 'shadow-green-500/50',
     ring: 'ring-green-300',
     bg: 'bg-green-500/10',
     text: 'text-green-600',
-    premium: 'from-green-500 via-emerald-500 to-green-700'
+    premium: 'from-green-700 via-emerald-700 to-green-700'
   },
   gold: {
-    gradient: 'from-yellow-400 via-amber-500 to-orange-500',
+    gradient: 'from-yellow-700 via-amber-700 to-orange-700',
     glow: 'shadow-amber-500/50',
     ring: 'ring-amber-300',
     bg: 'bg-amber-500/10',
     text: 'text-amber-600',
-    premium: 'from-yellow-500 via-amber-500 to-orange-600'
+    premium: 'from-yellow-700 via-amber-700 to-orange-700'
   },
   purple: {
-    gradient: 'from-purple-400 via-purple-500 to-purple-600',
+    gradient: 'from-purple-600 via-purple-700 to-purple-800',
     glow: 'shadow-purple-500/50',
     ring: 'ring-purple-300',
     bg: 'bg-purple-500/10',
     text: 'text-purple-600',
-    premium: 'from-purple-500 via-violet-500 to-purple-700'
+    premium: 'from-purple-600 via-violet-600 to-purple-700'
   }
 };
 

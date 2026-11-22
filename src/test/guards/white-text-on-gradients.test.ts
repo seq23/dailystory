@@ -40,6 +40,9 @@ const PALETTE: Record<string, Record<string, string>> = {
   amber: { 400: "#fbbf24", 500: "#f59e0b", 600: "#d97706", 700: "#b45309", 800: "#92400e", 900: "#78350f" },
   yellow: { 400: "#facc15", 500: "#eab308", 600: "#ca8a04", 700: "#a16207", 800: "#854d0e", 900: "#713f12" },
   green: { 400: "#4ade80", 500: "#22c55e", 600: "#16a34a", 700: "#15803d", 800: "#166534", 900: "#14532d" },
+  gray: { 400: "#9ca3af", 500: "#6b7280", 600: "#4b5563", 700: "#374151", 800: "#1f2937", 900: "#111827" },
+  emerald: { 400: "#34d399", 500: "#10b981", 600: "#059669", 700: "#047857", 800: "#065f46", 900: "#064e3b" },
+  violet: { 400: "#a78bfa", 500: "#8b5cf6", 600: "#7c3aed", 700: "#6d28d9", 800: "#5b21b6", 900: "#4c1d95" },
   cyan: { 400: "#22d3ee", 500: "#06b6d4", 600: "#0891b2", 700: "#0e7490", 800: "#155e75", 900: "#164e63" },
 };
 
@@ -55,8 +58,25 @@ describe("white text on gradients", () => {
   const classStrings = files("src").flatMap((p) =>
     readFileSync(p, "utf8")
       .split("\n")
-      .filter((c) => /\bbg-gradient-to-/.test(c) && /\btext-white\b/.test(c))
-      .map((c) => ({ p, c })),
+      .flatMap((c, i, lines) => {
+        if (/\bbg-gradient-to-/.test(c) && /\btext-white\b/.test(c)) return [{ p, c }];
+        // A gradient read from a map (`bg-gradient-to-r ${rarity.gradient}`) with white text on a
+        // neighbouring line of the same cn(): the map's entries for that key (`gradient: '...'`)
+        // in the same file are checked too.
+        // An inline choice (`bg-gradient-to-br ${\n a ? 'from-..' : 'from-..'\n}`): its branches are checked.
+        if (/\bbg-gradient-to-\w+ \$\{\s*$/.test(c)) {
+          const end = lines.findIndex((l, j) => j > i && /^\s*\}/.test(l));
+          const body = lines.slice(i + 1, end < 0 ? i + 1 : end);
+          const around = lines.slice(Math.max(0, i - 2), (end < 0 ? i : end) + 3).join(" ");
+          return /\btext-white\b/.test(around) ? body.map((l) => ({ p, c: l })) : [];
+        }
+        const near = lines.slice(Math.max(0, i - 2), i + 3).join(" ");
+        if (!/\btext-white\b/.test(near)) return [];
+        const keys = [...c.matchAll(/\bbg-gradient-to-\w+ \$\{\w+\.(\w+)\}/g)].map((m) => m[1]);
+        return lines
+          .filter((l) => keys.some((k) => new RegExp(`\\b${k}:\\s*['"\`]`).test(l)))
+          .map((l) => ({ p, c: l }));
+      }),
   );
 
   it("finds the gradient buttons it checks", () => {
