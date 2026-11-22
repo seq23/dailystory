@@ -3,7 +3,8 @@ name: Parent journey
 # The parent journey over the built site with Supabase mocked
 # (e2e/parent-journey.spec.ts): sign up with a code → Premium badge → children →
 # avatar → switch → start a story, and no developer panel for a family.
-# The story choices journey also checks the phone controls and Finish Story.
+# The story choices journey also checks the phone controls and Finish Story; the
+# voice, Start here! chip and /pricing voice specs run in the same Playwright call.
 # Separate from checks.yml so the merge gate stays fast; runs on PRs and main.
 on:
   pull_request:
@@ -26,17 +27,19 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - name: Journey over vite preview
+        # One Playwright run: a second run would wipe test-results/ and lose the first
+        # run's captures. Voice commands use the fake microphone; the Start here! chip
+        # is checked at 390/820/1280 px; /pricing voice and read-aloud at 390/820 px.
         run: |
           npx vite preview --port 4173 --strictPort &
           npx --yes wait-on@8.0.1 http://localhost:4173 --timeout 60000
-          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts e2e/story-choices.spec.ts --project=chromium --retries=1
-          # The story page voice commands at phone width, light and dark (fake microphone).
-          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/story-voice.spec.ts --project=chromium --retries=1
-      # One upload, pass or fail: the report and every capture (start-here-phone.png at
-      # 390 px, the story page voice-*.png light and dark).
+          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts e2e/story-choices.spec.ts e2e/story-voice.spec.ts e2e/start-here-chip.spec.ts e2e/pricing-voice.spec.ts --project=chromium --retries=1
+      # The one upload: every capture for review (voice-*, start-here-*, pricing-voice-*),
+      # and on a failure the traces and error snapshots too.
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: journey-report
+          name: journey-captures
           path: test-results/
+          if-no-files-found: error
           retention-days: 7

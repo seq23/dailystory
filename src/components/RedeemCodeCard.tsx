@@ -66,9 +66,10 @@ export function RedeemCodeCard({ className, onRedeemed }: RedeemCodeCardProps) {
     >
       <Label htmlFor="redeem-code" className="font-medium">{uiText("Have a code?")}</Label>
       <p className="text-sm text-muted-foreground">{uiText("Type it here. Premium starts right away, no card needed.")}</p>
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-wrap gap-2">
         <Input
           id="redeem-code"
+          className="flex-1 min-w-[9rem]"
           data-testid="redeem-code-input"
           value={code}
           autoCapitalize="characters"
@@ -82,7 +83,7 @@ export function RedeemCodeCard({ className, onRedeemed }: RedeemCodeCardProps) {
             if (state === "error") setState("idle");
           }}
         />
-        <Button type="submit" disabled={state === "working"} className="sm:w-auto min-h-11">
+        <Button type="submit" disabled={state === "working"} className="flex-1 sm:flex-none min-h-11">
           {state === "working" ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden /> {uiText("Checking…")}

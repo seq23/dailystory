@@ -10,6 +10,14 @@
  */
 export type StoryVoiceCommand = 'next' | 'back' | 'read' | 'stop';
 
+/**
+ * Every command the story page acts on, in the order the help card lists them.
+ * The /pricing voice card (VoiceCommandsHelp) is built from this list, and
+ * src/test/guards/pricing-voice-truth.test.tsx fails if it lists a command that
+ * the parser below or the story page's handler does not have.
+ */
+export const STORY_VOICE_COMMANDS: readonly StoryVoiceCommand[] = ['next', 'back', 'read', 'stop'];
+
 // Order matters: "stop reading" is stop, "read the next page" is next.
 const PHRASES: Array<[StoryVoiceCommand, string[]]> = [
   ['stop', [

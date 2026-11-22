@@ -512,7 +512,7 @@
       "liveStoryGeneration": "आपकी पसंद की कहानी साथ-साथ बनती है — आप तय करें कब समाप्त हो!",
       "multipleProfiles": "कई बच्चों की प्रोफ़ाइल",
       "vocabularyTracking": "शब्दावली की प्रगति और अभ्यास प्रश्नोत्तरी",
-      "readAloudFeedback": "ज़ोर से पढ़ने पर सुझाव, आवाज़ को पाठ में बदलकर",
+      "readAloudFeedback": "ज़ोर से पढ़ने का असीमित अभ्यास",
       "unlimitedSessions": "असीमित पठन सत्र",
       "customDifficulty": "अपनी पसंद से कहानी की कठिनाई बदलें",
       "extendedLibrary": "अधिक विषयों वाला बड़ा कहानी संग्रह",
@@ -594,7 +594,6 @@
     "voiceCommandsDisabled": "वॉयस कमांड अक्षम",
     "voiceCommandsOff": "वॉयस कमांड अब बंद हैं",
     "voiceCommandsEnabled": "वॉयस कमांड सक्षम",
-    "voiceCommandsInstructions": "'अगला पेज', 'धीरे पढ़ें', या '[शब्द] का मतलब क्या है?' कहने की कोशिश करें",
     "stabilizing": "ऑडियो तैयार हो रहा है…",
     "stabilizingDesc": "कृपया पढ़ने की तैयारी होने तक रुकें।",
     "pageChanged": "पन्ना बदल गया",
@@ -607,7 +606,6 @@
     "play": "पढ़ें",
     "readingCoach": "पठन साथी",
     "coach": "पठन साथी",
-    "voiceCommandsHint": "अंग्रेज़ी में कहें: 'next page', 'pause', 'continue', 'read slower'",
     "openVoiceHelp": "आवाज़ के आदेशों की मदद खोलें",
     "fullList": "पूरी सूची",
     "voiceCommandRun": "आदेश पूरा हुआ",
@@ -1646,7 +1644,6 @@
     "vocabulary_amp_quizzes": "शब्दावली और प्रश्नोत्तरी",
     "vocabulary_word_bank_comprehension_quiz_achievement_badges_and_parent_insights_dashboard": "शब्द संग्रह, प्रश्नोत्तरी, बैज और अभिभावक रिपोर्ट का डैशबोर्ड",
     "build_a_personal_word_bank_test_comprehension_with_quizzes_earn_achievement_badges_and_vie": "शब्द संग्रह बनाएँ, प्रश्नोत्तरी से समझ जाँचें, बैज कमाएँ और अभिभावक रिपोर्ट देखें।",
-    "speech_to_text_feedback_premium": "आवाज़ से पाठ के सुझाव — प्रीमियम",
     "remove": "हटाएँ",
     "their_profile_goes_away_you_can_add_them_again_any_time": "? उनकी प्रोफ़ाइल हट जाएगी। कभी भी फिर जोड़ सकते हैं।",
     "yes_remove": "हाँ, हटाएँ",
@@ -2127,7 +2124,6 @@
     "extra_example_ocean_brave_explore": "उदाहरण: महासागर, बहादुर, खोज करना",
     "extra_use_educational_words_like_ocean_explore_or_friendship": "«महासागर», «खोज करना» या «दोस्ती» जैसे सीखने वाले शब्द चुनें।",
     "extra_voice_commands_setup_required": "आवाज़ के निर्देशों का सेटअप ज़रूरी है",
-    "extra_voice_commands_are_a_premium_feature": "आवाज़ के निर्देश प्रीमियम सुविधा हैं",
     "extra_upgrade_to_premium_for_unlimited_audio_plays_per_page": "हर पेज को जितनी बार चाहें सुनने के लिए प्रीमियम लें",
     "extra_protecting_your_child_s_privacy": "आपके बच्चे की निजता की सुरक्षा",
     "extra_for_your_child_s_safety_please_avoid_sharing": "बच्चे की सुरक्षा के लिए यह साझा न करें:",
@@ -2162,9 +2158,6 @@
     "extra_about_time_2_read": "Time-2-Read के बारे में",
     "extra_and_who_makes_it": "और इसे बनाने वालों के बारे में।",
     "extra_guides_for_parents_and_teachers": "माता-पिता और शिक्षकों के लिए गाइड",
-    "extra_premium_readers_can_go_completely_hands_free_while_your_child_reads_they_can_speak_simple_commands_to_navigate_pages_hear_words_read_aloud_get_definitions_pause_or_resume_narration_and_more_no_tapping_required_just_say_a_command_and_the_app_responds_instantly": "प्रीमियम के साथ बच्चा बिना स्क्रीन छुए पढ़ सकता है। बोलकर पेज बदलें, शब्द सुनें, मतलब जानें या कहानी की आवाज़ रोकें और फिर चलाएँ।",
-    "extra_say_play_story_stop_reading_next_page_previous_page_or_help_with_word": "अंग्रेज़ी में कहें: «play story», «stop reading», «next page», «previous page» या «help with [शब्द]»",
-    "extra_say_things_like_start_reading_next_page": "अंग्रेज़ी में «Start reading» या «Next page» कहें",
     "extra_1st_come_stories_and_2nd_comes_images_together_they_take_just_under_a_minute": "पहले कहानी, फिर चित्र। सब तैयार होने में एक मिनट से कम लगेगा!",
     "extra_mixing_up_the_perfect_image": "बढ़िया चित्र तैयार हो रहा है…",
     "extra_backup_mode": "वैकल्पिक मोड",
@@ -2217,7 +2210,6 @@
     "extra_comprehension_questions_after_reading": "पढ़ने के बाद समझ के सवाल",
     "extra_reading_timer_and_progress_tracking": "पढ़ने का टाइमर और प्रगति का रिकॉर्ड",
     "extra_vocabulary_word_bank_and_review_activities": "शब्दों का भंडार और दोहराने की गतिविधियाँ",
-    "extra_voice_commands_for_navigation_and_controls": "आवाज़ से पेज आगे-पीछे करें, पढ़कर सुनाएँ या रोकें",
     "extra_priority_support": "प्राथमिकता वाली सहायता",
     "extra_admin_educator_dashboards": "प्रशासक और शिक्षक के डैशबोर्ड",
     "extra_curriculum_alignment_tools": "पाठ्यक्रम के अनुसार उपकरण",
@@ -2285,7 +2277,11 @@
     "extra_resume": "फिर चलाएँ",
     "extra_school_grade": "स्कूल की कक्षा",
     "extra_the_grade_they_are_in_at_school_it_keeps_story_topics_right_for_them": "स्कूल की कक्षा से कहानी के विषय सही उम्र के रहते हैं।",
-    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "शब्द कितने कठिन हैं। शुरुआत स्कूल की कक्षा से होती है। कहानी के पेज पर आसान या कठिन करने वाले बटन से भी इसे बदल सकते हैं।"
+    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "शब्द कितने कठिन हैं। शुरुआत स्कूल की कक्षा से होती है। कहानी के पेज पर आसान या कठिन करने वाले बटन से भी इसे बदल सकते हैं।",
+    "plan_voice_free": "कहानी के पेज पर वॉइस कमांड (मुफ़्त खाता)",
+    "plan_read_aloud_free": "ज़ोर से पढ़ने का अभ्यास, रोज़ 5 वाक्य (मुफ़्त खाता)",
+    "plan_voice_premium": "कहानी के पेज पर वॉइस कमांड",
+    "talk_to_buddy_is_premium": "साथी से बात करना प्रीमियम सुविधा है"
   },
   "readingTutorial": {
     "step1": {
@@ -2473,5 +2469,24 @@
     "link_failed": "यह लिंक काम नहीं किया",
     "link_failed_line": "यह अधूरा हो सकता है। हमारे किसी भी ईमेल का जवाब दें और हम आपको सूची से हटा देंगे।",
     "try_again_minute": "कृपया एक मिनट बाद लिंक फिर से आज़माएँ।"
+  },
+  "pricingVoice": {
+    "title": "वॉइस कमांड",
+    "who": "मुफ़्त खाता और प्रीमियम · इस्तेमाल के लिए साइन इन करें",
+    "intro": "कहानी के पेज पर आपका बच्चा माइक्रोफ़ोन दबाकर इनमें से कोई एक बात बोलता है:",
+    "command": {
+      "next": "अगला पेज खोलें",
+      "back": "पिछले पेज पर जाएँ",
+      "read": "पेज पढ़कर सुनाएँ",
+      "stop": "पढ़ना रोकें"
+    },
+    "say": {
+      "next": "“अगला पेज”",
+      "back": "“पीछे”",
+      "read": "“पढ़कर सुनाओ”",
+      "stop": "“रुको”"
+    },
+    "coachTitle": "ज़ोर से पढ़ने का अभ्यास",
+    "coachWho": "मुफ़्त खाता: रोज़ {{count}} वाक्य · प्रीमियम: असीमित · इस्तेमाल के लिए साइन इन करें"
   }
 }

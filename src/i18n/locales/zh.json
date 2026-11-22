@@ -457,7 +457,7 @@
       "liveStoryGeneration": "实时创作专属故事，何时结束由你决定！",
       "multipleProfiles": "多个儿童档案",
       "vocabularyTracking": "词汇记录与练习测验",
-      "readAloudFeedback": "朗读反馈（语音转文字辅导）",
+      "readAloudFeedback": "不限次数的朗读练习",
       "unlimitedSessions": "无限阅读次数",
       "customDifficulty": "自定义故事难度",
       "extendedLibrary": "更多主题的丰富故事库",
@@ -539,7 +539,6 @@
     "voiceCommandsDisabled": "语音命令已禁用",
     "voiceCommandsOff": "语音命令现已关闭",
     "voiceCommandsEnabled": "语音命令已启用",
-    "voiceCommandsInstructions": "试着说'下一页'、'读慢一点'或'[单词]是什么意思？'",
     "stabilizing": "正在准备音频…",
     "stabilizingDesc": "请稍等，我们正在准备阅读内容。",
     "pageChanged": "已翻页",
@@ -552,7 +551,6 @@
     "play": "朗读",
     "readingCoach": "阅读教练",
     "coach": "阅读教练",
-    "voiceCommandsHint": "试着用英语说：“next page”“pause”“continue”“read slower”",
     "openVoiceHelp": "打开语音指令帮助",
     "fullList": "完整列表",
     "voiceCommandRun": "指令已执行",
@@ -1647,7 +1645,6 @@
     "vocabulary_amp_quizzes": "词汇与测验",
     "vocabulary_word_bank_comprehension_quiz_achievement_badges_and_parent_insights_dashboard": "词库、理解测验、成就徽章和家长学习报告面板",
     "build_a_personal_word_bank_test_comprehension_with_quizzes_earn_achievement_badges_and_vie": "建立专属词库、通过测验检验理解、赢取成就徽章，并查看家长学习报告。",
-    "speech_to_text_feedback_premium": "语音转文字反馈——高级版",
     "remove": "移除",
     "their_profile_goes_away_you_can_add_them_again_any_time": "？该档案将被移除，你可以随时重新添加。",
     "yes_remove": "确认移除",
@@ -2128,7 +2125,6 @@
     "extra_example_ocean_brave_explore": "例如：海洋、勇敢、探索",
     "extra_use_educational_words_like_ocean_explore_or_friendship": "使用“海洋”“探索”或“友谊”等有学习意义的词语。",
     "extra_voice_commands_setup_required": "请先设置语音指令",
-    "extra_voice_commands_are_a_premium_feature": "语音指令属于高级会员功能",
     "extra_upgrade_to_premium_for_unlimited_audio_plays_per_page": "升级高级会员，每页音频可无限播放",
     "extra_protecting_your_child_s_privacy": "保护孩子的隐私",
     "extra_for_your_child_s_safety_please_avoid_sharing": "为了孩子的安全，请勿分享：",
@@ -2163,9 +2159,6 @@
     "extra_about_time_2_read": "关于Time-2-Read",
     "extra_and_who_makes_it": "及其创作者。",
     "extra_guides_for_parents_and_teachers": "家长与教师指南",
-    "extra_premium_readers_can_go_completely_hands_free_while_your_child_reads_they_can_speak_simple_commands_to_navigate_pages_hear_words_read_aloud_get_definitions_pause_or_resume_narration_and_more_no_tapping_required_just_say_a_command_and_the_app_responds_instantly": "高级会员可以完全免触屏阅读。孩子只需说出指令，就能翻页、听词语发音、查意思、暂停或继续朗读，应用会即时响应。",
-    "extra_say_play_story_stop_reading_next_page_previous_page_or_help_with_word": "请用英语说：“play story”“stop reading”“next page”“previous page”或“help with [单词]”",
-    "extra_say_things_like_start_reading_next_page": "可用英语说“Start reading”或“Next page”",
     "extra_1st_come_stories_and_2nd_comes_images_together_they_take_just_under_a_minute": "先有故事，再有图片，全部准备好不到一分钟！",
     "extra_mixing_up_the_perfect_image": "正在绘制精彩图片…",
     "extra_backup_mode": "备用模式",
@@ -2218,7 +2211,6 @@
     "extra_comprehension_questions_after_reading": "读后理解提问",
     "extra_reading_timer_and_progress_tracking": "阅读计时与进度记录",
     "extra_vocabulary_word_bank_and_review_activities": "词汇库与复习活动",
-    "extra_voice_commands_for_navigation_and_controls": "语音指令：翻页、返回、朗读或停止",
     "extra_priority_support": "优先客服支持",
     "extra_admin_educator_dashboards": "管理员与教师看板",
     "extra_curriculum_alignment_tools": "课程对齐工具",
@@ -2286,7 +2278,11 @@
     "extra_resume": "继续",
     "extra_school_grade": "在校年级",
     "extra_the_grade_they_are_in_at_school_it_keeps_story_topics_right_for_them": "孩子在学校就读的年级，用来确保故事主题适合孩子。",
-    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "词语的难度。默认与在校年级相同，也可以用故事页面上的“简单一点”“难一点”按钮调整。"
+    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "词语的难度。默认与在校年级相同，也可以用故事页面上的“简单一点”“难一点”按钮调整。",
+    "plan_voice_free": "故事页面的语音指令（免费账户）",
+    "plan_read_aloud_free": "朗读练习，每天 5 句（免费账户）",
+    "plan_voice_premium": "故事页面的语音指令",
+    "talk_to_buddy_is_premium": "和阅读伙伴说话属于高级会员功能"
   },
   "readingTutorial": {
     "step1": {
@@ -2474,5 +2470,24 @@
     "link_failed": "此链接无效",
     "link_failed_line": "链接可能不完整。回复我们的任意一封邮件，我们会将您移出名单。",
     "try_again_minute": "请一分钟后再试此链接。"
+  },
+  "pricingVoice": {
+    "title": "语音指令",
+    "who": "免费账户和高级版 · 登录后使用",
+    "intro": "在故事页面，孩子点一下麦克风，说出下面任意一句：",
+    "command": {
+      "next": "翻到下一页",
+      "back": "回到上一页",
+      "read": "朗读这一页",
+      "stop": "停止朗读"
+    },
+    "say": {
+      "next": "“下一页”",
+      "back": "“上一页”",
+      "read": "“读给我听”",
+      "stop": "“停”"
+    },
+    "coachTitle": "朗读练习",
+    "coachWho": "免费账户：每天 {{count}} 句 · 高级版：不限次数 · 登录后使用"
   }
 }

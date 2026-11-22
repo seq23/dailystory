@@ -458,7 +458,7 @@
       "liveStoryGeneration": "آپ کی پسند کی کہانی ساتھ ساتھ بنتی ہے — آپ طے کریں کب ختم ہو!",
       "multipleProfiles": "کئی بچوں کی پروفائلز",
       "vocabularyTracking": "الفاظ کی ترقی اور مشقی سوالات",
-      "readAloudFeedback": "بلند آواز سے پڑھنے پر رائے، آواز کو متن میں بدل کر",
+      "readAloudFeedback": "بلند آواز سے پڑھنے کی لامحدود مشق",
       "unlimitedSessions": "بے حد مطالعے کے سیشن",
       "customDifficulty": "اپنی پسند سے کہانی کی مشکل بدلیں",
       "extendedLibrary": "زیادہ موضوعات والی بڑی لائبریری",
@@ -540,7 +540,6 @@
     "voiceCommandsDisabled": "وائس کمانڈز غیر فعال",
     "voiceCommandsOff": "وائس کمانڈز اب بند ہیں",
     "voiceCommandsEnabled": "وائس کمانڈز فعال",
-    "voiceCommandsInstructions": "'اگلا صفحہ' یا 'آہستہ پڑھیں' کہنے کی کوشش کریں",
     "stabilizing": "آواز تیار ہو رہی ہے…",
     "stabilizingDesc": "براہِ کرم مطالعے کی تیاری تک رکیں۔",
     "pageChanged": "صفحہ بدل گیا",
@@ -553,7 +552,6 @@
     "play": "پڑھیں",
     "readingCoach": "پڑھنے کا ساتھی",
     "coach": "پڑھنے کا ساتھی",
-    "voiceCommandsHint": "انگریزی میں کہیں: 'next page'، 'pause'، 'continue'، 'read slower'",
     "openVoiceHelp": "آواز کے احکامات کی مدد کھولیں",
     "fullList": "مکمل فہرست",
     "voiceCommandRun": "حکم مکمل ہوا",
@@ -1623,7 +1621,6 @@
     "vocabulary_amp_quizzes": "الفاظ اور سوالات",
     "vocabulary_word_bank_comprehension_quiz_achievement_badges_and_parent_insights_dashboard": "الفاظ کا مجموعہ، سوالات، بیج اور والدین کی رپورٹ کا ڈیش بورڈ",
     "build_a_personal_word_bank_test_comprehension_with_quizzes_earn_achievement_badges_and_vie": "الفاظ کا مجموعہ بنائیں، سوالات سے سمجھ جانچیں، بیج کمائیں اور والدین کی رپورٹ دیکھیں۔",
-    "speech_to_text_feedback_premium": "آواز سے متن کی رائے — پریمیم",
     "remove": "ہٹائیں",
     "their_profile_goes_away_you_can_add_them_again_any_time": "؟ ان کی پروفائل ہٹ جائے گی۔ کبھی بھی پھر شامل کر سکتے ہیں۔",
     "yes_remove": "ہاں، ہٹائیں",
@@ -2104,7 +2101,6 @@
     "extra_example_ocean_brave_explore": "مثال: سمندر، بہادر، کھوج لگانا",
     "extra_use_educational_words_like_ocean_explore_or_friendship": "«سمندر»، «کھوج لگانا» یا «دوستی» جیسے سیکھنے کے الفاظ چنیں۔",
     "extra_voice_commands_setup_required": "آواز کی ہدایات کا سیٹ اپ ضروری ہے",
-    "extra_voice_commands_are_a_premium_feature": "آواز کی ہدایات پریمیم سہولت ہیں",
     "extra_upgrade_to_premium_for_unlimited_audio_plays_per_page": "ہر صفحہ جتنی بار چاہیں سننے کے لیے پریمیم لیں",
     "extra_protecting_your_child_s_privacy": "آپ کے بچے کی رازداری کا تحفظ",
     "extra_for_your_child_s_safety_please_avoid_sharing": "بچے کی حفاظت کے لیے یہ شیئر نہ کریں:",
@@ -2139,9 +2135,6 @@
     "extra_about_time_2_read": "Time-2-Read کے بارے میں",
     "extra_and_who_makes_it": "اور اسے بنانے والوں کے بارے میں۔",
     "extra_guides_for_parents_and_teachers": "والدین اور اساتذہ کے لیے رہنما",
-    "extra_premium_readers_can_go_completely_hands_free_while_your_child_reads_they_can_speak_simple_commands_to_navigate_pages_hear_words_read_aloud_get_definitions_pause_or_resume_narration_and_more_no_tapping_required_just_say_a_command_and_the_app_responds_instantly": "پریمیم کے ساتھ بچہ اسکرین چھوئے بغیر پڑھ سکتا ہے۔ بول کر صفحہ بدلیں، لفظ سنیں، مطلب جانیں یا کہانی کی آواز روکیں اور دوبارہ چلائیں۔",
-    "extra_say_play_story_stop_reading_next_page_previous_page_or_help_with_word": "انگریزی میں کہیں: «play story»، «stop reading»، «next page»، «previous page» یا «help with [لفظ]»",
-    "extra_say_things_like_start_reading_next_page": "انگریزی میں «Start reading» یا «Next page» کہیں",
     "extra_1st_come_stories_and_2nd_comes_images_together_they_take_just_under_a_minute": "پہلے کہانی، پھر تصویریں۔ سب تیار ہونے میں ایک منٹ سے کم لگے گا!",
     "extra_mixing_up_the_perfect_image": "خوب صورت تصویر تیار ہو رہی ہے…",
     "extra_backup_mode": "متبادل موڈ",
@@ -2194,7 +2187,6 @@
     "extra_comprehension_questions_after_reading": "پڑھنے کے بعد سمجھ کے سوال",
     "extra_reading_timer_and_progress_tracking": "مطالعے کا ٹائمر اور پیش رفت کا ریکارڈ",
     "extra_vocabulary_word_bank_and_review_activities": "الفاظ کا ذخیرہ اور دہرائی کی سرگرمیاں",
-    "extra_voice_commands_for_navigation_and_controls": "آواز سے صفحہ آگے پیچھے کریں، پڑھ کر سنائیں یا روکیں",
     "extra_priority_support": "ترجیحی مدد",
     "extra_admin_educator_dashboards": "منتظمین اور اساتذہ کے ڈیش بورڈ",
     "extra_curriculum_alignment_tools": "نصاب کے مطابق اوزار",
@@ -2262,7 +2254,11 @@
     "extra_resume": "دوبارہ چلائیں",
     "extra_school_grade": "اسکول کی جماعت",
     "extra_the_grade_they_are_in_at_school_it_keeps_story_topics_right_for_them": "اسکول کی جماعت سے کہانی کے موضوعات مناسب رہتے ہیں۔",
-    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "لفظ کتنے مشکل ہیں۔ ابتدا اسکول کی جماعت سے ہوتی ہے۔ کہانی کے صفحے پر آسان یا مشکل کرنے والے بٹن سے بھی بدل سکتے ہیں۔"
+    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "لفظ کتنے مشکل ہیں۔ ابتدا اسکول کی جماعت سے ہوتی ہے۔ کہانی کے صفحے پر آسان یا مشکل کرنے والے بٹن سے بھی بدل سکتے ہیں۔",
+    "plan_voice_free": "کہانی کے صفحے پر آواز سے کمانڈ (مفت اکاؤنٹ)",
+    "plan_read_aloud_free": "بلند آواز سے پڑھنے کی مشق، روزانہ 5 جملے (مفت اکاؤنٹ)",
+    "plan_voice_premium": "کہانی کے صفحے پر آواز سے کمانڈ",
+    "talk_to_buddy_is_premium": "ساتھی سے بات کرنا پریمیم سہولت ہے"
   },
   "readingTutorial": {
     "step1": {
@@ -2473,5 +2469,24 @@
     "link_failed": "یہ لنک کام نہیں کیا",
     "link_failed_line": "شاید یہ نامکمل ہے۔ ہماری کسی بھی ای میل کا جواب دیں، ہم آپ کو فہرست سے ہٹا دیں گے۔",
     "try_again_minute": "براہ کرم ایک منٹ بعد لنک دوبارہ آزمائیں۔"
+  },
+  "pricingVoice": {
+    "title": "آواز سے کمانڈ",
+    "who": "مفت اکاؤنٹ اور پریمیم · استعمال کے لیے سائن اِن کریں",
+    "intro": "کہانی کے صفحے پر آپ کا بچہ مائیکروفون دباتا ہے اور ان میں سے کوئی ایک بات کہتا ہے:",
+    "command": {
+      "next": "اگلا صفحہ کھولیں",
+      "back": "پچھلے صفحے پر جائیں",
+      "read": "صفحہ پڑھ کر سنائیں",
+      "stop": "پڑھنا روکیں"
+    },
+    "say": {
+      "next": "“اگلا صفحہ”",
+      "back": "“پیچھے”",
+      "read": "“پڑھ کر سناؤ”",
+      "stop": "“رکو”"
+    },
+    "coachTitle": "بلند آواز سے پڑھنے کی مشق",
+    "coachWho": "مفت اکاؤنٹ: روزانہ {{count}} جملے · پریمیم: لامحدود · استعمال کے لیے سائن اِن کریں"
   }
 }

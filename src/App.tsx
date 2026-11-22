@@ -20,6 +20,7 @@ import Auth from "./pages/Auth";
 import Institutions from "./pages/Institutions";
 import ResetPassword from "./pages/ResetPassword";
 import PromptTesting from "./pages/PromptTesting";
+import { AdminOnly } from "./components/AdminOnly";
 import TemplateTestingPage from "./pages/TemplateTestingPage";
 import CCPA from "./pages/CCPA";
 import Accessibility from "./pages/Accessibility";
@@ -109,7 +110,7 @@ const App = () => {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
-              <Route path="/prompt-testing" element={<PromptTesting />} />
+              <Route path="/prompt-testing" element={<AdminOnly><PromptTesting /></AdminOnly>} />
               <Route path="/template-testing" element={<TemplateTestingPage />} />
               <Route path="/prompt-studio" element={<PromptStudio />} />
               <Route path="/ccpa" element={<CCPA />} />

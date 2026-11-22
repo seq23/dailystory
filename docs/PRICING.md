@@ -18,6 +18,7 @@ annual_label: $99
 annual_savings: $57 (36%)
 free_stories: 3
 trial_days: 7
+free_read_aloud_sentences_per_day: 5
 code_HOMESCHOOL15_days: 15
 previous_monthly_cents: 999
 previous_annual_cents: 7900
@@ -31,6 +32,7 @@ premium_fallback: browser
 | | |
 |---|---|
 | Free | 3 stories in total, no card |
+| Voice and read-aloud | Signed-in accounts only (her ruling 22 Nov 2026). Free account: voice commands and 5 read-aloud practice sentences a day (`READ_ALOUD_FREE_SENTENCES_PER_DAY`). Premium: unlimited practice. Guests: neither; `voice-to-text` refuses them at the server |
 | Premium monthly | **$12.99/month** |
 | Premium yearly | **$99/year**: saves $57 (36%) against 12 x $12.99 = $155.88 |
 | Trial | 7 days free, card taken up front, one trial per customer (a returning customer pays from day one) |

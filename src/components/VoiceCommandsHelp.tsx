@@ -1,38 +1,37 @@
-import { uiText } from "@/i18n/uiText";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { voiceCommands } from "@/config/audioConfig";
-import { Crown, Mic } from "lucide-react";
+import { Mic } from "lucide-react";
+import { STORY_VOICE_COMMANDS } from "@/lib/voice/storyVoiceCommands";
 
+/**
+ * The /pricing voice card. Built from STORY_VOICE_COMMANDS, the list the story page's
+ * microphone acts on, so it cannot promise a command that does not exist.
+ * Who gets it: any signed-in account, free or Premium; never a signed-out guest
+ * (StoryVoiceCommands renders nothing without a session). Guard:
+ * src/test/guards/pricing-voice-truth.test.tsx.
+ */
 export function VoiceCommandsHelp() {
+  const { t } = useTranslation();
   return (
     <section id="voice" className="scroll-mt-24">
       <Card className="border-primary/20">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Crown className="w-4 h-4 text-yellow-500" />
-            <Mic className="w-4 h-4 text-primary" />
-            <CardTitle className="text-base"> {uiText("Voice Commands")} </CardTitle>
+            <Mic className="w-4 h-4 text-primary" aria-hidden="true" />
+            <CardTitle className="text-base">{t("pricingVoice.title")}</CardTitle>
           </div>
-          <CardDescription> {uiText("Premium feature")} </CardDescription>
+          <CardDescription data-testid="voice-plans">{t("pricingVoice.who")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground mb-5">
-             {uiText("Premium readers can go completely hands-free. While your child reads, they can speak simple commands to navigate pages, hear words read aloud, get definitions, pause or resume narration, and more — no tapping required. Just say a command and the app responds instantly.")} </p>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {Object.entries(voiceCommands).map(([category, cmds]) => (
-              <div key={category}>
-                <h3 className="font-medium capitalize mb-2 text-muted-foreground">{category}</h3>
-                <ul className="space-y-1">
-                  {Object.keys(cmds as Record<string, unknown>)
-                    .filter((phrase) => phrase !== "resume")
-                    .map((phrase) => (
-                      <li key={phrase} className="text-sm">• {phrase.replace("*", "[word]")}</li>
-                    ))}
-                </ul>
-              </div>
+          <p className="text-sm text-muted-foreground mb-4">{t("pricingVoice.intro")}</p>
+          <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2" data-testid="voice-command-list">
+            {STORY_VOICE_COMMANDS.map((command) => (
+              <li key={command} data-command={command} className="text-sm">
+                <span className="font-medium" data-testid="voice-say">{t(`pricingVoice.say.${command}`)}</span>
+                <span className="text-muted-foreground"> · {t(`pricingVoice.command.${command}`)}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </CardContent>
       </Card>
     </section>

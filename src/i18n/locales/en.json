@@ -539,7 +539,6 @@
     "voiceCommandsDisabled": "Voice Commands Disabled",
     "voiceCommandsOff": "Voice commands are now off",
     "voiceCommandsEnabled": "Voice Commands Enabled",
-    "voiceCommandsInstructions": "Try saying 'next page', 'read slower', or 'what does [word] mean?'",
     "stabilizing": "Preparing audio...",
     "stabilizingDesc": "Please wait while we prepare the best reading experience.",
     "pageChanged": "Page changed",
@@ -552,7 +551,6 @@
     "play": "Read",
     "readingCoach": "Coach",
     "coach": "Coach",
-    "voiceCommandsHint": "Try: 'next page', 'pause', 'continue', 'read slower'",
     "openVoiceHelp": "Open voice commands help",
     "fullList": "Full list",
     "voiceCommandRun": "Command executed",
@@ -587,7 +585,7 @@
       "liveStoryGeneration": "Personalized live story generation (Your story doesn't end until you decide!)",
       "multipleProfiles": "Multiple child profiles",
       "vocabularyTracking": "Vocabulary tracking and practice quizzes",
-      "readAloudFeedback": "Read-aloud feedback (speech-to-text coaching)"
+      "readAloudFeedback": "Unlimited read-aloud practice"
     },
     "freeTrialLimitReached": {
       "title": "Free Trial Session Ended",
@@ -1640,7 +1638,6 @@
     "vocabulary_amp_quizzes": "Vocabulary & quizzes",
     "vocabulary_word_bank_comprehension_quiz_achievement_badges_and_parent_insights_dashboard": "Vocabulary word bank, comprehension quiz, achievement badges, and parent insights dashboard",
     "build_a_personal_word_bank_test_comprehension_with_quizzes_earn_achievement_badges_and_vie": "Build a personal word bank, test comprehension with quizzes, earn achievement badges, and view parent insights.",
-    "speech_to_text_feedback_premium": "Speech‑to‑text feedback — Premium",
     "remove": "Remove",
     "their_profile_goes_away_you_can_add_them_again_any_time": "? Their profile goes away. You can add them again any time.",
     "yes_remove": "Yes, remove",
@@ -2121,7 +2118,6 @@
     "extra_example_ocean_brave_explore": "example: ocean, brave, explore",
     "extra_use_educational_words_like_ocean_explore_or_friendship": "Use educational words like \"ocean,\" \"explore,\" or \"friendship\"",
     "extra_voice_commands_setup_required": "Voice Commands Setup Required",
-    "extra_voice_commands_are_a_premium_feature": "Voice Commands are a Premium feature",
     "extra_upgrade_to_premium_for_unlimited_audio_plays_per_page": "Upgrade to Premium for unlimited audio plays per page",
     "extra_protecting_your_child_s_privacy": "Protecting Your Child's Privacy",
     "extra_for_your_child_s_safety_please_avoid_sharing": "For your child's safety, please avoid sharing:",
@@ -2156,9 +2152,6 @@
     "extra_about_time_2_read": "About Time-2-Read",
     "extra_and_who_makes_it": "and who makes it.",
     "extra_guides_for_parents_and_teachers": "Guides for parents and teachers",
-    "extra_premium_readers_can_go_completely_hands_free_while_your_child_reads_they_can_speak_simple_commands_to_navigate_pages_hear_words_read_aloud_get_definitions_pause_or_resume_narration_and_more_no_tapping_required_just_say_a_command_and_the_app_responds_instantly": "Premium readers can go completely hands-free. While your child reads, they can speak simple commands to navigate pages, hear words read aloud, get definitions, pause or resume narration, and more — no tapping required. Just say a command and the app responds instantly.",
-    "extra_say_play_story_stop_reading_next_page_previous_page_or_help_with_word": "Say: \"play story\", \"stop reading\", \"next page\", \"previous page\", or \"help with [word]\"",
-    "extra_say_things_like_start_reading_next_page": "Say things like “Start reading”, “Next page”",
     "extra_1st_come_stories_and_2nd_comes_images_together_they_take_just_under_a_minute": "1st come stories and 2nd comes images.....Together they take just under a minute!",
     "extra_mixing_up_the_perfect_image": "Mixing up the perfect image...",
     "extra_backup_mode": "Backup Mode",
@@ -2211,7 +2204,6 @@
     "extra_comprehension_questions_after_reading": "Comprehension questions after reading",
     "extra_reading_timer_and_progress_tracking": "Reading timer and progress tracking",
     "extra_vocabulary_word_bank_and_review_activities": "Vocabulary word bank and review activities",
-    "extra_voice_commands_for_navigation_and_controls": "Voice commands to turn the page, go back, read aloud or stop",
     "extra_priority_support": "Priority support",
     "extra_admin_educator_dashboards": "Admin & educator dashboards",
     "extra_curriculum_alignment_tools": "Curriculum alignment tools",
@@ -2279,7 +2271,11 @@
     "extra_resume": "Resume",
     "extra_school_grade": "School grade",
     "extra_the_grade_they_are_in_at_school_it_keeps_story_topics_right_for_them": "The grade they are in at school. It keeps story topics right for them.",
-    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "How hard the words are. It starts at their school grade; the story page's Make it easier / Make it harder buttons change it too."
+    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "How hard the words are. It starts at their school grade; the story page's Make it easier / Make it harder buttons change it too.",
+    "plan_voice_free": "Voice commands on the story page (free account)",
+    "plan_read_aloud_free": "Read-aloud practice, 5 sentences a day (free account)",
+    "plan_voice_premium": "Voice commands on the story page",
+    "talk_to_buddy_is_premium": "Talking with Buddy is a Premium feature"
   },
   "learningPath": {
     "currentPath": "Your learning path",
@@ -2371,5 +2367,24 @@
     "link_failed": "This link didn't work",
     "link_failed_line": "It may be incomplete. Reply to any of our emails and we'll take you off the list.",
     "try_again_minute": "Please try the link again in a minute."
+  },
+  "pricingVoice": {
+    "title": "Voice commands",
+    "who": "Free account and Premium · sign in to use",
+    "intro": "On the story page, your child taps the microphone and says one of these:",
+    "command": {
+      "next": "Turn the page",
+      "back": "Go back a page",
+      "read": "Read the page aloud",
+      "stop": "Stop the reading"
+    },
+    "say": {
+      "next": "“next page”",
+      "back": "“go back”",
+      "read": "“read to me”",
+      "stop": "“stop”"
+    },
+    "coachTitle": "Read-aloud practice",
+    "coachWho": "Free account: {{count}} sentences a day · Premium: unlimited · sign in to use"
   }
 }
