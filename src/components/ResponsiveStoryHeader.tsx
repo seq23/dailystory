@@ -412,9 +412,10 @@ export const ResponsiveStoryHeader = ({
               </h1>
             )}
             
-            {/* Story Controls */}
+            {/* Story Controls: kept at the row's end on a phone too (where they sat beside the
+                title before), so the "Start here!" chip under them stays on screen. */}
             {showLevelControls && (
-              <div className="flex items-center gap-2">
+              <div className="ml-auto flex items-center gap-2">
                  {onNewStory && (
                   <NewStoryCTA
                     isPremium={true}
