@@ -22,7 +22,9 @@ interface AchievementPopupProps {
   duration?: number;
 }
 
-const rarityConfig = {
+// Each rarity's gradient and the text colour drawn on it (checked for 4.5:1 by
+// src/test/guards/white-text-on-gradients.test.ts).
+export const rarityConfig = {
   common: {
     gradient: 'from-gray-500 to-gray-700',
     fg: 'text-white',

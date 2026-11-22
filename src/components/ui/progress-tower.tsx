@@ -15,7 +15,9 @@ interface ProgressTowerProps {
   className?: string;
 }
 
-const colorThemes = {
+// Each colour's gradient (and premium gradient) and the icon colour drawn on it (checked
+// for 4.5:1 by src/test/guards/white-text-on-gradients.test.ts).
+export const colorThemes = {
   blue: {
     gradient: 'from-blue-600 via-blue-700 to-blue-800',
     glow: 'shadow-blue-500/50',

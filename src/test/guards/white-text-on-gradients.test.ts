@@ -1,4 +1,4 @@
-// Guard: white text never sits on a gradient that fades to a pale colour (22 Nov 2026).
+// Guard: text never sits on a gradient that fades to a pale colour (22 Nov 2026).
 //
 // The home page's main "Create Your First Story" button faded from blue through purple to
 // the pale yellow accent (--accent, 70% lightness). Its white label read at about 1.5:1 on
@@ -14,6 +14,9 @@ import colors from "tailwindcss/colors";
 import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { towerMarker } from "@/components/ModernProgressTowers";
+import { rarityConfig } from "@/components/ui/achievement-popup";
+import { colorThemes } from "@/components/ui/progress-tower";
 
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -62,47 +65,46 @@ function textColour(c: string): string | undefined {
   return undefined;
 }
 
+// Gradients whose colour and text colour come from a map: the maps are imported, so each
+// gradient is checked against its own entry's text colour, with no source parsing.
+const MAP_FILES = [
+  "src/components/ModernProgressTowers.tsx",
+  "src/components/ui/achievement-popup.tsx",
+  "src/components/ui/progress-tower.tsx",
+];
+const mapped = [
+  ...Object.entries(rarityConfig).map(([k, e]) => ({ p: `rarityConfig.${k}`, c: e.gradient, fg: e.fg })),
+  ...Object.entries(colorThemes).flatMap(([k, e]) => [
+    { p: `colorThemes.${k}.gradient`, c: e.gradient, fg: e.fg },
+    { p: `colorThemes.${k}.premium`, c: e.premium, fg: e.fg },
+  ]),
+  ...Object.entries(towerMarker).map(([k, e]) => ({ p: `towerMarker.${k}`, c: e.gradient, fg: e.fg })),
+].map(({ p, c, fg }) => ({ p, c, text: textColour(fg) ?? `fg "${fg}" is not a text colour` }));
+
 describe("text on gradients", () => {
-  const classStrings = files("src").flatMap((p) =>
+  // A class string on one line that sets both a gradient and a text colour.
+  const literal = files("src").flatMap((p) =>
     readFileSync(p, "utf8")
       .split("\n")
-      .flatMap((c, i, lines) => {
-        if (/\bbg-gradient-to-/.test(c) && textColour(c)) return [{ p, c, text: textColour(c)! }];
-        // An inline choice (`bg-gradient-to-br ${\n a ? 'from-.. text-white' : 'from-.. text-amber-950'\n}`):
-        // each branch is checked against the text colour it sets, or white when the element sets white.
-        if (/\bbg-gradient-to-\w+ \$\{\s*$/.test(c)) {
-          const end = lines.findIndex((l, j) => j > i && /^\s*\}/.test(l));
-          const body = lines.slice(i + 1, end < 0 ? i + 1 : end);
-          const around = lines.slice(Math.max(0, i - 2), (end < 0 ? i : end) + 3).join(" ");
-          const fallback = /\btext-white\b/.test(around) ? WHITE : undefined;
-          return body.flatMap((l) => {
-            const text = textColour(l) ?? fallback;
-            return text ? [{ p, c: l, text }] : [];
-          });
-        }
-        // A gradient read from a map (`bg-gradient-to-r ${rarity.gradient} ${rarity.fg}`): every entry
-        // of that key in the same file is checked, against the `fg:` text colour of its own entry when
-        // the element uses it, or white when the element sets text-white.
-        const keys = [...c.matchAll(/\bbg-gradient-to-\w+ \$\{\w+\.(\w+)\}/g)].map((m) => m[1]);
-        if (!keys.length) return [];
-        const near = lines.slice(Math.max(0, i - 2), i + 3).join(" ");
-        const usesFg = /\$\{\w+\.fg\}/.test(near);
-        if (!usesFg && !/\btext-white\b/.test(near)) return [];
-        return lines.flatMap((l, j) => {
-          if (!keys.some((k) => new RegExp(`\\b${k}:\\s*['"\`]`).test(l))) return [];
-          if (!usesFg) return [{ p, c: l, text: WHITE }];
-          let start = j;
-          while (start > 0 && !/\{\s*$/.test(lines[start])) start--;
-          const stop = lines.findIndex((x, n) => n > j && /^\s*\}/.test(x));
-          const fg = lines.slice(start, stop).find((x) => /\bfg:\s*['"`]/.test(x));
-          const text = fg && textColour(fg);
-          return [{ p, c: l, text: text ?? `no fg colour in the entry for ${l.trim()}` }];
-        });
-      }),
+      .filter((c) => /\bbg-gradient-to-/.test(c) && textColour(c))
+      .map((c) => ({ p, c, text: textColour(c)! })),
   );
+  const classStrings = [...literal, ...mapped];
 
   it("finds the gradient buttons it checks", () => {
-    expect(classStrings.length).toBeGreaterThan(0);
+    expect(literal.length).toBeGreaterThan(0);
+    expect(mapped.length).toBeGreaterThanOrEqual(16);
+  });
+
+  it("every gradient that takes its text colour from a map uses a map this test imports", () => {
+    const unchecked = files("src").flatMap((p) =>
+      readFileSync(p, "utf8")
+        .split("\n")
+        .filter((l) => /\bbg-gradient-to-\w+ \$\{/.test(l) && /\.fg\}/.test(l))
+        .filter(() => !MAP_FILES.includes(p))
+        .map((l) => `${p}: ${l.trim()}`),
+    );
+    expect(unchecked).toEqual([]);
   });
 
   it("knows white on yellow-400 is unreadable, white on purple-700 and amber-950 on yellow-300 are fine", () => {
