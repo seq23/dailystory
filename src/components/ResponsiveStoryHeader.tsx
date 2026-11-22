@@ -415,11 +415,12 @@ export const ResponsiveStoryHeader = ({
             {/* Story Controls: kept at the row's end on a phone too (where they sat beside the
                 title before), so the "Start here!" chip under them stays on screen. */}
             {showLevelControls && (
-              <div className="ml-auto flex items-center gap-2">
+              <div data-testid="story-controls" className={cn("ml-auto flex items-center", isMobile ? "gap-1" : "gap-2")}>
                  {onNewStory && (
                   <NewStoryCTA
                     isPremium={true}
                     iconOnly={isMobile}
+                    narrowRow={isMobile}
                     onNewStory={onNewStory}
                     onUpgrade={onUpgrade || (() => {})}
                     size={isMobileOrTablet ? "sm" : "md"}
@@ -461,8 +462,9 @@ export const ResponsiveStoryHeader = ({
 
                 <Badge
                   variant="outline"
+                  data-testid="level-badge"
                   className={cn(
-                    "border px-2 py-1 transition-all duration-300 text-xs",
+                    "border px-2 py-1 transition-all duration-300 text-xs whitespace-nowrap shrink-0",
                     getDifficultyColor(currentDifficulty),
                     buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
                   )}

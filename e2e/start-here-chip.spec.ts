@@ -32,7 +32,7 @@ async function openStory(page: Page) {
   await expect(page.getByText('The little fox walks to a big tree.').locator('visible=true').first()).toBeVisible({ timeout: 20_000 });
 }
 
-for (const [width, height] of [[390, 844], [820, 1180], [1280, 800]] as const) {
+for (const [width, height] of [[320, 640], [390, 844], [820, 1180], [1280, 800]] as const) {
   test(`Start here! is whole and readable at ${width} px, under the button`, async ({ page }, testInfo) => {
     test.setTimeout(60_000); // sign-in, a written story and the checks: 30 s is too tight on a busy runner
     await page.setViewportSize({ width, height });
@@ -46,6 +46,7 @@ for (const [width, height] of [[390, 844], [820, 1180], [1280, 800]] as const) {
     const box = await chip.evaluate((el) => {
       const r = el.getBoundingClientRect();
       const b = el.parentElement!.querySelector('button')!.getBoundingClientRect();
+      const arrow = el.querySelector('svg')!.getBoundingClientRect();
       const cut: string[] = [];
       if (r.left < 0 || r.right > window.innerWidth || r.top < 0 || r.bottom > window.innerHeight) cut.push(`viewport ${Math.round(r.left)}..${Math.round(r.right)}`);
       for (let p = el.parentElement; p; p = p.parentElement) {
@@ -71,7 +72,8 @@ for (const [width, height] of [[390, 844], [820, 1180], [1280, 800]] as const) {
       const [hi, lo] = [lum(seen), lum(fill)].sort((x, y) => y - x);
       const alpha = fill[3];
       return {
-        cut, chip: { top: r.top, width: r.width, text: el.textContent }, button: { bottom: b.bottom },
+        cut, chip: { top: r.top, left: r.left, width: r.width, text: el.textContent }, button: { bottom: b.bottom, left: b.left },
+        arrowOnButton: arrow.left + arrow.width / 2 >= b.left && arrow.left + arrow.width / 2 <= b.right,
         titles: titles.length, overTitle: titles.some(hit), overButton: hit(b),
         fontPx: parseFloat(cs.fontSize), opaqueFill: alpha === 1, contrast: (hi + 0.05) / (lo + 0.05),
       };
@@ -81,6 +83,10 @@ for (const [width, height] of [[390, 844], [820, 1180], [1280, 800]] as const) {
     expect(box.chip.text).toContain('Start here!');
     expect(box.chip.width).toBeGreaterThan(40);
     expect.soft(box.chip.top, 'Start here! chip sits under the New Story button').toBeGreaterThanOrEqual(box.button.bottom - 1);
+    expect.soft(box.arrowOnButton, 'Start here! arrow points at the New Story button').toBe(true);
+    // On a phone row the chip starts at the button: centred under it, the chip is wider than
+    // the button and ran past the screen edge at 320 px (98 px chip in CI's font).
+    if (width < 640) expect.soft(box.chip.left, 'Start here! chip starts at the button, not left of it').toBeGreaterThanOrEqual(box.button.left - 0.5);
     expect.soft(box.titles, 'a story title is on screen to check against').toBeGreaterThan(0);
     expect.soft(box.overTitle, 'Start here! chip covers the story title').toBe(false);
     expect.soft(box.overButton, 'Start here! chip covers the New Story button').toBe(false);
@@ -104,11 +110,55 @@ for (const width of [320, 390] as const) {
     await openStory(page);
     const title = page.getByTestId('story-title').locator('visible=true').first();
     await expect(title).toHaveText("Pip's Live Adventure");
+    // The sign-in sparkles (about 2 s, floating up to 45 px) stay on the controls row and
+    // never cross onto the title. Sampled for 1.2 s; they must be seen at least once.
+    const sparkle = await page.evaluate(async () => {
+      const h1 = document.querySelector('[data-testid="story-title"]')!.getBoundingClientRect();
+      const controls = document.querySelector('[data-testid="story-controls"]')!.getBoundingClientRect();
+      let seen = 0;
+      const strays: string[] = [];
+      for (let i = 0; i < 12; i++) {
+        for (const layer of document.querySelectorAll('[data-testid="story-controls"] [data-testid="sparkles"]')) {
+          for (const g of layer.children) {
+            let r = g.getBoundingClientRect();
+            if (r.width === 0 || r.height === 0 || Number(getComputedStyle(g).opacity) === 0) continue;
+            // What is drawn: the glyph cut by every clipping box above it.
+            let top = r.top, bottom = r.bottom, left = r.left, right = r.right;
+            for (let p = g.parentElement; p; p = p.parentElement) {
+              const cs = getComputedStyle(p);
+              if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue;
+              const q = p.getBoundingClientRect();
+              top = Math.max(top, q.top); bottom = Math.min(bottom, q.bottom); left = Math.max(left, q.left); right = Math.min(right, q.right);
+            }
+            if (bottom <= top || right <= left) continue;
+            seen++;
+            const onTitle = left < h1.right && h1.left < right && top < h1.bottom && h1.top < bottom;
+            if (onTitle || top < controls.top - 0.5) strays.push(`${Math.round(left)},${Math.round(top)}`);
+          }
+        }
+        await new Promise((res) => setTimeout(res, 100));
+      }
+      return { seen, strays };
+    });
+    expect.soft(sparkle.seen, 'the sign-in sparkles were on screen to check').toBeGreaterThan(0);
+    expect.soft(sparkle.strays, 'sparkles drawn above the controls row, onto the title').toEqual([]);
     const fit = await title.evaluate((el) => ({
       cut: el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1,
       width: el.getBoundingClientRect().width,
       row: el.parentElement!.clientWidth,
     }));
+    const controls = await page.getByTestId('story-controls').locator('visible=true').first().evaluate((el) => {
+      const badge = el.querySelector('[data-testid="level-badge"]')!;
+      const range = document.createRange();
+      range.selectNodeContents(badge);
+      const lines = new Set([...range.getClientRects()].filter((q) => q.width > 0).map((q) => Math.round(q.top))).size;
+      const row = el.parentElement!.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      return { badge: badge.textContent, lines, fits: r.left >= row.left - 0.5 && r.right <= row.right + 0.5 && el.scrollWidth <= el.clientWidth + 1 };
+    });
+    expect(controls.badge).toMatch(/grade/);
+    expect.soft(controls.lines, `the level pill ("${controls.badge}") reads on one line`).toBe(1);
+    expect.soft(controls.fits, 'the story controls fit their row').toBe(true);
     expect.soft(fit.cut, 'story title is cut off').toBe(false);
     expect.soft(fit.width, 'story title has the row to itself').toBeGreaterThanOrEqual(fit.row - 1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
