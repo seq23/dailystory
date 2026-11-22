@@ -221,7 +221,7 @@ describe("every paid function is wired to the guard", () => {
     for (const fn of [...guestFns, ...adminFns, ...signedInFns]) {
       const src = read(`supabase/functions/${fn}/index.ts`);
       expect(src, fn).toMatch(/from ["']\.\.\/_shared\/paidCallGuardDeno\.ts["']/);
-      const gate = Math.max(src.indexOf("identifyCaller(req"), src.indexOf("paidCallRefusal(req"));
+      const gate = Math.max(src.indexOf("identifyCaller(req"), src.indexOf("paidCallRefusal(req"), src.indexOf("guardCallWithCors(req"));
       expect(gate, `${fn} calls the guard`).toBeGreaterThan(0);
       // The read-only credit check (/v1/user/subscription, service role only) is free.
       // Request entry: the handler (helpers above it are only reached through it).
@@ -236,7 +236,7 @@ describe("every paid function is wired to the guard", () => {
       }
     }
     for (const fn of adminFns) expect(read(`supabase/functions/${fn}/index.ts`)).toMatch(/adminUserIds:\s*adminUserIds\(\)/);
-    for (const fn of signedInFns) expect(read(`supabase/functions/${fn}/index.ts`), fn).toMatch(/paidCallRefusal\(req, '[a-z-]+', corsHeaders, \{ allowGuests: false\b/);
+    for (const fn of signedInFns) expect(read(`supabase/functions/${fn}/index.ts`), fn).toMatch(/(?:paidCallRefusal|guardCallWithCors)\(req, '[a-z-]+', corsHeaders, \{ allowGuests: false\b/);
   });
 
   it("the TTS functions charge only on a cache miss, never on cached audio", () => {

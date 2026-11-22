@@ -952,7 +952,9 @@
     "syllableDemo": "Escucha cómo separo «{{word}}»",
     "privacy": "No guardamos grabaciones. El audio se elimina después de darte los consejos.",
     "signIn": "Inicia sesión para practicar la lectura en voz alta.",
-    "noSpeech": "No te escuché. Toca «Empieza a leer» y lee la oración en voz alta."
+    "noSpeech": "No te escuché. Toca «Empieza a leer» y lee la oración en voz alta.",
+    "limitReached": "Ya usaste las {{count}} frases de práctica gratis de hoy. Vuelve mañana, o Premium tiene práctica ilimitada.",
+    "countUnavailable": "No pudimos revisar tu práctica de hoy. Inténtalo de nuevo en un minuto."
   },
   "postSession": {
     "quizTitle": "Cuestionario de comprensión",

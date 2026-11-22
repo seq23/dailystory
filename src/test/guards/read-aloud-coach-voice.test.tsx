@@ -87,6 +87,41 @@ describe('read-aloud practice and the child\'s voice', () => {
     expect(mocks.invoke).toHaveBeenCalledWith('voice-to-text', expect.anything());
     expect(screen.queryByTestId('coach-no-speech')).toBeNull();
   });
+
+  // The server counts a free account's practice (voice-to-text, readAloudAllowance.ts);
+  // a fresh browser (count 0 here) must still show the server's refusal.
+  const refusedBy = (status: number, code: string) => ({
+    data: null,
+    error: { name: 'FunctionsHttpError', context: new Response(JSON.stringify({ success: false, code }), { status }) },
+  });
+  const practiseOnce = async () => {
+    (window as any).AudioContext = meter(255);
+    localStorage.clear();
+    render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} isPremium={false} />);
+    const start = await screen.findByRole('button', { name: /Start Reading/ });
+    await act(async () => { fireEvent.click(start); });
+    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => { FakeRecorder.last!.stop(); await new Promise((r) => setTimeout(r, 20)); });
+  };
+
+  it('the clip names its sentence, so the server can count sentences, not taps', async () => {
+    await practiseOnce();
+    expect(mocks.invoke).toHaveBeenCalledWith('voice-to-text', { body: expect.objectContaining({ sentence: 'The fox runs.' }) });
+  });
+
+  it('a free account the server stops at the daily limit sees why, and Start is off', async () => {
+    mocks.invoke.mockResolvedValue(refusedBy(429, 'READ_ALOUD_LIMIT_REACHED'));
+    await practiseOnce();
+    expect(screen.getByTestId('coach-refused').textContent).toMatch(/5 free practice sentences are used up/);
+    expect((startButton() as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('when the server cannot count, the child is told to try again (not stopped for the day)', async () => {
+    mocks.invoke.mockResolvedValue(refusedBy(503, 'READ_ALOUD_CHECK_UNAVAILABLE'));
+    await practiseOnce();
+    expect(screen.getByTestId('coach-refused').textContent).toMatch(/try again/i);
+    expect((startButton() as HTMLButtonElement).disabled).toBe(false);
+  });
 });
 
 describe('the privacy pages say what happens to a voice clip', () => {

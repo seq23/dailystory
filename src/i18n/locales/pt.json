@@ -1007,7 +1007,9 @@
     "syllableDemo": "Ouça como separo «{{word}}»",
     "privacy": "Não guardamos gravações. O áudio é descartado após as dicas.",
     "signIn": "Entre na sua conta para praticar a leitura em voz alta.",
-    "noSpeech": "Não ouvi você. Toque em “Comece a ler” e leia a frase em voz alta."
+    "noSpeech": "Não ouvi você. Toque em “Comece a ler” e leia a frase em voz alta.",
+    "limitReached": "As {{count}} frases de prática grátis de hoje já foram usadas. Volte amanhã, ou o Premium tem prática ilimitada.",
+    "countUnavailable": "Não conseguimos verificar a prática de hoje. Tente de novo em um minuto."
   },
   "postSession": {
     "quizTitle": "Questionário de compreensão",

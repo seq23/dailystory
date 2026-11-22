@@ -15,7 +15,19 @@ import type { SupportedLanguage } from "@/types/multilingual";
 import { useTranslation } from "react-i18next";
 import { startSpeechMeter } from "@/lib/voice/speechMeter";
 import { useSignedIn } from "@/hooks/useSignedIn";
-import { READ_ALOUD_FREE_SENTENCES_PER_DAY } from "@/lib/freeStoryAllowance";
+import { READ_ALOUD_FREE_SENTENCES_PER_DAY, READ_ALOUD_LIMIT_CODE, READ_ALOUD_UNAVAILABLE_CODE } from "@/lib/freeStoryAllowance";
+
+/** voice-to-text's refusal code for a practice clip (429/503 body on error.context), or null. */
+export async function practiceRefusal(error: unknown): Promise<"limit" | "unavailable" | null> {
+  const ctx = (error as { context?: { clone?: () => Response; json?: () => Promise<unknown> } } | null)?.context;
+  if (!ctx || typeof ctx.json !== "function") return null;
+  try {
+    const body = (await (ctx.clone ? ctx.clone().json() : ctx.json())) as { code?: string } | null;
+    if (body?.code === READ_ALOUD_LIMIT_CODE) return "limit";
+    if (body?.code === READ_ALOUD_UNAVAILABLE_CODE) return "unavailable";
+  } catch { /* not JSON */ }
+  return null;
+}
 
 interface ReadAloudCoachProps {
   targetText?: string;
@@ -79,6 +91,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const [idx, setIdx] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [noSpeech, setNoSpeech] = useState(false);
+  // The server said no to a practice clip: today's free sentences are used, or it could not count.
+  const [refused, setRefused] = useState<"limit" | "unavailable" | null>(null);
   const [transcript, setTranscript] = useState("");
   const [passed, setPassed] = useState<boolean | null>(null);
   const [paceTip, setPaceTip] = useState<string>("");
@@ -320,6 +334,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
     pauseStoryIfPlaying();
     setNoSpeech(false);
+    setRefused(null);
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     // A clip with no speech in it is never sent (Whisper invents words for silence).
@@ -350,10 +365,14 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
         const base64 = await blobToBase64(blob);
         const { data, error } = await supabase.functions.invoke("voice-to-text", {
-          body: { audio: base64, mimeType: mimeTypeRef.current },
+          body: { audio: base64, mimeType: mimeTypeRef.current, sentence: sentences[idx] || "" },
         });
         if (error) {
-          DebugLogger.error('audio', 'ReadAloudCoach processing error', error);
+          // The server counts free practice; its answer wins over this browser's count.
+          const why = await practiceRefusal(error);
+          if (why) setRefused(why);
+          if (why === "limit") { setLimitReached(true); setDailyUsed(DAILY_FREE_LIMIT); }
+          if (!why) DebugLogger.error('audio', 'ReadAloudCoach processing error', error);
           return;
         }
         const text: string = data?.text || "";
@@ -464,7 +483,12 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
           if (meter.heard === false) { resolve(""); return; }
           const blob = new Blob(chunks, { type: supported || "audio/webm" });
           const base64 = await blobToBase64(blob);
-          const { data } = await supabase.functions.invoke("voice-to-text", { body: { audio: base64, mimeType: supported || "audio/webm" } });
+          const { data, error } = await supabase.functions.invoke("voice-to-text", { body: { audio: base64, mimeType: supported || "audio/webm", sentence: sentences[idx] || "" } });
+          if (error) {
+            const why = await practiceRefusal(error);
+            if (why) setRefused(why);
+            if (why === "limit") { setLimitReached(true); setDailyUsed(DAILY_FREE_LIMIT); }
+          }
           resolve((data?.text || "").toLowerCase());
         };
       });
@@ -754,6 +778,14 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
             </div>
           )}
           
+          {refused && !isRecording && (
+            <p role="status" className="text-sm text-foreground" data-testid="coach-refused">
+              {refused === "limit"
+                ? t('coach.limitReached', "Today's {{count}} free practice sentences are used up. Come back tomorrow, or Premium has unlimited practice.", { count: DAILY_FREE_LIMIT })
+                : t('coach.countUnavailable', "We couldn't check today's practice count. Please try again in a minute.")}
+            </p>
+          )}
+
           {noSpeech && !isRecording && (
             <p className="text-sm text-muted-foreground" data-testid="coach-no-speech"> {t('coach.noSpeech', 'I didn’t hear you. Tap Start Reading and read the sentence out loud.')} </p>
           )}

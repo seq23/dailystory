@@ -9,12 +9,17 @@ export const FREE_LIMIT_CODE = "FREE_LIMIT_REACHED";
 export const PAYWALL_EVENT = "t2r:free-limit-reached";
 export const TRIAL_DAYS = 7;
 /**
- * Read-aloud practice (ReadAloudCoach) on a free account: sentences a day. Premium has
- * no daily limit; a signed-out guest gets none (nor voice commands). The /pricing copy
- * and docs/PRICING.md (free_read_aloud_sentences_per_day) say the same number:
+ * Read-aloud practice (ReadAloudCoach) on a free account: sentences a day, counted and
+ * enforced by voice-to-text on the server. Premium has no daily limit; a signed-out
+ * guest gets none (nor voice commands). The /pricing copy and docs/PRICING.md
+ * (free_read_aloud_sentences_per_day) say the same number:
  * src/test/guards/pricing-voice-truth.test.tsx and pricing-doc.test.ts.
  */
-export const READ_ALOUD_FREE_SENTENCES_PER_DAY = 5;
+export {
+  READ_ALOUD_FREE_SENTENCES_PER_DAY,
+  READ_ALOUD_LIMIT_CODE,
+  READ_ALOUD_UNAVAILABLE_CODE,
+} from "../../supabase/functions/_shared/readAloudAllowance";
 
 export const PLAN_PRICES = {
   monthly: { label: "$12.99", period: "/month", amountCents: 1299 },

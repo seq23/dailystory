@@ -1,7 +1,9 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { logCost } from "../_shared/costLogger.ts";
-import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
+import { guardCallWithCors, paidCallDeps } from "../_shared/paidCallGuardDeno.ts";
+import { checkReadAloud } from "../_shared/readAloudAllowance.ts";
+import { spokenCommandOnly } from "../_shared/storyVoiceCommands.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { VOICE_COMMAND_PROMPTS, commandTranscript, voiceCommandLanguage } from "../_shared/voiceCommandPrompt.ts";
 
@@ -69,11 +71,11 @@ serve(async (req) => {
   // Paid call, signed-in accounts only: a child's voice is sent to OpenAI only from an
   // account with parental consent on record (risk rule R-KID-02), so a guest pass is
   // refused here, not just hidden in the UI (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'voice-to-text', corsHeaders, { allowGuests: false, maxBodyBytes: 8 * 1024 * 1024, signInFor: 'so we can hear you read' });
+  const { caller, refused } = await guardCallWithCors(req, 'voice-to-text', corsHeaders, { allowGuests: false, maxBodyBytes: 8 * 1024 * 1024, signInFor: 'so we can hear you read' });
   if (refused) return refused;
 
   try {
-    const { audio, mimeType, mode, language } = await req.json();
+    const { audio, mimeType, mode, language, sentence } = await req.json();
     // The story page's spoken commands (src/lib/voice/storyVoiceCommands.ts): a short
     // clip in the child's UI language, a prompt with no command word in it (Whisper
     // echoes its prompt on silence), and no second pronunciation pass.
@@ -83,6 +85,30 @@ serve(async (req) => {
 
     if (!audio) {
       throw new Error("No audio data provided");
+    }
+
+    // Read-aloud practice (every clip that is not a story-page command) on a free account:
+    // READ_ALOUD_FREE_SENTENCES_PER_DAY sentences a day, counted here before the paid call.
+    // Premium is read from subscribers, never from the request, and never counted.
+    if (!isCommand && caller.kind === "user") {
+      const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      const decision = await checkReadAloud(caller.id, sentence, {
+        async subscriberRow(userId) {
+          const { data, error } = await sb.from("subscribers")
+            .select("subscribed, subscription_end, override_premium, override_end")
+            .eq("user_id", userId).maybeSingle();
+          if (error) throw new Error(error.message);
+          return data;
+        },
+        hit: (b, w, l) => paidCallDeps().hit(b, w, l),
+      });
+      if (!decision.allowed) {
+        console.warn(`[voice-to-text] ${decision.body.code}`);
+        return new Response(JSON.stringify(decision.body), {
+          status: decision.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json", ...(decision.status === 503 ? { "Retry-After": "60" } : {}) },
+        });
+      }
     }
 
     // Process audio in chunks
@@ -179,7 +205,8 @@ serve(async (req) => {
     }
 
     // A command clip that only echoes the prompt is nothing said.
-    const text = isCommand ? commandTranscript(result.text, commandPrompt) : result.text;
+    // A command clip answers with a command or nothing: never a free transcript.
+    const text = isCommand ? spokenCommandOnly(commandTranscript(result.text, commandPrompt)) : result.text;
     const responseData: any = {
       text,
       originalText: text // Basic fallback

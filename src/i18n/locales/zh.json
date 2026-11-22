@@ -966,7 +966,9 @@
     "syllableDemo": "听听“{{word}}”可以怎样拆开读",
     "privacy": "我们不保存录音，反馈完成后音频即被丢弃。",
     "signIn": "登录后即可练习朗读。",
-    "noSpeech": "我没有听到你的声音。点“开始朗读”，大声读出这句话。"
+    "noSpeech": "我没有听到你的声音。点“开始朗读”，大声读出这句话。",
+    "limitReached": "今天的 {{count}} 个免费练习句子已经用完了。明天再来，或者 Premium 可以无限练习。",
+    "countUnavailable": "暂时无法查看今天的练习次数。请一分钟后再试。"
   },
   "postSession": {
     "quizTitle": "阅读理解测验",
