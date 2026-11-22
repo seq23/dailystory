@@ -33,7 +33,7 @@ jobs:
         run: |
           npx vite preview --port 4173 --strictPort &
           npx --yes wait-on@8.0.1 http://localhost:4173 --timeout 60000
-          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts e2e/story-choices.spec.ts e2e/story-voice.spec.ts e2e/start-here-chip.spec.ts e2e/pricing-voice.spec.ts --project=chromium --retries=1
+          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts e2e/story-choices.spec.ts e2e/story-voice.spec.ts e2e/start-here-chip.spec.ts e2e/pricing-voice.spec.ts e2e/header-phone.spec.ts --project=chromium --retries=1
       # The one upload: every capture for review (voice-*, start-here-*, pricing-voice-*),
       # and on a failure the traces and error snapshots too.
       - if: always()
