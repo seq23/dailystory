@@ -104,7 +104,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
   };
 
   return (
-    <div className="story-navigation-controls flex items-center justify-between w-full gap-2">
+    <div className="story-navigation-controls flex items-center justify-between w-full gap-1 sm:gap-2">
       {/* Previous Button */}
       <Button
         onClick={handlePrevious}
@@ -118,8 +118,8 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         <span className="sm:hidden"> {uiText("Back")} </span>
       </Button>
 
-      {/* Center Controls with Audio Buttons */}
-      <div className="flex items-center gap-3 min-w-0">
+      {/* Center Controls with Audio Buttons: tighter on small phones so the mic never sits on Next (320 px, 22 Nov 2026) */}
+      <div className="flex items-center justify-center gap-1 sm:gap-3 min-w-0">
         {/* Read to Me Button - Left of page numbers - Guest Users Only */}
         {!isPremium && audioEngineRef && onAudioStateChange && onAudioPlayed && (
           <div className="xl:flex hidden">
@@ -173,7 +173,7 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
       </div>
 
       {/* Next Button */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         <Button
           onClick={handleNext}
           disabled={!canGoNext || isLoadingNextPage}

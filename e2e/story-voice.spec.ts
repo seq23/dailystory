@@ -80,3 +80,38 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.screenshot({ path: testInfo.outputPath(`voice-${colorScheme}-not-understood.png`) });
   });
 }
+
+// At the smallest phones the microphone sits between the page count and Next, never on top of
+// either button (the 320 px capture of 22 Nov 2026 showed only "xt" of Next).
+for (const width of [320, 360] as const) {
+  test(`the microphone never covers Back or Next at ${width} px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 740 });
+    await page.route('**/*', route => /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/)/.test(route.request().url())
+      ? route.continue() : route.abort());
+    await page.addInitScript(() => localStorage.setItem('storyImagesEnabled', '0'));
+    const user = makeUser();
+    await mockSupabase(page, { user, story: { success: true, pages: ['The little fox walks to a big tree. A bird sits on a low branch.'] }, tables: {
+      child_profiles: [{ id: '22222222-2222-4222-8222-222222222222', parent_user_id: user.id, display_name: 'Pip', age: 7, grade_level: '2', avatar: { type: 'prefer-not-to-answer' } }],
+      subscribers: [{ id: 'fixture-sub', user_id: user.id, email: user.email, subscribed: true, subscription_end: '2035-01-01T00:00:00Z', subscription_tier: 'monthly' }],
+    } });
+    await signInAs(page, user);
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Only needed', exact: true }).click();
+    await page.getByRole('button', { name: /create your first story/i }).click();
+    const dialog = page.getByTestId('new-story-dialog');
+    await dialog.getByRole('button', { name: /\+ space/i }).click();
+    await dialog.getByTestId('write-story').click();
+    await expect(page.getByTestId('story-text-scroll-mobile')).toContainText('The little fox', { timeout: 20_000 });
+    const mic = page.getByTestId('story-voice-commands');
+    await expect(mic).toBeVisible();
+    const nav = page.locator('.story-navigation-controls:visible').first();
+    const m = (await mic.boundingBox())!;
+    for (const name of [/next/i, /back/i]) {
+      const b = (await nav.getByRole('button', { name }).boundingBox())!;
+      const overlap = Math.min(m.x + m.width, b.x + b.width) - Math.max(m.x, b.x);
+      expect(overlap, `the microphone overlaps ${name} by ${overlap}px at ${width}px`).toBeLessThanOrEqual(0);
+      expect(b.x + b.width, `${name} runs off the screen`).toBeLessThanOrEqual(width);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  });
+}
