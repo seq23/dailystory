@@ -118,8 +118,9 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         <span className="sm:hidden"> {uiText("Back")} </span>
       </Button>
 
-      {/* Center Controls with Audio Buttons: tighter on small phones so the mic never sits on Next (320 px, 22 Nov 2026) */}
-      <div className="flex items-center justify-center gap-1 sm:gap-3 min-w-0">
+      {/* Center Controls: takes only the space between Back and Next, and wraps the mic under the page number when that
+          space is too narrow, so it can never sit on Next (320 px, 22 Nov 2026; tighter gaps alone still overlapped 6 px) */}
+      <div className="flex flex-1 flex-wrap items-center justify-center gap-x-1 gap-y-1 sm:gap-x-3 min-w-0">
         {/* Read to Me Button - Left of page numbers - Guest Users Only */}
         {!isPremium && audioEngineRef && onAudioStateChange && onAudioPlayed && (
           <div className="xl:flex hidden">
