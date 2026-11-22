@@ -5,7 +5,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import * as accessRules from "../../../supabase/functions/_shared/accessCodeRules";
-import { FREE_STORY_LIMIT, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
+import { FREE_STORY_LIMIT, PLAN_PRICES, READ_ALOUD_FREE_SENTENCES_PER_DAY, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
 import { TTS_CONFIG, getTTSProvider } from "@/config/ttsConfig";
 
 const ROOT = join(__dirname, "../../..");
@@ -36,7 +36,7 @@ const savedPct = Math.floor(((monthly * 12 - annual) / (monthly * 12)) * 100);
 
 describe("docs/PRICING.md is internally consistent", () => {
   it("has every key, and the labels and savings follow from the cents", () => {
-    for (const k of ["monthly_cents", "annual_cents", "monthly_label", "annual_label", "annual_savings", "free_stories", "trial_days", "code_HOMESCHOOL15_days", "free_voice", "premium_voice", "premium_fallback"]) {
+    for (const k of ["monthly_cents", "annual_cents", "monthly_label", "annual_label", "annual_savings", "free_stories", "trial_days", "free_read_aloud_sentences_per_day", "code_HOMESCHOOL15_days", "free_voice", "premium_voice", "premium_fallback"]) {
       expect(doc[k], k).toBeTruthy();
     }
     expect(doc.monthly_label).toBe(label(monthly));
@@ -119,6 +119,7 @@ describe("the code charges and shows what PRICING.md says", () => {
   it("free stories, trial length and HOMESCHOOL15 match", () => {
     expect(FREE_STORY_LIMIT).toBe(Number(doc.free_stories));
     expect(TRIAL_DAYS).toBe(Number(doc.trial_days));
+    expect(READ_ALOUD_FREE_SENTENCES_PER_DAY).toBe(Number(doc.free_read_aloud_sentences_per_day));
     expect(accessRules.DEFAULT_TRIAL_DAYS).toBe(Number(doc.trial_days));
     expect(read("supabase/migrations/20261025120000_access_codes.sql")).toMatch(
       new RegExp(`'HOMESCHOOL15', ${Number(doc.code_HOMESCHOOL15_days)},`),

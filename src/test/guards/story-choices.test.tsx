@@ -64,11 +64,16 @@ describe('three choices from the same page answer', () => {
     expect(handler).toContain('await chatCompletionWithFallback(apiBody, {');
     expect(read('src/services/storyGenerationService.ts')).toMatch(/selectedChoice: config\.selectedChoice/);
     expect(read('src/services/storyGenerationService.ts')).toMatch(/choices: data\.choices/);
-    expect(read('.github/workflows/journey.yml')).toMatch(/playwright test e2e\/parent-journey\.spec\.ts e2e\/story-choices\.spec\.ts --project=chromium/);
-    // One upload step, pass or fail, holding every capture (start-here-phone.png too).
-    const wf = read('.github/workflows/journey.yml');
-    expect(wf.match(/uses: actions\/upload-artifact@/g) ?? []).toHaveLength(1);
-    expect(wf).toMatch(/- if: always\(\)\n\s+uses: actions\/upload-artifact@v4\n\s+with:\n\s+name: journey-report\n\s+path: test-results\//);
+    const journey = read('.github/workflows/journey.yml');
+    // One Playwright call runs every journey spec (a second call wipes test-results/ and the
+    // first call's captures with it), and one upload step carries those captures.
+    const runs = journey.match(/npx playwright test [^\n]*/g) ?? [];
+    expect(runs).toHaveLength(1);
+    for (const spec of ['parent-journey', 'story-choices', 'story-voice', 'start-here-chip', 'pricing-voice']) {
+      expect(runs[0]).toContain(`e2e/${spec}.spec.ts`);
+    }
+    expect(journey.match(/uses: actions\/upload-artifact@/g)).toHaveLength(1);
+    expect(journey).toMatch(/- if: always\(\)\n\s+uses: actions\/upload-artifact@v4\n\s+with:\n\s+name: journey-captures\n\s+path: test-results\//);
   });
 });
 

@@ -13,6 +13,10 @@ export const freeFeatures: string[] = [
   "Audio Narration (Limited)",
   "Achievements, points, badges, and reading streaks (In session only)",
   "End-of-session report with milestones",
+  // Signed in only: a guest gets neither (her ruling 22 Nov 2026, "free readers should
+  // get less"). The 5 is READ_ALOUD_FREE_SENTENCES_PER_DAY: pricing-voice-truth.test.tsx.
+  "Voice commands on the story page (free account)",
+  "Read-aloud practice, 5 sentences a day (free account)",
 ];
 
 export const premiumFeatures: string[] = [
@@ -22,6 +26,8 @@ export const premiumFeatures: string[] = [
   "Advanced audio narration",
   "Achievements, points, badges, and reading streaks",
   "End-of-session report with milestones",
+  "Voice commands on the story page",
+  "Unlimited read-aloud practice",
 ];
 
 export const additionalOfferings: string[] = [
@@ -37,8 +43,6 @@ export const additionalOfferings: string[] = [
   "Vocabulary word bank and review activities",
   "Curated story library and recommendations",
   "Mobile-optimized audio controls and kid-friendly UI",
-  "Voice commands to turn the page, go back, read aloud or stop",
-  "Read-aloud feedback (speech-to-text coaching)",
   "Priority support",
 ];
 

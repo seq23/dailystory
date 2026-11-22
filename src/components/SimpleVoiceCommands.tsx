@@ -96,7 +96,7 @@ export const SimpleVoiceCommands: React.FC = () => {
       
       const storyTitle = (window as any).__storyTitle || '';
       const contextMessage = storyTitle ? `I'm ready to help with "${storyTitle}"!` : "I'm ready to help!";
-      toast.success(`${contextMessage} Try saying "play story"`);
+      toast.success(contextMessage);
     },
     onDisconnect: () => {
       DebugLogger.log('audio', 'Disconnected from Buddy');
@@ -233,11 +233,6 @@ export const SimpleVoiceCommands: React.FC = () => {
       </Button>
       
       {getStatusBadge()}
-      
-      {status === 'connected' && (
-        <div className="text-xs text-muted-foreground max-w-xs">
-           {uiText("Say: \"play story\", \"stop reading\", \"next page\", \"previous page\", or \"help with [word]\"")} </div>
-      )}
     </div>
   );
 };

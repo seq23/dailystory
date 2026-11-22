@@ -694,7 +694,7 @@
       "liveStoryGeneration": "Histórias personalizadas criadas na hora: você decide quando terminam!",
       "multipleProfiles": "Vários perfis infantis",
       "vocabularyTracking": "Acompanhamento do vocabulário e questionários de prática",
-      "readAloudFeedback": "Dicas de leitura em voz alta com reconhecimento de fala",
+      "readAloudFeedback": "Prática de leitura em voz alta ilimitada",
       "unlimitedSessions": "Sessões de leitura ilimitadas",
       "customDifficulty": "Ajuste personalizado da dificuldade",
       "extendedLibrary": "Biblioteca ampliada com mais temas",
@@ -731,7 +731,6 @@
     "voiceCommandsDisabled": "Comandos de Voz Desabilitados",
     "voiceCommandsOff": "Os comandos de voz estão agora desligados",
     "voiceCommandsEnabled": "Comandos de Voz Habilitados",
-    "voiceCommandsInstructions": "Tente dizer 'próxima página', 'leia mais devagar', ou 'o que significa [palavra]?'",
     "stabilizing": "Preparando o áudio…",
     "stabilizingDesc": "Aguarde enquanto preparamos sua leitura.",
     "pageChanged": "Página alterada",
@@ -744,7 +743,6 @@
     "play": "Ler",
     "readingCoach": "Orientação de leitura",
     "coach": "Orientação de leitura",
-    "voiceCommandsHint": "Tente dizer em inglês: «next page», «pause», «continue», «read slower»",
     "openVoiceHelp": "Abrir ajuda de comandos de voz",
     "fullList": "Lista completa",
     "voiceCommandRun": "Comando executado",
@@ -1785,7 +1783,6 @@
     "vocabulary_amp_quizzes": "Vocabulário e questionários",
     "vocabulary_word_bank_comprehension_quiz_achievement_badges_and_parent_insights_dashboard": "Banco de palavras, questionário, emblemas e painel da família",
     "build_a_personal_word_bank_test_comprehension_with_quizzes_earn_achievement_badges_and_vie": "Monte seu banco de palavras, teste a compreensão, ganhe emblemas e consulte relatórios para a família.",
-    "speech_to_text_feedback_premium": "Dicas com reconhecimento de fala — Premium",
     "remove": "Remover",
     "their_profile_goes_away_you_can_add_them_again_any_time": "? O perfil será removido. Você pode adicioná-lo novamente quando quiser.",
     "yes_remove": "Sim, remover",
@@ -2266,7 +2263,6 @@
     "extra_example_ocean_brave_explore": "exemplo: oceano, corajoso, explorar",
     "extra_use_educational_words_like_ocean_explore_or_friendship": "Use palavras para aprender, como «oceano», «explorar» ou «amizade».",
     "extra_voice_commands_setup_required": "É preciso configurar os comandos de voz",
-    "extra_voice_commands_are_a_premium_feature": "Os comandos de voz são um recurso Premium",
     "extra_upgrade_to_premium_for_unlimited_audio_plays_per_page": "Assine o Premium para ouvir cada página sem limites",
     "extra_protecting_your_child_s_privacy": "Protegendo a privacidade do seu filho",
     "extra_for_your_child_s_safety_please_avoid_sharing": "Para proteger seu filho, evite compartilhar:",
@@ -2301,9 +2297,6 @@
     "extra_about_time_2_read": "Sobre o Time-2-Read",
     "extra_and_who_makes_it": "e quem o criou.",
     "extra_guides_for_parents_and_teachers": "Guias para famílias e professores",
-    "extra_premium_readers_can_go_completely_hands_free_while_your_child_reads_they_can_speak_simple_commands_to_navigate_pages_hear_words_read_aloud_get_definitions_pause_or_resume_narration_and_more_no_tapping_required_just_say_a_command_and_the_app_responds_instantly": "Com o Premium, seu filho pode ler sem tocar na tela. Basta falar para mudar de página, ouvir palavras, saber significados ou pausar e retomar a narração.",
-    "extra_say_play_story_stop_reading_next_page_previous_page_or_help_with_word": "Diga em inglês: «play story», «stop reading», «next page», «previous page» ou «help with [palavra]»",
-    "extra_say_things_like_start_reading_next_page": "Diga em inglês «Start reading» ou «Next page»",
     "extra_1st_come_stories_and_2nd_comes_images_together_they_take_just_under_a_minute": "Primeiro vem a história, depois as imagens. Tudo leva menos de um minuto!",
     "extra_mixing_up_the_perfect_image": "Preparando uma bela imagem…",
     "extra_backup_mode": "Modo alternativo",
@@ -2356,7 +2349,6 @@
     "extra_comprehension_questions_after_reading": "Perguntas de compreensão após a leitura",
     "extra_reading_timer_and_progress_tracking": "Cronômetro de leitura e acompanhamento do progresso",
     "extra_vocabulary_word_bank_and_review_activities": "Banco de palavras e atividades de revisão",
-    "extra_voice_commands_for_navigation_and_controls": "Comandos de voz para virar a página, voltar, ler em voz alta ou parar",
     "extra_priority_support": "Atendimento prioritário",
     "extra_admin_educator_dashboards": "Painéis para administradores e educadores",
     "extra_curriculum_alignment_tools": "Ferramentas de alinhamento ao currículo",
@@ -2424,7 +2416,11 @@
     "extra_resume": "Retomar",
     "extra_school_grade": "Ano escolar",
     "extra_the_grade_they_are_in_at_school_it_keeps_story_topics_right_for_them": "O ano escolar ajuda a manter os temas adequados para a criança.",
-    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "A dificuldade das palavras. Começa no ano escolar e também muda com os botões para facilitar ou dificultar a história."
+    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "A dificuldade das palavras. Começa no ano escolar e também muda com os botões para facilitar ou dificultar a história.",
+    "plan_voice_free": "Comandos de voz na página da história (conta gratuita)",
+    "plan_read_aloud_free": "Prática de leitura em voz alta, 5 frases por dia (conta gratuita)",
+    "plan_voice_premium": "Comandos de voz na página da história",
+    "talk_to_buddy_is_premium": "Falar com o companheiro é um recurso Premium"
   },
   "readingTutorial": {
     "step1": {
@@ -2590,5 +2586,24 @@
     "link_failed": "Este link não funcionou",
     "link_failed_line": "Ele pode estar incompleto. Responda a qualquer e-mail nosso e tiraremos você da lista.",
     "try_again_minute": "Tente o link novamente em um minuto."
+  },
+  "pricingVoice": {
+    "title": "Comandos de voz",
+    "who": "Conta gratuita e Premium · entre na conta para usar",
+    "intro": "Na página da história, seu filho toca no microfone e diz uma destas frases:",
+    "command": {
+      "next": "Virar a página",
+      "back": "Voltar uma página",
+      "read": "Ler a página em voz alta",
+      "stop": "Parar a leitura"
+    },
+    "say": {
+      "next": "“próxima página”",
+      "back": "“voltar”",
+      "read": "“leia para mim”",
+      "stop": "“pare”"
+    },
+    "coachTitle": "Prática de leitura em voz alta",
+    "coachWho": "Conta gratuita: {{count}} frases por dia · Premium: ilimitada · entre na conta para usar"
   }
 }

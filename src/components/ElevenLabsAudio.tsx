@@ -323,7 +323,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
               </span>
             </TooltipTrigger>
             <TooltipContent>
-               {uiText("Voice Commands are a Premium feature")} </TooltipContent>
+               {uiText("Talking with Buddy is a Premium feature")} </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}

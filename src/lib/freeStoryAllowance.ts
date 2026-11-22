@@ -8,6 +8,13 @@ export const FREE_STORY_LIMIT = 3;
 export const FREE_LIMIT_CODE = "FREE_LIMIT_REACHED";
 export const PAYWALL_EVENT = "t2r:free-limit-reached";
 export const TRIAL_DAYS = 7;
+/**
+ * Read-aloud practice (ReadAloudCoach) on a free account: sentences a day. Premium has
+ * no daily limit; a signed-out guest gets none (nor voice commands). The /pricing copy
+ * and docs/PRICING.md (free_read_aloud_sentences_per_day) say the same number:
+ * src/test/guards/pricing-voice-truth.test.tsx and pricing-doc.test.ts.
+ */
+export const READ_ALOUD_FREE_SENTENCES_PER_DAY = 5;
 
 export const PLAN_PRICES = {
   monthly: { label: "$12.99", period: "/month", amountCents: 1299 },

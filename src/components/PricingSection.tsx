@@ -7,7 +7,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { startTrialCheckout, type TrialPlan } from "@/lib/trialCheckout";
 import { RedeemCodeCard } from "@/components/RedeemCodeCard";
-import { FREE_STORY_LIMIT, HEYGETONMYLEVEL_URL, PLAN_PRICES, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
+import { FREE_STORY_LIMIT, HEYGETONMYLEVEL_URL, PLAN_PRICES, READ_ALOUD_FREE_SENTENCES_PER_DAY, TRIAL_DAYS } from "@/lib/freeStoryAllowance";
+import { useTranslation } from "react-i18next";
 import { freeFeatures, premiumFeatures, additionalOfferings, enterpriseFeatures } from "@/constants/featureLists";
 import readingScreenshot from "@/assets/pricing-screenshot-reading.jpg";
 import libraryScreenshot from "@/assets/pricing-screenshot-library.jpg";
@@ -21,6 +22,7 @@ interface PricingSectionProps {
 
 export function PricingSection({ compact }: PricingSectionProps) {
   useUiLanguage();
+  const { t } = useTranslation();
   // A signed-in parent starts the trial here (Stripe checkout); everyone else signs up first.
   // Guard: src/test/guards/pricing-trial.test.ts.
   const [signedIn, setSignedIn] = useState(false);
@@ -264,27 +266,21 @@ export function PricingSection({ compact }: PricingSectionProps) {
           </div>
         </div>
 
-        {/* ── Read-aloud coach ── */}
+        {/* ── Read-aloud practice and voice commands: signed-in accounts only ── */}
         <div className="mt-10">
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="border-primary/20">
               <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Crown className="w-4 h-4 text-yellow-500" />
-                  <CardTitle className="text-base">{uiText("Read‑aloud coach")}</CardTitle>
-                </div>
-                <CardDescription>{uiText("Speech‑to‑text feedback — Premium")}</CardDescription>
+                <CardTitle className="text-base">{t("pricingVoice.coachTitle")}</CardTitle>
+                {/* Free account: READ_ALOUD_FREE_SENTENCES_PER_DAY, the limit ReadAloudCoach enforces. */}
+                <CardDescription data-testid="coach-plans">{t("pricingVoice.coachWho", { count: READ_ALOUD_FREE_SENTENCES_PER_DAY })}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ReadAloudCoach autoIntroduce={false} />
               </CardContent>
             </Card>
+            <VoiceCommandsHelp />
           </div>
-        </div>
-
-        {/* ── Voice commands ── */}
-        <div className="mt-10">
-          <VoiceCommandsHelp />
         </div>
       </div>
     </section>

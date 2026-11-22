@@ -457,7 +457,7 @@
       "liveStoryGeneration": "قصص مخصّصة تُكتب مباشرة؛ أنت تختار متى تنتهي!",
       "multipleProfiles": "ملفات لعدة أطفال",
       "vocabularyTracking": "متابعة المفردات واختبارات للتدرّب",
-      "readAloudFeedback": "ملاحظات على القراءة بصوت عالٍ مع تحويل الكلام إلى نص",
+      "readAloudFeedback": "تدريب غير محدود على القراءة بصوت عالٍ",
       "unlimitedSessions": "جلسات قراءة بلا حدود",
       "customDifficulty": "تعديل صعوبة القصة بما يناسبك",
       "extendedLibrary": "مكتبة أوسع بمواضيع أكثر",
@@ -539,7 +539,6 @@
     "voiceCommandsDisabled": "تم إيقاف الأوامر الصوتية",
     "voiceCommandsOff": "الأوامر الصوتية معطلة الآن",
     "voiceCommandsEnabled": "تم تمكين الأوامر الصوتية",
-    "voiceCommandsInstructions": "جرب قول 'الصفحة التالية' أو 'اقرأ أبطأ' أو 'ما معنى [كلمة]؟'",
     "stabilizing": "جارٍ تجهيز الصوت…",
     "stabilizingDesc": "انتظر قليلًا ريثما نجهّز لك تجربة القراءة.",
     "pageChanged": "تم تغيير الصفحة",
@@ -552,7 +551,6 @@
     "play": "قراءة",
     "readingCoach": "مدرّب القراءة",
     "coach": "مدرّب القراءة",
-    "voiceCommandsHint": "جرّب الأوامر بالإنجليزية: «next page»، «pause»، «continue»، «read slower»",
     "openVoiceHelp": "فتح مساعدة الأوامر الصوتية",
     "fullList": "القائمة الكاملة",
     "voiceCommandRun": "تم تنفيذ الأمر",
@@ -1623,7 +1621,6 @@
     "vocabulary_amp_quizzes": "المفردات والاختبارات",
     "vocabulary_word_bank_comprehension_quiz_achievement_badges_and_parent_insights_dashboard": "بنك مفردات واختبار فهم وشارات ولوحة للوالدين",
     "build_a_personal_word_bank_test_comprehension_with_quizzes_earn_achievement_badges_and_vie": "كوّن بنك مفرداتك، واختبر فهمك، واكسب الشارات، وشاهد تقارير الوالدين.",
-    "speech_to_text_feedback_premium": "ملاحظات بتحويل الكلام إلى نص — للمشتركين",
     "remove": "إزالة",
     "their_profile_goes_away_you_can_add_them_again_any_time": "؟ سيُحذف ملفه. يمكنك إضافته مجددًا في أي وقت.",
     "yes_remove": "نعم، إزالة",
@@ -2104,7 +2101,6 @@
     "extra_example_ocean_brave_explore": "مثال: محيط، شجاع، يستكشف",
     "extra_use_educational_words_like_ocean_explore_or_friendship": "استخدم كلمات تعليمية مثل «محيط» أو «يستكشف» أو «صداقة».",
     "extra_voice_commands_setup_required": "يلزم إعداد الأوامر الصوتية",
-    "extra_voice_commands_are_a_premium_feature": "الأوامر الصوتية ميزة مميّزة",
     "extra_upgrade_to_premium_for_unlimited_audio_plays_per_page": "رقِّ اشتراكك للاستماع إلى كل صفحة بلا حدود",
     "extra_protecting_your_child_s_privacy": "حماية خصوصية طفلك",
     "extra_for_your_child_s_safety_please_avoid_sharing": "لسلامة طفلك، تجنّب مشاركة:",
@@ -2139,9 +2135,6 @@
     "extra_about_time_2_read": "عن Time-2-Read",
     "extra_and_who_makes_it": "ومن يصنعه.",
     "extra_guides_for_parents_and_teachers": "أدلة للأهل والمعلّمين",
-    "extra_premium_readers_can_go_completely_hands_free_while_your_child_reads_they_can_speak_simple_commands_to_navigate_pages_hear_words_read_aloud_get_definitions_pause_or_resume_narration_and_more_no_tapping_required_just_say_a_command_and_the_app_responds_instantly": "مع الاشتراك المميّز، يمكن لطفلك القراءة بلا لمس الشاشة. يكفي أن يطلب بصوته التنقّل بين الصفحات أو سماع الكلمات ومعانيها أو إيقاف السرد ومتابعته.",
-    "extra_say_play_story_stop_reading_next_page_previous_page_or_help_with_word": "قل بالإنجليزية: \"play story\" أو \"stop reading\" أو \"next page\" أو \"previous page\" أو \"help with [كلمة]\"",
-    "extra_say_things_like_start_reading_next_page": "قل بالإنجليزية \"Start reading\" أو \"Next page\"",
     "extra_1st_come_stories_and_2nd_comes_images_together_they_take_just_under_a_minute": "القصة أولًا ثم الصور. كل ذلك يستغرق أقل من دقيقة!",
     "extra_mixing_up_the_perfect_image": "جارٍ إعداد صورة رائعة…",
     "extra_backup_mode": "الوضع البديل",
@@ -2194,7 +2187,6 @@
     "extra_comprehension_questions_after_reading": "أسئلة فهم بعد القراءة",
     "extra_reading_timer_and_progress_tracking": "مؤقّت قراءة ومتابعة التقدّم",
     "extra_vocabulary_word_bank_and_review_activities": "بنك مفردات وأنشطة مراجعة",
-    "extra_voice_commands_for_navigation_and_controls": "أوامر صوتية لتقليب الصفحة والرجوع والقراءة بصوت عالٍ والإيقاف",
     "extra_priority_support": "دعم ذو أولوية",
     "extra_admin_educator_dashboards": "لوحات للمشرفين والمعلّمين",
     "extra_curriculum_alignment_tools": "أدوات توافق مع المناهج",
@@ -2262,7 +2254,11 @@
     "extra_resume": "متابعة",
     "extra_school_grade": "الصف الدراسي",
     "extra_the_grade_they_are_in_at_school_it_keeps_story_topics_right_for_them": "صفّه في المدرسة، ليبقى موضوع القصة مناسبًا له.",
-    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "مدى صعوبة الكلمات. يبدأ بصفّه الدراسي، ويمكن تغييره أيضًا بأزرار التسهيل والتصعيب في صفحة القصة."
+    "extra_how_hard_the_words_are_it_starts_at_their_school_grade_the_story_page_s_make_it_easier_make_it_harder_buttons_change_it_too": "مدى صعوبة الكلمات. يبدأ بصفّه الدراسي، ويمكن تغييره أيضًا بأزرار التسهيل والتصعيب في صفحة القصة.",
+    "plan_voice_free": "أوامر صوتية في صفحة القصة (حساب مجاني)",
+    "plan_read_aloud_free": "تدريب على القراءة بصوت عالٍ، 5 جمل يوميًا (حساب مجاني)",
+    "plan_voice_premium": "أوامر صوتية في صفحة القصة",
+    "talk_to_buddy_is_premium": "التحدّث مع الصديق ميزة مميّزة"
   },
   "readingTutorial": {
     "step1": {
@@ -2473,5 +2469,24 @@
     "link_failed": "لم يعمل هذا الرابط",
     "link_failed_line": "ربما يكون غير مكتمل. رُدّ على أي من رسائلنا وسنحذفك من القائمة.",
     "try_again_minute": "يرجى تجربة الرابط مرة أخرى بعد دقيقة."
+  },
+  "pricingVoice": {
+    "title": "الأوامر الصوتية",
+    "who": "الحساب المجاني والاشتراك المميز · سجّل الدخول لاستخدامها",
+    "intro": "في صفحة القصة، يلمس طفلك الميكروفون ويقول واحدًا مما يلي:",
+    "command": {
+      "next": "قلب الصفحة",
+      "back": "الرجوع صفحة",
+      "read": "قراءة الصفحة بصوت عالٍ",
+      "stop": "إيقاف القراءة"
+    },
+    "say": {
+      "next": "«الصفحة التالية»",
+      "back": "«رجوع»",
+      "read": "«اقرأ لي»",
+      "stop": "«توقف»"
+    },
+    "coachTitle": "القراءة بصوت عالٍ",
+    "coachWho": "الحساب المجاني: {{count}} جمل يوميًا · الاشتراك المميز: غير محدود · سجّل الدخول لاستخدامها"
   }
 }

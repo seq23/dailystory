@@ -15,6 +15,7 @@ import type { SupportedLanguage } from "@/types/multilingual";
 import { useTranslation } from "react-i18next";
 import { startSpeechMeter } from "@/lib/voice/speechMeter";
 import { useSignedIn } from "@/hooks/useSignedIn";
+import { READ_ALOUD_FREE_SENTENCES_PER_DAY } from "@/lib/freeStoryAllowance";
 
 interface ReadAloudCoachProps {
   targetText?: string;
@@ -42,7 +43,7 @@ const STOPWORDS = new Set([
   "the","a","an","and","or","but","so","to","of","in","on","at","with","for","from","by","as","is","are","was","were","be","been","being","that","this","it","its","his","her","their","our","your","i","you","he","she","they","we","my","me","him","them","our","yours","ours","theirs","there","here","then","than","too","very","just","really","into","over","under","up","down","out","about","after","before","again","once"
 ]);
 
-const DAILY_FREE_LIMIT = 5; // sentences/day for free users
+const DAILY_FREE_LIMIT = READ_ALOUD_FREE_SENTENCES_PER_DAY; // sentences/day for free users
 const PASS_THRESHOLD = 80; // percent
 const MAX_ATTEMPTS_PER_SENTENCE = 3;
 const WORD_MICRO_ATTEMPTS = 2; // "Say it with me" tries

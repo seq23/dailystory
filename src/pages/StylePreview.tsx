@@ -403,7 +403,7 @@ const StylePreview: React.FC = () => {
               <div>
                 <Card className="border-muted/50">
                   <CardHeader>
-                    <CardTitle className="text-base">Read‑aloud coach (Premium)</CardTitle>
+                    <CardTitle className="text-base">Read‑aloud practice</CardTitle>
                     <CardDescription>Speech‑to‑text feedback preview</CardDescription>
                   </CardHeader>
                   <CardContent>
