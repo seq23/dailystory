@@ -358,7 +358,7 @@ const getDifficultyLabel = (level: ReadingLevel | null) => {
               {onUpgrade && (
                 <Button
                   onClick={onUpgrade}
-                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium py-3"
+                  className="w-full bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-800 hover:to-orange-800 text-white font-medium py-3"
                   size="lg"
                 >
                    <Crown className="w-5 h-5 mr-2" />

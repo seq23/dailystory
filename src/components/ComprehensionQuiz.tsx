@@ -238,7 +238,7 @@ export const ComprehensionQuiz = ({
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-lg">
-        <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Star className="w-5 h-5" />

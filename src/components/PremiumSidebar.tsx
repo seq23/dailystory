@@ -178,7 +178,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
               <div className="flex-1">
                 <h2 className="font-bold text-lg">{uiText("Time-2-Read")}</h2>
                 {hasPremium && (
-                  <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs">
+                  <Badge variant="secondary" className="bg-gradient-to-r from-yellow-700 to-orange-700 text-white text-xs">
                     <Crown className="w-3 h-3 mr-1" />
                     {uiText("Premium")}
                   </Badge>
@@ -464,7 +464,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium,
               </p>
               <button 
                 onClick={() => { onViewChange("account"); if (isMobileOrTablet) { if (openMobile) setOpenMobile(false); else if (state === "expanded") toggleSidebar(); } }}
-                className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-medium py-2 px-3 rounded-md hover:from-yellow-500 hover:to-orange-600 transition-colors"
+                className="w-full bg-gradient-to-r from-yellow-700 to-orange-700 text-white text-sm font-medium py-2 px-3 rounded-md hover:from-yellow-800 hover:to-orange-800 transition-colors"
               >
                 {uiText("See plans or use a code")}
               </button>

@@ -169,7 +169,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
               }`}
             >
               {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1">
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1">
                   <Star className="w-4 h-4 mr-1" />
                   {uiText("Most Popular")}
                 </Badge>

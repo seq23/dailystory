@@ -524,7 +524,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
                     )}
                     {/* Achievement Counter Badge */}
                     {(userStats.achievements.length > 0 || recentAchievements.length > 0) && (
-                      <div className="ml-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-xs px-2 py-1 rounded-full font-bold shadow-md">
+                      <div className="ml-2 bg-gradient-to-r from-amber-700 to-amber-800 text-white text-xs px-2 py-1 rounded-full font-bold shadow-md">
                         🏆 {userStats.achievements.length}
                       </div>
                     )}
