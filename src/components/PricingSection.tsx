@@ -134,7 +134,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                   {(["monthly", "annual"] as TrialPlan[]).map((plan) => (
                     <Button
                       key={plan}
-                      className="w-full"
+                      className="w-full h-auto min-h-11 whitespace-normal py-2 text-center"
                       variant={plan === "annual" ? "default" : "outline"}
                       disabled={pending !== null}
                       onClick={() => startTrial(plan)}

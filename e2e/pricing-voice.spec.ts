@@ -40,6 +40,20 @@ for (const width of [390, 820] as const) {
           await expect(page.getByTestId('coach-sign-in')).toHaveCount(0);
         }
         expect(state.calls.filter(c => c.fn === 'voice-to-text')).toHaveLength(0);
+        if (who === 'signed-in') {
+          // iPad portrait squeezes the Premium column: every trial label shows whole and the
+          // code box keeps room to type (820 px capture, run 45068160156: both were cut).
+          for (const plan of ['monthly', 'annual']) {
+            const fit = await page.getByTestId(`pricing-trial-${plan}`).evaluate((el) => {
+              const card = el.closest('[data-testid="pricing-trial-signed-in"]')!.getBoundingClientRect();
+              const r = el.getBoundingClientRect();
+              return { clipped: el.scrollWidth > el.clientWidth + 1, inside: r.left >= card.left - 1 && r.right <= card.right + 1 };
+            });
+            expect.soft(fit, `${plan} trial label is whole and inside its card`).toEqual({ clipped: false, inside: true });
+          }
+          const input = await page.getByTestId('redeem-code-input').boundingBox();
+          expect.soft(input!.width, 'code box has room to type').toBeGreaterThanOrEqual(120);
+        }
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
 
         await page.getByTestId('coach-plans').scrollIntoViewIfNeeded();
