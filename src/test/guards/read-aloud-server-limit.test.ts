@@ -10,6 +10,7 @@ import {
   READ_ALOUD_LIMIT_CODE,
   READ_ALOUD_UNAVAILABLE_CODE,
   checkReadAloud,
+  type ReadAloudDecision,
   type ReadAloudDeps,
 } from '../../../supabase/functions/_shared/readAloudAllowance';
 import { spokenCommandOnly } from '../../../supabase/functions/_shared/storyVoiceCommands';
@@ -95,7 +96,7 @@ describe('free read-aloud practice is counted on the server', () => {
     const d: ReadAloudDeps = { subscriberRow: async () => FREE_ROW, hit: async () => { throw new Error('db down'); } };
     const r = await checkReadAloud('u1', 'The fox runs.', d);
     expect(r).toMatchObject({ allowed: false, status: 503, body: { code: READ_ALOUD_UNAVAILABLE_CODE } });
-    if (!r.allowed) expect(r.body.error).toMatch(/try again/i);
+    expect((r as Extract<ReadAloudDecision, { allowed: false }>).body.error).toMatch(/try again/i);
   });
 
   it('outage: the count cannot be read: Premium is unaffected', async () => {
