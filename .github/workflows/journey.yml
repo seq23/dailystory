@@ -32,15 +32,9 @@ jobs:
           PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts e2e/story-choices.spec.ts --project=chromium --retries=1
           # The story page voice commands at phone width, light and dark (fake microphone).
           PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/story-voice.spec.ts --project=chromium --retries=1
-      # The phone screenshots of the story page's voice button, light and dark, for review.
+      # One upload, pass or fail: the report and every capture (start-here-phone.png at
+      # 390 px, the story page voice-*.png light and dark).
       - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: story-voice-phone
-          path: test-results/**/voice-*.png
-          if-no-files-found: ignore
-          retention-days: 7
-      - if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: journey-report

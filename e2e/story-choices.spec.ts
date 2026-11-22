@@ -24,6 +24,68 @@ test('Premium choices fit a phone, drive the next page, and disappear after Fini
   const dialog = page.getByTestId('new-story-dialog');
   await dialog.getByRole('button', { name: /\+ space/i }).click();
   await dialog.getByTestId('write-story').click();
+  // The "Start here!" chip by the New Story button stays on a 390 px screen (it used
+  // to run off the left edge, cutting off "Start here!" and the story title).
+  await expect(page.getByTestId('story-text-scroll-mobile')).toBeVisible({ timeout: 20_000 });
+  const chip = page.getByTestId('start-here-coach').first();
+  await expect(chip).toBeVisible();
+  // Whole on screen AND not cut by any parent that clips (the old chip sat at x >= 0 but
+  // a parent with overflow hidden cut "Start here!" in half).
+  const cut = await chip.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const out: string[] = [];
+    if (r.left < 0 || r.right > window.innerWidth) out.push(`viewport ${Math.round(r.left)}..${Math.round(r.right)}`);
+    for (let p = el.parentElement; p; p = p.parentElement) {
+      const cs = getComputedStyle(p);
+      if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue;
+      const b = p.getBoundingClientRect();
+      if (r.left < b.left - 0.5 || r.right > b.right + 0.5 || r.top < b.top - 0.5 || r.bottom > b.bottom + 0.5) {
+        out.push(`${p.tagName}.${String(p.className).slice(0, 40)} ${Math.round(b.left)}..${Math.round(b.right)} cuts ${Math.round(r.left)}..${Math.round(r.right)}`);
+      }
+    }
+    return out;
+  });
+  // Soft checks: a broken chip reports every way it is broken, not only the first.
+  expect.soft(cut, 'Start here! chip is cut off').toEqual([]);
+  // It covers neither the story title nor the button (it sits under the button), and
+  // "Start here!" is readable: 12 px or more, 4.5:1 or better against its own fill.
+  const fit = await chip.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const hit = (b: DOMRect) => r.left < b.right && b.left < r.right && r.top < b.bottom && b.top < r.bottom;
+    const titles = [...document.querySelectorAll('h1')].map((h) => h.getBoundingClientRect()).filter((b) => b.width > 0 && b.height > 0);
+    const button = el.parentElement!.querySelector('button')!.getBoundingClientRect();
+    const text = el.querySelector('span')!;
+    const cs = getComputedStyle(text);
+    // [r, g, b, alpha]; a faint (see-through) text colour is blended over its fill first.
+    const rgba = (c: string) => { const v = (c.match(/[\d.]+/g) ?? []).map(Number); return [v[0], v[1], v[2], v[3] ?? 1]; };
+    const lum = (v: number[]) => {
+      const [R, G, B] = v.slice(0, 3).map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+      return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+    };
+    const fill = rgba(cs.backgroundColor);
+    const ink = rgba(cs.color);
+    const seen = ink.slice(0, 3).map((x, i) => ink[3] * x + (1 - ink[3]) * fill[i]);
+    const [a, b] = [lum(seen), lum(fill)].sort((x, y) => y - x);
+    const alpha = fill[3];
+    return {
+      titles: titles.length,
+      overTitle: titles.some(hit),
+      belowButton: r.top >= button.bottom - 1,
+      overButton: hit(button),
+      fontPx: parseFloat(cs.fontSize),
+      contrast: (a + 0.05) / (b + 0.05),
+      opaqueFill: alpha === 1,
+    };
+  });
+  expect.soft(fit.titles, 'a story title is on screen to check against').toBeGreaterThan(0);
+  expect.soft(fit.overTitle, 'Start here! chip covers the story title').toBe(false);
+  expect.soft(fit.overButton, 'Start here! chip covers the New Story button').toBe(false);
+  expect.soft(fit.belowButton, 'Start here! chip sits under the New Story button').toBe(true);
+  expect.soft(fit.fontPx, 'Start here! text is 12 px or more').toBeGreaterThanOrEqual(12);
+  expect.soft(fit.opaqueFill, 'Start here! has a solid fill of its own').toBe(true);
+  expect.soft(fit.contrast, 'Start here! text clears 4.5:1').toBeGreaterThanOrEqual(4.5);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await page.screenshot({ path: testInfo.outputPath('start-here-phone.png') });
   const choices = page.getByRole('region', { name: 'Pick what happens next' });
   await expect(choices).toBeVisible({ timeout: 20_000 });
   const buttons = choices.getByRole('button');

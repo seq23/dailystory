@@ -65,6 +65,10 @@ describe('three choices from the same page answer', () => {
     expect(read('src/services/storyGenerationService.ts')).toMatch(/selectedChoice: config\.selectedChoice/);
     expect(read('src/services/storyGenerationService.ts')).toMatch(/choices: data\.choices/);
     expect(read('.github/workflows/journey.yml')).toMatch(/playwright test e2e\/parent-journey\.spec\.ts e2e\/story-choices\.spec\.ts --project=chromium/);
+    // One upload step, pass or fail, holding every capture (start-here-phone.png too).
+    const wf = read('.github/workflows/journey.yml');
+    expect(wf.match(/uses: actions\/upload-artifact@/g) ?? []).toHaveLength(1);
+    expect(wf).toMatch(/- if: always\(\)\n\s+uses: actions\/upload-artifact@v4\n\s+with:\n\s+name: journey-report\n\s+path: test-results\//);
   });
 });
 

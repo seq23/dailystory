@@ -246,51 +246,17 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
         )}
       </Button>
       {showCoach && (
-        <span className="absolute top-1/2 -translate-y-1/2 left-0 -translate-x-[calc(100%+8px)] flex items-center gap-1.5 md:gap-2 pointer-events-none z-30 motion-safe:animate-enter">
-          <span className="rounded-full bg-primary/90 text-primary-foreground text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-2.5 md:py-1 shadow-sm">
+        // One placement at every width: under the button, pointing up. To its left it ran
+        // off a phone's edge and covered long story titles on wide screens (22 Nov 2026).
+        <span
+          data-testid="start-here-coach"
+          className="absolute z-30 pointer-events-none motion-safe:animate-enter flex flex-col-reverse items-center top-full mt-1 left-1/2 -translate-x-1/2"
+        >
+          <span className="whitespace-nowrap rounded-full border-2 border-primary bg-background text-foreground text-xs font-semibold px-2.5 py-0.5 shadow-md">
             {t("labels.startHere", "Start here!")}
           </span>
-          {/* Mobile/Tablet arrow */}
-          <svg
-            className="h-8 w-[64px] md:hidden text-destructive drop-shadow-sm overflow-visible"
-            viewBox="0 0 120 60"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <defs>
-              <marker id="arrowhead-sm" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L6,3 L0,6 Z" fill="currentColor" />
-              </marker>
-            </defs>
-            <path
-              d="M8,40 C 42,62 76,62 108,40"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3.2"
-              strokeLinecap="round"
-              markerEnd="url(#arrowhead-sm)"
-            />
-          </svg>
-          {/* Desktop arrow */}
-          <svg
-            className="hidden md:block h-10 w-[96px] text-destructive drop-shadow-sm overflow-visible"
-            viewBox="0 0 140 72"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <defs>
-              <marker id="arrowhead-lg" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor" />
-              </marker>
-            </defs>
-            <path
-              d="M10,48 C 54,72 98,72 132,48"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="4.0"
-              strokeLinecap="round"
-              markerEnd="url(#arrowhead-lg)"
-            />
+          <svg className="h-2 w-3 -mb-px text-primary" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
+            <path d="M6,0 L12,8 L0,8 Z" fill="currentColor" />
           </svg>
         </span>
       )}
