@@ -56,13 +56,17 @@ test('Premium choices fit a phone, drive the next page, and disappear after Fini
     const button = el.parentElement!.querySelector('button')!.getBoundingClientRect();
     const text = el.querySelector('span')!;
     const cs = getComputedStyle(text);
-    const rgb = (c: string) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
-    const lum = (c: string) => {
-      const [R, G, B] = rgb(c).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+    // [r, g, b, alpha]; a faint (see-through) text colour is blended over its fill first.
+    const rgba = (c: string) => { const v = (c.match(/[\d.]+/g) ?? []).map(Number); return [v[0], v[1], v[2], v[3] ?? 1]; };
+    const lum = (v: number[]) => {
+      const [R, G, B] = v.slice(0, 3).map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
       return 0.2126 * R + 0.7152 * G + 0.0722 * B;
     };
-    const [a, b] = [lum(cs.color), lum(cs.backgroundColor)].sort((x, y) => y - x);
-    const alpha = Number((cs.backgroundColor.match(/rgba\([^)]*,\s*([\d.]+)\)/) ?? [])[1] ?? 1);
+    const fill = rgba(cs.backgroundColor);
+    const ink = rgba(cs.color);
+    const seen = ink.slice(0, 3).map((x, i) => ink[3] * x + (1 - ink[3]) * fill[i]);
+    const [a, b] = [lum(seen), lum(fill)].sort((x, y) => y - x);
+    const alpha = fill[3];
     return {
       titles: titles.length,
       overTitle: titles.some(hit),
