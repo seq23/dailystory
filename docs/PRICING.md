@@ -32,7 +32,7 @@ premium_fallback: browser
 | | |
 |---|---|
 | Free | 3 stories in total, no card |
-| Voice and read-aloud | Signed-in accounts only (her ruling 22 Nov 2026). Free account: voice commands and 5 read-aloud practice sentences a day (`READ_ALOUD_FREE_SENTENCES_PER_DAY`). Premium: unlimited practice. Guests: neither; `voice-to-text` refuses them at the server |
+| Voice and read-aloud | Signed-in accounts only (her ruling 22 Nov 2026). Free account: voice commands and 5 read-aloud practice sentences a day (`READ_ALOUD_FREE_SENTENCES_PER_DAY`). Counted per the family's local day (the account's IANA zone, set from the browser, changeable once every 30 days). Premium: unlimited practice, meaning no daily practice count; the per-account paid-call ceiling every signed-in account has (`PAID_CALL_LIMITS.user`, 60 clips in 10 minutes, 600 a day: one sentence every 10 seconds for 100 minutes) stays as an abuse ceiling only a script reaches, so the price line is unchanged (decision 22 Nov 2026; raising it is new spend, hers to decide). Guests: neither; `voice-to-text` refuses them at the server |
 | Premium monthly | **$12.99/month** |
 | Premium yearly | **$99/year**: saves $57 (36%) against 12 x $12.99 = $155.88 |
 | Trial | 7 days free, card taken up front, one trial per customer (a returning customer pays from day one) |

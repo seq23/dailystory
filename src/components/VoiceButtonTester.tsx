@@ -302,7 +302,6 @@ export const VoiceButtonTester = ({
           <ReadAloudCoach 
             targetText={sampleText}
             userInfo={userInfo}
-            isPremium={isPremium}
             language="en"
             onUpgrade={() => {
               setShowReadingCoach(false);

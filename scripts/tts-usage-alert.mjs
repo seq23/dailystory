@@ -9,8 +9,14 @@
 //                                  the last 7 days (cost_tracking operation_type 'tts_refused');
 //   ELEVENLABS_CREDITS_UNREADABLE  the deployed key's account cannot be read, so the credit check
 //                                  would otherwise be a silent pass.
+//   READ_ALOUD_CHECK_FAILED        voice-to-text could not read a free account's practice count in
+//                                  the last 7 days, so a child was told "try again" (cost_tracking
+//                                  operation_type 'read_aloud_count_failed');
+//   READ_ALOUD_PLAN_UNREADABLE     voice-to-text could not read an account's plan, so a paying family
+//                                  may have been held to the free 5 ('read_aloud_plan_unknown').
 //
-// Usage: node scripts/tts-usage-alert.mjs '<usage json from /usage>' <refusals in the last 7 days>
+// Usage: node scripts/tts-usage-alert.mjs '<usage json from /usage>' <refusals in the last 7 days> \
+//          [<read-aloud count failures, 7 days>] [<read-aloud plan read failures, 7 days>]
 // Prints one ::error:: line per reason and exits 1, or one quiet line and exits 0. A named stop only
 // the owner can clear (credits unreadable) prints ::warning:: and exits 0 when it is the only reason.
 
@@ -23,7 +29,7 @@ export function alertExitCode(alerts) {
 }
 
 /** The named reasons narration needs attention. Pure. */
-export function ttsAlerts(usage, refusals7d) {
+export function ttsAlerts(usage, refusals7d, readAloudCountFailed7d = 0, readAloudPlanUnknown7d = 0) {
   const out = [];
   const used = Number(usage?.character_count);
   const limit = Number(usage?.character_limit);
@@ -37,15 +43,19 @@ export function ttsAlerts(usage, refusals7d) {
   }
   const n = Number(refusals7d) || 0;
   if (n > 0) out.push({ code: "NARRATION_FELL_BACK", text: `${n} narration request${n === 1 ? " was" : "s were"} refused by ElevenLabs in the last 7 days, so a child heard the browser voice` });
+  const failed = Number(readAloudCountFailed7d) || 0;
+  if (failed > 0) out.push({ code: "READ_ALOUD_CHECK_FAILED", text: `${failed} read-aloud practice clip${failed === 1 ? "" : "s"} could not be counted in the last 7 days (read_aloud_practice_hit failed), so a child was told to try again; see the voice-to-text function logs` });
+  const unknown = Number(readAloudPlanUnknown7d) || 0;
+  if (unknown > 0) out.push({ code: "READ_ALOUD_PLAN_UNREADABLE", text: `${unknown} read-aloud clip${unknown === 1 ? "" : "s"} in the last 7 days came from an account whose plan could not be read, so a paying family may have been held to the free daily number; see the voice-to-text function logs` });
   return out;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   let usage = null;
   try { usage = JSON.parse(process.argv[2] || "null"); } catch { usage = null; }
-  const alerts = ttsAlerts(usage, process.argv[3]);
+  const alerts = ttsAlerts(usage, process.argv[3], process.argv[4], process.argv[5]);
   if (!alerts.length) {
-    console.log("narration healthy: credits above 20% of the plan and no browser-voice fallback in 7 days");
+    console.log("narration healthy: credits above 20% of the plan, no browser-voice fallback and no read-aloud count failure in 7 days");
     process.exit(0);
   }
   for (const a of alerts) console.log(`::${a.stop ? "warning" : "error"} title=${a.code}::${a.code}: ${a.text}`);

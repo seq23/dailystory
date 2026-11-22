@@ -1,113 +1,166 @@
-// Free read-aloud practice is counted on the server (voice-to-text), not only in the browser.
-// The in-memory counter below follows public.paid_call_hit (20261103120000_paid_call_rate.sql):
-// every bucket is charged or none is, and the first full bucket is returned.
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+// Free read-aloud practice is counted on the server, per the family's local day. These run the
+// real voice-to-text handler (supabase/functions/_shared/voiceToText.ts) with its parts faked:
+// the count below follows public.read_aloud_practice_hit (20261122120000_read_aloud_practice.sql;
+// its local day, zone cap and access are proven in Postgres by supabase/tests/read_aloud/practice.sql).
 import { describe, expect, it, vi } from 'vitest';
 import {
   READ_ALOUD_FREE_CLIPS_PER_SENTENCE,
   READ_ALOUD_FREE_SENTENCES_PER_DAY,
   READ_ALOUD_LIMIT_CODE,
   READ_ALOUD_UNAVAILABLE_CODE,
-  checkReadAloud,
-  type ReadAloudDecision,
   type ReadAloudDeps,
 } from '../../../supabase/functions/_shared/readAloudAllowance';
-import { spokenCommandOnly } from '../../../supabase/functions/_shared/storyVoiceCommands';
+import { handleVoiceToText, type VoiceToTextDeps } from '../../../supabase/functions/_shared/voiceToText';
 import { READ_ALOUD_FREE_SENTENCES_PER_DAY as CLIENT_NUMBER } from '@/lib/freeStoryAllowance';
 
 const FREE_ROW = { subscribed: false, subscription_end: null, override_premium: false, override_end: null };
 const PREMIUM_ROW = { subscribed: true, subscription_end: '2035-01-01T00:00:00Z' };
 const OVERRIDE_ROW = { subscribed: false, override_premium: true, override_end: '2035-01-01T00:00:00Z' };
 
-function counter() {
-  const hits = new Map<string, number>();
-  const hit = vi.fn(async (buckets: string[], _w: number[], limits: number[]) => {
-    const next = buckets.map((b) => (hits.get(b) ?? 0) + 1);
-    const over = buckets.find((_, i) => next[i] > limits[i]);
-    if (over) return over;
-    buckets.forEach((b, i) => hits.set(b, next[i]));
-    return null;
+/** read_aloud_practice_hit for one day: distinct sentences capped, clips per sentence capped. */
+function practiceCounter() {
+  const clips = new Map<string, number>();
+  return vi.fn(async (userId: string, key: string, _tz: string | null) => {
+    const mine = [...clips.keys()].filter((k) => k.startsWith(`${userId}|`));
+    const k = `${userId}|${key}`;
+    const n = clips.get(k);
+    if (n !== undefined) {
+      if (n >= READ_ALOUD_FREE_CLIPS_PER_SENTENCE) return { allowed: false, used: mine.length, limit: READ_ALOUD_FREE_SENTENCES_PER_DAY };
+      clips.set(k, n + 1);
+      return { allowed: true, used: mine.length, limit: READ_ALOUD_FREE_SENTENCES_PER_DAY };
+    }
+    if (mine.length >= READ_ALOUD_FREE_SENTENCES_PER_DAY) return { allowed: false, used: mine.length, limit: READ_ALOUD_FREE_SENTENCES_PER_DAY };
+    clips.set(k, 1);
+    return { allowed: true, used: mine.length + 1, limit: READ_ALOUD_FREE_SENTENCES_PER_DAY };
   });
-  return { hits, hit };
 }
-const deps = (row: unknown, c = counter()): ReadAloudDeps & { hit: ReturnType<typeof vi.fn> } =>
-  ({ subscriberRow: vi.fn(async () => row), hit: c.hit });
 
-describe('free read-aloud practice is counted on the server', () => {
+function world(opts: { row?: unknown; rowFails?: boolean; practiceHit?: ReadAloudDeps['practiceHit']; guestRefused?: boolean; userId?: string } = {}) {
+  const practiceHit = vi.fn(opts.practiceHit ?? practiceCounter());
+  const report = vi.fn();
+  const subscriberRow = vi.fn(async () => { if (opts.rowFails) throw new Error('subscribers read failed'); return opts.row ?? FREE_ROW; });
+  const transcribe = vi.fn(async (form: FormData) =>
+    new Response(JSON.stringify(form.get('response_format') ? { text: 'the fox runs', segments: [], words: [] } : { text: 'the fox runs' }), { status: 200 }));
+  const deps: VoiceToTextDeps = {
+    guard: async () => opts.guestRefused
+      ? { caller: null, refused: new Response(JSON.stringify({ code: 'SIGN_IN_REQUIRED' }), { status: 401 }) }
+      : { caller: { kind: 'user', id: opts.userId ?? 'u1' }, refused: null },
+    readAloud: () => ({ subscriberRow, practiceHit, report }),
+    transcribe,
+    logCost: vi.fn(),
+  };
+  const send = async (body: Record<string, unknown>) => {
+    const res = await handleVoiceToText(new Request('https://fn/voice-to-text', { method: 'POST', body: JSON.stringify({ audio: btoa('clip'), ...body }) }), deps, {});
+    return { status: res.status, headers: res.headers, body: await res.json() };
+  };
+  return { send, practiceHit, report, subscriberRow, transcribe };
+}
+
+describe('voice-to-text counts free read-aloud practice on the server', () => {
   it('one number: the client, /pricing and the server read the same constant', () => {
     expect(CLIENT_NUMBER).toBe(READ_ALOUD_FREE_SENTENCES_PER_DAY);
     expect(READ_ALOUD_FREE_SENTENCES_PER_DAY).toBe(5);
   });
 
-  it('abuse: a free account is refused at the 6th sentence whatever the client claims', async () => {
-    const d = deps(FREE_ROW);
-    for (let i = 1; i <= 5; i++) expect((await checkReadAloud('u1', `Sentence ${i}.`, d)).allowed, `sentence ${i}`).toBe(true);
-    const sixth = await checkReadAloud('u1', 'Sentence 6.', d);
-    expect(sixth).toMatchObject({ allowed: false, status: 429, body: { code: READ_ALOUD_LIMIT_CODE, limit: 5 } });
-    // A refused call is not counted, and retrying it does not slip through.
-    expect((await checkReadAloud('u1', 'Sentence 6.', d)).allowed).toBe(false);
+  it('abuse: a client that claims Premium and a zero count is still refused at the 6th sentence, before Whisper', async () => {
+    const w = world();
+    const lie = { isPremium: true, premium: true, used: 0, dailyUsed: 0, plan: 'premium' };
+    for (let i = 1; i <= 5; i++) {
+      const r = await w.send({ sentence: `Sentence ${i}.`, ...lie });
+      expect(r.status, `sentence ${i}`).toBe(200);
+      expect(r.body.practice).toEqual({ used: i, limit: 5 });
+    }
+    const whisperCalls = w.transcribe.mock.calls.length;
+    const sixth = await w.send({ sentence: 'Sentence 6.', ...lie });
+    expect(sixth).toMatchObject({ status: 429, body: { code: READ_ALOUD_LIMIT_CODE, used: 5, limit: 5 } });
+    expect(sixth.body.error).toMatch(/Come back tomorrow/);
+    expect(w.transcribe.mock.calls.length).toBe(whisperCalls);
+    // Premium is read from subscribers for the signed-in caller, never from the body.
+    expect(w.subscriberRow).toHaveBeenCalledWith('u1');
     // Another try of a sentence already counted today is still allowed.
-    expect((await checkReadAloud('u1', 'sentence   1.', d))).toMatchObject({ allowed: true, reason: 'same-sentence' });
+    expect((await w.send({ sentence: 'sentence   1.' })).status).toBe(200);
   });
 
   it('abuse: clips with no sentence each count as a new sentence', async () => {
-    const d = deps(FREE_ROW);
-    for (let i = 0; i < 5; i++) expect((await checkReadAloud('u1', undefined, d)).allowed).toBe(true);
-    expect((await checkReadAloud('u1', '', d)).allowed).toBe(false);
+    const w = world();
+    for (let i = 0; i < 5; i++) expect((await w.send({})).status).toBe(200);
+    expect((await w.send({ sentence: '' })).status).toBe(429);
   });
 
   it('abuse: labelling every clip with one sentence is capped, not unlimited', async () => {
-    const d = deps(FREE_ROW);
-    for (let i = 0; i <= READ_ALOUD_FREE_CLIPS_PER_SENTENCE; i++) expect((await checkReadAloud('u1', 'The fox runs.', d)).allowed).toBe(true);
-    expect(await checkReadAloud('u1', 'The fox runs.', d)).toMatchObject({ allowed: false, body: { code: READ_ALOUD_LIMIT_CODE } });
+    const w = world();
+    for (let i = 0; i < READ_ALOUD_FREE_CLIPS_PER_SENTENCE; i++) expect((await w.send({ sentence: 'The fox runs.' })).status).toBe(200);
+    expect((await w.send({ sentence: 'The fox runs.' })).status).toBe(429);
   });
 
-  it('abuse: command mode returns a command or nothing, never a practice transcript', () => {
-    expect(spokenCommandOnly('next page')).toBe('next page');
-    expect(spokenCommandOnly('The little fox walks to a big tree.')).toBe('');
+  it('abuse: command mode is not counted and returns a command or nothing, never a practice transcript', async () => {
+    const w = world();
+    const r = await w.send({ mode: 'command', language: 'en' });
+    expect(r.status).toBe(200);
+    expect(r.body.text).toBe('');
+    expect(w.practiceHit).not.toHaveBeenCalled();
   });
 
-  it('abuse: Premium comes from the subscribers row on the server, never from the request', () => {
-    const src = readFileSync(join(process.cwd(), 'supabase/functions/voice-to-text/index.ts'), 'utf8');
-    expect(src).toMatch(/const \{ audio, mimeType, mode, language, sentence \} = await req\.json\(\)/);
-    expect(src).not.toMatch(/isPremium|premium\s*[:=]/i);
-    // Counted before the paid transcription, for every clip that is not a command.
-    const check = src.indexOf('checkReadAloud(caller.id');
-    expect(check).toBeGreaterThan(src.indexOf('if (!isCommand && caller.kind === "user")'));
-    expect(check).toBeLessThan(src.indexOf('api.openai.com/v1/audio/transcriptions'));
-    expect(src).toMatch(/isCommand \? spokenCommandOnly\(/);
+  it('a guest is refused by the guard before anything is counted or transcribed', async () => {
+    const w = world({ guestRefused: true });
+    expect((await w.send({ sentence: 'The fox runs.' })).status).toBe(401);
+    expect(w.practiceHit).not.toHaveBeenCalled();
+    expect(w.transcribe).not.toHaveBeenCalled();
+  });
+
+  it('the browser zone goes to the count (the database keeps the first real one); a junk zone goes as none', async () => {
+    const w = world();
+    await w.send({ sentence: 'A.', timeZone: 'America/Chicago' });
+    await w.send({ sentence: 'B.', timeZone: "x'; drop table" });
+    expect(w.practiceHit.mock.calls.map((c) => c[2])).toEqual(['America/Chicago', null]);
   });
 
   it.each([['an active subscription', PREMIUM_ROW], ['a Premium override', OVERRIDE_ROW]])(
-    'data loss: %s is never counted or blocked', async (_c, row) => {
-      const d = deps(row);
-      for (let i = 0; i < 40; i++) expect((await checkReadAloud('p1', `Sentence ${i}.`, d))).toMatchObject({ allowed: true, reason: 'premium' });
-      expect(d.hit).not.toHaveBeenCalled();
+    'data loss: %s is never counted or blocked, and gets no count back', async (_c, row) => {
+      const w = world({ row });
+      for (let i = 0; i < 40; i++) {
+        const r = await w.send({ sentence: `Sentence ${i}.` });
+        expect(r.status).toBe(200);
+        expect(r.body.practice).toBeNull();
+      }
+      expect(w.practiceHit).not.toHaveBeenCalled();
     });
 
   it('data loss: a lapsed subscription counts as free', async () => {
-    const d = deps({ subscribed: true, subscription_end: '2020-01-01T00:00:00Z' });
-    for (let i = 0; i < 5; i++) await checkReadAloud('u2', `S ${i}`, d);
-    expect((await checkReadAloud('u2', 'S 6', d)).allowed).toBe(false);
+    const w = world({ row: { subscribed: true, subscription_end: '2020-01-01T00:00:00Z' } });
+    for (let i = 0; i < 5; i++) await w.send({ sentence: `S ${i}` });
+    expect((await w.send({ sentence: 'S 6' })).status).toBe(429);
   });
 
-  it('outage: the count cannot be read: a free account is refused with "try again", never let through', async () => {
-    const d: ReadAloudDeps = { subscriberRow: async () => FREE_ROW, hit: async () => { throw new Error('db down'); } };
-    const r = await checkReadAloud('u1', 'The fox runs.', d);
-    expect(r).toMatchObject({ allowed: false, status: 503, body: { code: READ_ALOUD_UNAVAILABLE_CODE } });
-    expect((r as Extract<ReadAloudDecision, { allowed: false }>).body.error).toMatch(/try again/i);
+  it('outage: the plan cannot be read: counted as free (5 today), never a 503, and reported', async () => {
+    const w = world({ rowFails: true });
+    const r = await w.send({ sentence: 'The fox runs.' });
+    expect(r.status).toBe(200);
+    expect(r.body.practice).toEqual({ used: 1, limit: 5 });
+    expect(w.report).toHaveBeenCalledWith('read_aloud_plan_unknown', expect.stringContaining('subscribers'));
+    for (let i = 2; i <= 5; i++) await w.send({ sentence: `S ${i}` });
+    expect((await w.send({ sentence: 'S 6' })).status).toBe(429);
+  });
+
+  it('outage: the count cannot be read: refused with "try again" (503), never let through, and reported', async () => {
+    const w = world({ practiceHit: async () => { throw new Error('rpc down'); } });
+    const r = await w.send({ sentence: 'The fox runs.' });
+    expect(r).toMatchObject({ status: 503, body: { code: READ_ALOUD_UNAVAILABLE_CODE } });
+    expect(r.body.error).toMatch(/try again/i);
+    expect(r.headers.get('Retry-After')).toBe('60');
+    expect(w.transcribe).not.toHaveBeenCalled();
+    expect(w.report).toHaveBeenCalledWith('read_aloud_count_failed', 'rpc down');
+  });
+
+  it('outage: an answer that is not a count is unknown, not a pass', async () => {
+    const w = world({ practiceHit: async () => null });
+    expect((await w.send({ sentence: 'The fox runs.' })).status).toBe(503);
+    expect(w.transcribe).not.toHaveBeenCalled();
   });
 
   it('outage: the count cannot be read: Premium is unaffected', async () => {
-    const d: ReadAloudDeps = { subscriberRow: async () => PREMIUM_ROW, hit: async () => { throw new Error('db down'); } };
-    expect(await checkReadAloud('p1', 'The fox runs.', d)).toMatchObject({ allowed: true, reason: 'premium' });
-  });
-
-  it('outage: the plan cannot be read: refused with "try again", never treated as Premium', async () => {
-    const c = counter();
-    const d: ReadAloudDeps = { subscriberRow: async () => { throw new Error('db down'); }, hit: c.hit };
-    expect(await checkReadAloud('u1', 'The fox runs.', d)).toMatchObject({ allowed: false, status: 503, body: { code: READ_ALOUD_UNAVAILABLE_CODE } });
-    expect(c.hit).not.toHaveBeenCalled();
+    const w = world({ row: PREMIUM_ROW, practiceHit: async () => { throw new Error('rpc down'); } });
+    expect((await w.send({ sentence: 'The fox runs.' })).status).toBe(200);
+    expect(w.report).not.toHaveBeenCalled();
   });
 });
