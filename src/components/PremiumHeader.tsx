@@ -122,7 +122,10 @@ export const PremiumHeader = ({
             </Button>
             <a href="/" className="flex items-center gap-1 sm:gap-2 min-w-0" aria-label={uiText("Time-2-Read home")}>
               <img src="/icon-192.png" alt="" className="h-8 w-8 sm:h-9 sm:w-9 shrink-0" />
-              <span className="text-sm sm:text-xl font-bold text-gray-900 whitespace-nowrap">{uiText("Time-2-Read")}</span>
+              {/* Below 420 px the row has no room for the wordmark beside Menu and the "Reading as"
+                  picker (at 320 the picker sat on it): the round logo stands alone there and the
+                  link keeps its name (aria-label). e2e/header-phone.spec.ts measures it. */}
+              <span className="hidden min-[420px]:inline text-sm sm:text-xl font-bold text-gray-900 whitespace-nowrap">{uiText("Time-2-Read")}</span>
             </a>
             {showDevTools && devTestMode && (
               <Badge variant="outline" className="border-orange-500 text-orange-600 text-xs">
