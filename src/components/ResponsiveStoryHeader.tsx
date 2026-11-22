@@ -400,12 +400,13 @@ export const ResponsiveStoryHeader = ({
         <div className={cn(
           isMobileOrTablet ? (isTablet ? "safe-area-padding px-4 pt-0 pb-8" : "safe-area-padding px-4 py-2") : "max-w-7xl mx-auto px-6 py-2"
         )}>
-          <div className="flex items-center justify-between">
-            {/* Story Title */}
+          <div className={cn("flex items-center justify-between", isMobile && "flex-wrap gap-y-1")}>
+            {/* Story Title: on a phone it gets its own line (up to two) above the controls,
+                which left it a few letters and an ellipsis at 320-390 px. */}
             {displayTitle && (
-              <h1 className={cn(
-                "font-semibold truncate",
-                isMobile ? "text-sm" : isTablet ? "text-base" : "text-xl"
+              <h1 data-testid="story-title" className={cn(
+                "font-semibold",
+                isMobile ? "text-sm basis-full line-clamp-2" : isTablet ? "text-base truncate" : "text-xl truncate"
               )}>
                 {displayTitle}
               </h1>

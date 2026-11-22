@@ -96,3 +96,21 @@ for (const [width, height] of [[390, 844], [820, 1180], [1280, 800]] as const) {
     )).toBe(0);
   });
 }
+
+for (const width of [320, 390] as const) {
+  test(`the story title reads in full on a ${width} px phone`, async ({ page }, testInfo) => {
+    test.setTimeout(60_000);
+    await page.setViewportSize({ width, height: 800 });
+    await openStory(page);
+    const title = page.getByTestId('story-title').locator('visible=true').first();
+    await expect(title).toHaveText("Pip's Live Adventure");
+    const fit = await title.evaluate((el) => ({
+      cut: el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1,
+      width: el.getBoundingClientRect().width,
+    }));
+    expect.soft(fit.cut, 'story title is cut off').toBe(false);
+    expect.soft(fit.width, 'story title has the row to itself').toBeGreaterThanOrEqual(width - 48);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: testInfo.outputPath(`story-title-${width}.png`) });
+  });
+}
