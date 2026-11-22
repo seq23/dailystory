@@ -3188,16 +3188,19 @@ const handleDockVoiceCommand = () => {
   DebugLogger.log('ui', 'Voice command handled by MobileActionDock integration');
 };
 
-// The story page's spoken commands (StoryVoiceCommands): the same gates as the page buttons.
-const voiceCanGoNext = !(!isPremium && timeRemaining <= 0) && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked;
+// The one page-turn gate: the Next buttons (mobile and desktop) and the spoken
+// "next page" all read it, so they cannot disagree.
+const controlsBlocked = !isPremium && timeRemaining <= 0;
+const canGoNext = !controlsBlocked && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked;
+const canGoPrevious = currentPage > 0 && !controlsBlocked;
 const handleStoryVoiceCommand = (command: StoryVoiceCommand) => {
   DebugLogger.log('audio', 'Story voice command', command);
   if (command === 'next') {
-    if (!voiceCanGoNext || isLoadingNextPage) return;
+    if (!canGoNext || isLoadingNextPage) return;
     if (currentPage < displayedStory.length - 1) handleNext();
     else if (isPremium) handleGenerateNextPageAndAdvance();
   } else if (command === 'back') {
-    if (currentPage > 0 && !(!isPremium && timeRemaining <= 0)) handlePrevious();
+    if (canGoPrevious) handlePrevious();
   } else if (command === 'read') {
     // Listening stopped any read-aloud; start this page again (free: once per page, as the button).
     if (!isAudioPlaying) void handleDockPlayAudio();
@@ -4085,8 +4088,6 @@ const handleRestartTimer = () => {
   // Upper-grade pages run 200-500 words. Past LONG_PAGE_WORDS the text uses the page's own
   // scroll (no inner scroll box) and the picture stays in view beside it (27 Oct 2026).
   const isLongPage = countWords(currentStoryText || "") > LONG_PAGE_WORDS;
-  const controlsBlocked = !isPremium && timeRemaining <= 0;
-
   // Desktop card height calculation for perfect mirroring
   const { heightStyle: fittedHeightStyle, containerClassName: fittedContainerClassName, dynamicHeight } = useDesktopCardHeight({
     textContent: currentStoryText,
@@ -4256,8 +4257,8 @@ const handleRestartTimer = () => {
                     isPremium={isPremium}
                     isLoadingNextPage={isLoadingNextPage}
                     isGeneratingNewStory={isGeneratingNewStory}
-                    canGoNext={!controlsBlocked && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked}
-                    canGoPrevious={currentPage > 0 && !controlsBlocked}
+                    canGoNext={canGoNext}
+                    canGoPrevious={canGoPrevious}
                     onNext={handleNext}
                     onPrevious={handlePrevious}
                     onGenerateNext={handleGenerateNextPageAndAdvance}
@@ -4580,8 +4581,8 @@ const handleRestartTimer = () => {
                     isPremium={isPremium}
                     isLoadingNextPage={isLoadingNextPage}
                     isGeneratingNewStory={isGeneratingNewStory}
-                    canGoNext={!controlsBlocked && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked}
-                    canGoPrevious={currentPage > 0 && !controlsBlocked}
+                    canGoNext={canGoNext}
+                    canGoPrevious={canGoPrevious}
                     onNext={handleNext}
                     onPrevious={handlePrevious}
                     onGenerateNext={handleGenerateNextPageAndAdvance}

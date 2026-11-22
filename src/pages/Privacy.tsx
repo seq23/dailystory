@@ -61,6 +61,7 @@ const Privacy = () => {
               <tr><td className="p-2">Reading progress &amp; quiz scores</td><td className="p-2">Learning analytics &amp; progress tracking</td><td className="p-2">Legitimate interest (Art. 6(1)(f))</td></tr>
               <tr><td className="p-2">Payment data (via Stripe)</td><td className="p-2">Subscription billing</td><td className="p-2">Contract performance (Art. 6(1)(b))</td></tr>
               <tr><td className="p-2">Usage data (pages viewed, features used)</td><td className="p-2">Service improvement</td><td className="p-2">Consent (Art. 6(1)(a)) via cookie banner</td></tr>
+              <tr><td className="p-2">Voice clips (only after a tap on the microphone)</td><td className="p-2">Speech-to-text for story voice commands and read-aloud practice</td><td className="p-2">Parental consent (Art. 6(1)(a), Art. 8)</td></tr>
               <tr><td className="p-2">Device/browser info</td><td className="p-2">Security &amp; fraud prevention</td><td className="p-2">Legitimate interest (Art. 6(1)(f))</td></tr>
             </tbody>
           </table>
@@ -70,7 +71,7 @@ const Privacy = () => {
           <p>We do <strong>not sell</strong> personal information. Data is shared only with processors who act on our behalf:</p>
           <ul>
             <li><strong>Supabase</strong> — Database, authentication (US, SCCs in place)</li>
-            <li><strong>OpenAI</strong> — AI story generation (US, DPA, no training on API data)</li>
+            <li><strong>OpenAI</strong> — AI story generation, and speech-to-text for voice clips (US, DPA, no training on API data)</li>
             <li><strong>Stripe</strong> — Payment processing (US, PCI DSS Level 1)</li>
             <li><strong>ElevenLabs</strong> — Text-to-speech narration (US, DPA)</li>
             <li><strong>Runware</strong> — AI image generation (EU/US, DPA)</li>
@@ -88,6 +89,7 @@ const Privacy = () => {
             <li><strong>Usage analytics:</strong> 90 days (anonymized after)</li>
             <li><strong>Security/audit logs:</strong> 90 days</li>
             <li><strong>Debug logs:</strong> 30 days</li>
+            <li><strong>Voice clips:</strong> Not kept by us. The recording and the words heard are used once to act on the command or score the practice, then dropped; OpenAI may keep API data for up to 30 days for abuse monitoring</li>
             <li><strong>COPPA incident records:</strong> 2 years</li>
             <li><strong>Inactive accounts:</strong> Anonymized after 3 years of inactivity</li>
           </ul>
@@ -99,6 +101,11 @@ const Privacy = () => {
             <li><strong>COPPA (US):</strong> Parental consent required for users under 13</li>
             <li><strong>GDPR Art. 8 (EU):</strong> Parental consent required for users under 16</li>
             <li>We collect only the minimum information necessary</li>
+            <li>
+              <strong>Voice:</strong> the microphone opens only when a child or adult taps it. A story voice command
+              clip (up to 7 seconds) or a read-aloud practice clip is sent to OpenAI to turn speech into text. A tap
+              with no speech sends nothing. We do not store the recording or the transcript.
+            </li>
             <li>Parents can review, delete, or refuse further collection of their child's data</li>
             <li>Personal information incidents are logged and parents are notified</li>
           </ul>

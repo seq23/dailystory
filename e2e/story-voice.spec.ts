@@ -48,9 +48,22 @@ for (const colorScheme of ['light', 'dark'] as const) {
     state.story = { success: true, pages: [second] };
     await mic.click();
     await expect(mic).toHaveAttribute('aria-pressed', 'true');
+    // One quiet listening sign: a red dot on the microphone itself, inside its own
+    // button, so it covers neither the header nor the story text; no banner or toast.
+    const dot = page.getByTestId('story-voice-listening');
+    await expect(dot).toHaveCount(1);
+    const dotBox = (await dot.boundingBox())!;
+    const micBox = (await mic.boundingBox())!;
+    expect(dotBox.x).toBeGreaterThanOrEqual(micBox.x - 1);
+    expect(dotBox.x + dotBox.width).toBeLessThanOrEqual(micBox.x + micBox.width + 1);
+    expect(dotBox.y).toBeGreaterThanOrEqual(micBox.y - 1);
+    await expect(mic.locator('.lucide-mic-off')).toHaveCount(0);
+    await expect(page.getByText(/Listening/)).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath(`voice-${colorScheme}-listening.png`) });
     await expect(text).toContainText('The fox asks the bird for help', { timeout: 20_000 });
-    expect(state.calls.filter(c => c.fn === 'voice-to-text').at(-1)?.body).toMatchObject({ mode: 'command' });
+    const sent = state.calls.filter(c => c.fn === 'voice-to-text').at(-1)?.body as { mode?: string; language?: string };
+    expect(sent).toMatchObject({ mode: 'command' });
+    expect(sent.language).toMatch(/^en/);
 
     // "Go back" returns to the first page without writing anything new.
     const written = state.calls.filter(c => c.fn === 'generate-adaptive-story').length;

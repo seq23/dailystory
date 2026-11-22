@@ -37,7 +37,7 @@ export const additionalOfferings: string[] = [
   "Vocabulary word bank and review activities",
   "Curated story library and recommendations",
   "Mobile-optimized audio controls and kid-friendly UI",
-  "Voice commands for navigation and controls",
+  "Voice commands to turn the page, go back, read aloud or stop",
   "Read-aloud feedback (speech-to-text coaching)",
   "Priority support",
 ];

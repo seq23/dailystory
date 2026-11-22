@@ -89,5 +89,3 @@ export function parseStoryVoiceCommand(transcript: string): StoryVoiceCommand | 
   return null;
 }
 
-/** Words the speech model is primed with, so short commands are heard as commands. */
-export const STORY_VOICE_PROMPT = 'Next page. Go back. Read to me. Stop.';

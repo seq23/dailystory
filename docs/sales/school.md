@@ -13,7 +13,9 @@ and parent progress views, rather than classroom student logins.
 
 ## School workspace: live
 
-Live since 31 Oct 2026. Assigned teachers manage class rosters (CSV import) and
+Live since 31 Oct 2026. Assigned teachers manage class rosters (CSV import at any
+grade, TK to 12th or ungraded; a ClassLink connection is built, awaiting its first
+school connection) and
 record reading minutes, completion and dated level/skill observations. A school
 administrator reviews classes within the school and assigns existing adult
 accounts as teachers. We set up each school and its first administrator. A

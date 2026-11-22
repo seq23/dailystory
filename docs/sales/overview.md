@@ -12,7 +12,8 @@ grade and a separate Reads at level, and any story page can be made easier or
 harder with one tap. On Premium, readers at 6th-10th grade step up a level on
 their own after a strong session, readers pick what happens next from 3 choices,
 and stories keep going page after page. Readers tap any word to hear it, see its
-meaning or break it into syllables, can practise reading aloud with a coach, and
+meaning or break it into syllables, can say "next page" or "read to me" to the
+story page in any of the 8 app languages, can practise reading aloud with a coach, and
 on Premium take grade-level quizzes on 8 skills. Adults set guardrails and see
 reading habit, comprehension and vocabulary on a dashboard. Narration uses a
 premium voice on Premium and the device voice otherwise. Adult supervision and

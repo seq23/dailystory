@@ -1,29 +1,37 @@
-import { uiText } from "@/i18n/uiText";
-import React, { useCallback, useRef, useState, forwardRef, useImperativeHandle, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Bot, Mic, StopCircle, Loader2 } from "lucide-react";
 import { DebugLogger } from "@/services/DebugLogger";
+
+/**
+ * The story page's microphone, with no UI of its own (StoryVoiceCommands is the
+ * button). One clip per tap: it ends after ~0.8 s of quiet following speech, or
+ * at 7 s, and is sent to voice-to-text in command mode.
+ *
+ * - A clip in which nothing was heard is never sent (Whisper invents text for silence).
+ * - Tapping stop discards the clip.
+ * - Unmounting (the child leaves the story) stops the microphone at once, and a
+ *   transcript that comes back afterwards is never acted on.
+ */
 
 function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = (reader.result as string).split(",")[1];
-      resolve(base64);
-    };
+    reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
 }
 
+export type VoiceCommandStatus = 'idle' | 'listening' | 'processing';
+
 export interface VoiceCommandControllerProps {
-  /** What was heard, lower-cased; the caller decides what it means (src/lib/voice/storyVoiceCommands.ts). */
+  /** What was heard, lower-cased; the caller decides what it means (src/lib/voice/storyVoiceCommands.ts). "" = nothing heard. */
   onCommand?: (transcript: string) => void;
   /** The microphone was refused, or the speech service did not answer. */
   onError?: (kind: 'microphone' | 'service') => void;
-  headless?: boolean;
+  onStatus?: (status: VoiceCommandStatus) => void;
+  /** The UI language (i18n code); voice-to-text keeps it only when it is one of ours. */
+  language?: string;
 }
 
 export interface VoiceCommandControllerHandle {
@@ -31,319 +39,184 @@ export interface VoiceCommandControllerHandle {
   stop: () => void;
 }
 
-export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, VoiceCommandControllerProps>(({ onCommand, onError, headless = false }, ref) => {
-  // The recorder's stop handler runs seconds after start: read the caller's latest
-  // handler then, not the one from the render that started listening.
-  const onCommandRef = useRef(onCommand);
-  const onErrorRef = useRef(onError);
-  onCommandRef.current = onCommand;
-  onErrorRef.current = onError;
-  const [isRecording, setIsRecording] = useState(false);
-  const [status, setStatus] = useState<'idle'|'listening'|'processing'>('idle');
-  const [level, setLevel] = useState(0);
-  const [lastCommand, setLastCommand] = useState<string>("");
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<BlobPart[]>([]);
-  const mimeTypeRef = useRef<string>("audio/webm");
-  const streamRef = useRef<MediaStream | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const userStoppedRef = useRef<boolean>(false);
-  const startedTalkingRef = useRef<boolean>(false);
-  const silenceSinceRef = useRef<number | null>(null);
-  const startedAtRef = useRef<number | null>(null);
-  const maxTimerRef = useRef<number | null>(null);
+const SPEECH_LEVEL = 0.06;
+const QUIET_AFTER_SPEECH_MS = 800;
+const MAX_CLIP_MS = 7000;
 
-  const emitStatus = (s: 'idle'|'listening'|'processing') => window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
-  const emitLevel = (l: number) => window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: l } }));
+const MIME_TYPES = [
+  "audio/webm;codecs=opus", "audio/webm", "audio/mp4;codecs=mp4a.40.2", "audio/mp4",
+  "audio/mpeg", "audio/aac", "audio/ogg;codecs=opus", "audio/ogg",
+];
 
-  const getSupportedMimeType = () => {
-    const candidates = [
-      "audio/webm;codecs=opus",
-      "audio/webm",
-      "audio/mp4;codecs=mp4a.40.2",
-      "audio/mp4",
-      "audio/mpeg",
-      "audio/aac",
-      "audio/ogg;codecs=opus",
-      "audio/ogg",
-    ];
-    if (typeof MediaRecorder === "undefined" || !("isTypeSupported" in MediaRecorder)) {
-      return "";
-    }
-    return candidates.find((t) => MediaRecorder.isTypeSupported(t)) || "";
-  };
+function supportedMimeType(): string {
+  if (typeof MediaRecorder === "undefined" || !("isTypeSupported" in MediaRecorder)) return "";
+  return MIME_TYPES.find((t) => MediaRecorder.isTypeSupported(t)) || "";
+}
 
-  const startRecording = useCallback(async () => {
-    try {
-      // Implement mutual exclusion with audio playback using Charlotte service
+export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, VoiceCommandControllerProps>(
+  ({ onCommand, onError, onStatus, language }, ref) => {
+    // The recorder's stop handler runs seconds after start: read the caller's latest props then.
+    const props = useRef({ onCommand, onError, onStatus, language });
+    props.current = { onCommand, onError, onStatus, language };
+
+    const disposedRef = useRef(false);
+    const recorderRef = useRef<MediaRecorder | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const rafRef = useRef<number | null>(null);
+    const maxTimerRef = useRef<number | null>(null);
+    const startingRef = useRef(false);
+
+    const setStatus = (s: VoiceCommandStatus) => { if (!disposedRef.current) props.current.onStatus?.(s); };
+
+    const releaseMic = () => {
+      if (rafRef.current != null) { try { cancelAnimationFrame(rafRef.current); } catch { /* gone */ } }
+      rafRef.current = null;
+      if (maxTimerRef.current != null) clearTimeout(maxTimerRef.current);
+      maxTimerRef.current = null;
+      try { void audioContextRef.current?.close(); } catch { /* already closed */ }
+      audioContextRef.current = null;
+      try { streamRef.current?.getTracks().forEach((t) => t.stop()); } catch { /* already stopped */ }
+      streamRef.current = null;
+    };
+
+    // manual = the child tapped stop, or left the page: the clip is discarded.
+    const finish = useCallback((manual: boolean) => {
+      const recorder = recorderRef.current;
+      if (!recorder || recorder.state !== 'recording') { releaseMic(); return; }
+      (recorder as MediaRecorder & { __discard?: boolean }).__discard = manual;
+      releaseMic();
+      try { recorder.stop(); } catch (e) { DebugLogger.warn('audio', 'voice command: stop failed', e); }
+    }, []);
+
+    const start = useCallback(async () => {
+      if (disposedRef.current || startingRef.current || recorderRef.current?.state === 'recording') return;
+      startingRef.current = true;
       try {
-        const { CharlotteVoiceService } = await import('@/services/CharlotteVoiceService');
-        const audioService = CharlotteVoiceService.getInstance();
-        const status = audioService.getStatus();
-        if (status.isPlaying) {
-          DebugLogger.log('audio', 'Audio is playing, stopping it first');
-          audioService.stop();
-          await new Promise(r => setTimeout(r, 500)); // Wait for audio cleanup
-        }
-      } catch (e) {
-        DebugLogger.warn('audio', 'Failed to check/stop audio', e);
-      }
-      
-      // Respect global disable flag and avoid double-starts
-      if ((window as any).__t2r_vc_user_disabled === true || (window as any).__t2r_voice_force_off === true) {
-        DebugLogger.log('audio', 'Headless VC: start ignored (user disabled/forced off)');
-        return;
-      }
-      if (mediaRecorderRef.current && (mediaRecorderRef.current.state === 'recording')) {
-        DebugLogger.log('audio', 'Headless VC: already recording');
-        return;
-      }
-
-      // Mobile-specific microphone constraints for better reliability
-      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const constraints = isMobileDevice ? {
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          channelCount: 1,
-          sampleRate: 16000, // Lower sample rate for mobile stability
-          latency: 0.1
-        }
-      } : {
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
-      };
-      
-      DebugLogger.log('audio', 'VoiceCommandController - Device detection', {
-        isMobile: isMobileDevice,
-        constraints
-      });
-      
-      let stream: MediaStream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-      } catch (micError) {
-        DebugLogger.warn('audio', 'Microphone refused', micError);
-        onErrorRef.current?.('microphone');
-        return;
-      }
-      streamRef.current = stream;
-
-      // Setup analyser for live VU meter
-      try {
-        const Ctor: any = (window as any).AudioContext || (window as any).webkitAudioContext;
-        const ctx: AudioContext = new Ctor();
-        audioContextRef.current = ctx;
-        const source = ctx.createMediaStreamSource(stream);
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 2048;
-        source.connect(analyser);
-        analyserRef.current = analyser;
-
-        const buffer = new Uint8Array(analyser.frequencyBinCount);
-        const tick = () => {
-          if (!analyserRef.current) return;
-          analyserRef.current.getByteTimeDomainData(buffer);
-          let sum = 0;
-          for (let i = 0; i < buffer.length; i++) {
-            const v = (buffer[i] - 128) / 128; // -1..1
-            sum += v * v;
-          }
-          const rms = Math.sqrt(sum / buffer.length);
-          const lvl = Math.max(0, Math.min(1, rms * 2));
-          setLevel(lvl);
-          emitLevel(lvl);
-
-          // Simple VAD: detect when user started speaking, then stop after ~800ms of silence
-          const threshold = 0.06;
-          const now = performance.now();
-          if (lvl > threshold) {
-            startedTalkingRef.current = true;
-            silenceSinceRef.current = null;
-          } else if (startedTalkingRef.current) {
-            if (silenceSinceRef.current == null) {
-              silenceSinceRef.current = now;
-            } else if (now - silenceSinceRef.current > 800) {
-              // Enough silence detected after speech -> stop
-              try { finishRecording(false); } catch {}
-            }
-          }
-
-          rafRef.current = requestAnimationFrame(tick);
-        };
-        rafRef.current = requestAnimationFrame(tick);
-      } catch (e) {
-        DebugLogger.warn('audio', 'VoiceCommandController: analyser unavailable', e);
-      }
-
-      const supported = getSupportedMimeType();
-      if (supported) mimeTypeRef.current = supported;
-      const options = supported ? { mimeType: supported } : undefined;
-      const recorder = new MediaRecorder(stream, options as MediaRecorderOptions);
-      mediaRecorderRef.current = recorder;
-
-      chunksRef.current = [];
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-
-      recorder.onstop = async () => {
         try {
-          const wasManual = userStoppedRef.current === true;
-          // Cleanup meter loop either way
-          if (rafRef.current) cancelAnimationFrame(rafRef.current);
-          rafRef.current = null;
-          try { if (audioContextRef.current) await audioContextRef.current.close(); } catch {}
-          analyserRef.current = null; audioContextRef.current = null;
+          const { CharlotteVoiceService } = await import('@/services/CharlotteVoiceService');
+          const narrator = CharlotteVoiceService.getInstance();
+          if (narrator.getStatus().isPlaying) narrator.stop();
+        } catch (e) {
+          DebugLogger.warn('audio', 'voice command: could not pause the narrator', e);
+        }
 
-          if (wasManual) {
-            // User explicitly toggled OFF: skip transcription entirely
-            setIsRecording(false);
-            setStatus('idle'); emitStatus('idle'); emitLevel(0);
-            try { streamRef.current?.getTracks().forEach(t => t.stop()); } catch {}
-            streamRef.current = null;
-            userStoppedRef.current = false;
+        let stream: MediaStream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } });
+        } catch (e) {
+          DebugLogger.warn('audio', 'voice command: microphone refused', e);
+          if (!disposedRef.current) props.current.onError?.('microphone');
+          return;
+        }
+        // Left the page while the permission prompt was open.
+        if (disposedRef.current) { stream.getTracks().forEach((t) => t.stop()); return; }
+        streamRef.current = stream;
+
+        // heard: null = no level meter on this browser, so we cannot tell; send the clip.
+        const clip = { heard: null as boolean | null, quietSince: null as number | null };
+        try {
+          const Ctor: typeof AudioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
+          const ctx = new Ctor();
+          audioContextRef.current = ctx;
+          const analyser = ctx.createAnalyser();
+          analyser.fftSize = 2048;
+          ctx.createMediaStreamSource(stream).connect(analyser);
+          const buffer = new Uint8Array(analyser.frequencyBinCount);
+          clip.heard = false;
+          const tick = () => {
+            if (audioContextRef.current !== ctx) return;
+            analyser.getByteTimeDomainData(buffer);
+            let sum = 0;
+            for (let i = 0; i < buffer.length; i++) { const v = (buffer[i] - 128) / 128; sum += v * v; }
+            const level = Math.min(1, Math.sqrt(sum / buffer.length) * 2);
+            const now = performance.now();
+            if (level > SPEECH_LEVEL) { clip.heard = true; clip.quietSince = null; }
+            else if (clip.heard) {
+              clip.quietSince ??= now;
+              if (now - clip.quietSince > QUIET_AFTER_SPEECH_MS) { finish(false); return; }
+            }
+            rafRef.current = requestAnimationFrame(tick);
+          };
+          rafRef.current = requestAnimationFrame(tick);
+        } catch (e) {
+          DebugLogger.warn('audio', 'voice command: level meter unavailable', e);
+          clip.heard = null;
+        }
+
+        const mimeType = supportedMimeType() || "audio/webm";
+        const recorder = new MediaRecorder(stream, supportedMimeType() ? { mimeType } : undefined);
+        recorderRef.current = recorder;
+        const chunks: BlobPart[] = [];
+        recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+        recorder.onstop = async () => {
+          const discard = (recorder as MediaRecorder & { __discard?: boolean }).__discard === true;
+          if (recorderRef.current === recorder) recorderRef.current = null;
+          releaseMic();
+          if (discard || disposedRef.current) { setStatus('idle'); return; }
+          if (clip.heard === false) {
+            // Nothing was said: tell the child, send nothing.
+            setStatus('idle');
+            props.current.onCommand?.('');
             return;
           }
-
-          setStatus('processing'); emitStatus('processing');
-
-          const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
-          const base64 = await blobToBase64(blob);
-          const { data, error } = await supabase.functions.invoke("voice-to-text", {
-            body: { audio: base64, mimeType: mimeTypeRef.current, mode: "command" },
-          });
-          if (error) {
-            DebugLogger.error('network', 'Voice-to-text error', error);
-            onErrorRef.current?.('service');
-          } else {
-            const text: string = (data?.text || "").toLowerCase().trim();
-            setLastCommand(text);
-            onCommandRef.current?.(text);
+          setStatus('processing');
+          try {
+            const audio = await blobToBase64(new Blob(chunks, { type: mimeType }));
+            if (disposedRef.current) return;
+            const { data, error } = await supabase.functions.invoke("voice-to-text", {
+              body: { audio, mimeType, mode: "command", language: props.current.language },
+            });
+            if (disposedRef.current) return;
+            if (error) {
+              DebugLogger.error('network', 'voice command: voice-to-text failed', error);
+              props.current.onError?.('service');
+            } else {
+              props.current.onCommand?.(String(data?.text || "").toLowerCase().trim());
+            }
+          } catch (err) {
+            DebugLogger.error('audio', 'voice command: processing failed', err);
+            if (!disposedRef.current) props.current.onError?.('service');
+          } finally {
+            setStatus('idle');
           }
-        } catch (err) {
-          DebugLogger.error('audio', 'Voice command processing failed', err);
-          onErrorRef.current?.('service');
-        } finally {
-          setIsRecording(false);
-          setStatus('idle'); emitStatus('idle'); emitLevel(0);
-          try { streamRef.current?.getTracks().forEach(t => t.stop()); } catch {}
-          streamRef.current = null;
-          userStoppedRef.current = false;
-        }
+        };
+
+        recorder.start();
+        setStatus('listening');
+        maxTimerRef.current = window.setTimeout(() => finish(false), MAX_CLIP_MS);
+      } catch (e) {
+        DebugLogger.error('audio', 'voice command: could not start', e);
+        releaseMic();
+        if (!disposedRef.current) props.current.onError?.('service');
+      } finally {
+        startingRef.current = false;
+      }
+    }, [finish]);
+
+    const stop = useCallback(() => finish(true), [finish]);
+
+    useImperativeHandle(ref, () => ({ start, stop }), [start, stop]);
+
+    // A hard stop from elsewhere (the narrator coordinator, Escape).
+    useEffect(() => {
+      window.addEventListener('voice:stop', stop);
+      return () => window.removeEventListener('voice:stop', stop);
+    }, [stop]);
+
+    // Leaving the story page: microphone off now, pending clip dropped.
+    useEffect(() => {
+      disposedRef.current = false;
+      return () => {
+        disposedRef.current = true;
+        finish(true);
       };
+    }, [finish]);
 
-      recorder.start();
-      setIsRecording(true);
-      setStatus('listening'); emitStatus('listening');
+    return null;
+  },
+);
 
-      // Initialize endpointing bookkeeping
-      startedTalkingRef.current = false;
-      silenceSinceRef.current = null;
-      startedAtRef.current = performance.now();
-      if (maxTimerRef.current) { try { clearTimeout(maxTimerRef.current); } catch {} }
-      maxTimerRef.current = window.setTimeout(() => {
-        try { if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') finishRecording(false); } catch {}
-      }, 7000);
-    } catch (e) {
-      DebugLogger.error('audio', 'Failed to start recording', e);
-      onErrorRef.current?.('service');
-    }
-  }, []);
-
-// manual = the child tapped stop (discard the clip); otherwise the clip ended on
-// silence or the 7 s cap and is transcribed. Before 22 Nov 2026 every stop counted
-// as manual, so nothing said was ever transcribed.
-function finishRecording(manual: boolean) {
-  userStoppedRef.current = manual;
-  try { emitStatus('idle'); emitLevel(0); } catch {}
-  try { if (rafRef.current) cancelAnimationFrame(rafRef.current); } catch {}
-  rafRef.current = null;
-  if (maxTimerRef.current) { try { clearTimeout(maxTimerRef.current); } catch {} }
-  maxTimerRef.current = null;
-  startedTalkingRef.current = false;
-  silenceSinceRef.current = null;
-  startedAtRef.current = null;
-  try { audioContextRef.current?.close(); } catch {}
-  analyserRef.current = null;
-  try {
-    mediaRecorderRef.current?.stop();
-  } catch (e) {
-    DebugLogger.warn('audio', 'stopRecording error', e);
-  }
-}
-const stopRecording = useCallback(() => finishRecording(true), []);
-
-useImperativeHandle(ref, () => ({
-  start: startRecording,
-  stop: stopRecording,
-}));
-
-// Global hard stop listener (from HUD X or ESC)
-useEffect(() => {
-  const onStop = () => stopRecording();
-  window.addEventListener('voice:stop', onStop as EventListener);
-  return () => window.removeEventListener('voice:stop', onStop as EventListener);
-}, [stopRecording]);
-
-if (headless) return null as any;
-
-return (
-  <Card>
-  
-      <CardHeader>
-        <CardTitle className="text-base"> {uiText("Voice commands")} </CardTitle>
-        <CardDescription> {uiText("Say things like “Start reading”, “Next page”")} </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center gap-3">
-          {!isRecording ? (
-            <Button size="sm" onClick={startRecording} className="gap-2">
-              <Mic className="w-4 h-4" />  {uiText("Listen")} </Button>
-          ) : (
-            <Button size="sm" variant="destructive" onClick={stopRecording} className="gap-2">
-              <StopCircle className="w-4 h-4" />  {uiText("Stop")} </Button>
-          )}
-          <div className="text-xs text-muted-foreground"> {uiText("Commands:")} next page, go back, read to me, stop</div>
-        </div>
-
-        {/* Live status + VU meter */}
-        <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs">
-            {status === 'listening' ? (
-              <Mic className="w-3.5 h-3.5 text-primary" />
-            ) : status === 'processing' ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Mic className="w-3.5 h-3.5 text-muted-foreground" />
-            )}
-            {status === 'listening' ? 'Listening…' : status === 'processing' ? 'Transcribing…' : 'Idle'}
-          </span>
-          {status === 'listening' && (
-            <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden" aria-hidden>
-              <div
-                className="h-full rounded-full bg-primary transition-[width] duration-100"
-                style={{ width: `${Math.round(100 * (0.1 + 0.9 * level))}%` }}
-              />
-            </div>
-          )}
-        </div>
-
-        {lastCommand && (
-          <div className="flex items-center gap-2 text-sm">
-            <Bot className="w-4 h-4" /> <span> {uiText("Heard:")} </span>
-            <span className="font-medium">{lastCommand}</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-});
+VoiceCommandController.displayName = 'VoiceCommandController';
 
 export default VoiceCommandController;

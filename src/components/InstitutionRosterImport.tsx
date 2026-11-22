@@ -20,14 +20,11 @@ export function InstitutionRosterImport({
   onSaved: () => Promise<void>;
 }) {
   const [rows, setRows] = useState<RosterRow[]>([]);
-  const [status, setStatus] = useState<Record<string, string>>({
-    clever: "not_connected",
-    classlink: "not_connected",
-  });
+  // "unknown" until the status check answers; never assumed connected.
+  const [classlink, setClasslink] = useState<string>("unknown");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const [provider, setProvider] = useState<"clever" | "classlink">("clever");
   const [providerClassId, setProviderClassId] = useState("");
   const [providerClasses, setProviderClasses] = useState<
     Array<{ id: string; name: string }>
@@ -43,7 +40,7 @@ export function InstitutionRosterImport({
               setError(
                 "Roster connections could not be checked. CSV import is available.",
               );
-            else setStatus(data);
+            else setClasslink(data?.classlink === "configured" ? "configured" : "not_connected");
           }
         });
     return () => {
@@ -91,14 +88,12 @@ export function InstitutionRosterImport({
       {admin && (
         <>
           <p>
-            Clever:{" "}
-            {status.clever === "configured"
+            ClassLink:{" "}
+            {classlink === "configured"
               ? "Configured (not yet verified)"
-              : "Not connected"}{" "}
-            · ClassLink:{" "}
-            {status.classlink === "configured"
-              ? "Configured (not yet verified)"
-              : "Not connected"}
+              : classlink === "unknown"
+                ? "Checking…"
+                : "Not connected"}
           </p>
           <form
             onSubmit={(e) => {
@@ -111,54 +106,39 @@ export function InstitutionRosterImport({
                     body: {
                       action: "preview",
                       schoolId,
-                      provider,
                       providerClassId,
                     },
                   },
                 );
                 if (error)
                   throw new Error(
-                    "Could not retrieve roster. Check the provider connection and class ID.",
+                    "Could not retrieve the ClassLink roster. Try again later; CSV import still works.",
                   );
                 setRows(data.rows);
               });
             }}
           >
-            <label>
-              Provider
-              <select
-                value={provider}
-                onChange={(e) => {
-                  setProvider(e.target.value as typeof provider);
-                  setProviderClasses([]);
-                  setProviderClassId("");
-                }}
-              >
-                <option value="clever">Clever</option>
-                <option value="classlink">ClassLink</option>
-              </select>
-            </label>
             <Button
               type="button"
               variant="outline"
-              disabled={busy || status[provider] !== "configured"}
+              disabled={busy || classlink !== "configured"}
               onClick={() =>
                 void act(async () => {
                   setRows([]);
                   const { data, error } = await supabase.functions.invoke(
                     "institution-roster",
-                    { body: { action: "classes", schoolId, provider } },
+                    { body: { action: "classes", schoolId } },
                   );
                   if (error)
                     throw new Error(
-                      "Could not list classes. Check the provider connection.",
+                      "Could not list ClassLink classes. Try again later; CSV import still works.",
                     );
                   const classes = Array.isArray(data?.classes)
                     ? data.classes
                     : [];
                   if (!classes.length)
                     throw new Error(
-                      "The provider lists no classes for this school yet.",
+                      "ClassLink lists no classes for this school yet.",
                     );
                   setProviderClasses(classes);
                   setProviderClassId(classes[0].id);
@@ -169,7 +149,7 @@ export function InstitutionRosterImport({
             </Button>
             {!!providerClasses.length && (
               <label>
-                Provider class
+                ClassLink class
                 <select
                   required
                   value={providerClassId}
@@ -186,11 +166,11 @@ export function InstitutionRosterImport({
             <Button
               disabled={
                 busy ||
-                status[provider] !== "configured" ||
+                classlink !== "configured" ||
                 !providerClassId
               }
             >
-              Preview provider roster
+              Preview ClassLink roster
             </Button>
           </form>
         </>

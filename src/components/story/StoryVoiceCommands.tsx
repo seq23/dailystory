@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Mic, MicOff } from 'lucide-react';
+import { Loader2, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -10,27 +10,17 @@ import { parseStoryVoiceCommand, type StoryVoiceCommand } from '@/lib/voice/stor
 /**
  * The story page's microphone: tap, say "next page", "go back", "read to me" or
  * "stop", and the reader does it. One clip per tap; it ends on silence (or 7 s).
+ * The button is the only listening sign (a red dot), so nothing covers the page.
  */
 export function StoryVoiceCommands({ onCommand, className }: {
   onCommand: (command: StoryVoiceCommand) => void;
   className?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
   const [status, setStatus] = useState<'idle' | 'listening' | 'processing'>('idle');
   const hint = t('reader.voice.hint', 'Say “next page”, “go back”, “read to me” or “stop”.');
-
-  useEffect(() => {
-    const onStatus = (e: Event) => {
-      const next = (e as CustomEvent<{ status?: string; system?: string }>).detail;
-      // The Buddy conversation (ElevenLabs) reports on the same channel; it is not this button.
-      if (next?.system) return;
-      if (next?.status === 'listening' || next?.status === 'processing' || next?.status === 'idle') setStatus(next.status);
-    };
-    window.addEventListener('voice:status', onStatus);
-    return () => window.removeEventListener('voice:status', onStatus);
-  }, []);
 
   const handleTranscript = (transcript: string) => {
     const command = parseStoryVoiceCommand(transcript);
@@ -61,7 +51,6 @@ export function StoryVoiceCommands({ onCommand, className }: {
       handleError('microphone');
       return;
     }
-    toast({ title: t('reader.voice.listening', 'Listening…'), description: hint, duration: 2500 });
     void vcRef.current?.start();
   };
 
@@ -80,15 +69,18 @@ export function StoryVoiceCommands({ onCommand, className }: {
         aria-pressed={status === 'listening'}
         title={`${label}. ${hint}`}
         data-testid="story-voice-commands"
-        className={cn('h-11 w-11 shrink-0 rounded-full', status === 'listening' && 'animate-pulse', className)}
+        className={cn('relative h-11 w-11 shrink-0 rounded-full', className)}
       >
         {status === 'processing'
           ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-          : status === 'listening'
-            ? <MicOff className="h-5 w-5" aria-hidden />
-            : <Mic className="h-5 w-5" aria-hidden />}
+          : <Mic className="h-5 w-5" aria-hidden />}
+        {/* The one listening sign: a small red dot on the microphone itself. */}
+        {status === 'listening' && (
+          <span data-testid="story-voice-listening" aria-hidden
+            className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-[hsl(var(--destructive))] ring-2 ring-background" />
+        )}
       </Button>
-      <VoiceCommandController ref={vcRef} headless onCommand={handleTranscript} onError={handleError} />
+      <VoiceCommandController ref={vcRef} onCommand={handleTranscript} onError={handleError} onStatus={setStatus} language={i18n.language} />
     </>
   );
 }
