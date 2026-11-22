@@ -1,0 +1,95 @@
+{
+  "h1": "How Many Minutes Should Students Read Each Day?",
+  "title_lead": "How Many Minutes Should Students Read",
+  "meta_description": "A simple guide to daily reading minutes by age and grade. Find a realistic target, build a habit, and keep it enjoyable for kids 3 to 15.",
+  "direct_answer": "Daily reading time is a habit-based target that grows with a child's age and stamina. Most guidelines suggest 10 to 20 minutes for early elementary, 20 to 30 minutes for upper elementary, and 30 or more minutes for middle school and beyond.",
+  "sections": [
+    {
+      "heading": "What is a good starting goal by age?",
+      "paragraphs": [
+        "Young children need short, frequent sessions. A preschooler or kindergartner does well with 10 minutes of shared reading. First and second graders often manage 15 minutes on their own. By third grade, many kids can sustain 20 minutes. These numbers are floors, not ceilings. If a child wants to keep going, let them. The goal is to make reading feel easy to start and hard to stop."
+      ],
+      "bullets": [
+        "Pre-K to K: 10 minutes with an adult",
+        "Grades 1-2: 15 minutes independent",
+        "Grades 3-5: 20 to 30 minutes",
+        "Grades 6-10: 30 minutes or more"
+      ]
+    },
+    {
+      "heading": "Why consistency beats a single long session",
+      "paragraphs": [
+        "Reading every day builds vocabulary and background knowledge faster than one marathon session on the weekend. A daily rhythm trains the brain to expect text, decode automatically, and hold meaning across sentences. Missed days break that momentum. A 15-minute habit on a busy Tuesday protects the routine better than a 60-minute catch-up on Saturday. Keep the bar low enough to clear on the worst day."
+      ],
+      "bullets": []
+    },
+    {
+      "heading": "How to fit minutes into a packed schedule",
+      "paragraphs": [
+        "Look for transition pockets. The drive to practice, the wait for dinner, the wind-down before lights out. Audiobooks count during car rides. A physical book works at the kitchen table while water boils. Some families stack reading onto an existing habit: brush teeth, then read. Others use a visual tracker on the fridge. The schedule that sticks is the one that requires the least negotiation."
+      ],
+      "bullets": [
+        "Keep a book in the car or backpack",
+        "Pair reading with a snack or bath time",
+        "Use a simple chart or sticker calendar",
+        "Let the child pick the time slot"
+      ]
+    },
+    {
+      "heading": "What counts as reading minutes?",
+      "paragraphs": [
+        "Silent reading counts. Reading aloud to a sibling counts. Listening to an unabridged audiobook while following the text counts. Rereading a favorite graphic novel counts. Magazines, recipes, and game manuals count. The text does not need to be leveled or assigned. Variety builds flexibility. If a child chooses it and engages with it, the minutes belong on the log."
+      ],
+      "bullets": []
+    },
+    {
+      "heading": "When to adjust the target up or down",
+      "paragraphs": [
+        "Increase minutes when the child finishes a session asking for more. Decrease when resistance appears daily or comprehension drops. A reluctant reader might start at five minutes with a timer they control. A voracious reader might self-regulate at 45. Watch the child, not the clock. The right number is the one they hit willingly most days."
+      ],
+      "bullets": []
+    }
+  ],
+  "faq": [
+    {
+      "q": "Should I use a timer for reading minutes?",
+      "a": "A timer helps some kids focus and feels like a game. Others find it stressful. Try a sand timer or a quiet phone alarm. Let the child start and stop it. If the timer creates battles, drop it and use a natural endpoint like a chapter or a page count instead."
+    },
+    {
+      "q": "Does reading aloud to my child count toward their daily minutes?",
+      "a": "Yes. Listening to fluent reading builds vocabulary, syntax, and comprehension. It also models expression and pacing. For emerging readers, shared reading is the primary engine. For older kids, a family read-aloud adds culture and conversation. Log it proudly."
+    },
+    {
+      "q": "What if my child only wants to read graphic novels?",
+      "a": "Graphic novels require decoding, inference, and visual literacy. They are real reading. Let the child enjoy them. You can gently place a chapter book nearby or read one aloud together. Variety expands over time when choice stays in the child's hands."
+    },
+    {
+      "q": "How do I handle days when homework runs late?",
+      "a": "Keep a micro-habit ready. Two pages. One poem. Five minutes on the porch. Protect the streak, not the duration. A tiny session says reading is non-negotiable but flexible. Tomorrow you return to the regular target."
+    }
+  ],
+  "facts_heading": "Before you set the daily target",
+  "facts": [
+    {
+      "claim": "The National Assessment of Educational Progress reports that students who read for fun almost every day score higher on reading assessments than those who read less frequently.",
+      "source_url": "https://www.nationsreportcard.gov/reading/nation/achievement/?grade=4",
+      "source_name": "National Center for Education Statistics",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "The American Academy of Pediatrics recommends daily reading aloud to children from infancy through at least kindergarten to support language development.",
+      "source_url": "https://publications.aap.org/pediatrics/article/134/2/404/32932/Literacy-Promotion-An-Essential-Component-of",
+      "source_name": "American Academy of Pediatrics",
+      "verified": false,
+      "checked_status": 403
+    },
+    {
+      "claim": "The Institute of Education Sciences practice guide for foundational reading skills recommends daily practice with connected text for students in kindergarten through third grade.",
+      "source_url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/21",
+      "source_name": "Institute of Education Sciences",
+      "verified": true,
+      "checked_status": 200
+    }
+  ]
+}

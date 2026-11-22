@@ -211,7 +211,20 @@
         "https://en.wikipedia.org/wiki/Fourth_grade"
       ],
       "linked_from": [],
-      "checks": {},
+      "checks": {
+        "w2": {
+          "at": "2026-11-22",
+          "source": "search_console",
+          "clicks": 0,
+          "impressions": 0,
+          "position": null,
+          "ai_visits_today": 0,
+          "indexed": null,
+          "checkpoint": "w2",
+          "lane": "can_be_one",
+          "top3": false
+        }
+      },
       "gate_notes": [
         "b4 direct answer under the H1 is 39 words (aim 40-60)",
         "b5 FAQ answer is 32 words (aim 40-60): \"Does reading aloud to my 4th grader count toward t\"",
@@ -274,7 +287,20 @@
           "after_hash": "83a7fa35deae5966e443826dc36a526af821fac2be2095723c9040579ef485d3"
         }
       ],
-      "checks": {},
+      "checks": {
+        "w2": {
+          "at": "2026-11-22",
+          "source": "search_console",
+          "clicks": 0,
+          "impressions": 0,
+          "position": null,
+          "ai_visits_today": 0,
+          "indexed": null,
+          "checkpoint": "w2",
+          "lane": "can_be_one",
+          "top3": false
+        }
+      },
       "gate_notes": [
         "b1 title does not put the search first",
         "b4 direct answer under the H1 is 31 words (aim 40-60)",
@@ -487,7 +513,9 @@
         "set timer 7 minutes for reading",
         "20 minute reading timer",
         "20 minute reading timer with music",
-        "reading timer 20 minutes"
+        "reading timer 20 minutes",
+        "20 minute reading timer for kids",
+        "20 minute silent reading timer"
       ],
       "indexnow_at": "2026-11-19"
     },
@@ -738,7 +766,8 @@
       "gate_notes": [
         "b5 FAQ answer is 39 words (aim 40-60): \"What if my child reads well but still refuses?\"",
         "b5 FAQ answer is 39 words (aim 40-60): \"When should I seek extra support?\""
-      ]
+      ],
+      "indexnow_at": "2026-11-22"
     },
     {
       "slug": "ai-story-maker-for-kids",
@@ -787,7 +816,8 @@
       ],
       "extra_queries": [
         "ai story generator for kids"
-      ]
+      ],
+      "indexnow_at": "2026-11-22"
     },
     {
       "slug": "tell-me-a-bedtime-story-for-kids",
@@ -833,7 +863,8 @@
       ],
       "extra_queries": [
         "kids bedtime story in english"
-      ]
+      ],
+      "indexnow_at": "2026-11-22"
     },
     {
       "slug": "when-kids-dont-like-reading",
@@ -915,7 +946,8 @@
         "b5 FAQ answer is 38 words (aim 40-60): \"How long should a bedtime story last?\"",
         "b5 FAQ answer is 37 words (aim 40-60): \"What if my child wants a scary story at bedtime?\"",
         "b5 FAQ answer is 36 words (aim 40-60): \"Can teachers use bedtime stories in class?\""
-      ]
+      ],
+      "indexnow_at": "2026-11-22"
     },
     {
       "slug": "kids-level-1-reading-books-free",
@@ -957,6 +989,175 @@
       "checks": {},
       "gate_notes": [
         "b4 direct answer under the H1 is 32 words (aim 40-60)"
+      ],
+      "indexnow_at": "2026-11-22"
+    },
+    {
+      "slug": "how-many-minutes-should-students-read-each-day",
+      "query": "how many minutes should students read each day",
+      "lane": "striking",
+      "score": 30,
+      "scores": {
+        "striking": 30,
+        "can_be_one": 0
+      },
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ],
+      "signals": {
+        "words": 8,
+        "question": true,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/how-many-minutes-should-students-read-each-day/index.html",
+      "route": "/questions/how-many-minutes-should-students-read-each-day/",
+      "url": "https://guides.time-2-read.com/questions/how-many-minutes-should-students-read-each-day/",
+      "published_at": "2026-11-22",
+      "status": "live",
+      "hash": "3c09dddd99c5f3206433853b08cdb17357cec1f46aef11acd33c6010c3ed14fb",
+      "model": "free-route",
+      "facts": [
+        "https://www.nationsreportcard.gov/reading/nation/achievement/?grade=4",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21"
+      ],
+      "linked_from": [
+        {
+          "rel": "questions/how-many-minutes-should-a-4th-grader-read-per-day/index.html",
+          "route": "/questions/how-many-minutes-should-a-4th-grader-read-per-day/",
+          "before_hash": "c3ad6e508f9bc66f9112f789228daec5402d10d779ce7a7894cb0adbbf7065a8",
+          "after_hash": "2a241340ba2380cbf7f268ba64b30b192ac658c769831bf794df406f5d5fd3b5"
+        },
+        {
+          "rel": "questions/read-10-minutes-of-a-book/index.html",
+          "route": "/questions/read-10-minutes-of-a-book/",
+          "before_hash": "0aa057d7143e1f0125fa1a2884f000d14194404cd06265583199753790afe8b1",
+          "after_hash": "e7140bd54f1ca960d401803ba34ee72ebf53642d61eea8bffb78f6ac7c029798"
+        }
+      ],
+      "checks": {},
+      "gate_notes": [
+        "b5 FAQ answer is 38 words (aim 40-60): \"Does reading aloud to my child count toward their \"",
+        "b5 FAQ answer is 35 words (aim 40-60): \"How do I handle days when homework runs late?\""
+      ]
+    },
+    {
+      "slug": "how-much-time-should-a-child-read-per-day",
+      "query": "how much time should a child read per day",
+      "lane": "can_be_one",
+      "score": 40,
+      "scores": {
+        "striking": 30,
+        "can_be_one": 40
+      },
+      "reasons": [
+        "no site page answers this 6-word question, and the site holds its parts at position 4",
+        "people search it (autocomplete or impressions)"
+      ],
+      "signals": {
+        "words": 9,
+        "question": true,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 6,
+          "covered": 0.33,
+          "parts_best_position": 4,
+          "parts_rows": 8
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/how-much-time-should-a-child-read-per-day/index.html",
+      "route": "/questions/how-much-time-should-a-child-read-per-day/",
+      "url": "https://guides.time-2-read.com/questions/how-much-time-should-a-child-read-per-day/",
+      "published_at": "2026-11-22",
+      "status": "live",
+      "hash": "ae7df5426060aee4876d69f7e0474dd8dd5cb073fbf174fde655d076e83241a9",
+      "model": "free-route",
+      "facts": [
+        "https://www.aap.org/en/patient-care/literacy-promotion/",
+        "https://www.nationsreportcard.gov/reading/nation/achievement/?grade=4"
+      ],
+      "linked_from": [
+        {
+          "rel": "questions/for-kids-who-cant-read-good/index.html",
+          "route": "/questions/for-kids-who-cant-read-good/",
+          "before_hash": "78b3cd551c8a95e5ab37c06d2a3d909aceec5ab48604982a887997d571b26b2d",
+          "after_hash": "88ec75101d8980657123ccfa551367e8e13678b93db3cdd7aa200c519a260d37"
+        },
+        {
+          "rel": "questions/time-read/index.html",
+          "route": "/questions/time-read/",
+          "before_hash": "9e280d084e003507e81b90c1272c99ac68722a14f3ab132c388d59c66b4a9a96",
+          "after_hash": "5cac94cdeaec32bad79ca8f3176ef8b497b73b1272329561fa18ecec9c310be2"
+        }
+      ],
+      "checks": {},
+      "gate_notes": [
+        "b2 meta description is 114 chars (aim 120-160)",
+        "b4 direct answer under the H1 is 31 words (aim 40-60)",
+        "b5 FAQ answer is 30 words (aim 40-60): \"Does listening to audiobooks count as reading time\"",
+        "b5 FAQ answer is 33 words (aim 40-60): \"Should I count school reading toward the daily tot\"",
+        "b5 FAQ answer is 33 words (aim 40-60): \"What if my child only wants to reread the same boo\""
+      ]
+    },
+    {
+      "slug": "reading-time-2-minutes",
+      "query": "reading time 2 minutes",
+      "lane": "can_be_one",
+      "score": 40,
+      "scores": {
+        "striking": 25,
+        "can_be_one": 40
+      },
+      "reasons": [
+        "no site page answers this 4-word question, and the site holds its parts at position 1",
+        "people search it (autocomplete or impressions)"
+      ],
+      "signals": {
+        "words": 4,
+        "question": false,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 4,
+          "covered": 0.25,
+          "parts_best_position": 1,
+          "parts_rows": 11
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/reading-time-2-minutes/index.html",
+      "route": "/questions/reading-time-2-minutes/",
+      "url": "https://guides.time-2-read.com/questions/reading-time-2-minutes/",
+      "published_at": "2026-11-22",
+      "status": "live",
+      "hash": "59d6347385aaf9e9d029feff8c6b580195a69e439015142c1b494ea016042fb5",
+      "model": "free-route",
+      "facts": [
+        "https://www.aap.org/en/patient-care/literacy-promotion/",
+        "https://www.nationsreportcard.gov/reading/nation/achievement/?grade=4"
+      ],
+      "linked_from": [
+        {
+          "rel": "questions/how-many-minutes-should-a-4th-grader-read-per-day/index.html",
+          "route": "/questions/how-many-minutes-should-a-4th-grader-read-per-day/",
+          "before_hash": "2a241340ba2380cbf7f268ba64b30b192ac658c769831bf794df406f5d5fd3b5",
+          "after_hash": "66b09941b8ba9855f649fd0c88d0c715b5be7730449b78a45eabf3b498ccf008"
+        },
+        {
+          "rel": "questions/kids-level-1-reading-books-free/index.html",
+          "route": "/questions/kids-level-1-reading-books-free/",
+          "before_hash": "e409991033693cd672fea19399d8c25479ac6ad2d02aa533d18ddac3057329fa",
+          "after_hash": "499c61e422859186e95b9ca2b848e7b5f6fcbfe25a7e51e2f447ef1583a9ed8e"
+        }
+      ],
+      "checks": {},
+      "gate_notes": [
+        "b1 title does not put the search first",
+        "b4 direct answer under the H1 is 30 words (aim 40-60)",
+        "b5 FAQ answer is 35 words (aim 40-60): \"Does two minutes really make a difference?\"",
+        "b5 FAQ answer is 35 words (aim 40-60): \"What if my child wants to stop before the timer?\"",
+        "b5 FAQ answer is 38 words (aim 40-60): \"Should I correct mistakes during the two minutes?\"",
+        "b5 FAQ answer is 32 words (aim 40-60): \"Can audiobooks count for the two minutes?\""
       ]
     }
   ],
@@ -2448,6 +2649,141 @@
         "b5 FAQ answer is 13 words (aim 40-60): \"Do audiobooks count as reading?\"",
         "b5 FAQ answer is 20 words (aim 40-60): \"What if my child only wants graphic novels?\""
       ]
+    },
+    {
+      "query": "summer reading log for kids",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 24 words (aim 40-60): \"Should I count audiobooks in the log?\"",
+        "b5 FAQ answer is 29 words (aim 40-60): \"How much reading time should we aim for each day?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"Can a reading log work for a reluctant reader?\"",
+        "b5 FAQ answer is 28 words (aim 40-60): \"What if we miss a week of logging?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.cslpreads.org/ (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.imls.gov/grants/grants-state-library-administrative-agencies (HTTP 404)"
+      ]
+    },
+    {
+      "query": "reading log with parent signature",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 29 words (aim 40-60)",
+        "b5 FAQ answer is 20 words (aim 40-60): \"Does the signature have to be cursive?\"",
+        "b5 FAQ answer is 18 words (aim 40-60): \"What if we forget a night?\"",
+        "b5 FAQ answer is 14 words (aim 40-60): \"Can an older sibling sign?\"",
+        "b5 FAQ answer is 20 words (aim 40-60): \"How long should we keep the logs?\""
+      ]
+    },
+    {
+      "query": "daily reading log with parent signature",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "the answer was not the JSON object asked for, with every key filled"
+      ]
+    },
+    {
+      "query": "learning apps for homeschooling",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b2 meta description is 40 chars (aim 120-160)",
+        "b5 FAQ answer is 29 words (aim 40-60): \"Can learning apps replace a full curriculum?\"",
+        "b5 FAQ answer is 28 words (aim 40-60): \"What if my child resists the app?\"",
+        "b5 FAQ answer is 23 words (aim 40-60): \"Do I need a separate account for each child?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.commonsense.org/education/privacy-evaluations (HTTP 404)"
+      ]
+    },
+    {
+      "query": "short stories reading comprehension for kids",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 22 words (aim 40-60): \"How long should a comprehension session last?\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"Are online interactive stories as effective as pri\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Should I correct every wrong answer immediately?\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"Can I create my own questions for favorite books?\"",
+        "invented: unsourced statistic \"Start with a text the child can read with about 95 percent accuracy.\""
+      ]
+    },
+    {
+      "query": "how many minutes should a kid read a day",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 27 words (aim 40-60)",
+        "b5 FAQ answer is 20 words (aim 40-60): \"Does reading aloud to my child count toward the da\"",
+        "b5 FAQ answer is 19 words (aim 40-60): \"What if my child only wants to read graphic novels\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"Should I use a timer during reading time?\""
+      ]
+    },
+    {
+      "query": "read 10 minutes a day for kids",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://nces.ed.gov/nationsreportcard/studies/gaps/2012-458.aspx (HTTP 404); https://publications.aap.org/pediatrics/article/134/2/404/32962/Literacy-Promotion-An-Essential-Component-of (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "my daughter doesnt want to read",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 16 words (aim 40-60): \"Should I require a set number of minutes each nigh\"",
+        "b5 FAQ answer is 15 words (aim 40-60): \"Do graphic novels count as real reading?\"",
+        "b5 FAQ answer is 15 words (aim 40-60): \"What if she only re-reads the same easy books?\"",
+        "b5 FAQ answer is 18 words (aim 40-60): \"Can audiobooks replace print reading?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.nationsreportcard.gov/reading/national/achievement/ (HTTP 404); https://publications.aap.org/pediatrics/article/134/2/404/32941/Literacy-Promotion-An-Essential-Component-of (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "easy stories to read for 5 year olds",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b2 meta description is 88 chars (aim 120-160)"
+      ]
+    },
+    {
+      "query": "short stories to read to 10 year olds",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 26 words (aim 40-60)",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://publications.aap.org/pediatrics/article/134/2/404/32629/Literacy-Promotion-An-Essential-Component-of (HTTP 403: this site refuses automated checks, so cite a different publisher); https://hub.lexile.com/grade-level-charts (HTTP 404)"
+      ]
+    },
+    {
+      "query": "how many minutes should a child read per day",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"Does reading aloud to my child count for their min\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.ed.gov/early-learning (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.nea.org/professional-excellence/student-engagement/tools-tips/read-across-america (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.healthychildren.org/English/ages-stages/Pages/Reading-With-Your-Child.aspx (HTTP 404)"
+      ]
+    },
+    {
+      "query": "how to help my first grader read better",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 27 words (aim 40-60): \"Should I correct every mistake my first grader mak\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"My child memorizes books. Is that reading?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"How do I know if a book is the right level?\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"What if my child refuses to read?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://improvingliteracy.org/brief/what-are-decodable-texts (HTTP 404); https://www.nea.org/advocating-for-change/new-from-nea/read-across-america/benefits-reading-aloud-children (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "what is a reading log for students",
+      "at": "2026-11-22",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"Can a reading log work for a pre-reader?\"",
+        "b5 FAQ answer is 28 words (aim 40-60): \"How often should a student update the log?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www2.ed.gov/parents/read/resources/edpicks.jhtml (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.ala.org/alsc/publications-resources/book-lists/building-home-library (HTTP 404)"
+      ]
     }
   ],
   "redirected": [
@@ -2619,6 +2955,26 @@
       "kind": "engine",
       "matched_by": "high token overlap (0.60 >= 0.6)",
       "matched_text": "ai story maker for kids",
+      "stage": "search"
+    },
+    {
+      "query": "20 minute reading timer for kids",
+      "at": "2026-11-22",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "route": "/questions/set-a-20-min-timer-for-reading/",
+      "kind": "page",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "matched_text": "Set a 20 Minute Timer for Reading — Time-2-Read",
+      "stage": "search"
+    },
+    {
+      "query": "20 minute silent reading timer",
+      "at": "2026-11-22",
+      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
+      "route": "/questions/set-a-20-min-timer-for-reading/",
+      "kind": "page",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "matched_text": "Set a 20 Minute Timer for Reading — Time-2-Read",
       "stage": "search"
     }
   ]

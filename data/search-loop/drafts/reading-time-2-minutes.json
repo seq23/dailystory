@@ -1,0 +1,94 @@
+{
+  "h1": "What Happens When You Read for Two Minutes a Day?",
+  "title_lead": "What Happens When You Read for Two Minutes",
+  "meta_description": "Two minutes of daily reading builds a habit, adds thousands of words a year, and fits into any schedule. Start small and watch the momentum grow.",
+  "direct_answer": "A two-minute reading routine is a micro-habit that lowers the barrier to starting, builds consistency over intensity, and exposes a child to roughly 180,000 words per year when sustained daily.",
+  "sections": [
+    {
+      "heading": "Why two minutes is enough to start",
+      "paragraphs": [
+        "Two minutes feels almost too easy. That is the point. The biggest hurdle to reading at home is getting started. A tiny time commitment removes the pressure of a long session. It fits between brushing teeth and putting on shoes. It works on the busiest nights. When the bar is low, children say yes more often. That yes builds the identity of a reader one small win at a time."
+      ],
+      "bullets": [
+        "Removes the negotiation over time",
+        "Fits into transition moments",
+        "Builds the habit loop without willpower"
+      ]
+    },
+    {
+      "heading": "What the numbers add up to",
+      "paragraphs": [
+        "Two minutes a day sounds small until you multiply it. At an average silent reading pace, a child covers roughly one page in that window. One page a day becomes about 180,000 words a year. That volume matters. Research on print exposure links total words read to vocabulary growth and background knowledge. The gain comes from showing up, not from a single marathon session."
+      ],
+      "bullets": []
+    },
+    {
+      "heading": "How to make the two minutes count",
+      "paragraphs": [
+        "Keep the book visible. A basket on the kitchen counter or a stack by the car seat works better than a shelf in the bedroom. Let the child choose the material. A graphic novel, a joke book, or a magazine all count. Set a visible timer so the endpoint is clear. When the timer sounds, stop. Protect the brevity. The goal is to leave the child wanting more, not relieved that it is over."
+      ],
+      "bullets": [
+        "Place books in high-traffic spots",
+        "Allow any format the child enjoys",
+        "Use a sand timer or phone alarm",
+        "Stop exactly when the time ends"
+      ]
+    },
+    {
+      "heading": "When two minutes naturally grows",
+      "paragraphs": [
+        "Consistency creates appetite. A child who reads for two minutes every night for three weeks often asks for five. That request is the signal to extend the window. Follow the child's lead. If they stay at two minutes for a month, that is still a win. The habit is the foundation; the duration is the variable. Our guide on What Happens When You Read 10 Minutes of a Book Each Day shows the next step when the time feels right."
+      ],
+      "bullets": []
+    },
+    {
+      "heading": "Troubleshooting the rough nights",
+      "paragraphs": [
+        "Some nights the timer feels like a chore. Offer a trade: you read aloud for two minutes while they listen. Listening builds vocabulary and comprehension too. If resistance persists, skip the timer and read a single poem or a page of facts together. The streak stays intact. The relationship with reading stays positive. Missing one night does not break the habit; quitting does."
+      ],
+      "bullets": []
+    }
+  ],
+  "faq": [
+    {
+      "q": "Does two minutes really make a difference?",
+      "a": "Yes. Two daily minutes equal roughly 180,000 words a year, which research links to stronger vocabulary and background knowledge. The habit also teaches a child that reading is a normal, expected part of the day."
+    },
+    {
+      "q": "What if my child wants to stop before the timer?",
+      "a": "Let them stop early without comment. The goal is a positive association with books. Forcing the full time can create resistance. Try again tomorrow with a shorter text or a funny poem to rebuild momentum."
+    },
+    {
+      "q": "Should I correct mistakes during the two minutes?",
+      "a": "Hold corrections until after the timer ends. Interrupting the flow breaks confidence and makes the session feel like a test. If a mistake changes the meaning, model the correct word casually when you chat about the story afterward."
+    },
+    {
+      "q": "Can audiobooks count for the two minutes?",
+      "a": "Absolutely. Listening to a narrated story builds comprehension, vocabulary, and narrative sense. It is a valid bridge for emerging readers and a great option for car rides or quiet time before sleep."
+    }
+  ],
+  "facts_heading": "Quick reference for planning your two-minute routine",
+  "facts": [
+    {
+      "claim": "The American Academy of Pediatrics recommends reading aloud to children daily from infancy to support language development.",
+      "source_url": "https://www.aap.org/en/patient-care/literacy-promotion/",
+      "source_name": "American Academy of Pediatrics",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "The National Assessment of Educational Progress reports that students who read for fun almost every day score higher on reading assessments than those who rarely read.",
+      "source_url": "https://www.nationsreportcard.gov/reading/nation/achievement/?grade=4",
+      "source_name": "National Center for Education Statistics",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "A typical third-grade silent reading rate is approximately 100 to 130 words per minute, meaning two minutes yields roughly 200 to 260 words per session.",
+      "source_url": "https://www.hasbroucktindal.com/2017-orf-norms",
+      "source_name": "Hasbrouck & Tindal Oral Reading Fluency Norms",
+      "verified": false,
+      "checked_status": 0
+    }
+  ]
+}
