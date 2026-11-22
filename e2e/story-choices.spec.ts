@@ -45,7 +45,8 @@ test('Premium choices fit a phone, drive the next page, and disappear after Fini
     }
     return out;
   });
-  expect(cut, 'Start here! chip is cut off').toEqual([]);
+  // Soft checks: a broken chip reports every way it is broken, not only the first.
+  expect.soft(cut, 'Start here! chip is cut off').toEqual([]);
   // It covers neither the story title nor the button (it sits under the button), and
   // "Start here!" is readable: 12 px or more, 4.5:1 or better against its own fill.
   const fit = await chip.evaluate((el) => {
@@ -72,13 +73,13 @@ test('Premium choices fit a phone, drive the next page, and disappear after Fini
       opaqueFill: alpha === 1,
     };
   });
-  expect(fit.titles, 'a story title is on screen to check against').toBeGreaterThan(0);
-  expect(fit.overTitle, 'Start here! chip covers the story title').toBe(false);
-  expect(fit.overButton, 'Start here! chip covers the New Story button').toBe(false);
-  expect(fit.belowButton, 'Start here! chip sits under the New Story button').toBe(true);
-  expect(fit.fontPx).toBeGreaterThanOrEqual(12);
-  expect(fit.opaqueFill, 'Start here! has a solid fill of its own').toBe(true);
-  expect(fit.contrast).toBeGreaterThanOrEqual(4.5);
+  expect.soft(fit.titles, 'a story title is on screen to check against').toBeGreaterThan(0);
+  expect.soft(fit.overTitle, 'Start here! chip covers the story title').toBe(false);
+  expect.soft(fit.overButton, 'Start here! chip covers the New Story button').toBe(false);
+  expect.soft(fit.belowButton, 'Start here! chip sits under the New Story button').toBe(true);
+  expect.soft(fit.fontPx, 'Start here! text is 12 px or more').toBeGreaterThanOrEqual(12);
+  expect.soft(fit.opaqueFill, 'Start here! has a solid fill of its own').toBe(true);
+  expect.soft(fit.contrast, 'Start here! text clears 4.5:1').toBeGreaterThanOrEqual(4.5);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: testInfo.outputPath('start-here-phone.png') });
   const choices = page.getByRole('region', { name: 'Pick what happens next' });
