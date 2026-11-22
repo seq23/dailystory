@@ -28,16 +28,20 @@ async function openStory(page: Page) {
   const dialog = page.getByTestId('new-story-dialog');
   await dialog.getByRole('button', { name: /\+ space/i }).click();
   await dialog.getByTestId('write-story').click();
-  await expect(page.getByText('The little fox walks to a big tree.').first()).toBeVisible({ timeout: 20_000 });
+  // Wide screens also render the phone layout, hidden: wait for the copy that is on screen.
+  await expect(page.getByText('The little fox walks to a big tree.').locator('visible=true').first()).toBeVisible({ timeout: 20_000 });
 }
 
 for (const [width, height] of [[390, 844], [820, 1180], [1280, 800]] as const) {
   test(`Start here! is whole and readable at ${width} px, under the button`, async ({ page }, testInfo) => {
+    test.setTimeout(60_000); // sign-in, a written story and the checks: 30 s is too tight on a busy runner
     await page.setViewportSize({ width, height });
     await openStory(page);
     const chip = page.getByTestId('start-here-coach').locator('visible=true').first();
     await expect(chip).toBeVisible();
-    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 50));
+    // Pause 1 s ahead (well inside the 7 s): a nearer target can already be in the past
+    // by the time the call lands on a busy runner ("Cannot fast-forward to the past").
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1_000));
 
     const box = await chip.evaluate((el) => {
       const r = el.getBoundingClientRect();
