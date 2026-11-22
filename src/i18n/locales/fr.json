@@ -249,28 +249,6 @@
       "readingAbility": {
         "label": "À quel point lisez-vous bien ?",
         "placeholder": "Sélectionnez votre niveau de lecture",
-        "levels": {
-          "beginner": {
-            "title": "Pré-lecteur (3-5 ans)",
-            "description": "Apprendre les lettres et sons"
-          },
-          "easy": {
-            "title": "Je commence à lire",
-            "description": "Mots simples et phrases courtes"
-          },
-          "medium": {
-            "title": "Je peux lire des livres simples",
-            "description": "Phrases plus longues et paragraphes"
-          },
-          "hard": {
-            "title": "Je peux lire des livres à chapitres",
-            "description": "Histoires complexes et vocabulaire"
-          },
-          "expert": {
-            "title": "J'adore lire de gros livres",
-            "description": "Vocabulaire et concepts avancés"
-          }
-        },
         "learnMore": {
           "description": "Nos niveaux sont basés sur des recherches éducatives éprouvées et des listes de mots Dolch, garantissant un contenu adapté à l'âge.",
           "title": "À propos des niveaux de lecture"
@@ -852,6 +830,17 @@
       "minLevelReached": "Le niveau minimum est {minDifficulty}.",
       "minExpertGradeReached": "La classe avancée minimale est {minExpertGrade}.",
       "minBelowAllowed": "Cette séance permet de descendre sous le minimum fixé"
+    },
+    "voice": {
+      "button": "Commandes vocales",
+      "stopListening": "Arrêter l’écoute",
+      "listening": "J’écoute…",
+      "hint": "Dis « page suivante », « retour », « lis-moi » ou « stop ».",
+      "notUnderstood": "Je n’ai pas compris",
+      "micBlocked": "Le micro est désactivé",
+      "micBlockedHelp": "Autorise le micro pour ce site dans les réglages du navigateur, puis touche de nouveau le micro.",
+      "unavailable": "Les commandes vocales ne fonctionnent pas pour le moment",
+      "unavailableHelp": "Les boutons de la page fonctionnent toujours."
     }
   },
   "parent": {
@@ -975,7 +964,9 @@
       "success": "Parfait ! Vous avez très bien prononcé « {{word}} » !",
       "encourage": "Presque ! Il vous reste {{tries}} essai. Touchez le bouton vert pour m’écouter encore, puis réessayez.",
       "comfort": "Ce n’est pas grave ! Continuez à travailler « {{word}} », vous y arriverez. Cela prend du temps !"
-    }
+    },
+    "signIn": "Connecte-toi pour t’entraîner à lire à voix haute.",
+    "noSpeech": "Je ne t’ai pas entendu. Touche « Commence à lire » et lis la phrase à voix haute."
   },
   "postSession": {
     "quizTitle": "Quiz de compréhension",
@@ -2245,7 +2236,7 @@
     "extra_comprehension_questions_after_reading": "Questions de compréhension après la lecture",
     "extra_reading_timer_and_progress_tracking": "Minuteur de lecture et suivi des progrès",
     "extra_vocabulary_word_bank_and_review_activities": "Banque de vocabulaire et activités de révision",
-    "extra_voice_commands_for_navigation_and_controls": "Commandes vocales pour naviguer et contrôler",
+    "extra_voice_commands_for_navigation_and_controls": "Commandes vocales pour tourner la page, revenir, lire à voix haute ou arrêter",
     "extra_priority_support": "Assistance prioritaire",
     "extra_admin_educator_dashboards": "Tableaux de bord pour responsables et enseignants",
     "extra_curriculum_alignment_tools": "Outils d’alignement sur le programme",

@@ -249,28 +249,6 @@
       "readingAbility": {
         "label": "什么阅读水平适合你？",
         "placeholder": "选择你的阅读水平",
-        "levels": {
-          "beginner": {
-            "title": "识字前 (3-5岁)",
-            "description": "学习字母和发音"
-          },
-          "easy": {
-            "title": "简单阅读",
-            "description": "(K-1年级：简单单词和短句)"
-          },
-          "medium": {
-            "title": "中等阅读",
-            "description": "(2-4年级：中等词汇和句子)"
-          },
-          "hard": {
-            "title": "高级阅读",
-            "description": "(5-8年级：高级词汇和复杂句子)"
-          },
-          "expert": {
-            "title": "专家阅读",
-            "description": "(9-12年级：专业词汇和复杂写作)"
-          }
-        },
         "learnMore": {
           "description": "我们的水平基于经过验证的教育研究和Dolch视觉词汇表，确保适合年龄的内容。",
           "title": "了解阅读级别"
@@ -887,6 +865,17 @@
       "minLevelReached": "最低级别为{minDifficulty}。",
       "minExpertGradeReached": "进阶模式最低年级为{minExpertGrade}。",
       "minBelowAllowed": "本次阅读可适当低于设定的最低难度"
+    },
+    "voice": {
+      "button": "语音指令",
+      "stopListening": "停止收听",
+      "listening": "正在听…",
+      "hint": "请说“下一页”、“上一页”、“读给我听”或“停”。",
+      "notUnderstood": "我没听清",
+      "micBlocked": "麦克风已关闭",
+      "micBlockedHelp": "请在浏览器设置中允许本网站使用麦克风，然后再点一次麦克风。",
+      "unavailable": "语音指令现在无法使用",
+      "unavailableHelp": "页面按钮仍然可以使用。"
     }
   },
   "parent": {
@@ -977,7 +966,9 @@
     "feedbackStatus": "阅读教练正在准备反馈…",
     "charlotteScope": "阅读教练会帮助你练习读起来困难的词语",
     "syllableDemo": "听听“{{word}}”可以怎样拆开读",
-    "privacy": "我们不保存录音，反馈完成后音频即被丢弃。"
+    "privacy": "我们不保存录音，反馈完成后音频即被丢弃。",
+    "signIn": "登录后即可练习朗读。",
+    "noSpeech": "我没有听到你的声音。点“开始朗读”，大声读出这句话。"
   },
   "postSession": {
     "quizTitle": "阅读理解测验",
@@ -2227,7 +2218,7 @@
     "extra_comprehension_questions_after_reading": "读后理解提问",
     "extra_reading_timer_and_progress_tracking": "阅读计时与进度记录",
     "extra_vocabulary_word_bank_and_review_activities": "词汇库与复习活动",
-    "extra_voice_commands_for_navigation_and_controls": "用语音指令导航和操作",
+    "extra_voice_commands_for_navigation_and_controls": "语音指令：翻页、返回、朗读或停止",
     "extra_priority_support": "优先客服支持",
     "extra_admin_educator_dashboards": "管理员与教师看板",
     "extra_curriculum_alignment_tools": "课程对齐工具",

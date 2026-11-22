@@ -57,6 +57,8 @@ interface StoryNavigationControlsProps {
   onAudioStateChange?: (playing: boolean, loading: boolean) => void;
   onAudioPlayed?: (page: number) => void;
   onUpgrade?: () => void;
+  /** The story page's microphone (StoryVoiceCommands), beside the page number. */
+  voiceControl?: React.ReactNode;
 }
 
 export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = ({
@@ -80,7 +82,8 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
   audioPlayedPage,
   onAudioStateChange,
   onAudioPlayed,
-  onUpgrade
+  onUpgrade,
+  voiceControl
 }) => {
   const handleNext = () => {
     DebugLogger.log('ui', 'Navigation: Next page requested', { currentPage, totalPages });
@@ -140,6 +143,8 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
           <span className="hidden sm:inline"> {uiText("Page")} </span>{currentPage + 1}  {uiText("of")} {totalPages}
         </span>
+
+        {voiceControl}
         
         {/* Help Me Read Button - Right of page numbers - Guest Users Only */}
         {!isPremium && onUpgrade && (

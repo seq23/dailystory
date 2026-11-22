@@ -40,7 +40,6 @@ import { landingPages } from "./data/landingPages";
 import VoiceAdmin from "./pages/admin/VoiceAdmin";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
-import { VoiceCommands } from "./components/VoiceCommands";
 import { VoiceHoverController } from "./components/VoiceHoverController";
 import { UnifiedDebugMonitor } from "./components/UnifiedDebugMonitor";
 import { devToolsAllowed } from "./lib/devTools";

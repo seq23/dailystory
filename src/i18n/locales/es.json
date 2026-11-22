@@ -249,28 +249,6 @@
       "readingAbility": {
         "label": "¿Qué tan bien lees?",
         "placeholder": "Selecciona tu nivel de lectura",
-        "levels": {
-          "beginner": {
-            "title": "Pre-lector (3-5 años)",
-            "description": "Aprendiendo letras y sonidos"
-          },
-          "easy": {
-            "title": "Estoy empezando a leer",
-            "description": "Palabras simples y oraciones cortas"
-          },
-          "medium": {
-            "title": "Puedo leer libros simples",
-            "description": "Oraciones más largas y párrafos"
-          },
-          "hard": {
-            "title": "Puedo leer libros por capítulos",
-            "description": "Historias complejas y vocabulario"
-          },
-          "expert": {
-            "title": "Me encanta leer libros grandes",
-            "description": "Vocabulario y conceptos avanzados"
-          }
-        },
         "learnMore": {
           "description": "Nuestros niveles se basan en investigación educativa probada y listas de palabras Dolch, asegurando contenido apropiado para la edad.",
           "title": "Acerca de los niveles de lectura"
@@ -873,6 +851,17 @@
       "minLevelReached": "El nivel mínimo es {minDifficulty}.",
       "minExpertGradeReached": "El grado avanzado mínimo es {minExpertGrade}.",
       "minBelowAllowed": "Esta sesión permite bajar del mínimo fijado"
+    },
+    "voice": {
+      "button": "Comandos de voz",
+      "stopListening": "Dejar de escuchar",
+      "listening": "Escuchando…",
+      "hint": "Di «página siguiente», «atrás», «léeme» o «detente».",
+      "notUnderstood": "No te entendí",
+      "micBlocked": "El micrófono está apagado",
+      "micBlockedHelp": "Permite el micrófono para este sitio en la configuración del navegador y vuelve a tocar el micrófono.",
+      "unavailable": "Los comandos de voz no funcionan en este momento",
+      "unavailableHelp": "Los botones de la página siguen funcionando."
     }
   },
   "parent": {
@@ -963,7 +952,9 @@
     "feedbackStatus": "Tu guía está preparando sus consejos…",
     "charlotteScope": "Tu guía te ayuda con las palabras que te cuestan al leer",
     "syllableDemo": "Escucha cómo separo «{{word}}»",
-    "privacy": "No guardamos grabaciones. El audio se elimina después de darte los consejos."
+    "privacy": "No guardamos grabaciones. El audio se elimina después de darte los consejos.",
+    "signIn": "Inicia sesión para practicar la lectura en voz alta.",
+    "noSpeech": "No te escuché. Toca «Empieza a leer» y lee la oración en voz alta."
   },
   "postSession": {
     "quizTitle": "Cuestionario de comprensión",
@@ -2213,7 +2204,7 @@
     "extra_comprehension_questions_after_reading": "Preguntas de comprensión después de leer",
     "extra_reading_timer_and_progress_tracking": "Temporizador y seguimiento del progreso",
     "extra_vocabulary_word_bank_and_review_activities": "Banco de palabras y actividades de repaso",
-    "extra_voice_commands_for_navigation_and_controls": "Comandos de voz para navegar y controlar",
+    "extra_voice_commands_for_navigation_and_controls": "Comandos de voz para pasar de página, volver, leer en voz alta o parar",
     "extra_priority_support": "Atención prioritaria",
     "extra_admin_educator_dashboards": "Paneles para administradores y docentes",
     "extra_curriculum_alignment_tools": "Herramientas para seguir el currículo",

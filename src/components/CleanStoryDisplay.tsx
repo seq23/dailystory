@@ -114,7 +114,8 @@ const IMAGES_DISABLED_PLACEHOLDER = '/serious-readers-corner.png';
 /** A page longer than this (upper grades) reads in the page's own scroll, not a small inner box. */
 export const LONG_PAGE_WORDS = 150;
 // useWordHighlighting integrated into useAudioControls
-import { VoiceCommandController } from '@/components/VoiceCommandController';
+import { StoryVoiceCommands } from '@/components/story/StoryVoiceCommands';
+import type { StoryVoiceCommand } from '@/lib/voice/storyVoiceCommands';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
 import { PremiumHoverController } from '@/components/PremiumHoverController';
 import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
@@ -3187,29 +3188,26 @@ const handleDockVoiceCommand = () => {
   DebugLogger.log('ui', 'Voice command handled by MobileActionDock integration');
 };
 
-// Voice command handler for headless controller
-const handleVoiceCommand = (command: string) => {
-  DebugLogger.log('audio', 'Voice command received', command);
-  
-  const cmd = command.toLowerCase().trim();
-  
-  if (cmd.includes('start reading') || cmd.includes('read') || cmd.includes('play')) {
-    handleDockPlayAudio();
-  } else if (cmd.includes('pause') || cmd.includes('stop')) {
-    try { audioEngineRef.current.stop(); } catch (e) { DebugLogger.warn('audio', 'Voice pause failed', e); }
-  } else if (cmd.includes('next page') || cmd.includes('next')) {
-    handleNext();
-  } else if (cmd.includes('previous page') || cmd.includes('previous') || cmd.includes('back')) {
-    handlePrevious();
-  } else if (cmd.includes('increase font') || cmd.includes('bigger text')) {
-    // Font size adjustment logic would go here
-    DebugLogger.log('ui', 'Font size increase requested');
-  } else if (cmd.includes('decrease font') || cmd.includes('smaller text')) {
-    // Font size adjustment logic would go here
-    DebugLogger.log('ui', 'Font size decrease requested');
-  } else if (cmd.includes('open settings') || cmd.includes('settings')) {
-    // Settings logic would go here
-    DebugLogger.log('ui', 'Settings requested');
+// The one page-turn gate: the Next buttons (mobile and desktop) and the spoken
+// "next page" all read it, so they cannot disagree.
+const controlsBlocked = !isPremium && timeRemaining <= 0;
+const canGoNext = !controlsBlocked && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked;
+const canGoPrevious = currentPage > 0 && !controlsBlocked;
+const handleStoryVoiceCommand = (command: StoryVoiceCommand) => {
+  DebugLogger.log('audio', 'Story voice command', command);
+  if (command === 'next') {
+    if (!canGoNext || isLoadingNextPage) return;
+    if (currentPage < displayedStory.length - 1) handleNext();
+    else if (isPremium) handleGenerateNextPageAndAdvance();
+  } else if (command === 'back') {
+    if (canGoPrevious) handlePrevious();
+  } else if (command === 'read') {
+    // Listening stopped any read-aloud; start this page again (free: once per page, as the button).
+    if (!isAudioPlaying) void handleDockPlayAudio();
+  } else if (command === 'stop') {
+    setIsAudioPlaying(false);
+    setIsAudioLoading(false);
+    try { audioEngineRef.current?.stop(); } catch (e) { DebugLogger.warn('audio', 'Voice stop failed', e); }
   }
 };
 
@@ -4090,8 +4088,6 @@ const handleRestartTimer = () => {
   // Upper-grade pages run 200-500 words. Past LONG_PAGE_WORDS the text uses the page's own
   // scroll (no inner scroll box) and the picture stays in view beside it (27 Oct 2026).
   const isLongPage = countWords(currentStoryText || "") > LONG_PAGE_WORDS;
-  const controlsBlocked = !isPremium && timeRemaining <= 0;
-
   // Desktop card height calculation for perfect mirroring
   const { heightStyle: fittedHeightStyle, containerClassName: fittedContainerClassName, dynamicHeight } = useDesktopCardHeight({
     textContent: currentStoryText,
@@ -4261,8 +4257,8 @@ const handleRestartTimer = () => {
                     isPremium={isPremium}
                     isLoadingNextPage={isLoadingNextPage}
                     isGeneratingNewStory={isGeneratingNewStory}
-                    canGoNext={!controlsBlocked && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked}
-                    canGoPrevious={currentPage > 0 && !controlsBlocked}
+                    canGoNext={canGoNext}
+                    canGoPrevious={canGoPrevious}
                     onNext={handleNext}
                     onPrevious={handlePrevious}
                     onGenerateNext={handleGenerateNextPageAndAdvance}
@@ -4277,6 +4273,7 @@ const handleRestartTimer = () => {
                     onAudioStateChange={handleAudioStateChangeDual}
                     onAudioPlayed={handleAudioPlayed}
                     onUpgrade={onUpgrade}
+                    voiceControl={<StoryVoiceCommands onCommand={handleStoryVoiceCommand} />}
                   />
                 </div>
               </div>
@@ -4584,8 +4581,8 @@ const handleRestartTimer = () => {
                     isPremium={isPremium}
                     isLoadingNextPage={isLoadingNextPage}
                     isGeneratingNewStory={isGeneratingNewStory}
-                    canGoNext={!controlsBlocked && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked}
-                    canGoPrevious={currentPage > 0 && !controlsBlocked}
+                    canGoNext={canGoNext}
+                    canGoPrevious={canGoPrevious}
                     onNext={handleNext}
                     onPrevious={handlePrevious}
                     onGenerateNext={handleGenerateNextPageAndAdvance}
@@ -5081,8 +5078,6 @@ const handleRestartTimer = () => {
       {/* Audio Fallback Notification */}
       <AudioFallbackNotification />
       
-      {/* Voice Command System */}
-      <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
       

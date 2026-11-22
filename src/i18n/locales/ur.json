@@ -249,28 +249,6 @@
       "readingAbility": {
         "label": "آپ کے لیے کون سی پڑھنے کی سطح مناسب ہے؟",
         "placeholder": "پڑھنے کی سطح منتخب کریں",
-        "levels": {
-          "beginner": {
-            "title": "پری ریڈر (3-5 سال)",
-            "description": "حروف اور آوازیں سیکھنا"
-          },
-          "easy": {
-            "title": "آسان پڑھنا",
-            "description": "(نرسری - پہلی جماعت: سادہ الفاظ اور چھوٹے جملے)"
-          },
-          "medium": {
-            "title": "درمیانی پڑھنا",
-            "description": "(دوسری - چوتھی جماعت: درمیانی الفاظ اور جملے)"
-          },
-          "hard": {
-            "title": "مشکل پڑھنا",
-            "description": "(پانچویں - آٹھویں جماعت: مشکل الفاظ اور پیچیدہ جملے)"
-          },
-          "expert": {
-            "title": "ماہر پڑھنا",
-            "description": "(نویں - بارہویں جماعت: مہارت یافتہ الفاظ اور ترقی یافتہ تحریر)"
-          }
-        },
         "learnMore": {
           "description": "ہماری سطحیں ثابت شدہ تعلیمی تحقیق اور Dolch بصری الفاظ کی فہرستوں پر مبنی ہیں۔",
           "title": "پڑھنے کی سطحوں کے بارے میں"
@@ -812,6 +790,17 @@
       "minLevelReached": "کم از کم سطح {minDifficulty} ہے۔",
       "minExpertGradeReached": "کم از کم ماہر درجہ {minExpertGrade} ہے۔",
       "minBelowAllowed": "اس سیشن میں طے شدہ کم از کم سے آسان سطح پر جا رہے ہیں"
+    },
+    "voice": {
+      "button": "آواز سے احکامات",
+      "stopListening": "سننا بند کریں",
+      "listening": "سن رہے ہیں…",
+      "hint": "کہیں “اگلا صفحہ”، “پیچھے”، “پڑھ کر سناؤ” یا “رکو”۔",
+      "notUnderstood": "میں سمجھ نہیں سکا",
+      "micBlocked": "مائیکروفون بند ہے",
+      "micBlockedHelp": "براؤزر کی ترتیبات میں اس سائٹ کے لیے مائیکروفون کی اجازت دیں، پھر مائیکروفون کو دوبارہ دبائیں۔",
+      "unavailable": "آواز سے احکامات ابھی کام نہیں کر رہے",
+      "unavailableHelp": "صفحے کے بٹن اب بھی کام کرتے ہیں۔"
     }
   },
   "coach": {
@@ -851,7 +840,9 @@
       "success": "بہترین! آپ نے \"{{word}}\" بہت اچھا بولا!",
       "encourage": "بس تھوڑا سا! {{tries}} کوشش باقی ہے۔ سبز بٹن سے مجھے پھر سنیں، پھر کوشش کریں۔",
       "comfort": "کوئی بات نہیں! \"{{word}}\" کی مشق کرتے رہیں، آ جائے گا۔ سیکھنے میں وقت لگتا ہے!"
-    }
+    },
+    "signIn": "بلند آواز سے پڑھنے کی مشق کے لیے سائن اِن کریں۔",
+    "noSpeech": "مجھے آپ کی آواز سنائی نہیں دی۔ «پڑھنا شروع کرو» دبائیں اور جملہ بلند آواز سے پڑھیں۔"
   },
   "postSession": {
     "quizTitle": "فہم کا کوئز",
@@ -2203,7 +2194,7 @@
     "extra_comprehension_questions_after_reading": "پڑھنے کے بعد سمجھ کے سوال",
     "extra_reading_timer_and_progress_tracking": "مطالعے کا ٹائمر اور پیش رفت کا ریکارڈ",
     "extra_vocabulary_word_bank_and_review_activities": "الفاظ کا ذخیرہ اور دہرائی کی سرگرمیاں",
-    "extra_voice_commands_for_navigation_and_controls": "آواز سے صفحہ بدلیں اور کنٹرول کریں",
+    "extra_voice_commands_for_navigation_and_controls": "آواز سے صفحہ آگے پیچھے کریں، پڑھ کر سنائیں یا روکیں",
     "extra_priority_support": "ترجیحی مدد",
     "extra_admin_educator_dashboards": "منتظمین اور اساتذہ کے ڈیش بورڈ",
     "extra_curriculum_alignment_tools": "نصاب کے مطابق اوزار",

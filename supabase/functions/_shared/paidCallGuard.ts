@@ -68,6 +68,13 @@ export const FUNCTION_LIMITS: Record<string, FunctionLimits> = {
     guestIp: [{ window: TEN_MIN, max: 80 }, { window: DAY, max: 300 }],
     allPerFunction: { window: DAY, max: 3000 },
   },
+  // Speech-to-text of a child's voice clip; signed-in only (parental consent, R-KID-02).
+  "voice-to-text": {
+    user: PAID_CALL_LIMITS.user,
+    guest: [],
+    guestIp: [],
+    allPerFunction: PAID_CALL_LIMITS.allPerFunction,
+  },
   // One live voice conversation per call; signed-in only.
   "openai-realtime": {
     user: [{ window: TEN_MIN, max: 10 }, { window: DAY, max: 40 }],

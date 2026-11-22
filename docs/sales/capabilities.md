@@ -1,6 +1,6 @@
 # Capability evidence and claim boundaries
 
-Reviewed 2026-11-08 against `main` at `41cb361ee63b52ae3b7c8eeb68b2cad3064d4af5`.
+Reviewed 2026-11-08 against `main` at `41cb361ee63b52ae3b7c8eeb68b2cad3064d4af5`; voice commands, school roster and the Kindle companion rechecked 2026-11-22.
 Audience: ages 3-15, Pre-K-10th grade. Stories are English only; the UI has 8 languages.
 The code wins over older docs: every line below was checked in the source on main.
 "Premium" means a paid subscription, a trial, or a Premium access code.
@@ -17,6 +17,7 @@ The code wins over older docs: every line below was checked in the source on mai
 - Every story is illustrated, for free and Premium readers alike.
 - Stories can be read aloud: a natural premium voice on Premium, the device's own voice on the free plan (once per page).
 - Tap any word to hear it, see what it means, break it into syllables or translate it.
+- Voice commands on the story page: the child taps the microphone and says “next page”, “go back”, “read to me” or “stop”, in any of the 8 app languages. Signed-in accounts only. One short clip per tap (up to 7 seconds), the same page limits as the buttons, and a clip with no speech in it is not sent (where the browser can measure sound). The clip goes to OpenAI for speech-to-text and is not stored by Time2Read.
 - A read-aloud coach listens as the child reads a sentence and gives feedback (5 sentences a day free, unlimited on Premium).
 - Parents and teachers add their own vocabulary lists and the stories weave every word in: up to 10 words for any story on every plan, highlighted as the child reads, and a saved list for each child that goes into every story on Premium.
 - Grade-level quizzes after reading check 8 skills, from sight words and phonics to the big picture, plus vocabulary mini-games (Premium).
@@ -24,7 +25,7 @@ The code wins over older docs: every line below was checked in the source on mai
 - Readers earn points, badges and progress towers as they read (kept for the session on the free plan).
 - One adult account can hold up to 40 child profiles.
 - Schools get their own reading workspace: teachers run their classes, school administrators see every class in their school, and records stay inside that school.
-- Teachers import a class roster from a spreadsheet (CSV), record reading sessions and dated level and quiz checks, and see class and student growth reports.
+- Teachers import a class roster from a spreadsheet (CSV); every child imports, whatever the grade: TK is read as Pre-K, and 11th, 12th and ungraded children are kept with the grade not recorded (stories go up to 10th grade). They record reading sessions and dated level and quiz checks, and see class and student growth reports.
 - A classroom reading profile can be linked to a roster child, so its in-app reading and quiz results show in the class view, kept apart from teacher records.
 - School accounts run on a stricter privacy lane: children's names are masked before any AI request, only providers that do not keep or train on the text are used, and pictures are switched off.
 - Partner access codes: a code can lengthen the free trial (HOMESCHOOL15 gives 15 days) or switch on Premium with no card.
@@ -46,20 +47,22 @@ The code wins over older docs: every line below was checked in the source on mai
 | Illustrations | [image function](../../supabase/functions/runware-generate-image/index.ts), [feature lists](../../src/constants/featureLists.ts) | Illustrated pages, same picture quality on every plan | Off for school accounts (privacy lane) |
 | Narration | [narration routing](../../src/services/narrationRouter.ts), [voice configuration](../../src/config/ttsConfig.ts), [PRICING.md](../PRICING.md) | Premium voice on Premium; device voice on free | Free: once per page. No guaranteed premium-voice capacity; device voice is the fallback |
 | Word help | [word help](../../src/components/UnifiedInteractiveWord.tsx), [dictionary function](../../supabase/functions/word-dictionary) | Hear, meaning, syllables, translate | All plans |
-| Read-aloud coach | [ReadAloudCoach.tsx](../../src/components/ReadAloudCoach.tsx), [voice-to-text](../../supabase/functions/voice-to-text) | Speech-to-text feedback on a read sentence | Free: 5 sentences a day |
+| Voice commands | [StoryVoiceCommands.tsx](../../src/components/story/StoryVoiceCommands.tsx), [command words](../../src/lib/voice/storyVoiceCommands.ts), [voice-to-text](../../supabase/functions/voice-to-text) | Tap the microphone, say next page, go back, read to me or stop, in any of the 8 UI languages | All plans, signed in; needs a microphone. One clip per tap, up to 7 seconds; a clip with no speech in it is not sent (where the browser can measure sound). Same page limits as the buttons (free read-aloud once per page). The clip goes to OpenAI (speech-to-text subprocessor); Time2Read keeps neither the recording nor the transcript |
+| Read-aloud coach | [ReadAloudCoach.tsx](../../src/components/ReadAloudCoach.tsx), [voice-to-text](../../supabase/functions/voice-to-text) | Speech-to-text feedback on a read sentence | Free: 5 sentences a day; signed in. A clip with no speech in it is not sent (where the browser can measure sound). The clip goes to OpenAI for speech-to-text and is not stored by Time2Read |
 | Vocabulary lists | [practice words](../../supabase/functions/_shared/practiceWords.ts), [story form](../../src/components/forms/steps/FormStep3Personalization.tsx), [parent dashboard](../../src/components/ParentDashboard.tsx) ("Teacher Word List"), [story page merge](../../src/components/CleanStoryDisplay.tsx) | Words for one story (up to 10) must appear in it, are highlighted, and feed that story's quiz; a saved list per child (or a default for all children) joins every story | Per-story words: every plan. Saved list: Premium only. Quizzes: Premium only |
 | Quizzes and games | [quiz](../../src/components/ComprehensionQuiz.tsx), [quiz function](../../supabase/functions/generate-quiz), [session end](../../src/pages/SessionEnded.tsx), [MiniGames.tsx](../../src/components/MiniGames.tsx) | Grade-level quiz on 8 skills; mini-games | Premium only |
 | Family progress | [per-child progress](../../src/hooks/useChildProgressData.ts), [parent dashboard](../../src/components/ParentDashboard.tsx) | Reading habit, comprehension, vocabulary, game results | Vocabulary and saved-story totals are account-level, not per child. Use does not establish proficiency |
 | Rewards | [story page](../../src/components/CleanStoryDisplay.tsx), [progress towers](../../src/components/ModernProgressTowers.tsx) | Points, badges, progress towers, level-up message | Free: this session only |
 | Child profiles | [useChildProfiles.ts](../../src/hooks/useChildProfiles.ts) | Up to 40 per adult account | Children are profiles, not logins |
 | School workspace | [/schools page](../../src/pages/Institutions.tsx), [institutions.sql](../../supabase/migrations/20261031050519_institutions.sql), [phase-8-institutions.md](../phase-8-institutions.md) | Assigned-class teachers, school-scoped admins, classes, records | Live on main since PR #130 (merged 31 Oct 2026). Each school and its first admin are set up by us, not self-service |
-| School roster | [CSV and adapters](../../src/lib/institutions/api.ts), [roster function](../../supabase/functions/institution-roster) | CSV import up to 1000 rows; no student logins created | Clever and ClassLink adapters exist in code but no live connection has been made |
+| School roster | [CSV and ClassLink](../../src/lib/institutions/api.ts), [roster function](../../supabase/functions/institution-roster), [roster rules](../../supabase/functions/_shared/institutionRoster.ts) | CSV import up to 1000 rows; every child imports, whatever the grade: TK is read as Pre-K, 11th, 12th and ungraded are kept with the grade not recorded (stories stop at 10th grade); imports only add children, never delete; no student logins created | ClassLink (OneRoster): built, awaiting first school connection; not yet live with any school. Stores first name and last initial only. No paid rostering service |
 | School reports | [report.ts](../../src/lib/institutions/report.ts) | Minutes, sessions, dated levels and skills, paired coverage, question-weighted class percentages | Observational only; no causal or efficacy claim |
 | App reading in class view | [app reading migration](../../supabase/migrations/20261031210000_institution_app_reading.sql) | A profile on the teacher's own account linked to a roster child | Home family accounts are never linked; nothing before the link is copied |
 | School privacy lane | [privacyLane.ts](../../supabase/functions/_shared/privacyLane.ts), [guard](../../src/test/guards/school-privacy-lane.test.ts) | Names masked; no-retention routes only; pictures off | School accounts only |
 | Access codes | [code rules](../../supabase/functions/_shared/accessCodeRules.ts), [redeem function](../../supabase/functions/redeem-access-code/index.ts) | Longer trial or Premium with no card | One code trial per account |
 | Family plans | [PRICING.md](../PRICING.md), [checkout](../../supabase/functions/create-checkout/index.ts) | 3 free stories; $12.99/month or $99/year; 7-day trial | No institutional seat checkout |
 | Languages | [UI resources](../../src/i18n/config.ts), [story languages](../../src/constants/storyLanguages.ts) | UI in 8 languages | Stories English only |
+| Kindle book companion | [BookCompanion.tsx](../../src/pages/BookCompanion.tsx) | A page printed inside our own Kindle book that offers a free story at the reader's level | Our own books only; not a library or partner integration |
 | Consent and data rights | [consent function](../../supabase/functions/verify-parental-consent/index.ts), [export](../../src/components/DataExportButton.tsx), [deletion](../../src/components/AccountDeletion.tsx) | Parent email consent; data download; account deletion | Not a legal conclusion; see [privacy summary](privacy-security.md) |
 
 ## Do not imply
@@ -67,7 +70,7 @@ The code wins over older docs: every line below was checked in the source on mai
 These are not built. Describe them only as planned, never as available:
 
 - Single sign-on (SSO) or student sign-in of any kind; children never log in.
-- A live roster connection or live data exchange with Clever, ClassLink or any other system.
+- A live roster connection or live data exchange with any roster system. The ClassLink connection is built and awaiting its first school connection; until a school is connected it is not live. No paid rostering service is used.
 - Automatic copying of home family accounts into school reports.
 - Library-card sign-in, library portals or branch licensing.
 - District-wide dashboards, consolidated cross-school reporting or district provisioning.

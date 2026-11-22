@@ -34,8 +34,13 @@ or SSO and live roster connections.
 
 ## Can we import a roster or use SSO?
 
-The institution branch implements CSV preview/import and remote roster adapters.
-Connections need existing authorization, server configuration and live testing.
+Yes for CSV: preview, then import. Every child imports, whatever the grade: TK is
+read as Pre-K, and 11th, 12th and ungraded children are kept with the grade not
+recorded (stories go up to 10th grade). A
+ClassLink (OneRoster) connection is built, awaiting its first school connection;
+it needs the district's existing ClassLink authorization, our server configuration
+and a live test before it counts as live. No paid rostering service is used, and
+an import only adds children; it never deletes one.
 A roster import is not SSO, student account creation, ongoing background sync or
 deletion reconciliation. Do not promise those capabilities.
 

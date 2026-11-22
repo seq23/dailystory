@@ -13,8 +13,11 @@ which is live on main (PR #130, merged 31 Oct 2026). Planned, not built: student
 sign-in or SSO and live roster data exchange.
 
 The current family product stores adult account information, child profiles and
-reading activity. Its AI story, illustration, narration and optional voice
-features can transmit content to configured services. Free-text requests may
+reading activity. Its AI story, illustration and narration features can transmit
+content to configured services. Voice commands and the read-aloud coach (signed-in
+accounts only) send a short clip, recorded only after a tap on the microphone (a voice command is at most
+7 seconds), to OpenAI for speech-to-text; OpenAI is listed as a subprocessor for
+this. Time2Read stores neither the recording nor the transcript. Free-text requests may
 contain personal information. Do not describe the family product as collecting
 only anonymous data or keeping all processing on the device.
 
@@ -28,7 +31,10 @@ alongside that workspace requires a separate data-flow and authority review.
 
 The institution branch enforces school/class access in database policies and
 authorized operations. Teachers see assigned classes; administrators see their
-school. Remote roster credentials remain on the server. Imports send normalized
+school. Remote roster credentials remain on the server. A ClassLink roster (built,
+awaiting its first school connection) brings in first name and last initial only,
+refuses a class from another school, never sends roster names to a model or the
+logs, and is limited to 30 calls per administrator per hour. Imports send normalized
 rows rather than storing the source CSV. A school administrator can delete a
 child and dependent school records. These are source/test findings, not evidence
 that a real institution or provider connection has been accepted in production.

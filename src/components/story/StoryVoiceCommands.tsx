@@ -1,0 +1,100 @@
+import React, { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Loader2, Mic } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { VoiceCommandController, type VoiceCommandControllerHandle } from '@/components/VoiceCommandController';
+import { parseStoryVoiceCommand, type StoryVoiceCommand } from '@/lib/voice/storyVoiceCommands';
+import { useSignedIn } from '@/hooks/useSignedIn';
+
+/**
+ * The story page's microphone: tap, say "next page", "go back", "read to me" or
+ * "stop", and the reader does it. One clip per tap; it ends on silence (or 7 s).
+ * The button is the only listening sign (a red dot), so nothing covers the page.
+ * Signed-in accounts only: a child's voice goes to speech-to-text only with a
+ * consenting account (risk rule R-KID-02); voice-to-text refuses guests too.
+ */
+export function StoryVoiceCommands(props: {
+  onCommand: (command: StoryVoiceCommand) => void;
+  className?: string;
+}) {
+  // Signed out, or the session cannot be read: no microphone at all.
+  const signedIn = useSignedIn();
+  return signedIn ? <StoryVoiceMic {...props} /> : null;
+}
+
+function StoryVoiceMic({ onCommand, className }: {
+  onCommand: (command: StoryVoiceCommand) => void;
+  className?: string;
+}) {
+  const { t, i18n } = useTranslation();
+  const { toast } = useToast();
+  const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
+  const [status, setStatus] = useState<'idle' | 'listening' | 'processing'>('idle');
+  const hint = t('reader.voice.hint', 'Say “next page”, “go back”, “read to me” or “stop”.');
+
+  const handleTranscript = (transcript: string) => {
+    const command = parseStoryVoiceCommand(transcript);
+    if (!command) {
+      toast({ title: t('reader.voice.notUnderstood', 'I didn’t catch that'), description: hint, duration: 3000 });
+      return;
+    }
+    onCommand(command);
+  };
+
+  const handleError = (kind: 'microphone' | 'service') => {
+    setStatus('idle');
+    toast({
+      title: kind === 'microphone'
+        ? t('reader.voice.micBlocked', 'The microphone is off')
+        : t('reader.voice.unavailable', 'Voice commands are not working right now'),
+      description: kind === 'microphone'
+        ? t('reader.voice.micBlockedHelp', 'Allow the microphone for this site in the browser settings, then tap the microphone again.')
+        : t('reader.voice.unavailableHelp', 'The page buttons still work.'),
+      duration: 4000,
+    });
+  };
+
+  const toggle = () => {
+    if (status === 'listening') { vcRef.current?.stop(); return; }
+    if (status === 'processing') return;
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      handleError('microphone');
+      return;
+    }
+    void vcRef.current?.start();
+  };
+
+  const label = status === 'listening'
+    ? t('reader.voice.stopListening', 'Stop listening')
+    : t('reader.voice.button', 'Voice commands');
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant={status === 'listening' ? 'default' : 'outline'}
+        size="icon"
+        onClick={toggle}
+        aria-label={label}
+        aria-pressed={status === 'listening'}
+        title={`${label}. ${hint}`}
+        data-testid="story-voice-commands"
+        className={cn('relative h-11 w-11 shrink-0 rounded-full', className)}
+      >
+        {status === 'processing'
+          ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+          : <Mic className="h-5 w-5" aria-hidden />}
+        {/* The one listening sign: a small red dot on the microphone itself. */}
+        {status === 'listening' && (
+          <span data-testid="story-voice-listening" aria-hidden
+            className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-[hsl(var(--destructive))] ring-2 ring-background" />
+        )}
+      </Button>
+      <VoiceCommandController ref={vcRef} onCommand={handleTranscript} onError={handleError} onStatus={setStatus} language={i18n.language} />
+    </>
+  );
+}
+
+export default StoryVoiceCommands;

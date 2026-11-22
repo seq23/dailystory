@@ -312,28 +312,6 @@
       "readingAbility": {
         "label": "Que nível de leitura é adequado para você?",
         "placeholder": "Escolha seu nível de leitura",
-        "levels": {
-          "beginner": {
-            "title": "Pré-leitor (3-5 anos)",
-            "description": "Aprendendo letras e sons"
-          },
-          "easy": {
-            "title": "Leitura Fácil",
-            "description": "(K-1ª série: Palavras simples e frases curtas)"
-          },
-          "medium": {
-            "title": "Leitura Intermediária",
-            "description": "(2ª-4ª série: Vocabulário e frases moderadas)"
-          },
-          "hard": {
-            "title": "Leitura Avançada",
-            "description": "(5ª-8ª série: Vocabulário avançado e frases complexas)"
-          },
-          "expert": {
-            "title": "Leitura Expert",
-            "description": "(9ª-12ª série: Vocabulário expert e escrita sofisticada)"
-          }
-        },
         "storyDisplay": {
           "header": {
             "tagline": "Aventuras de Leitura para Crianças",
@@ -1029,7 +1007,9 @@
     "feedbackStatus": "Seu orientador está preparando as dicas…",
     "charlotteScope": "Seu orientador ajuda com algumas palavras difíceis da leitura",
     "syllableDemo": "Ouça como separo «{{word}}»",
-    "privacy": "Não guardamos gravações. O áudio é descartado após as dicas."
+    "privacy": "Não guardamos gravações. O áudio é descartado após as dicas.",
+    "signIn": "Entre na sua conta para praticar a leitura em voz alta.",
+    "noSpeech": "Não ouvi você. Toque em “Comece a ler” e leia a frase em voz alta."
   },
   "postSession": {
     "quizTitle": "Questionário de compreensão",
@@ -2376,7 +2356,7 @@
     "extra_comprehension_questions_after_reading": "Perguntas de compreensão após a leitura",
     "extra_reading_timer_and_progress_tracking": "Cronômetro de leitura e acompanhamento do progresso",
     "extra_vocabulary_word_bank_and_review_activities": "Banco de palavras e atividades de revisão",
-    "extra_voice_commands_for_navigation_and_controls": "Comandos de voz para navegação e controles",
+    "extra_voice_commands_for_navigation_and_controls": "Comandos de voz para virar a página, voltar, ler em voz alta ou parar",
     "extra_priority_support": "Atendimento prioritário",
     "extra_admin_educator_dashboards": "Painéis para administradores e educadores",
     "extra_curriculum_alignment_tools": "Ferramentas de alinhamento ao currículo",
@@ -2488,6 +2468,17 @@
       "minLevelReached": "O nível mínimo é {minDifficulty}.",
       "minExpertGradeReached": "O ano avançado mínimo é {minExpertGrade}.",
       "minBelowAllowed": "Esta sessão permite ficar abaixo do mínimo definido"
+    },
+    "voice": {
+      "button": "Comandos de voz",
+      "stopListening": "Parar de ouvir",
+      "listening": "Ouvindo…",
+      "hint": "Diga “próxima página”, “voltar”, “leia para mim” ou “pare”.",
+      "notUnderstood": "Não entendi",
+      "micBlocked": "O microfone está desligado",
+      "micBlockedHelp": "Permita o microfone para este site nas configurações do navegador e toque no microfone de novo.",
+      "unavailable": "Os comandos de voz não estão funcionando agora",
+      "unavailableHelp": "Os botões da página continuam funcionando."
     }
   },
   "reading": {

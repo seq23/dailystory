@@ -6,7 +6,6 @@ import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import leftPageImage from "@/assets/story-illustration-14.jpg";
 import { Check, RefreshCcw, Wand2, Sparkles } from "lucide-react";
 import ReadAloudCoach from "@/components/ReadAloudCoach";
-import VoiceCommandController from "@/components/VoiceCommandController";
 import { freeFeatures, premiumFeatures, additionalOfferings } from "@/constants/featureLists";
 import MagicRefreshIcon from "@/components/icons/MagicRefreshIcon";
 const sampleText = `Luna and Max found a hidden door in the library. When they pushed it open, a tiny breeze carried the scent of pine trees and warm cookies. “Ready?” Max whispered. Luna nodded, and together they stepped into a world of stories.`;
@@ -410,18 +409,6 @@ const StylePreview: React.FC = () => {
                   <CardContent>
                     {/* @ts-ignore demo import below */}
                     <ReadAloudCoach />
-                  </CardContent>
-                </Card>
-              </div>
-              <div>
-                <Card className="border-muted/50">
-                  <CardHeader>
-                    <CardTitle className="text-base">Voice commands (Premium)</CardTitle>
-                    <CardDescription>Try a command like “Next page”</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {/* @ts-ignore demo import below */}
-                    <VoiceCommandController />
                   </CardContent>
                 </Card>
               </div>

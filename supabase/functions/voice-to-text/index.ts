@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { logCost } from "../_shared/costLogger.ts";
 import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { VOICE_COMMAND_PROMPTS, commandTranscript, voiceCommandLanguage } from "../_shared/voiceCommandPrompt.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -65,12 +66,20 @@ serve(async (req) => {
 
   
 
-  // Paid call: a signed-in user or a guest pass, never the anon key alone (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'voice-to-text', corsHeaders, { maxBodyBytes: 8 * 1024 * 1024, signInFor: 'so we can hear you read' });
+  // Paid call, signed-in accounts only: a child's voice is sent to OpenAI only from an
+  // account with parental consent on record (risk rule R-KID-02), so a guest pass is
+  // refused here, not just hidden in the UI (../_shared/paidCallGuard.ts).
+  const refused = await paidCallRefusal(req, 'voice-to-text', corsHeaders, { allowGuests: false, maxBodyBytes: 8 * 1024 * 1024, signInFor: 'so we can hear you read' });
   if (refused) return refused;
 
   try {
-    const { audio, mimeType } = await req.json();
+    const { audio, mimeType, mode, language } = await req.json();
+    // The story page's spoken commands (src/lib/voice/storyVoiceCommands.ts): a short
+    // clip in the child's UI language, a prompt with no command word in it (Whisper
+    // echoes its prompt on silence), and no second pronunciation pass.
+    const isCommand = mode === "command";
+    const commandLanguage = isCommand ? voiceCommandLanguage(language) : null;
+    const commandPrompt = isCommand ? VOICE_COMMAND_PROMPTS[commandLanguage ?? "en"] : "";
 
     if (!audio) {
       throw new Error("No audio data provided");
@@ -96,6 +105,10 @@ serve(async (req) => {
       : "webm";
     formData.append("file", blob, `audio.${ext}`);
     formData.append("model", "whisper-1");
+    if (isCommand) {
+      formData.append("prompt", commandPrompt);
+      if (commandLanguage) formData.append("language", commandLanguage);
+    }
 
     // Send to OpenAI with detailed response format
     const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
@@ -132,7 +145,7 @@ serve(async (req) => {
 
     // For pronunciation analysis, also make a verbose request if available
     let detailedResult = null;
-    try {
+    if (!isCommand) try {
       const verboseFormData = new FormData();
       verboseFormData.append("file", blob, `audio.${ext}`);
       verboseFormData.append("model", "whisper-1");
@@ -165,9 +178,11 @@ serve(async (req) => {
       console.warn("Failed to get detailed transcription:", error);
     }
 
-    const responseData: any = { 
-      text: result.text,
-      originalText: result.text // Basic fallback
+    // A command clip that only echoes the prompt is nothing said.
+    const text = isCommand ? commandTranscript(result.text, commandPrompt) : result.text;
+    const responseData: any = {
+      text,
+      originalText: text // Basic fallback
     };
 
     // Include detailed data if available

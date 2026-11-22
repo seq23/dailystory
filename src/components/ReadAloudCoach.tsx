@@ -13,6 +13,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 import type { SupportedLanguage } from "@/types/multilingual";
 import { useTranslation } from "react-i18next";
+import { startSpeechMeter } from "@/lib/voice/speechMeter";
+import { useSignedIn } from "@/hooks/useSignedIn";
 
 interface ReadAloudCoachProps {
   targetText?: string;
@@ -56,6 +58,9 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   autoIntroduce = true,
 }) => {
   const { t } = useTranslation();
+  // A child's voice goes to speech-to-text only from a signed-in (consenting) account;
+  // voice-to-text refuses guests too (risk rule R-KID-02).
+  const signedIn = useSignedIn();
   // Reading coach now works for ALL languages - no restrictions!
 
   const originalText =
@@ -72,6 +77,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   const [idx, setIdx] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
+  const [noSpeech, setNoSpeech] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [passed, setPassed] = useState<boolean | null>(null);
   const [paceTip, setPaceTip] = useState<string>("");
@@ -301,6 +307,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   };
 
   const startRecording = useCallback(async () => {
+    if (!signedIn) return;
     if (limitReached) return;
     if (attempts >= MAX_ATTEMPTS_PER_SENTENCE) return;
 
@@ -311,8 +318,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     }
 
     pauseStoryIfPlaying();
+    setNoSpeech(false);
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // A clip with no speech in it is never sent (Whisper invents words for silence).
+    const meter = startSpeechMeter(stream);
     const supported = getSupportedMimeType();
     if (supported) mimeTypeRef.current = supported;
     const options = supported ? { mimeType: supported } : undefined;
@@ -327,6 +337,15 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     recorder.onstop = async () => {
       try {
         if (autoStopTORef.current) { clearTimeout(autoStopTORef.current); autoStopTORef.current = null; }
+        // Also reached by the 10 s auto-stop, not only the Stop button: mic off, button back.
+        setIsRecording(false);
+        meter.stop();
+        try { stream.getTracks().forEach((t) => t.stop()); } catch { /* already stopped */ }
+        if (meter.heard === false) {
+          setNoSpeech(true);
+          setTimeout(resumeStoryIfNeeded, 450);
+          return;
+        }
         const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
         const base64 = await blobToBase64(blob);
         const { data, error } = await supabase.functions.invoke("voice-to-text", {
@@ -416,7 +435,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     autoStopTORef.current = window.setTimeout(() => {
       try { recorder.stop(); } catch {}
     }, SENTENCE_MAX_MS);
-  }, [attempts, idx, sentences, limitReached, incDailyCount]);
+  }, [attempts, idx, sentences, limitReached, incDailyCount, signedIn]);
 
   const stopRecording = useCallback(() => {
     try { mediaRecorderRef.current?.stop(); } catch {}
@@ -426,8 +445,10 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   // Quick 2-second check for a single word
   const checkWordPronunciation = async (word: string): Promise<boolean> => {
+    if (!signedIn) return false;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const meter = startSpeechMeter(stream);
       const supported = getSupportedMimeType();
       const options = supported ? { mimeType: supported } : undefined;
       const recorder = new MediaRecorder(stream, options as MediaRecorderOptions);
@@ -438,6 +459,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         recorder.onstop = async () => {
           try { clearTimeout(stopAfter); } catch {}
           try { stream.getTracks().forEach(t=>t.stop()); } catch {}
+          meter.stop();
+          if (meter.heard === false) { resolve(""); return; }
           const blob = new Blob(chunks, { type: supported || "audio/webm" });
           const base64 = await blobToBase64(blob);
           const { data } = await supabase.functions.invoke("voice-to-text", { body: { audio: base64, mimeType: supported || "audio/webm" } });
@@ -730,7 +753,15 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
             </div>
           )}
           
-          {charlotteReady && !charlotteIntroducing && (
+          {noSpeech && !isRecording && (
+            <p className="text-sm text-muted-foreground" data-testid="coach-no-speech"> {t('coach.noSpeech', 'I didn’t hear you. Tap Start Reading and read the sentence out loud.')} </p>
+          )}
+
+          {charlotteReady && !charlotteIntroducing && !signedIn && (
+            <p className="text-sm text-muted-foreground" data-testid="coach-sign-in"> {t('coach.signIn', 'Sign in to practise reading out loud.')} </p>
+          )}
+
+          {charlotteReady && !charlotteIntroducing && signedIn && (
             <div className="flex flex-wrap items-center justify-center gap-3">
               {!isRecording ? (
                 <>

@@ -22,9 +22,9 @@ const DataTransfers = () => {
       website: "https://supabase.com/privacy",
     },
     {
-      name: "OpenAI (AI Story Generation)",
+      name: "OpenAI (AI Story Generation, Speech-to-Text)",
       location: "United States",
-      purpose: "Writes the story text with an AI model",
+      purpose: "Writes the story text with an AI model; turns short voice clips into text for voice commands and read-aloud practice",
       safeguards: "Data Processing Agreement, no training on user data via API",
       website: "https://openai.com/policies/privacy-policy",
     },
