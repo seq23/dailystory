@@ -62,7 +62,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     // Anything else is not acted on, and the child is told what to say.
     state.voiceText = 'banana';
     await mic.click();
-    await expect(page.getByText('I didn’t catch that')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('I didn’t catch that').first()).toBeVisible({ timeout: 20_000 });
     await expect(text).toContainText('The little fox');
     await page.screenshot({ path: testInfo.outputPath(`voice-${colorScheme}-not-understood.png`) });
   });
