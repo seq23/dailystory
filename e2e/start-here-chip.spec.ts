@@ -39,6 +39,9 @@ for (const [width, height] of [[320, 640], [390, 844], [820, 1180], [1280, 800]]
     await openStory(page);
     const chip = page.getByTestId('start-here-coach').locator('visible=true').first();
     await expect(chip).toBeVisible();
+    // On a 640 px tall phone the story view scrolls its text into view on open, which takes the
+    // header off screen; bring the chip back before judging it (CI capture, run 45072947966).
+    await chip.scrollIntoViewIfNeeded();
     await page.screenshot({ path: testInfo.outputPath(`start-here-${width}.png`) });
     // Measure now, with the clock running: the chip shows for 7 s and this takes well under 1 s.
     // Never pause the page clock here: under a paused clock the page's main thread spins and

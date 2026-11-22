@@ -436,6 +436,7 @@ export const ResponsiveStoryHeader = ({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <MobileOptimizedButton
+                          mobileSize="sm"
                           variant="outline"
                           size="sm"
                           onClick={onDecreaseDifficulty}
@@ -464,7 +465,9 @@ export const ResponsiveStoryHeader = ({
                   variant="outline"
                   data-testid="level-badge"
                   className={cn(
-                    "border px-2 py-1 transition-all duration-300 text-xs whitespace-nowrap shrink-0",
+                    "border py-1 transition-all duration-300 text-xs whitespace-nowrap shrink-0",
+                    // Phones: the four controls share a ~240 px row at 320 (e2e/start-here-chip.spec.ts).
+                    isMobile ? "px-1.5" : "px-2",
                     getDifficultyColor(currentDifficulty),
                     buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
                   )}
@@ -477,6 +480,7 @@ export const ResponsiveStoryHeader = ({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <MobileOptimizedButton
+                          mobileSize="sm"
                           variant="outline"
                           size="sm"
                           onClick={onIncreaseDifficulty}
