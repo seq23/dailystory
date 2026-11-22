@@ -601,7 +601,7 @@ useEffect(() => {
               setExpiredAcknowledged(true);
               onSessionEnded({ ...sessionStats, startVoiceQuiz: true });
             }}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
           >
             🎤 {t('timer.expired.quizWithBuddy', 'Quiz with Buddy')}
           </Button>
