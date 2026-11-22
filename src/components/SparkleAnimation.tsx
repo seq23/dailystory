@@ -49,7 +49,7 @@ export const SparkleAnimation: React.FC<SparkleAnimationProps> = ({
   if (!isActive || sparkles.length === 0) return null;
 
   return (
-    <div className={cn("absolute inset-0 pointer-events-none overflow-visible", className)}>
+    <div data-testid="sparkles" className={cn("absolute inset-0 pointer-events-none overflow-visible", className)}>
       {sparkles.map((sparkle) => (
         <div
           key={sparkle.id}

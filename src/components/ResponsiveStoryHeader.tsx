@@ -400,24 +400,27 @@ export const ResponsiveStoryHeader = ({
         <div className={cn(
           isMobileOrTablet ? (isTablet ? "safe-area-padding px-4 pt-0 pb-8" : "safe-area-padding px-4 py-2") : "max-w-7xl mx-auto px-6 py-2"
         )}>
-          <div className="flex items-center justify-between">
-            {/* Story Title */}
+          <div className={cn("flex items-center justify-between", isMobile && "flex-wrap gap-y-1")}>
+            {/* Story Title: on a phone it gets its own line (up to two) above the controls,
+                which left it a few letters and an ellipsis at 320-390 px. */}
             {displayTitle && (
-              <h1 className={cn(
-                "font-semibold truncate",
-                isMobile ? "text-sm" : isTablet ? "text-base" : "text-xl"
+              <h1 data-testid="story-title" className={cn(
+                "font-semibold",
+                isMobile ? "text-sm basis-full line-clamp-2" : isTablet ? "text-base truncate" : "text-xl truncate"
               )}>
                 {displayTitle}
               </h1>
             )}
             
-            {/* Story Controls */}
+            {/* Story Controls: kept at the row's end on a phone too (where they sat beside the
+                title before), so the "Start here!" chip under them stays on screen. */}
             {showLevelControls && (
-              <div className="flex items-center gap-2">
+              <div data-testid="story-controls" className={cn("ml-auto flex items-center", isMobile ? "gap-1" : "gap-2")}>
                  {onNewStory && (
                   <NewStoryCTA
                     isPremium={true}
                     iconOnly={isMobile}
+                    narrowRow={isMobile}
                     onNewStory={onNewStory}
                     onUpgrade={onUpgrade || (() => {})}
                     size={isMobileOrTablet ? "sm" : "md"}
@@ -433,6 +436,7 @@ export const ResponsiveStoryHeader = ({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <MobileOptimizedButton
+                          mobileSize="sm"
                           variant="outline"
                           size="sm"
                           onClick={onDecreaseDifficulty}
@@ -459,8 +463,11 @@ export const ResponsiveStoryHeader = ({
 
                 <Badge
                   variant="outline"
+                  data-testid="level-badge"
                   className={cn(
-                    "border px-2 py-1 transition-all duration-300 text-xs",
+                    "border py-1 transition-all duration-300 text-xs whitespace-nowrap shrink-0",
+                    // Phones: the four controls share a ~240 px row at 320 (e2e/start-here-chip.spec.ts).
+                    isMobile ? "px-1.5" : "px-2",
                     getDifficultyColor(currentDifficulty),
                     buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
                   )}
@@ -473,6 +480,7 @@ export const ResponsiveStoryHeader = ({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <MobileOptimizedButton
+                          mobileSize="sm"
                           variant="outline"
                           size="sm"
                           onClick={onIncreaseDifficulty}

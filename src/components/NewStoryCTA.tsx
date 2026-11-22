@@ -22,6 +22,12 @@ interface NewStoryCTAProps {
   tooltipText?: string;
   showCoachOnSignIn?: boolean; // show coach only on premium home sign-in
   isGeneratingRewrite?: boolean;
+  /**
+   * A narrow phone row: the "Start here!" chip starts at the button's left edge instead of
+   * centring under it (centred, it ran off a 320 px screen), and the sign-in sparkles stay
+   * on the button (they float 45 px up, onto the story title on the line above).
+   */
+  narrowRow?: boolean;
 }
 
 const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
@@ -36,6 +42,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
   tooltipText,
   showCoachOnSignIn = true,
   isGeneratingRewrite = false,
+  narrowRow = false,
 }) => {
   const { t } = useTranslation();
   const label = labelOverride ?? t("common.newStory", "New Story");
@@ -250,12 +257,15 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
         // off a phone's edge and covered long story titles on wide screens (22 Nov 2026).
         <span
           data-testid="start-here-coach"
-          className="absolute z-30 pointer-events-none motion-safe:animate-enter flex flex-col-reverse items-center top-full mt-1 left-1/2 -translate-x-1/2"
+          className={cn(
+            "absolute z-30 pointer-events-none motion-safe:animate-enter flex flex-col-reverse top-full mt-1",
+            narrowRow ? "left-0 items-start" : "left-1/2 -translate-x-1/2 items-center",
+          )}
         >
           <span className="whitespace-nowrap rounded-full border-2 border-primary bg-background text-foreground text-xs font-semibold px-2.5 py-0.5 shadow-md">
             {t("labels.startHere", "Start here!")}
           </span>
-          <svg className="h-2 w-3 -mb-px text-primary" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
+          <svg className={cn("h-2 w-3 -mb-px text-primary", narrowRow && "ml-4")} viewBox="0 0 12 8" aria-hidden="true" focusable="false">
             <path d="M6,0 L12,8 L0,8 Z" fill="currentColor" />
           </svg>
         </span>
@@ -264,7 +274,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
         isActive={showSparkle}
         intensity="high"
         isPremium={isPremium}
-        className="absolute inset-0 pointer-events-none z-10"
+        className={cn("absolute inset-0 pointer-events-none z-10", narrowRow && "overflow-hidden rounded-full")}
       />
     </span>
   );
