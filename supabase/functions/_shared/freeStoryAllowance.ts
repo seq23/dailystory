@@ -10,20 +10,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4?target=deno";
 
 import { FREE_STORY_LIMIT, FREE_LIMIT_CODE, isNewStoryRequest } from "./freeStoryRules.ts";
+import { hasPaidAccess } from "./readAloudAllowance.ts";
 
 export { FREE_STORY_LIMIT, FREE_LIMIT_CODE, isNewStoryRequest };
 
 export type AllowanceResult =
   | { allowed: true; reason: "guest" | "paid" | "free" | "same-story" | "unchecked"; used?: number; limit: number }
   | { allowed: false; reason: "limit"; used: number; limit: number };
-
-function hasPaidAccess(row: any): boolean {
-  if (!row) return false;
-  const now = new Date();
-  const subscribed = !!row.subscribed && (!row.subscription_end || new Date(row.subscription_end) > now);
-  const override = !!row.override_premium && (!row.override_end || new Date(row.override_end) > now);
-  return subscribed || override;
-}
 
 export async function checkFreeStoryAllowance(req: Request, body: any): Promise<AllowanceResult> {
   const limit = FREE_STORY_LIMIT;

@@ -95,24 +95,19 @@ describe("every plan line about voice or read-aloud is what the code gives", () 
   });
 });
 
-describe("the coach enforces the free daily number", () => {
+describe("the coach leaves the free daily number to the server", () => {
+  // The server counts (voice-to-text, read-aloud-server-limit.test.ts). A browser count at or
+  // past the number, left from the old counter, never blocks a family; /pricing renders the
+  // coach with no plan at all, so a Premium family there must not be stopped either.
   const key = () => { const d = new Date(); return `t2r_coach_count_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
   beforeEach(() => { signedIn(); localStorage.clear(); });
   afterEach(() => { cleanup(); localStorage.clear(); mocks.getSession.mockReset(); });
 
-  it("one under the number: a free account can still start", async () => {
-    localStorage.setItem(key(), String(READ_ALOUD_FREE_SENTENCES_PER_DAY - 1));
+  it("a browser count at the number does not stop the coach or show a count", async () => {
+    localStorage.setItem(key(), String(READ_ALOUD_FREE_SENTENCES_PER_DAY));
     render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} />);
     expect((await screen.findByRole("button", { name: /Start Reading/ })).hasAttribute("disabled")).toBe(false);
-  });
-  it("at the number: a free account is stopped for the day; Premium is not", async () => {
-    localStorage.setItem(key(), String(READ_ALOUD_FREE_SENTENCES_PER_DAY));
-    const { unmount } = render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} />);
-    expect((await screen.findByRole("button", { name: /Start Reading/ })).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByText(`${READ_ALOUD_FREE_SENTENCES_PER_DAY}/${READ_ALOUD_FREE_SENTENCES_PER_DAY}`, { exact: false })).toBeTruthy();
-    unmount();
-    render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} isPremium />);
-    expect((await screen.findByRole("button", { name: /Start Reading/ })).hasAttribute("disabled")).toBe(false);
+    expect(screen.queryByTestId("coach-count")).toBeNull();
   });
 });
 

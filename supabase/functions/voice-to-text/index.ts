@@ -1,10 +1,16 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { logCost } from "../_shared/costLogger.ts";
-import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { VOICE_COMMAND_PROMPTS, commandTranscript, voiceCommandLanguage } from "../_shared/voiceCommandPrompt.ts";
+import { logCost } from "../_shared/costLogger.ts";
+import { guardCallWithCors } from "../_shared/paidCallGuardDeno.ts";
+import {
+  READ_ALOUD_FREE_CLIPS_PER_SENTENCE,
+  READ_ALOUD_FREE_SENTENCES_PER_DAY,
+  READ_ALOUD_ZONE_CHANGE_DAYS,
+} from "../_shared/readAloudAllowance.ts";
+import { handleVoiceToText } from "../_shared/voiceToText.ts";
 
+// The handler and its tests: ../_shared/voiceToText.ts. This file wires the live parts.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-t2r-guest",
@@ -13,193 +19,45 @@ const corsHeaders = {
   "Vary": "Origin, Access-Control-Request-Headers",
 };
 
-// Process base64 in chunks to prevent memory issues
-function processBase64Chunks(base64String: string, chunkSize = 32768) {
-  const chunks: Uint8Array[] = [];
-  let position = 0;
-
-  while (position < base64String.length) {
-    const chunk = base64String.slice(position, position + chunkSize);
-    const binaryChunk = atob(chunk);
-    const bytes = new Uint8Array(binaryChunk.length);
-
-    for (let i = 0; i < binaryChunk.length; i++) {
-      bytes[i] = binaryChunk.charCodeAt(i);
-    }
-
-    chunks.push(bytes);
-    position += chunkSize;
-  }
-
-  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-  const result = new Uint8Array(totalLength);
-  let offset = 0;
-
-  for (const chunk of chunks) {
-    result.set(chunk, offset);
-    offset += chunk.length;
-  }
-
-  return result;
-}
+const service = () => createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      status: 204, 
-      headers: corsHeaders 
-    });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
+  if (req.method === "HEAD" && new URL(req.url).pathname === "/health") {
+    return new Response(null, { status: 200, headers: { ...corsHeaders, "x-health": "true", "Cache-Control": "no-store" } });
   }
-
-  // Health endpoint
-  if (req.method === 'HEAD' && new URL(req.url).pathname === '/health') {
-    return new Response(null, { 
-      status: 200, 
-      headers: { 
-        ...corsHeaders,
-        'x-health': 'true', 
-        'Cache-Control': 'no-store' 
-      }
-    });
-  }
-
-  
-
-  // Paid call, signed-in accounts only: a child's voice is sent to OpenAI only from an
-  // account with parental consent on record (risk rule R-KID-02), so a guest pass is
-  // refused here, not just hidden in the UI (../_shared/paidCallGuard.ts).
-  const refused = await paidCallRefusal(req, 'voice-to-text', corsHeaders, { allowGuests: false, maxBodyBytes: 8 * 1024 * 1024, signInFor: 'so we can hear you read' });
-  if (refused) return refused;
-
-  try {
-    const { audio, mimeType, mode, language } = await req.json();
-    // The story page's spoken commands (src/lib/voice/storyVoiceCommands.ts): a short
-    // clip in the child's UI language, a prompt with no command word in it (Whisper
-    // echoes its prompt on silence), and no second pronunciation pass.
-    const isCommand = mode === "command";
-    const commandLanguage = isCommand ? voiceCommandLanguage(language) : null;
-    const commandPrompt = isCommand ? VOICE_COMMAND_PROMPTS[commandLanguage ?? "en"] : "";
-
-    if (!audio) {
-      throw new Error("No audio data provided");
-    }
-
-    // Process audio in chunks
-    const binaryAudio = processBase64Chunks(audio);
-
-    // Prepare form data
-    const formData = new FormData();
-    const inferredType = typeof mimeType === "string" && mimeType.length > 0 ? mimeType : "audio/webm";
-    const blob = new Blob([binaryAudio], { type: inferredType });
-    const ext = inferredType.includes("mp4")
-      ? "mp4"
-      : inferredType.includes("mpeg") || inferredType.includes("mp3")
-      ? "mp3"
-      : inferredType.includes("wav")
-      ? "wav"
-      : inferredType.includes("aac")
-      ? "aac"
-      : inferredType.includes("ogg")
-      ? "ogg"
-      : "webm";
-    formData.append("file", blob, `audio.${ext}`);
-    formData.append("model", "whisper-1");
-    if (isCommand) {
-      formData.append("prompt", commandPrompt);
-      if (commandLanguage) formData.append("language", commandLanguage);
-    }
-
-    // Send to OpenAI with detailed response format
-    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+  const sb = service();
+  return handleVoiceToText(req, {
+    guard: (req) => guardCallWithCors(req, 'voice-to-text', corsHeaders, { allowGuests: false, maxBodyBytes: 8 * 1024 * 1024, signInFor: 'so we can hear you read' }),
+    readAloud: () => ({
+      async subscriberRow(userId) {
+        const { data, error } = await sb.from("subscribers")
+          .select("subscribed, subscription_end, override_premium, override_end")
+          .eq("user_id", userId).maybeSingle();
+        if (error) throw new Error(error.message);
+        return data;
       },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${await response.text()}`);
-    }
-
-    const result = await response.json();
-
-    // Fire-and-forget cost tracking
-    // Whisper pricing: $0.006/min, estimate from audio size (~16KB/sec for webm)
-    const audioSizeMB = binaryAudio.length / (1024 * 1024);
-    const estimatedMinutes = Math.max(0.1, audioSizeMB * 4); // rough estimate
-    const whisperCost = estimatedMinutes * 0.006;
-    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-    logCost(sb, {
-      sessionId: 'voice-to-text',
-      provider: 'openai',
-      operationType: 'speech_to_text',
-      modelUsed: 'whisper-1',
-      cost: whisperCost,
-      apiEndpoint: '/v1/audio/transcriptions',
-      pricingModel: 'per_minute',
-      quantityUsed: Math.round(estimatedMinutes * 100) / 100,
-      unitCost: 0.006,
-    });
-
-    // For pronunciation analysis, also make a verbose request if available
-    let detailedResult = null;
-    if (!isCommand) try {
-      const verboseFormData = new FormData();
-      verboseFormData.append("file", blob, `audio.${ext}`);
-      verboseFormData.append("model", "whisper-1");
-      verboseFormData.append("response_format", "verbose_json");
-      
-      const verboseResponse = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
-        },
-        body: verboseFormData,
-      });
-
-      if (verboseResponse.ok) {
-        detailedResult = await verboseResponse.json();
-        // Log second Whisper call
-        logCost(sb, {
-          sessionId: 'voice-to-text',
-          provider: 'openai',
-          operationType: 'speech_to_text_verbose',
-          modelUsed: 'whisper-1',
-          cost: whisperCost,
-          apiEndpoint: '/v1/audio/transcriptions',
-          pricingModel: 'per_minute',
-          quantityUsed: Math.round(estimatedMinutes * 100) / 100,
-          unitCost: 0.006,
+      async practiceHit(userId, sentenceKey, timeZone) {
+        const { data, error } = await sb.rpc("read_aloud_practice_hit", {
+          p_user: userId, p_sentence: sentenceKey, p_time_zone: timeZone,
+          p_sentences: READ_ALOUD_FREE_SENTENCES_PER_DAY, p_clips: READ_ALOUD_FREE_CLIPS_PER_SENTENCE,
+          p_zone_days: READ_ALOUD_ZONE_CHANGE_DAYS,
         });
-      }
-    } catch (error) {
-      console.warn("Failed to get detailed transcription:", error);
-    }
-
-    // A command clip that only echoes the prompt is nothing said.
-    const text = isCommand ? commandTranscript(result.text, commandPrompt) : result.text;
-    const responseData: any = {
-      text,
-      originalText: text // Basic fallback
-    };
-
-    // Include detailed data if available
-    if (detailedResult) {
-      responseData.segments = detailedResult.segments;
-      responseData.words = detailedResult.words;
-      responseData.confidence = detailedResult.segments?.[0]?.avg_logprob ? 
-        Math.exp(detailedResult.segments[0].avg_logprob) : 0.8;
-    }
-
-    return new Response(JSON.stringify(responseData), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+        if (error) throw new Error(error.message);
+        return data;
+      },
+      // A zero-cost cost_tracking row; the post-deploy TTS usage report names it
+      // (scripts/tts-usage-alert.mjs, READ_ALOUD_CHECK_FAILED / READ_ALOUD_PLAN_UNREADABLE).
+      report(incident, detail) {
+        console.error(`[voice-to-text] ${incident}: ${detail}`);
+        logCost(sb, { sessionId: "voice-to-text", provider: "openai", operationType: incident, modelUsed: "none", cost: 0, apiEndpoint: incident === "read_aloud_count_failed" ? "rpc/read_aloud_practice_hit" : "subscribers" });
+      },
+    }),
+    transcribe: (form) => fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}` },
+      body: form,
+    }),
+    logCost: (entry) => logCost(sb, entry),
+  }, corsHeaders);
 });

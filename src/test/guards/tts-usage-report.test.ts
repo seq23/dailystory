@@ -42,6 +42,14 @@ describe("ttsAlerts", () => {
     expect(codes(healthy, 1)).toEqual(["NARRATION_FELL_BACK"]);
     expect(codes({ ...healthy, character_count: 99_000 }, 3)).toEqual(["ELEVENLABS_CREDITS_LOW", "NARRATION_FELL_BACK"]);
   });
+  it("names a read-aloud count or plan that voice-to-text could not read in the last 7 days", () => {
+    expect(ttsAlerts(healthy, 0, 0, 0)).toEqual([]);
+    expect(ttsAlerts(healthy, 0, 2, 0).map((a: { code: string }) => a.code)).toEqual(["READ_ALOUD_CHECK_FAILED"]);
+    expect(ttsAlerts(healthy, 0, 0, 1).map((a: { code: string }) => a.code)).toEqual(["READ_ALOUD_PLAN_UNREADABLE"]);
+    expect(alertExitCode(ttsAlerts(healthy, 0, 1, 0))).toBe(1);
+    expect(WF).toContain("operation_type='read_aloud_count_failed'");
+    expect(WF).toContain('"$READ_ALOUD_FAILED_7D" "$READ_ALOUD_UNKNOWN_7D"');
+  });
   it("never a silent pass when the credits cannot be read", () => {
     for (const u of [null, { key_present: false }, { key_present: true, http_status: 401 }, { ...healthy, character_limit: 0 }]) {
       expect(codes(u, 0)).toEqual(["ELEVENLABS_CREDITS_UNREADABLE"]);

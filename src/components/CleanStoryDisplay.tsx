@@ -5015,7 +5015,7 @@ const handleRestartTimer = () => {
             <DialogTitle>{uiText("Help Me Read")}</DialogTitle>
           </DialogHeader>
           {/* @ts-ignore */}
-          <ReadAloudCoach targetText={currentStoryText || ""} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
+          <ReadAloudCoach targetText={currentStoryText || ""} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
         </DialogContent>
       </Dialog>
 

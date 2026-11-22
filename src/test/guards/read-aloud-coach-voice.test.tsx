@@ -57,7 +57,7 @@ describe('read-aloud practice and the child\'s voice', () => {
     ['the sign-in check failing', () => mocks.getSession.mockRejectedValue(new Error('auth down'))],
   ])('%s: no practice microphone, a sign-in line instead, nothing recorded or sent', async (_case, arrange) => {
     arrange();
-    render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} isPremium />);
+    render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} />);
     await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
     expect(startButton()).toBeNull();
     expect(screen.getByTestId('coach-sign-in')).toBeTruthy();
@@ -67,7 +67,7 @@ describe('read-aloud practice and the child\'s voice', () => {
 
   it('a practice tap with no speech sends nothing and tells the child', async () => {
     (window as any).AudioContext = meter(128);
-    render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} isPremium />);
+    render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} />);
     const start = await screen.findByRole('button', { name: /Start Reading/ });
     await act(async () => { fireEvent.click(start); });
     await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
@@ -79,13 +79,65 @@ describe('read-aloud practice and the child\'s voice', () => {
 
   it('a practice clip with speech in it is transcribed', async () => {
     (window as any).AudioContext = meter(255);
-    render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} isPremium />);
+    render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} />);
     const start = await screen.findByRole('button', { name: /Start Reading/ });
     await act(async () => { fireEvent.click(start); });
     await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
     await act(async () => { FakeRecorder.last!.stop(); await new Promise((r) => setTimeout(r, 20)); });
     expect(mocks.invoke).toHaveBeenCalledWith('voice-to-text', expect.anything());
     expect(screen.queryByTestId('coach-no-speech')).toBeNull();
+  });
+
+  // The server counts a free account's practice (voice-to-text, readAloudAllowance.ts);
+  // a fresh browser (count 0 here) must still show the server's refusal.
+  const refusedBy = (status: number, code: string, extra: Record<string, unknown> = {}) => ({
+    data: null,
+    error: { name: 'FunctionsHttpError', context: new Response(JSON.stringify({ success: false, code, ...extra }), { status }) },
+  });
+  const practiseOnce = async () => {
+    (window as any).AudioContext = meter(255);
+    localStorage.clear();
+    render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} />);
+    const start = await screen.findByRole('button', { name: /Start Reading/ });
+    await act(async () => { fireEvent.click(start); });
+    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => { FakeRecorder.last!.stop(); await new Promise((r) => setTimeout(r, 20)); });
+  };
+
+  it('the clip names its sentence and the family\'s time zone, so the server counts sentences per local day', async () => {
+    await practiseOnce();
+    expect(mocks.invoke).toHaveBeenCalledWith('voice-to-text', { body: expect.objectContaining({
+      sentence: 'The fox runs.', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }) });
+  });
+
+  it('the count shown is the server\'s, not this browser\'s', async () => {
+    localStorage.setItem(`t2r_coach_count_${new Date().toISOString().slice(0, 10)}`, '5');
+    mocks.invoke.mockResolvedValue({ data: { text: 'the fox runs', practice: { used: 3, limit: 5 } }, error: null });
+    await practiseOnce();
+    expect(screen.getByTestId('coach-count').textContent).toMatch(/3\/5/);
+  });
+
+  it('Premium (the server sends no count) sees no counter and is never stopped', async () => {
+    mocks.invoke.mockResolvedValue({ data: { text: 'the fox runs', practice: null }, error: null });
+    await practiseOnce();
+    expect(screen.queryByTestId('coach-count')).toBeNull();
+    expect((startButton() as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('a free account the server stops at the daily limit sees why, and Start is off', async () => {
+    mocks.invoke.mockResolvedValue(refusedBy(429, 'READ_ALOUD_LIMIT_REACHED', { used: 5, limit: 5 }));
+    await practiseOnce();
+    expect(screen.getByTestId('coach-refused').textContent).toMatch(/5 free practice sentences are used up/);
+    expect(screen.getByTestId('coach-count').textContent).toMatch(/5\/5/);
+    expect((startButton() as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('when the server cannot count, the child is told to try again (not stopped for the day)', async () => {
+    mocks.invoke.mockResolvedValue(refusedBy(503, 'READ_ALOUD_CHECK_UNAVAILABLE'));
+    await practiseOnce();
+    expect(screen.getByTestId('coach-refused').textContent).toMatch(/try again/i);
+    expect((startButton() as HTMLButtonElement).disabled).toBe(false);
   });
 });
 

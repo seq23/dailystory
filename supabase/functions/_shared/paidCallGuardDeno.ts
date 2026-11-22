@@ -53,9 +53,19 @@ export async function paidCallRefusal(
   cors: Record<string, string>,
   opts?: IdentifyOptions,
 ): Promise<Response | null> {
-  const { refusal } = await guardCall(req, fn, opts);
-  if (!refusal) return null;
+  return (await guardCallWithCors(req, fn, cors, opts)).refused;
+}
+
+/** paidCallRefusal that also hands back who called, for a function that limits per account. */
+export async function guardCallWithCors(
+  req: Request,
+  fn: string,
+  cors: Record<string, string>,
+  opts?: IdentifyOptions,
+): Promise<{ caller: PaidCaller; refused: null } | { caller: null; refused: Response }> {
+  const { caller, refusal } = await guardCall(req, fn, opts);
+  if (!refusal) return { caller, refused: null };
   const headers = new Headers(refusal.headers);
   for (const [k, v] of Object.entries(cors)) if (!headers.has(k)) headers.set(k, v);
-  return new Response(refusal.body, { status: refusal.status, headers });
+  return { caller: null, refused: new Response(refusal.body, { status: refusal.status, headers }) };
 }

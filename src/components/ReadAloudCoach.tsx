@@ -15,12 +15,37 @@ import type { SupportedLanguage } from "@/types/multilingual";
 import { useTranslation } from "react-i18next";
 import { startSpeechMeter } from "@/lib/voice/speechMeter";
 import { useSignedIn } from "@/hooks/useSignedIn";
-import { READ_ALOUD_FREE_SENTENCES_PER_DAY } from "@/lib/freeStoryAllowance";
+import { READ_ALOUD_FREE_SENTENCES_PER_DAY, READ_ALOUD_LIMIT_CODE, READ_ALOUD_UNAVAILABLE_CODE } from "@/lib/freeStoryAllowance";
+
+/** The day's free practice count as the server returned it (voice-to-text). */
+export interface PracticeCount { used: number; limit: number }
+
+/** A count from the server, or null when it sent none (Premium, or not a count). */
+export function practiceCount(value: unknown): PracticeCount | null {
+  const v = value as { used?: unknown; limit?: unknown } | null;
+  return v && typeof v.used === "number" && typeof v.limit === "number" ? { used: v.used, limit: v.limit } : null;
+}
+
+/** voice-to-text's refusal of a practice clip (429/503 body on error.context), or null. */
+export async function practiceRefusal(error: unknown): Promise<{ kind: "limit" | "unavailable"; count: PracticeCount | null } | null> {
+  const ctx = (error as { context?: { clone?: () => Response; json?: () => Promise<unknown> } } | null)?.context;
+  if (!ctx || typeof ctx.json !== "function") return null;
+  try {
+    const body = (await (ctx.clone ? ctx.clone().json() : ctx.json())) as { code?: string } | null;
+    if (body?.code === READ_ALOUD_LIMIT_CODE) return { kind: "limit", count: practiceCount(body) };
+    if (body?.code === READ_ALOUD_UNAVAILABLE_CODE) return { kind: "unavailable", count: null };
+  } catch { /* not JSON */ }
+  return null;
+}
+
+/** The browser's IANA zone, so the server counts the family's own day. */
+const browserTimeZone = (): string | undefined => {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined; } catch { return undefined; }
+};
 
 interface ReadAloudCoachProps {
   targetText?: string;
   userInfo?: UserInfo;
-  isPremium?: boolean;
   language?: string; // ISO code; coach shows only for 'en'
   onUpgrade?: () => void;
   /** When false, skip the spoken intro on mount (e.g. marketing previews). Defaults to true. */
@@ -43,7 +68,6 @@ const STOPWORDS = new Set([
   "the","a","an","and","or","but","so","to","of","in","on","at","with","for","from","by","as","is","are","was","were","be","been","being","that","this","it","its","his","her","their","our","your","i","you","he","she","they","we","my","me","him","them","our","yours","ours","theirs","there","here","then","than","too","very","just","really","into","over","under","up","down","out","about","after","before","again","once"
 ]);
 
-const DAILY_FREE_LIMIT = READ_ALOUD_FREE_SENTENCES_PER_DAY; // sentences/day for free users
 const PASS_THRESHOLD = 80; // percent
 const MAX_ATTEMPTS_PER_SENTENCE = 3;
 const WORD_MICRO_ATTEMPTS = 2; // "Say it with me" tries
@@ -53,7 +77,6 @@ const WORD_MICRO_MS = 2_000; // 2 seconds cap
 export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   targetText,
   userInfo,
-  isPremium = false,
   language = "en",
   onUpgrade,
   autoIntroduce = true,
@@ -79,6 +102,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const [idx, setIdx] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [noSpeech, setNoSpeech] = useState(false);
+  // The server said no to a practice clip: today's free sentences are used, or it could not count.
+  const [refused, setRefused] = useState<"limit" | "unavailable" | null>(null);
   const [transcript, setTranscript] = useState("");
   const [passed, setPassed] = useState<boolean | null>(null);
   const [paceTip, setPaceTip] = useState<string>("");
@@ -86,8 +111,9 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const [pronunciationFeedback, setPronunciationFeedback] = useState<string>("");
   const [syllableFeedback, setSyllableFeedback] = useState<Array<{word: string; syllables: string[]; feedback: string}>>([]);
   const [attempts, setAttempts] = useState(0);
-  const [dailyUsed, setDailyUsed] = useState(0);
-  const [limitReached, setLimitReached] = useState(false);
+  // The server counts a free account's practice (voice-to-text); this shows what it returned.
+  const [practice, setPractice] = useState<PracticeCount | null>(null);
+  const limitReached = refused === "limit";
   
   // NEW: Charlotte readiness and syllable display states.
   // When autoIntroduce is false (e.g. marketing previews), mark coach as ready
@@ -103,60 +129,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const autoStopTORef = useRef<number | null>(null);
   const resumeStoryAfterRef = useRef(false);
 
-  const getDailyKey = () => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = (d.getMonth() + 1).toString().padStart(2, "0");
-    const day = d.getDate().toString().padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  };
-
-  const loadDailyCount = useCallback(() => {
-    try {
-      const key = `t2r_coach_count_${getDailyKey()}`;
-      const v = localStorage.getItem(key);
-      const n = v ? parseInt(v, 10) : 0;
-      setDailyUsed(Number.isFinite(n) ? n : 0);
-      setLimitReached(!isPremium && n >= DAILY_FREE_LIMIT);
-    } catch {}
-  }, [isPremium]);
-
-  const incDailyCount = useCallback(() => {
-    if (isPremium) return;
-    try {
-      const key = `t2r_coach_count_${getDailyKey()}`;
-      const current = parseInt(localStorage.getItem(key) || "0", 10) || 0;
-      const next = Math.min(9999, current + 1);
-      localStorage.setItem(key, String(next));
-      setDailyUsed(next);
-      if (next >= DAILY_FREE_LIMIT) setLimitReached(true);
-    } catch {}
-  }, [isPremium]);
-
-  const getSeenKey = () => `t2r_coach_seen_${getDailyKey()}`;
-  const hasCountedSentence = (s: string) => {
-    try {
-      const raw = localStorage.getItem(getSeenKey());
-      const arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) && arr.includes(s);
-    } catch { return false; }
-  };
-  const markSentenceCounted = (s: string) => {
-    try {
-      const key = getSeenKey();
-      const raw = localStorage.getItem(key);
-      const arr = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(arr)) {
-        if (!arr.includes(s)) arr.push(s);
-        localStorage.setItem(key, JSON.stringify(arr));
-      } else {
-        localStorage.setItem(key, JSON.stringify([s]));
-      }
-    } catch {}
-  };
-
   useEffect(() => {
-    loadDailyCount();
 
     // Skip the spoken intro entirely when the coach is rendered as a preview
     // (e.g. on /pricing). It should only auto-speak inside an actual reading session.
@@ -204,7 +177,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     };
     
     introduceCoach();
-  }, [loadDailyCount, userInfo?.nativeLanguage, t, autoIntroduce]);
+  }, [userInfo?.nativeLanguage, t, autoIntroduce]);
 
   useEffect(() => () => mediaRecorderRef.current?.stop(), []);
 
@@ -312,14 +285,9 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     if (limitReached) return;
     if (attempts >= MAX_ATTEMPTS_PER_SENTENCE) return;
 
-    const sentenceToCount = sentences[idx] || "";
-    if (!isPremium && sentenceToCount && !hasCountedSentence(sentenceToCount)) {
-      markSentenceCounted(sentenceToCount);
-      incDailyCount();
-    }
-
     pauseStoryIfPlaying();
     setNoSpeech(false);
+    setRefused(null);
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     // A clip with no speech in it is never sent (Whisper invents words for silence).
@@ -350,12 +318,15 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
         const base64 = await blobToBase64(blob);
         const { data, error } = await supabase.functions.invoke("voice-to-text", {
-          body: { audio: base64, mimeType: mimeTypeRef.current },
+          body: { audio: base64, mimeType: mimeTypeRef.current, sentence: sentences[idx] || "", timeZone: browserTimeZone() },
         });
         if (error) {
-          DebugLogger.error('audio', 'ReadAloudCoach processing error', error);
+          const why = await practiceRefusal(error);
+          if (why) { setRefused(why.kind); if (why.count) setPractice(why.count); }
+          else DebugLogger.error('audio', 'ReadAloudCoach processing error', error);
           return;
         }
+        setPractice(practiceCount(data?.practice));
         const text: string = data?.text || "";
         const confidence: number = data?.confidence || 0.8;
         const wordConfidences = data?.words || [];
@@ -436,7 +407,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     autoStopTORef.current = window.setTimeout(() => {
       try { recorder.stop(); } catch {}
     }, SENTENCE_MAX_MS);
-  }, [attempts, idx, sentences, limitReached, incDailyCount, signedIn]);
+  }, [attempts, idx, sentences, limitReached, signedIn]);
 
   const stopRecording = useCallback(() => {
     try { mediaRecorderRef.current?.stop(); } catch {}
@@ -464,7 +435,13 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
           if (meter.heard === false) { resolve(""); return; }
           const blob = new Blob(chunks, { type: supported || "audio/webm" });
           const base64 = await blobToBase64(blob);
-          const { data } = await supabase.functions.invoke("voice-to-text", { body: { audio: base64, mimeType: supported || "audio/webm" } });
+          const { data, error } = await supabase.functions.invoke("voice-to-text", { body: { audio: base64, mimeType: supported || "audio/webm", sentence: sentences[idx] || "", timeZone: browserTimeZone() } });
+          if (error) {
+            const why = await practiceRefusal(error);
+            if (why) { setRefused(why.kind); if (why.count) setPractice(why.count); }
+          } else {
+            setPractice(practiceCount(data?.practice));
+          }
           resolve((data?.text || "").toLowerCase());
         };
       });
@@ -680,9 +657,9 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
               <Button variant="ghost" size="icon" onClick={nextSentence} disabled={idx >= sentences.length - 1} aria-label={t('coach.nextSentence','Next sentence')} className="shrink-0">
                 <ChevronRight className="w-4 h-4" />
               </Button>
-              {!isPremium && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1 shrink-0">
-                  <Lock className="w-3 h-3" /> {dailyUsed}/{DAILY_FREE_LIMIT} {t('coach.today','today')}
+              {practice && (
+                <div data-testid="coach-count" className="flex items-center gap-2 text-xs text-muted-foreground pl-1 shrink-0">
+                  <Lock className="w-3 h-3" /> {practice.used}/{practice.limit} {t('coach.today','today')}
                 </div>
               )}
             </div>
@@ -754,6 +731,14 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
             </div>
           )}
           
+          {refused && !isRecording && (
+            <p role="status" className="text-sm text-foreground" data-testid="coach-refused">
+              {refused === "limit"
+                ? t('coach.limitReached', "Today's {{count}} free practice sentences are used up. Come back tomorrow, or Premium has unlimited practice.", { count: practice?.limit ?? READ_ALOUD_FREE_SENTENCES_PER_DAY })
+                : t('coach.countUnavailable', "We couldn't check today's practice count. Please try again in a minute.")}
+            </p>
+          )}
+
           {noSpeech && !isRecording && (
             <p className="text-sm text-muted-foreground" data-testid="coach-no-speech"> {t('coach.noSpeech', 'I didn’t hear you. Tap Start Reading and read the sentence out loud.')} </p>
           )}
@@ -799,7 +784,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
               >
                 <RotateCcw className="w-4 h-4" />  {uiText("Try Again")} </Button>
 
-              {!isPremium && limitReached && (
+              {limitReached && (
                 <Button size="sm" variant="outline" onClick={onUpgrade || (() => { window.location.href = '/pricing'; })}>
                    {uiText("Daily limit reached — Upgrade for more!")} </Button>
               )}

@@ -263,7 +263,6 @@ export const AudioE2ETestingPanel = () => {
           <ReadAloudCoach 
             targetText="Luna and Max found a hidden door in the library and stepped into a world of stories."
             userInfo={mockUserInfo}
-            isPremium={userType === 'premium'}
             language={selectedLanguage}
           />
         </DialogContent>
