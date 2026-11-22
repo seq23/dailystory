@@ -29,6 +29,9 @@ export function InstitutionRosterImport({
   const [busy, setBusy] = useState(false);
   const [provider, setProvider] = useState<"clever" | "classlink">("clever");
   const [providerClassId, setProviderClassId] = useState("");
+  const [providerClasses, setProviderClasses] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   useEffect(() => {
     let active = true;
     if (admin)
@@ -125,22 +128,68 @@ export function InstitutionRosterImport({
               Provider
               <select
                 value={provider}
-                onChange={(e) => setProvider(e.target.value as typeof provider)}
+                onChange={(e) => {
+                  setProvider(e.target.value as typeof provider);
+                  setProviderClasses([]);
+                  setProviderClassId("");
+                }}
               >
                 <option value="clever">Clever</option>
                 <option value="classlink">ClassLink</option>
               </select>
             </label>
-            <label>
-              Provider class ID
-              <Input
-                required
-                value={providerClassId}
-                onChange={(e) => setProviderClassId(e.target.value)}
-                maxLength={200}
-              />
-            </label>
-            <Button disabled={busy || status[provider] !== "configured"}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy || status[provider] !== "configured"}
+              onClick={() =>
+                void act(async () => {
+                  setRows([]);
+                  const { data, error } = await supabase.functions.invoke(
+                    "institution-roster",
+                    { body: { action: "classes", schoolId, provider } },
+                  );
+                  if (error)
+                    throw new Error(
+                      "Could not list classes. Check the provider connection.",
+                    );
+                  const classes = Array.isArray(data?.classes)
+                    ? data.classes
+                    : [];
+                  if (!classes.length)
+                    throw new Error(
+                      "The provider lists no classes for this school yet.",
+                    );
+                  setProviderClasses(classes);
+                  setProviderClassId(classes[0].id);
+                })
+              }
+            >
+              Find classes
+            </Button>
+            {!!providerClasses.length && (
+              <label>
+                Provider class
+                <select
+                  required
+                  value={providerClassId}
+                  onChange={(e) => setProviderClassId(e.target.value)}
+                >
+                  {providerClasses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <Button
+              disabled={
+                busy ||
+                status[provider] !== "configured" ||
+                !providerClassId
+              }
+            >
               Preview provider roster
             </Button>
           </form>

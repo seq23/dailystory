@@ -897,6 +897,17 @@
       "minLevelReached": "Minimum level is {minDifficulty}.",
       "minExpertGradeReached": "Minimum expert grade is {minExpertGrade}.",
       "minBelowAllowed": "Going below the set minimum for this session"
+    },
+    "voice": {
+      "button": "Voice commands",
+      "stopListening": "Stop listening",
+      "listening": "Listening…",
+      "hint": "Say “next page”, “go back”, “read to me” or “stop”.",
+      "notUnderstood": "I didn’t catch that",
+      "micBlocked": "The microphone is off",
+      "micBlockedHelp": "Allow the microphone for this site in the browser settings, then tap the microphone again.",
+      "unavailable": "Voice commands are not working right now",
+      "unavailableHelp": "The page buttons still work."
     }
   },
   "reading": {

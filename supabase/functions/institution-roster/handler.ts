@@ -1,6 +1,7 @@
 import {
   providerRosterAdapter,
-  type ProviderConfig,
+  type ProviderCredentials,
+  type ProviderLink,
 } from "../_shared/institutionRoster.ts";
 import { buildCorsHeaders } from "../_shared/healthCors.ts";
 interface CallerDb {
@@ -52,37 +53,34 @@ export function rosterHandler(
         .maybeSingle();
       if (memberError || member?.role !== "school_admin")
         return json({ error: "School admin required" }, 403);
-      const connections = JSON.parse(
-        env("INSTITUTION_ROSTER_CONNECTIONS") || "{}",
-      ) as Record<
-        string,
-        { clever?: ProviderConfig; classlink?: ProviderConfig }
-      >;
-      const configs = connections[body.schoolId] ?? {};
+      // Per-school provider links (IDs only, operator-set) and the app's own
+      // developer credentials. A malformed links secret reads as "not connected".
+      let connections: Record<string, { clever?: ProviderLink; classlink?: ProviderLink }> = {};
+      try {
+        connections = JSON.parse(env("INSTITUTION_ROSTER_CONNECTIONS") || "{}") ?? {};
+      } catch {
+        connections = {};
+      }
+      const links = connections[body.schoolId] ?? {};
+      const credentials: ProviderCredentials = {
+        cleverClientId: env("CLEVER_CLIENT_ID"),
+        cleverClientSecret: env("CLEVER_CLIENT_SECRET"),
+        classlinkToken: env("CLASSLINK_ONEROSTER_TOKEN"),
+      };
+      const adapterFor = (provider: "clever" | "classlink") =>
+        providerRosterAdapter(provider, links[provider], credentials, request);
       if (body.action === "status")
         return json({
-          clever: providerRosterAdapter(
-            "clever",
-            configs.clever,
-            request,
-          ).status(),
-          classlink: providerRosterAdapter(
-            "classlink",
-            configs.classlink,
-            request,
-          ).status(),
+          clever: adapterFor("clever").status(),
+          classlink: adapterFor("classlink").status(),
         });
       if (
-        body.action !== "preview" ||
+        !["classes", "preview"].includes(body.action) ||
         !["clever", "classlink"].includes(body.provider) ||
-        typeof body.providerClassId !== "string"
+        (body.action === "preview" && typeof body.providerClassId !== "string")
       )
         return json({ error: "Invalid roster request" }, 400);
-      const adapter = providerRosterAdapter(
-        body.provider,
-        configs[body.provider as "clever" | "classlink"],
-        request,
-      );
+      const adapter = adapterFor(body.provider);
       if (adapter.status() === "not_connected")
         return json(
           {
@@ -92,6 +90,8 @@ export function rosterHandler(
           },
           409,
         );
+      if (body.action === "classes")
+        return json({ classes: await adapter.classes() });
       // Preview only. Browser uses the same atomic CSV import RPC to save.
       return json({ rows: await adapter.read(body.providerClassId) });
     } catch (e) {

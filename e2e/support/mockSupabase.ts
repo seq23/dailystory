@@ -14,6 +14,8 @@ export interface MockState {
   accessCodes: Record<string, number>;
   calls: { fn: string; body: any }[];
   story?: Row;
+  /** What voice-to-text "hears" (the story page's voice commands). */
+  voiceText?: string;
 }
 
 const b64url = (o: unknown) =>
@@ -172,6 +174,7 @@ export async function mockSupabase(page: Page, init: Partial<MockState> = {}): P
         return json(route, { subscribed: active, subscription_tier: s?.subscription_tier ?? null, subscription_end: s?.subscription_end ?? null, via_code: !!s?.override_premium, premium_until: s?.override_end ?? null });
       }
       if (fn === "generate-adaptive-story" && state.story) return json(route, state.story);
+      if (fn === "voice-to-text" && state.voiceText !== undefined) return json(route, { text: state.voiceText });
       if (fn === "create-checkout") return json(route, { url: "https://checkout.example.test/session" });
       return json(route, {});
     }

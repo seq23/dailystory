@@ -28,4 +28,18 @@ describe('institution roster import preview and persistence',()=>{
     fireEvent.change(screen.getByLabelText('CSV roster'),{target:{files:[file]}});
     expect(await screen.findByRole('alert')).toHaveTextContent('duplicate roster ID');expect(screen.queryByRole('button',{name:'Import into this class'})).not.toBeInTheDocument();expect(mocks.rpc).not.toHaveBeenCalled();
   });
+  it('an admin picks a provider class from the school list instead of typing an ID, then previews it',async()=>{
+    mocks.invoke.mockImplementation(async(_name:string,{body}:any)=>body.action==='status'?{data:{clever:'configured',classlink:'not_connected'},error:null}
+      :body.action==='classes'?{data:{classes:[{id:'sec-1',name:'Room 1'},{id:'sec-2',name:'Room 2'}]},error:null}
+      :{data:{rows:[{external_id:'clever:a',display_name:'Reader A',school_grade:'2',reading_grade:null}]},error:null});
+    render(<InstitutionRosterImport schoolId="fixture-school" classId="fixture-class" admin onSaved={async()=>{}}/>);
+    await screen.findByText(/Clever: Configured/);
+    expect(screen.getByRole('button',{name:'Preview provider roster'})).toBeDisabled();
+    fireEvent.click(screen.getByRole('button',{name:'Find classes'}));
+    fireEvent.change(await screen.findByLabelText('Provider class'),{target:{value:'sec-2'}});
+    fireEvent.click(screen.getByRole('button',{name:'Preview provider roster'}));
+    await screen.findByText('Reader A');
+    expect(mocks.invoke).toHaveBeenCalledWith('institution-roster',{body:{action:'preview',schoolId:'fixture-school',provider:'clever',providerClassId:'sec-2'}});
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
 });

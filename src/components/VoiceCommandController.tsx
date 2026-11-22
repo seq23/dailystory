@@ -18,19 +18,11 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-const KNOWN_COMMANDS = [
-  "start reading",
-  "pause",
-  "resume",
-  "next page",
-  "previous page",
-  "increase font",
-  "decrease font",
-  "open settings",
-];
-
 export interface VoiceCommandControllerProps {
-  onCommand?: (command: string) => void;
+  /** What was heard, lower-cased; the caller decides what it means (src/lib/voice/storyVoiceCommands.ts). */
+  onCommand?: (transcript: string) => void;
+  /** The microphone was refused, or the speech service did not answer. */
+  onError?: (kind: 'microphone' | 'service') => void;
   headless?: boolean;
 }
 
@@ -39,7 +31,13 @@ export interface VoiceCommandControllerHandle {
   stop: () => void;
 }
 
-export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, VoiceCommandControllerProps>(({ onCommand, headless = false }, ref) => {
+export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, VoiceCommandControllerProps>(({ onCommand, onError, headless = false }, ref) => {
+  // The recorder's stop handler runs seconds after start: read the caller's latest
+  // handler then, not the one from the render that started listening.
+  const onCommandRef = useRef(onCommand);
+  const onErrorRef = useRef(onError);
+  onCommandRef.current = onCommand;
+  onErrorRef.current = onError;
   const [isRecording, setIsRecording] = useState(false);
   const [status, setStatus] = useState<'idle'|'listening'|'processing'>('idle');
   const [level, setLevel] = useState(0);
@@ -127,7 +125,14 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
         constraints
       });
       
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (micError) {
+        DebugLogger.warn('audio', 'Microphone refused', micError);
+        onErrorRef.current?.('microphone');
+        return;
+      }
       streamRef.current = stream;
 
       // Setup analyser for live VU meter
@@ -166,7 +171,7 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
               silenceSinceRef.current = now;
             } else if (now - silenceSinceRef.current > 800) {
               // Enough silence detected after speech -> stop
-              try { stopRecording(); } catch {}
+              try { finishRecording(false); } catch {}
             }
           }
 
@@ -212,19 +217,19 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
           const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
           const base64 = await blobToBase64(blob);
           const { data, error } = await supabase.functions.invoke("voice-to-text", {
-            body: { audio: base64, mimeType: mimeTypeRef.current },
+            body: { audio: base64, mimeType: mimeTypeRef.current, mode: "command" },
           });
           if (error) {
             DebugLogger.error('network', 'Voice-to-text error', error);
+            onErrorRef.current?.('service');
           } else {
-            const text: string = (data?.text || "").toLowerCase();
-            const found = KNOWN_COMMANDS.find((c) => text.includes(c));
-            const cmd = found || text.trim();
-            setLastCommand(cmd);
-            onCommand?.(cmd);
+            const text: string = (data?.text || "").toLowerCase().trim();
+            setLastCommand(text);
+            onCommandRef.current?.(text);
           }
         } catch (err) {
           DebugLogger.error('audio', 'Voice command processing failed', err);
+          onErrorRef.current?.('service');
         } finally {
           setIsRecording(false);
           setStatus('idle'); emitStatus('idle'); emitLevel(0);
@@ -244,15 +249,19 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
       startedAtRef.current = performance.now();
       if (maxTimerRef.current) { try { clearTimeout(maxTimerRef.current); } catch {} }
       maxTimerRef.current = window.setTimeout(() => {
-        try { if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') stopRecording(); } catch {}
+        try { if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') finishRecording(false); } catch {}
       }, 7000);
     } catch (e) {
       DebugLogger.error('audio', 'Failed to start recording', e);
+      onErrorRef.current?.('service');
     }
-  }, [onCommand]);
+  }, []);
 
-const stopRecording = useCallback(() => {
-  userStoppedRef.current = true;
+// manual = the child tapped stop (discard the clip); otherwise the clip ended on
+// silence or the 7 s cap and is transcribed. Before 22 Nov 2026 every stop counted
+// as manual, so nothing said was ever transcribed.
+function finishRecording(manual: boolean) {
+  userStoppedRef.current = manual;
   try { emitStatus('idle'); emitLevel(0); } catch {}
   try { if (rafRef.current) cancelAnimationFrame(rafRef.current); } catch {}
   rafRef.current = null;
@@ -268,7 +277,8 @@ const stopRecording = useCallback(() => {
   } catch (e) {
     DebugLogger.warn('audio', 'stopRecording error', e);
   }
-}, []);
+}
+const stopRecording = useCallback(() => finishRecording(true), []);
 
 useImperativeHandle(ref, () => ({
   start: startRecording,
@@ -300,7 +310,7 @@ return (
             <Button size="sm" variant="destructive" onClick={stopRecording} className="gap-2">
               <StopCircle className="w-4 h-4" />  {uiText("Stop")} </Button>
           )}
-          <div className="text-xs text-muted-foreground"> {uiText("Commands:")} {KNOWN_COMMANDS.join(", ")}</div>
+          <div className="text-xs text-muted-foreground"> {uiText("Commands:")} next page, go back, read to me, stop</div>
         </div>
 
         {/* Live status + VU meter */}

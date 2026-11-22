@@ -852,6 +852,17 @@
       "minLevelReached": "Le niveau minimum est {minDifficulty}.",
       "minExpertGradeReached": "La classe avancée minimale est {minExpertGrade}.",
       "minBelowAllowed": "Cette séance permet de descendre sous le minimum fixé"
+    },
+    "voice": {
+      "button": "Commandes vocales",
+      "stopListening": "Arrêter l’écoute",
+      "listening": "J’écoute…",
+      "hint": "Dis « page suivante », « retour », « lis-moi » ou « stop ».",
+      "notUnderstood": "Je n’ai pas compris",
+      "micBlocked": "Le micro est désactivé",
+      "micBlockedHelp": "Autorise le micro pour ce site dans les réglages du navigateur, puis touche de nouveau le micro.",
+      "unavailable": "Les commandes vocales ne fonctionnent pas pour le moment",
+      "unavailableHelp": "Les boutons de la page fonctionnent toujours."
     }
   },
   "parent": {

@@ -839,6 +839,17 @@
       "minLevelReached": "न्यूनतम स्तर {minDifficulty} है।",
       "minExpertGradeReached": "न्यूनतम उन्नत कक्षा {minExpertGrade} है।",
       "minBelowAllowed": "इस सत्र में तय न्यूनतम से आसान स्तर पर जा रहे हैं"
+    },
+    "voice": {
+      "button": "आवाज़ से आदेश",
+      "stopListening": "सुनना बंद करें",
+      "listening": "सुन रहे हैं…",
+      "hint": "बोलें “अगला पेज”, “पीछे”, “पढ़कर सुनाओ” या “रुको”।",
+      "notUnderstood": "मैं समझ नहीं पाया",
+      "micBlocked": "माइक्रोफ़ोन बंद है",
+      "micBlockedHelp": "ब्राउज़र की सेटिंग में इस साइट के लिए माइक्रोफ़ोन की अनुमति दें, फिर माइक्रोफ़ोन को दोबारा दबाएँ।",
+      "unavailable": "आवाज़ से आदेश अभी काम नहीं कर रहे",
+      "unavailableHelp": "पेज के बटन अब भी काम करते हैं।"
     }
   },
   "parent": {

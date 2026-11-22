@@ -2488,6 +2488,17 @@
       "minLevelReached": "O nível mínimo é {minDifficulty}.",
       "minExpertGradeReached": "O ano avançado mínimo é {minExpertGrade}.",
       "minBelowAllowed": "Esta sessão permite ficar abaixo do mínimo definido"
+    },
+    "voice": {
+      "button": "Comandos de voz",
+      "stopListening": "Parar de ouvir",
+      "listening": "Ouvindo…",
+      "hint": "Diga “próxima página”, “voltar”, “leia para mim” ou “pare”.",
+      "notUnderstood": "Não entendi",
+      "micBlocked": "O microfone está desligado",
+      "micBlockedHelp": "Permita o microfone para este site nas configurações do navegador e toque no microfone de novo.",
+      "unavailable": "Os comandos de voz não estão funcionando agora",
+      "unavailableHelp": "Os botões da página continuam funcionando."
     }
   },
   "reading": {

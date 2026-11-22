@@ -887,6 +887,17 @@
       "minLevelReached": "最低级别为{minDifficulty}。",
       "minExpertGradeReached": "进阶模式最低年级为{minExpertGrade}。",
       "minBelowAllowed": "本次阅读可适当低于设定的最低难度"
+    },
+    "voice": {
+      "button": "语音指令",
+      "stopListening": "停止收听",
+      "listening": "正在听…",
+      "hint": "请说“下一页”、“上一页”、“读给我听”或“停”。",
+      "notUnderstood": "我没听清",
+      "micBlocked": "麦克风已关闭",
+      "micBlockedHelp": "请在浏览器设置中允许本网站使用麦克风，然后再点一次麦克风。",
+      "unavailable": "语音指令现在无法使用",
+      "unavailableHelp": "页面按钮仍然可以使用。"
     }
   },
   "parent": {

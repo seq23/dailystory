@@ -113,26 +113,60 @@ export const csvRosterAdapter: RosterAdapter = {
   read: async (input) => parseRosterCsv(input),
 };
 
-export interface ProviderConfig {
-  token?: string;
+/**
+ * A school's link to its rostering provider. The IDs are not secrets, but only an
+ * operator sets them (INSTITUTION_ROSTER_CONNECTIONS, keyed by our school UUID):
+ * a school admin who could type them in could read another school's children.
+ * - Clever: the district that authorized Time2Read, and the Clever school IDs
+ *   that belong to this school (a district token reaches every school in it).
+ * - ClassLink: the tenant's OneRoster application ID, and its school sourcedIds.
+ */
+export interface ProviderLink {
+  districtId?: string;
   applicationId?: string;
+  schoolIds?: string[];
 }
-/** Config is school-scoped by the caller; never infer identity from provider data. */
+/** App-level credentials from the developer accounts (edge secrets, never VITE_*). */
+export interface ProviderCredentials {
+  cleverClientId?: string;
+  cleverClientSecret?: string;
+  classlinkToken?: string;
+}
+export interface ProviderClass {
+  id: string;
+  name: string;
+}
+export interface ProviderRosterAdapter extends RosterAdapter {
+  classes(): Promise<ProviderClass[]>;
+}
+
+const CLEVER_API = "https://api.clever.com/v3.0";
+const CLEVER_TOKENS = "https://clever.com/oauth/tokens";
+const CLASSLINK_PROXY = "https://oneroster-proxy.apis.classlink.com";
+const MAX_PAGES = 11;
+
+/** Link is school-scoped by the caller; never infer identity from provider data. */
 export function providerRosterAdapter(
   provider: "clever" | "classlink",
-  config: ProviderConfig = {},
+  link: ProviderLink = {},
+  credentials: ProviderCredentials = {},
   request: typeof fetch = fetch,
-): RosterAdapter {
+): ProviderRosterAdapter {
+  const schoolIds = Array.isArray(link.schoolIds)
+    ? link.schoolIds.filter((id) => typeof id === "string" && id.trim())
+    : [];
   const configured = Boolean(
-    config.token && (provider === "clever" || config.applicationId),
+    schoolIds.length &&
+      (provider === "clever"
+        ? link.districtId &&
+          credentials.cleverClientId &&
+          credentials.cleverClientSecret
+        : link.applicationId && credentials.classlinkToken),
   );
-  async function get(url: string) {
+  async function get(url: string, authorization: string) {
     const response = await request(url, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${config.token}`,
-        Accept: "application/json",
-      },
+      headers: { Authorization: authorization, Accept: "application/json" },
       redirect: "error",
       signal: AbortSignal.timeout(15000),
     });
@@ -143,32 +177,142 @@ export function providerRosterAdapter(
           ? "Roster connection not authorized; ask your administrator to reconnect."
           : `Roster provider unavailable (HTTP ${response.status}). Try again later.`,
       );
-    return response.json();
+    try {
+      return await response.json();
+    } catch {
+      throw new Error("Roster provider unavailable (unreadable reply). Try again later.");
+    }
   }
+  let cleverBearer: Promise<string> | null = null;
+  /** The district's current token from Clever (it survives token rotation). */
+  function cleverToken() {
+    cleverBearer ??= (async () => {
+      const basic = btoa(
+        `${credentials.cleverClientId}:${credentials.cleverClientSecret}`,
+      );
+      const reply = await get(
+        `${CLEVER_TOKENS}?district=${encodeURIComponent(link.districtId!)}`,
+        `Basic ${basic}`,
+      );
+      const tokens = Array.isArray(reply?.data) ? reply.data : [];
+      // Only a token Clever says belongs to THIS district; never the first one listed.
+      const mine = tokens.filter(
+        (t: { owner?: { id?: string }; access_token?: unknown }) =>
+          t?.owner?.id === link.districtId &&
+          typeof t.access_token === "string" &&
+          t.access_token,
+      );
+      if (mine.length !== 1)
+        throw new Error(
+          "Roster connection not authorized; ask your administrator to reconnect.",
+        );
+      return `Bearer ${mine[0].access_token}`;
+    })();
+    return cleverBearer;
+  }
+  const classlinkBase = () =>
+    `${CLASSLINK_PROXY}/${encodeURIComponent(link.applicationId!)}/ims/oneroster/v1p1`;
+  const classlinkAuth = () => `Bearer ${credentials.classlinkToken}`;
+
+  /** Follow Clever "next" links on the same endpoint only; credentials never leave api.clever.com. */
+  async function cleverPages(first: string, each: (entry: any) => void) {
+    let next: string | null = first;
+    const visited = new Set<string>();
+    while (next) {
+      if (visited.has(next) || visited.size >= MAX_PAGES)
+        throw new Error("Roster pagination exceeded the import limit.");
+      visited.add(next);
+      const page = await get(next, await cleverToken());
+      if (!Array.isArray(page?.data))
+        throw new Error("Invalid Clever roster response.");
+      for (const entry of page.data) each(entry?.data);
+      const nextLink = Array.isArray(page.links)
+        ? page.links.find((l: { rel: string }) => l?.rel === "next")?.uri
+        : undefined;
+      if (nextLink) {
+        const url = new URL(nextLink, CLEVER_API);
+        if (
+          url.origin !== new URL(CLEVER_API).origin ||
+          url.pathname !== new URL(next).pathname ||
+          url.username ||
+          url.password
+        )
+          throw new Error("Invalid roster pagination link.");
+        next = url.href;
+      } else next = null;
+    }
+  }
+  function requireConnected(classId?: string) {
+    if (!configured)
+      throw new Error(
+        "Not connected. School administrator configuration is required.",
+      );
+    if (classId !== undefined && (!classId.trim() || classId.length > 200))
+      throw new Error("A provider class ID is required.");
+  }
+  /** The class must belong to one of THIS school's provider schools. */
+  async function assertClassInSchool(classId: string) {
+    let school: unknown;
+    if (provider === "clever") {
+      const reply = await get(
+        `${CLEVER_API}/sections/${encodeURIComponent(classId)}`,
+        await cleverToken(),
+      );
+      school = reply?.data?.school;
+    } else {
+      const reply = await get(
+        `${classlinkBase()}/classes/${encodeURIComponent(classId)}`,
+        classlinkAuth(),
+      );
+      school = reply?.class?.school?.sourcedId;
+    }
+    if (typeof school !== "string" || !schoolIds.includes(school))
+      throw new Error("Roster class is not part of this school.");
+  }
+
   return {
     status: () => (configured ? "configured" : "not_connected"),
+    async classes() {
+      requireConnected();
+      const found: ProviderClass[] = [];
+      const add = (id: unknown, name: unknown) => {
+        if (typeof id !== "string" || !id) return;
+        found.push({ id, name: typeof name === "string" && name.trim() ? name.trim().slice(0, 120) : id });
+        if (found.length > 1000)
+          throw new Error("More than 1000 classes; ask your administrator to narrow the school link.");
+      };
+      for (const school of schoolIds) {
+        if (provider === "clever") {
+          await cleverPages(
+            `${CLEVER_API}/schools/${encodeURIComponent(school)}/sections?limit=100`,
+            (section) => add(section?.id, section?.name),
+          );
+        } else {
+          for (let offset = 0, pages = 0; ; offset += 100, pages++) {
+            if (pages >= MAX_PAGES)
+              throw new Error("Roster pagination exceeded the import limit.");
+            const page = await get(
+              `${classlinkBase()}/schools/${encodeURIComponent(school)}/classes?limit=100&offset=${offset}`,
+              classlinkAuth(),
+            );
+            if (!Array.isArray(page?.classes))
+              throw new Error("Invalid ClassLink roster response.");
+            for (const c of page.classes)
+              if (c?.status !== "tobedeleted") add(c?.sourcedId, c?.title);
+            if (page.classes.length < 100) break;
+          }
+        }
+      }
+      return found.sort((a, b) => a.name.localeCompare(b.name));
+    },
     async read(classId) {
-      if (!configured)
-        throw new Error(
-          "Not connected. School administrator configuration is required.",
-        );
-      if (!classId.trim() || classId.length > 200)
-        throw new Error("A provider class ID is required.");
+      requireConnected(classId);
+      await assertClassInSchool(classId);
       const rows: RosterRow[] = [];
       if (provider === "clever") {
-        const base = "https://api.clever.com/v3.0";
-        let next: string | null =
-          `${base}/sections/${encodeURIComponent(classId)}/users?role=student&limit=100`;
-        const visited = new Set<string>();
-        while (next) {
-          if (visited.has(next) || visited.size >= 11)
-            throw new Error("Roster pagination exceeded the import limit.");
-          visited.add(next);
-          const page = await get(next);
-          if (!Array.isArray(page.data))
-            throw new Error("Invalid Clever roster response.");
-          for (const entry of page.data) {
-            const user = entry.data;
+        await cleverPages(
+          `${CLEVER_API}/sections/${encodeURIComponent(classId)}/users?role=student&limit=100`,
+          (user) => {
             if (!user?.roles?.student)
               throw new Error("Invalid Clever student record.");
             rows.push({
@@ -181,30 +325,15 @@ export function providerRosterAdapter(
             });
             if (!user.id || rows.length > 1000)
               throw new Error("Invalid roster or more than 1000 students.");
-          }
-          const link = page.links?.find(
-            (l: { rel: string }) => l.rel === "next",
-          )?.uri;
-          if (link) {
-            const url = new URL(link, base);
-            // Only follow the same class endpoint; never forward credentials to another host.
-            if (
-              url.origin !== new URL(base).origin ||
-              url.pathname !== new URL(next).pathname ||
-              url.username ||
-              url.password
-            )
-              throw new Error("Invalid roster pagination link.");
-            next = url.href;
-          } else next = null;
-        }
+          },
+        );
       } else {
-        // ClassLink OAuth2 Proxy; its non-expiring Partner Portal bearer is NOT
-        // a LaunchPad login token or generic OneRoster client-credentials token.
-        const base = `https://oneroster-proxy.apis.classlink.com/${encodeURIComponent(config.applicationId!)}/ims/oneroster/v1p1/classes/${encodeURIComponent(classId)}/students`;
+        // ClassLink OAuth2 Proxy: the vendor's Partner Portal bearer and the tenant's
+        // application ID; not a LaunchPad login token or generic client-credentials token.
+        const base = `${classlinkBase()}/classes/${encodeURIComponent(classId)}/students`;
         for (let offset = 0; ; offset += 100) {
-          const page = await get(`${base}?limit=100&offset=${offset}`);
-          if (!Array.isArray(page.users))
+          const page = await get(`${base}?limit=100&offset=${offset}`, classlinkAuth());
+          if (!Array.isArray(page?.users))
             throw new Error("Invalid ClassLink roster response.");
           for (const user of page.users) {
             if (!user.sourcedId)

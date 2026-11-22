@@ -812,6 +812,17 @@
       "minLevelReached": "کم از کم سطح {minDifficulty} ہے۔",
       "minExpertGradeReached": "کم از کم ماہر درجہ {minExpertGrade} ہے۔",
       "minBelowAllowed": "اس سیشن میں طے شدہ کم از کم سے آسان سطح پر جا رہے ہیں"
+    },
+    "voice": {
+      "button": "آواز سے احکامات",
+      "stopListening": "سننا بند کریں",
+      "listening": "سن رہے ہیں…",
+      "hint": "کہیں “اگلا صفحہ”، “پیچھے”، “پڑھ کر سناؤ” یا “رکو”۔",
+      "notUnderstood": "میں سمجھ نہیں سکا",
+      "micBlocked": "مائیکروفون بند ہے",
+      "micBlockedHelp": "براؤزر کی ترتیبات میں اس سائٹ کے لیے مائیکروفون کی اجازت دیں، پھر مائیکروفون کو دوبارہ دبائیں۔",
+      "unavailable": "آواز سے احکامات ابھی کام نہیں کر رہے",
+      "unavailableHelp": "صفحے کے بٹن اب بھی کام کرتے ہیں۔"
     }
   },
   "coach": {

@@ -70,7 +70,10 @@ serve(async (req) => {
   if (refused) return refused;
 
   try {
-    const { audio, mimeType } = await req.json();
+    const { audio, mimeType, mode } = await req.json();
+    // The story page's spoken commands (src/lib/voice/storyVoiceCommands.ts): a short
+    // clip, primed with the command words, and no second pronunciation pass.
+    const isCommand = mode === "command";
 
     if (!audio) {
       throw new Error("No audio data provided");
@@ -96,6 +99,7 @@ serve(async (req) => {
       : "webm";
     formData.append("file", blob, `audio.${ext}`);
     formData.append("model", "whisper-1");
+    if (isCommand) formData.append("prompt", "Next page. Go back. Read to me. Stop.");
 
     // Send to OpenAI with detailed response format
     const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
@@ -132,7 +136,7 @@ serve(async (req) => {
 
     // For pronunciation analysis, also make a verbose request if available
     let detailedResult = null;
-    try {
+    if (!isCommand) try {
       const verboseFormData = new FormData();
       verboseFormData.append("file", blob, `audio.${ext}`);
       verboseFormData.append("model", "whisper-1");

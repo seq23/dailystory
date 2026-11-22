@@ -114,7 +114,8 @@ const IMAGES_DISABLED_PLACEHOLDER = '/serious-readers-corner.png';
 /** A page longer than this (upper grades) reads in the page's own scroll, not a small inner box. */
 export const LONG_PAGE_WORDS = 150;
 // useWordHighlighting integrated into useAudioControls
-import { VoiceCommandController } from '@/components/VoiceCommandController';
+import { StoryVoiceCommands } from '@/components/story/StoryVoiceCommands';
+import type { StoryVoiceCommand } from '@/lib/voice/storyVoiceCommands';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
 import { PremiumHoverController } from '@/components/PremiumHoverController';
 import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
@@ -3187,29 +3188,23 @@ const handleDockVoiceCommand = () => {
   DebugLogger.log('ui', 'Voice command handled by MobileActionDock integration');
 };
 
-// Voice command handler for headless controller
-const handleVoiceCommand = (command: string) => {
-  DebugLogger.log('audio', 'Voice command received', command);
-  
-  const cmd = command.toLowerCase().trim();
-  
-  if (cmd.includes('start reading') || cmd.includes('read') || cmd.includes('play')) {
-    handleDockPlayAudio();
-  } else if (cmd.includes('pause') || cmd.includes('stop')) {
-    try { audioEngineRef.current.stop(); } catch (e) { DebugLogger.warn('audio', 'Voice pause failed', e); }
-  } else if (cmd.includes('next page') || cmd.includes('next')) {
-    handleNext();
-  } else if (cmd.includes('previous page') || cmd.includes('previous') || cmd.includes('back')) {
-    handlePrevious();
-  } else if (cmd.includes('increase font') || cmd.includes('bigger text')) {
-    // Font size adjustment logic would go here
-    DebugLogger.log('ui', 'Font size increase requested');
-  } else if (cmd.includes('decrease font') || cmd.includes('smaller text')) {
-    // Font size adjustment logic would go here
-    DebugLogger.log('ui', 'Font size decrease requested');
-  } else if (cmd.includes('open settings') || cmd.includes('settings')) {
-    // Settings logic would go here
-    DebugLogger.log('ui', 'Settings requested');
+// The story page's spoken commands (StoryVoiceCommands): the same gates as the page buttons.
+const voiceCanGoNext = !(!isPremium && timeRemaining <= 0) && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked;
+const handleStoryVoiceCommand = (command: StoryVoiceCommand) => {
+  DebugLogger.log('audio', 'Story voice command', command);
+  if (command === 'next') {
+    if (!voiceCanGoNext || isLoadingNextPage) return;
+    if (currentPage < displayedStory.length - 1) handleNext();
+    else if (isPremium) handleGenerateNextPageAndAdvance();
+  } else if (command === 'back') {
+    if (currentPage > 0 && !(!isPremium && timeRemaining <= 0)) handlePrevious();
+  } else if (command === 'read') {
+    // Listening stopped any read-aloud; start this page again (free: once per page, as the button).
+    if (!isAudioPlaying) void handleDockPlayAudio();
+  } else if (command === 'stop') {
+    setIsAudioPlaying(false);
+    setIsAudioLoading(false);
+    try { audioEngineRef.current?.stop(); } catch (e) { DebugLogger.warn('audio', 'Voice stop failed', e); }
   }
 };
 
@@ -4277,6 +4272,7 @@ const handleRestartTimer = () => {
                     onAudioStateChange={handleAudioStateChangeDual}
                     onAudioPlayed={handleAudioPlayed}
                     onUpgrade={onUpgrade}
+                    voiceControl={<StoryVoiceCommands onCommand={handleStoryVoiceCommand} />}
                   />
                 </div>
               </div>
@@ -5081,8 +5077,6 @@ const handleRestartTimer = () => {
       {/* Audio Fallback Notification */}
       <AudioFallbackNotification />
       
-      {/* Voice Command System */}
-      <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
       

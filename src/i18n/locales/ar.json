@@ -811,6 +811,17 @@
       "minLevelReached": "أدنى مستوى هو {minDifficulty}.",
       "minExpertGradeReached": "أدنى صف متقدّم هو {minExpertGrade}.",
       "minBelowAllowed": "النزول عن الحد الأدنى المحدّد لهذه الجلسة"
+    },
+    "voice": {
+      "button": "الأوامر الصوتية",
+      "stopListening": "إيقاف الاستماع",
+      "listening": "أستمع…",
+      "hint": "قل «الصفحة التالية» أو «رجوع» أو «اقرأ لي» أو «توقف».",
+      "notUnderstood": "لم أفهم ذلك",
+      "micBlocked": "الميكروفون مغلق",
+      "micBlockedHelp": "اسمح للميكروفون لهذا الموقع من إعدادات المتصفح، ثم اضغط على الميكروفون مرة أخرى.",
+      "unavailable": "الأوامر الصوتية لا تعمل الآن",
+      "unavailableHelp": "أزرار الصفحة ما زالت تعمل."
     }
   },
   "parent": {
