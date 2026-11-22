@@ -1,1 +1,2 @@
-{ "kind": "site", "build": "npm ci --no-audit --no-fund && npm run build", "serve": "dist" }
+{ "kind": "site", "build": "npm ci --no-audit --no-fund && npm run build", "serve": "dist",
+  "pages": ["/", "/pricing", "/accessibility", "/subprocessors", "/style-preview", "/books-for-kindergarten", "/my-child-hates-reading", "/high-interest-low-level-stories"] }
