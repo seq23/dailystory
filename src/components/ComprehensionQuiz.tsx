@@ -316,7 +316,7 @@ export const ComprehensionQuiz = ({
                 <div className={`p-3 rounded-lg border ${selectedAnswer === currentQ.correctAnswer ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
                   <p className="font-semibold mb-1">
                     {selectedAnswer === currentQ.correctAnswer
-                      ? t('comprehension.rightAnswer', 'Yes, you got it! 🌟')
+                      ? t('comprehension.rightAnswer', 'Yes, you got it!')
                       : t('comprehension.goodTry', 'Good try! The answer is: {{answer}}', { answer: currentQ.options[currentQ.correctAnswer] })}
                   </p>
                   {currentQ.explanation && <p className="text-sm text-gray-700">💡 {currentQ.explanation}</p>}

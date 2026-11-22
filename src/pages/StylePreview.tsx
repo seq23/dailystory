@@ -78,6 +78,21 @@ const StylePreview: React.FC = () => {
       </header>
 
       <main className="max-w-5xl mx-auto grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {/* The story header's guest badge, exactly as a free-trial reader sees it (no story needed to view it) */}
+        <article className="md:col-span-2 xl:col-span-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>Story header badge</CardTitle>
+              <CardDescription>Shown beside the avatar during a free trial.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Badge variant="guest">Free Trial</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </article>
+
         {/* Free Trial Desktop (Exact) */}
         <article className="md:col-span-2 xl:col-span-3">
           <Card className="h-full">

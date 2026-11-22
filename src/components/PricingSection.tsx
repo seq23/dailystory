@@ -96,7 +96,7 @@ export function PricingSection({ compact }: PricingSectionProps) {
                 <div className="text-3xl font-bold">{PLAN_PRICES.monthly.label}</div>
                 <div className="text-muted-foreground">{uiText("per month, or")} {PLAN_PRICES.annual.label} {uiText("per year")}</div>
                 <div className="text-sm font-medium text-primary mt-1">{TRIAL_DAYS}{uiText("-day free trial")}</div>
-                <div className="text-xs text-muted-foreground mt-1" data-testid="secure-checkout">{uiText("🔒 Secure checkout in US dollars, by Stripe. Have a code? Use it when you sign up.")}</div>
+                <div className="text-xs text-muted-foreground mt-1" data-testid="secure-checkout">{uiText("Secure checkout in US dollars, by Stripe. Have a code? Use it when you sign up.")}</div>
               </div>
               <p className="mb-4 rounded-md bg-primary/5 border border-primary/20 px-3 py-2 text-sm" data-testid="heygetonmylevel-bonus">
                 {uiText("Includes")}{" "}

@@ -114,7 +114,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
           <div className="flex items-center justify-center gap-3 mb-4">
             <Crown className="w-12 h-12 text-yellow-500" />
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              {uiText("Unlock Premium Reading")}
+              {uiText("Get Premium Reading")}
             </h1>
           </div>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -146,7 +146,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
             <CardContent className="p-6">
               <TrendingUp className="w-12 h-12 text-green-500 mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2">{uiText("Smart Learning")}</h3>
-              <p className="text-gray-600">{uiText("AI-powered personalization adapts to your child's reading level and interests")}</p>
+              <p className="text-gray-600">{uiText("Each story adapts to your child's reading level and interests")}</p>
             </CardContent>
           </Card>
           
@@ -235,7 +235,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
         {checkoutError && (
           <p role="alert" className="text-center text-sm text-destructive mb-4">{checkoutError}</p>
         )}
-        <p className="text-xs text-muted-foreground text-center mb-6" data-testid="secure-checkout">{uiText("🔒 Secure checkout in US dollars, by Stripe.")}</p>
+        <p className="text-xs text-muted-foreground text-center mb-6" data-testid="secure-checkout">{uiText("Secure checkout in US dollars, by Stripe.")}</p>
         <RedeemCodeCard className="max-w-xl mx-auto mb-8" />
 
         {/* Back Button */}

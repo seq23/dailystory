@@ -83,7 +83,7 @@ const LoggingHealthCheck = () => {
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">Status:</span>
             {health.isActive ? (
-              <Badge variant="default" className="bg-green-600">Active</Badge>
+              <Badge variant="default" className="bg-green-700">Active</Badge>
             ) : (
               <Badge variant="destructive">Inactive</Badge>
             )}

@@ -18,7 +18,7 @@ const badgeVariants = cva(
         premium:
           "border-transparent bg-primary text-primary-foreground shadow-sm",
         guest:
-          "border-transparent bg-gradient-to-r from-[hsl(var(--primary))] via-[hsl(var(--brand-purple))] to-[hsl(var(--accent))] text-white",
+          "border-transparent bg-gradient-to-r from-[hsl(200_90%_35%)] to-[hsl(271_80%_50%)] text-white",
 
       },
     },

@@ -79,7 +79,7 @@ export function StoryPaywall() {
         </p>
       )}
 
-      <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">{uiText("🔒 Secure checkout in US dollars, by Stripe.")}</p>
+      <p className="text-xs text-muted-foreground text-center mt-2" data-testid="secure-checkout">{uiText("Secure checkout in US dollars, by Stripe.")}</p>
       <p className="text-xs text-muted-foreground text-center mt-2">
         {uiText("Card required to start the trial. Includes")}{" "}
         <a href={HEYGETONMYLEVEL_URL} target="_blank" rel="noopener noreferrer" className="underline">

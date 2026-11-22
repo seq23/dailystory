@@ -81,7 +81,7 @@ const SightWordsSection = () => (
     </div>
     <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20 p-6 md:p-8 text-center">
       <h3 className="font-fun text-xl md:text-2xl text-foreground mb-3">
-        Turn sight words into stories ✨
+        Turn sight words into stories
       </h3>
       <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
         Time-2-Read's beginner reading levels are written mostly with Dolch sight words, so your child meets
