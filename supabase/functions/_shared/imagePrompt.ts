@@ -1,5 +1,5 @@
 import { clampAge } from "./grades.ts";
-import { deidentify, genderOf } from "./deidentify.ts";
+import { deidentify, genderOf, type PrivateName } from "./deidentify.ts";
 /**
  * imagePrompt.ts — THE single source of truth for story-image prompts.
  *
@@ -581,13 +581,15 @@ export async function buildImagePrompt(opts: {
   user: ImageUserInfo;
   sessionId: string;
   lovableApiKey?: string;
+  /** More names to hide (the request's privacy names, ./privacyLane.ts). */
+  privateNames?: PrivateName[];
 }): Promise<BuiltPrompt> {
   // R-KID-01: the page text goes to the Lovable gateway (Gemini), whose terms we have not
   // proven to exclude training, so the child's name is swapped for a stand-in first. The
   // scene never needs the name (the model is told to leave names out), so it is not put back.
   const [pageText, previousScene] = deidentify(
     [opts.pageText, opts.previousScene ?? ""],
-    [{ name: opts.user.name ?? "", gender: genderOf(opts.user.avatar?.type) }],
+    [{ name: opts.user.name ?? "", gender: genderOf(opts.user.avatar?.type) }, ...(opts.privateNames ?? [])],
   ).texts;
   const { scene, source } = await distillScene(
     pageText,

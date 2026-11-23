@@ -28,9 +28,15 @@ export default defineConfig({
       },
     },
   },
+  // Edge functions import their libraries by URL; these map them to the stubs the real-path
+  // tests drive (src/test/edge/harness.ts). Only URL imports match, so app code is untouched.
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+    alias: [
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+      { find: /^https:\/\/esm\.sh\/@supabase\/supabase-js@[^?]*(\?.*)?$/, replacement: path.resolve(__dirname, './src/test/edge/stub-supabase.ts') },
+      { find: /^https:\/\/deno\.land\/std@[^/]+\/http\/server\.ts$/, replacement: path.resolve(__dirname, './src/test/edge/stub-server.ts') },
+      { find: /^https:\/\/deno\.land\/x\/xhr@[^/]+\/mod\.ts$/, replacement: path.resolve(__dirname, './src/test/edge/stub-empty.ts') },
+      { find: /^https:\/\/deno\.land\/x\/zod@[^/]+\/mod\.ts$/, replacement: 'zod' },
+    ],
   },
 });

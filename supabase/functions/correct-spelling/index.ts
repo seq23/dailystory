@@ -1,7 +1,7 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
-import { privacyLaneForRequest, withPrivacyLane } from "../_shared/privacyLane.ts";
+import { privacyForRequest, withPrivacy } from "../_shared/privacyLane.ts";
 import { plainAnswerProblem } from "../_shared/storyOutputCheck.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { paidCallRefusal, adminUserIds, readJsonBeforeGuard } from "../_shared/paidCallGuardDeno.ts";
@@ -44,7 +44,8 @@ const handleRequest = async (req: Request): Promise<Response> => {
     }
 
     const requestData: SpellingRequest = await req.json();
-    console.log('Spelling correction request:', requestData);
+    // Never the text itself: it is a child's writing and may hold names (R-KID-01).
+    console.log('Spelling correction request:', { chars: String(requestData?.text ?? '').length, gradeLevel: requestData?.gradeLevel, context: requestData?.context });
 
     const { text, gradeLevel, context } = requestData;
     
@@ -122,12 +123,7 @@ const handleRequest = async (req: Request): Promise<Response> => {
     const hadErrors = correctedText !== text;
     const confidence = hadErrors ? 0.8 : 0.9;
 
-    console.log('Spelling correction completed:', { 
-      original: text, 
-      corrected: correctedText, 
-      hadErrors,
-      confidence 
-    });
+    console.log('Spelling correction completed:', { chars: text.length, hadErrors, confidence });
 
     return new Response(
       JSON.stringify({ 
@@ -163,13 +159,13 @@ const handleRequest = async (req: Request): Promise<Response> => {
   }
 };
 
-// School children's text only on no-training/no-retention routes (../_shared/privacyLane.ts):
-// every model call in the handler inherits the lane decided here from the signed-in account.
+// School children's text only on no-training/no-retention routes, and every name of the reader
+// and the account masked (../_shared/privacyLane.ts): every model call in the handler inherits it.
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return handleRequest(req);
   // Read under the paid-call byte cap (../_shared/paidCallGuard.ts); not JSON → null, and the handler answers it.
   const { body: laneBody, refused } = await readJsonBeforeGuard(req, corsHeaders);
   if (refused) return refused;
-  const lane = await privacyLaneForRequest(req, laneBody);
-  return withPrivacyLane(lane, () => handleRequest(req));
+  const privacy = await privacyForRequest(req, laneBody);
+  return withPrivacy(privacy, () => handleRequest(req));
 });

@@ -9,10 +9,8 @@ This document provides comprehensive reference for all audio and voice-related S
 1. [elevenlabs-tts](#elevenlabs-tts) - Basic TTS generation
 2. [elevenlabs-tts-smart](#elevenlabs-tts-smart) - Context-aware TTS with dictionary support  
 3. [elevenlabs-agent-signed-url](#elevenlabs-agent-signed-url) - Secure agent URL generation
-4. [openai-realtime](#openai-realtime) - WebSocket proxy for OpenAI Realtime API
-5. [elevenlabs-dictionary-manager](#elevenlabs-dictionary-manager) - Pronunciation dictionary management
-6. [openai-tts](#openai-tts) - OpenAI text-to-speech generation
-7. [voice-to-text](#voice-to-text) - Speech recognition processing
+4. [elevenlabs-dictionary-manager](#elevenlabs-dictionary-manager) - Pronunciation dictionary management
+5. [voice-to-text](#voice-to-text) - Speech recognition processing
 
 ## Function Details
 
@@ -152,55 +150,6 @@ if (data?.signed_url) {
 }
 ```
 
-### openai-realtime
-
-**Purpose**: WebSocket proxy for OpenAI Realtime API with audio processing
-
-**Location**: `supabase/functions/openai-realtime/index.ts`
-
-#### WebSocket Protocol
-```typescript
-// Client -> Server messages
-interface ClientMessage {
-  type: 'session.update' | 'input_audio_buffer.append' | 'conversation.item.create';
-  [key: string]: any;
-}
-
-// Server -> Client messages  
-interface ServerMessage {
-  type: 'response.audio.delta' | 'response.function_call_arguments.done' | 'session.created';
-  [key: string]: any;
-}
-```
-
-#### Audio Format Requirements
-- **Input**: PCM16 at 24kHz, mono channel
-- **Output**: PCM16 at 24kHz, mono channel  
-- **Encoding**: Base64 for transmission
-
-#### Connection Example
-```javascript
-const ws = new WebSocket(`wss://project-id.functions.supabase.co/functions/v1/openai-realtime`);
-
-ws.onopen = () => {
-  // Send session configuration
-  ws.send(JSON.stringify({
-    type: 'session.update',
-    session: {
-      modalities: ['text', 'audio'],
-      voice: 'alloy',
-      input_audio_format: 'pcm16',
-      output_audio_format: 'pcm16',
-      turn_detection: {
-        type: 'server_vad',
-        threshold: 0.5,
-        silence_duration_ms: 1000
-      }
-    }
-  }));
-};
-```
-
 ### elevenlabs-dictionary-manager
 
 **Purpose**: Manage pronunciation dictionaries for improved TTS accuracy
@@ -249,35 +198,6 @@ await supabase.functions.invoke('elevenlabs-dictionary-manager', {
   }
 });
 ```
-
-### openai-tts
-
-**Purpose**: Generate speech using OpenAI's text-to-speech API
-
-**Location**: `supabase/functions/openai-tts/index.ts`
-
-#### API Contract
-```typescript
-interface OpenAITTSRequest {
-  text: string;
-  voice: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
-  model?: 'tts-1' | 'tts-1-hd';
-  response_format?: 'mp3' | 'opus' | 'aac' | 'flac';
-}
-
-interface OpenAITTSResponse {
-  audioContent: string; // Base64 encoded audio
-  format: string;
-}
-```
-
-#### Voice Characteristics
-- **alloy**: Balanced, neutral tone
-- **echo**: Clear, professional  
-- **fable**: Warm, storytelling
-- **onyx**: Deep, authoritative
-- **nova**: Young, energetic
-- **shimmer**: Soft, pleasant
 
 ### voice-to-text
 

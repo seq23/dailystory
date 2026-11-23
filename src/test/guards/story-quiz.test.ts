@@ -174,7 +174,9 @@ describe("generate-quiz runs the story text chain, never Gemini", () => {
   const fn = read("supabase/functions/generate-quiz/index.ts");
   it("calls chatCompletionWithFallback with the child's names to mask, and finalizeQuiz", () => {
     expect(fn).toMatch(/from "\.\.\/_shared\/storyTextProvider\.ts"/);
-    expect(fn).toMatch(/chatCompletionWithFallback\([\s\S]*privateNames/);
+    // The request's names (account, child profiles, reader) are masked by the shared door;
+    // behaviour: src/test/edge/child-names-never-leave.test.ts.
+    expect(fn).toMatch(/withPrivacy\(privacy, \(\) => chatCompletionWithFallback\(/);
     expect(fn).toMatch(/finalizeQuiz\(/);
   });
   it("no Lovable gateway, no Gemini, no direct provider fetch (code, comments aside)", () => {

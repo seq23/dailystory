@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { withGuestPass } from '@/lib/guestPass';
+import { withReaderNames } from '@/lib/readerNames';
 
 const SUPABASE_URL = "https://cpzeuogomaixamrtnnmj.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino";
@@ -48,7 +49,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   },
   global: {
-    // 30s global timeout for all requests; a signed-out guest's paid calls carry a guest pass (src/lib/guestPass.ts)
-    fetch: withGuestPass(createResilientFetch(30000), SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY),
+    // 30s global timeout for all requests; a signed-out guest's paid calls carry a guest pass (src/lib/guestPass.ts);
+    // AI calls carry the reader's names so the server masks them (src/lib/readerNames.ts)
+    fetch: withReaderNames(withGuestPass(createResilientFetch(30000), SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)),
   }
 });

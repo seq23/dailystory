@@ -18,10 +18,11 @@ import {
   cloudflareChatUrl,
 } from "../../../supabase/functions/_shared/storyTextProvider";
 import {
-  resolvePrivacyLane,
-  withPrivacyLane,
+  resolvePrivacy,
+  withPrivacy,
   childProfileIdOf,
 } from "../../../supabase/functions/_shared/privacyLane";
+const resolvePrivacyLane = async (...a: Parameters<typeof resolvePrivacy>) => (await resolvePrivacy(...a)).lane;
 
 const ROOT = join(__dirname, "../../..");
 const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
@@ -74,7 +75,7 @@ describe("school lane: a school child's request never reaches a training route",
 
   it("the lane set for the request reaches calls deep inside the handler, across awaits and timers", async () => {
     const r = recorder(() => new Response("busy", { status: 429 }));
-    await withPrivacyLane("school", async () => {
+    await withPrivacy({ lane: "school", names: [] }, async () => {
       await new Promise((resolve) => setTimeout(resolve, 1));
       await Promise.resolve().then(() => chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env }));
     });
@@ -116,12 +117,13 @@ describe("which requests are school requests (decided by the database, failing c
   const deps = (lane: string | Error, verify: string | Error = "u") => ({
     verifyUser: async () => { if (verify instanceof Error) throw verify; return verify; },
     laneOf: async () => { if (lane instanceof Error) throw lane; return lane; },
+    namesOf: async () => [] as string[],
   });
 
   it("guests are family; a named child profile without a verifiable account is school", async () => {
     expect(await resolvePrivacyLane(null, null, deps("school"))).toBe("family");
     expect(await resolvePrivacyLane(`Bearer ${anonJwt}`, null, deps("school"))).toBe("family");
-    expect(await resolvePrivacyLane(`Bearer ${anonJwt}`, "00000000-0000-4000-8000-000000000001", deps("family"))).toBe("school");
+    expect(await resolvePrivacyLane(`Bearer ${anonJwt}`, { childId: "00000000-0000-4000-8000-000000000001" }, deps("family"))).toBe("school");
   });
   it("a signed-in account follows the database, and any failure is school", async () => {
     expect(await resolvePrivacyLane(`Bearer ${userJwt}`, null, deps("family"))).toBe("family");
@@ -144,13 +146,16 @@ describe("wiring: every child-text function resolves the lane, images are off fo
     "supabase/functions/word-dictionary/index.ts",
     "supabase/functions/translate-universal/index.ts",
     "supabase/functions/correct-spelling/index.ts",
+    "supabase/functions/runware-generate-image/index.ts",
   ])("%s decides the lane from the request and routes on it", (file) => {
     const src = read(file);
-    expect(src).toMatch(/privacyLaneForRequest\(req, /);
-    expect(src).toMatch(/withPrivacyLane\(lane, |\blane\b[,}]|lane: await privacyLaneForRequest/);
+    // One door: the lane AND the names to mask come from privacyForRequest, and the model
+    // calls run inside withPrivacy (runware reads the lane and names directly).
+    expect(src).toMatch(/privacyForRequest\(req, /);
+    if (!file.includes("runware")) expect(src).toMatch(/withPrivacy\(privacy, /);
   });
   it("the story handler runs inside the lane", () => {
-    expect(read("supabase/functions/generate-adaptive-story/index.ts")).toContain("withPrivacyLane(lane, () => handleStreamlinedGeneration(requestBody))");
+    expect(read("supabase/functions/generate-adaptive-story/index.ts")).toContain("withPrivacy(privacy, () => handleStreamlinedGeneration(requestBody))");
   });
   it("runware-generate-image refuses school requests before any prompt is built or sent", () => {
     const src = read("supabase/functions/runware-generate-image/index.ts");

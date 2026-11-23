@@ -10,7 +10,7 @@
 // Guard: src/test/guards/story-quiz.test.ts.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
-import { privacyLaneForRequest } from "../_shared/privacyLane.ts";
+import { privacyForRequest, withPrivacy } from "../_shared/privacyLane.ts";
 import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 import {
   buildQuizMessages,
@@ -52,16 +52,13 @@ serve(async (req) => {
   const story = storyText.slice(0, QUIZ_STORY_MAX_CHARS);
   const practiceWords = Array.isArray(body.practiceWords) ? (body.practiceWords as unknown[]).filter((w): w is string => typeof w === "string") : [];
   const shape = quizShapeForGrade(body.grade, body.age, storySeed(story), practiceWords);
-  const privateNames = [body.childName, body.displayName]
-    .filter((n): n is string => typeof n === "string" && n.trim().length >= 2)
-    .slice(0, 4);
-
   // School children: no-training/no-retention routes only; none answering → the story-text quiz.
-  const lane = await privacyLaneForRequest(req, body);
+  // Every name of the reader and the account is masked (../_shared/privacyLane.ts).
+  const privacy = await privacyForRequest(req, body);
   let raw: unknown = null;
   let provider = "none";
   try {
-    const { response, provider: p, attempts } = await chatCompletionWithFallback(
+    const { response, provider: p, attempts } = await withPrivacy(privacy, () => chatCompletionWithFallback(
       {
         model: OPENAI_QUIZ_MODEL,
         messages: buildQuizMessages(story, shape),
@@ -69,8 +66,8 @@ serve(async (req) => {
         temperature: 0.4,
       },
       // Output check: planning, cut-off or non-quiz JSON → next model (../_shared/quiz.ts).
-      { privateNames, lane, accept: (content, finishReason) => quizAnswerProblem(content, finishReason) },
-    );
+      { accept: (content, finishReason) => quizAnswerProblem(content, finishReason) },
+    ));
     console.log("generate-quiz provider", { provider: p, attempts: attempts.map((a) => `${a.provider} ${a.model ?? ""} ${a.status ?? "-"}`) });
     if (response.ok) {
       const data = await response.json();

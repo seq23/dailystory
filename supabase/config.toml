@@ -78,12 +78,6 @@ verify_jwt = false
 [functions.notification-service]
 verify_jwt = true
 
-[functions.openai-realtime]
-verify_jwt = false
-
-[functions.openai-tts]
-verify_jwt = false
-
 [functions.process-story-content]
 verify_jwt = false
 
@@ -152,7 +146,6 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
-
 
 [functions.voice-overrides-admin]
 verify_jwt = false

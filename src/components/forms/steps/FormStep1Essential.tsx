@@ -8,7 +8,7 @@ import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Sparkles, ArrowRight, AlertCircle } from "lucide-react";
 import { MobileTooltip } from "@/components/MobileTooltip";
 import { InputSanitizer } from "@/utils/inputSanitizer";
-import { spellcheckService } from "@/services/spellcheckService";
+import { rememberReaderName } from "@/lib/readerNames";
 import { DebugLogger } from '@/services/DebugLogger';
 import { FormProgressIndicator } from "../shared/FormProgressIndicator";
 import { useLanguageSync } from "@/hooks/useLanguageSync";
@@ -42,8 +42,6 @@ export const FormStep1Essential = ({
   canAdvance
 }: FormStep1EssentialProps) => {
   const { t, i18n } = useTranslation();
-  const [spellcheckSuggestion, setSpellcheckSuggestion] = useState<string>("");
-  const [spellcheckLoading, setSpellcheckLoading] = useState(false);
   const { getStoredLanguagePreference, syncLanguages, clearStoredLanguagePreference } = useLanguageSync();
 
   // Enhanced input handling with real-time COPPA validation
@@ -82,37 +80,12 @@ export const FormStep1Essential = ({
         });
       }
 
-      // Spellcheck for name field
-      if (field === 'name' && sanitized.length > 2 && validation.isValid) {
-        setSpellcheckLoading(true);
-        try {
-          const result = await spellcheckService.checkSpelling(
-            sanitized,
-            formData.grade || 'K',
-            'user_form_input'
-          );
-          
-          if (result.hadErrors && result.correctedText !== sanitized) {
-            setSpellcheckSuggestion(result.correctedText);
-          } else {
-            setSpellcheckSuggestion("");
-          }
-        } catch (error) {
-          DebugLogger.warn('ui', 'Spellcheck failed', { error });
-        } finally {
-          setSpellcheckLoading(false);
-        }
-      }
+      // A name is never spell-checked: it would send the child's name to an AI model, and a
+      // name has no "right" spelling (R-KID-01, 22 Nov 2026). It is kept so every AI request
+      // from this page masks it (src/lib/readerNames.ts).
+      if (field === 'name') rememberReaderName(sanitized);
     } else {
       onUpdate({ [field]: value });
-    }
-  };
-
-  // Accept spellcheck suggestion
-  const acceptSpellcheckSuggestion = () => {
-    if (spellcheckSuggestion) {
-      onUpdate({ name: spellcheckSuggestion });
-      setSpellcheckSuggestion("");
     }
   };
 
@@ -180,18 +153,6 @@ export const FormStep1Essential = ({
             </div>
           )}
 
-          {/* Spellcheck suggestion */}
-          {spellcheckSuggestion && !validationWarnings.name && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>{t("formStep1.spellcheck.suggestion", "Did you mean:")}</span>
-              <button
-                onClick={acceptSpellcheckSuggestion}
-                className="text-primary hover:text-primary/80 underline"
-              >
-                {spellcheckSuggestion}
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Age Field */}

@@ -47,8 +47,8 @@ describe("free-story limit", () => {
   it("generate-adaptive-story checks the allowance before generating", () => {
     const src = read("supabase/functions/generate-adaptive-story/index.ts");
     const check = src.indexOf("await checkFreeStoryAllowance(req, requestBody)");
-    // Generation runs inside the request's privacy lane (31 Oct 2026); still the only call, still after the check.
-    const generate = src.indexOf("return await withPrivacyLane(lane, () => handleStreamlinedGeneration(requestBody))");
+    // Generation runs inside the request's privacy lane and names (31 Oct, 22 Nov 2026); still the only call, still after the check.
+    const generate = src.indexOf("return await withPrivacy(privacy, () => handleStreamlinedGeneration(requestBody))");
     expect(src.match(/handleStreamlinedGeneration\(/g)?.length).toBe(1);
     expect(check).toBeGreaterThan(0);
     expect(generate).toBeGreaterThan(check);

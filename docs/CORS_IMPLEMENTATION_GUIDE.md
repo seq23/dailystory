@@ -116,7 +116,7 @@ serve(async (req) => {
 
 **Functions Using This:** 27 functions including:
 - `create-checkout`, `customer-portal`, `check-subscription`
-- `openai-tts`, `elevenlabs-tts`
+- `elevenlabs-tts`
 - `correct-spelling`, `translate-universal`, `word-dictionary`
 
 ---

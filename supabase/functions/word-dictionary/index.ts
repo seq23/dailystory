@@ -5,7 +5,7 @@ import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
-import { privacyLaneForRequest } from "../_shared/privacyLane.ts";
+import { privacyForRequest, withPrivacy, isNameOf, type RequestPrivacy } from "../_shared/privacyLane.ts";
 import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
 import { parseModelJson, freeDictionaryLookup, builtInWordEntry } from "../_shared/wordFallback.ts";
 import { jsonAnswerProblem } from "../_shared/storyOutputCheck.ts";
@@ -283,6 +283,10 @@ serve(async (req) => {
   }
 
   let userLanguage = 'en'; // Default fallback
+  // The reader's and the account's names (../_shared/privacyLane.ts): a tapped name goes to no
+  // model and no dictionary, and is never logged (R-KID-01).
+  let privacy: RequestPrivacy | null = null;
+  const isPrivateName = (w: string) => !!privacy && isNameOf(w, privacy.names);
   try {
     const reqBody = await req.json();
     const { word, userLevel = 'easy', userLanguage: reqUserLanguage = 'en' } = reqBody;
@@ -298,8 +302,15 @@ serve(async (req) => {
     // Check enhanced cache first (now includes 379 educational words pre-cached)
     if (wordCache.has(cacheKey)) {
       const cachedData = wordCache.get(cacheKey)!;
-      console.log(`📚 Cache hit for educational word: ${cleanWord}`);
+      console.log('📚 Cache hit for an educational word');
       return new Response(JSON.stringify(cachedData), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    privacy = await privacyForRequest(req, reqBody);
+    if (isPrivateName(cleanWord)) {
+      return new Response(JSON.stringify({ ...builtInWordEntry(cleanWord, userLanguage), source: 'name' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -350,7 +361,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     // free dictionary, so the child still sees a definition.
     if (await chargeCall(caller, 'word-dictionary')) throw new Error('paid call limit reached');
 
-    const { response, provider } = await chatCompletionWithFallback({
+    const { response, provider } = await withPrivacy(privacy, () => chatCompletionWithFallback({
         model: 'gpt-4o-mini',
         messages: [
           {
@@ -364,7 +375,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
         ],
         temperature: 0.3,
         max_tokens: 300,
-    }, { accept: jsonAnswerProblem('definition'), lane: await privacyLaneForRequest(req, reqBody) });
+    }, { accept: jsonAnswerProblem('definition') }));
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -393,7 +404,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     try {
       wordData = parseModelJson<WordData>(content);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', content);
+      console.error('Failed to parse the model response', { chars: String(content ?? '').length });
       // Fallback word data based on user language
       const fallbackLanguage = userLanguage === 'en' ? 'English' : (languageMap[userLanguage] || 'English');
       const fallbackDefinition = userLanguage === 'en' 
@@ -429,7 +440,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     // Cache the result for future requests
     wordCache.set(cacheKey, wordData);
 
-    console.log(`Generated dictionary entry for: ${cleanWord} (${userLanguage}) - Total cache size: ${wordCache.size}`);
+    console.log(`Generated dictionary entry (${userLanguage}) - Total cache size: ${wordCache.size}`);
 
     return new Response(JSON.stringify(wordData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -441,7 +452,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     // built-in entry. 200, so the reader always has something to show.
     let fallbackWord = '';
     try { fallbackWord = String((await reqClone.json())?.word ?? '').toLowerCase().replace(/[.,!?;:'"()]/g, '').trim(); } catch { /* body unreadable */ }
-    const entry = (userLanguage === 'en' && fallbackWord ? await freeDictionaryLookup(fallbackWord) : null)
+    const entry = (userLanguage === 'en' && fallbackWord && !isPrivateName(fallbackWord) ? await freeDictionaryLookup(fallbackWord) : null)
       ?? builtInWordEntry(fallbackWord || 'this word', userLanguage);
     return new Response(JSON.stringify({ ...entry, source: 'fallback' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

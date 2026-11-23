@@ -67,7 +67,6 @@ docs/voice-commands/              # Voice command documentation
 - `VoiceCommandController` - Main controller component
 - `useVoiceIntegration` - Voice command integration hook
 - `useElevenLabsAgent` - ElevenLabs agent communication
-- `useOpenAIRealtime` - OpenAI Realtime API integration
 
 ## Audio System - Audio Playback System
 
