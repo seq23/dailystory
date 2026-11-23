@@ -519,7 +519,10 @@ jobs:
           failed=""
           for func in $RETIRED; do
             if [ -d "supabase/functions/$func" ]; then echo "::error::$func is listed as retired but its folder exists"; failed="$failed $func"; continue; fi
-            supabase functions delete "$func" --project-ref "$SUPABASE_PROJECT_ID" >/tmp/del.out 2>&1 || grep -qi "not found\|404" /tmp/del.out || { echo "::error::$func delete failed: $(tail -c 200 /tmp/del.out)"; failed="$failed $func"; continue; }
+            # The answer below decides, never the CLI's wording: a function already gone makes the
+            # delete fail ("does not exist"), and one that is still live answers something other
+            # than 404 whatever the delete said.
+            supabase functions delete "$func" --project-ref "$SUPABASE_PROJECT_ID" >/tmp/del.out 2>&1 || echo "$func: delete said: $(tail -c 200 /tmp/del.out)"
             code=000
             for attempt in 1 2 3 4 5 6; do
               code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 -X OPTIONS "$BASE_URL/$func" || echo 000)
