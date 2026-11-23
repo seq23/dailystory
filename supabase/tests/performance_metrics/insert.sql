@@ -4,6 +4,8 @@
 -- image administrator; the table and its original policies come from the production migration
 -- (20250805053503), extracted by scripts/test-institutions-db.sh. test_assert comes from
 -- supabase/tests/institutions/access.sql. Fixture ids only.
+-- Supabase grants the service role every table; this bootstrap does not (as diagnostics/access.sql).
+grant all on public.performance_metrics to service_role;
 insert into auth.users (id) values ('80000000-0000-0000-0000-000000000001'), ('80000000-0000-0000-0000-000000000002') on conflict do nothing;
 
 -- A stranger with the anon key cannot write a row.
