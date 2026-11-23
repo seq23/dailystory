@@ -56,5 +56,35 @@ Four emails to the account holder, approved by Sequoia on 1 Nov 2026 (copy word 
   secrets copied to the project by `sync-edge-secrets.yml`. Run one now:
   `gh workflow run ops-reports.yml -R seq23/dailystory -f report=cost-report`.
 
+## Parent incident notice
+Privacy.tsx promises "Personal information incidents are logged and parents are notified".
+`notify-data-breach` keeps that promise. Owner only (an `ADMIN_USER_IDS` account token or the
+service key); anyone else gets 401/403 before the body is read.
+
+- **Who gets it:** the parents of the affected children (`childIds`) and any named accounts
+  (`accountIds`), looked up in the database. The address is the account's own sign-in email,
+  never a field the request or the account can rewrite. One email per parent, naming only that
+  parent's affected children.
+- **Dry run first (the default):** returns the counts (`parents`, `recipients`, `noAddress`) and
+  the rendered email with a placeholder name. Nothing is sent or logged.
+- **Send:** `"mode": "send"`. The incident is logged in `data_breach_log` first (two-year COPPA
+  record); each parent is claimed in `incident_notices` before sending, so a re-run never sends
+  twice. A failed send is recorded `failed` (no address in the error) and the next run retries
+  only those; a run that died mid-send is retried after 10 minutes (the mailer's idempotency key
+  stops a second copy). At most 40 sends per run: a `202` with `remaining` means run it again.
+- **Stops:** zero reachable parents is `422 NO_RECIPIENTS`; no `RESEND_API_KEY` is a `503`.
+  Until time-2-read.com is verified in Resend, every send records `failed` and can be re-run
+  once the domain is verified.
+
+```bash
+# from a shell where FN_TOKEN holds an admin's access token (never paste it into a file)
+curl -sS -X POST "https://<project>.supabase.co/functions/v1/notify-data-breach" \
+  -H "Authorization: Bearer $FN_TOKEN" -H "Content-Type: application/json" -d @incident.json
+```
+
+`incident.json`: `incidentId` (lowercase, e.g. `2026-11-story-history`), `whenItHappened`,
+`whatHappened`, `dataInvolved` (list), `whatWeAreDoing`, optional `whatYouCanDo` and `severity`,
+`childIds` and/or `accountIds`, and `mode`.
+
 ## Schedule
 - Every scheduled job, in Central time, is listed in `docs/SCHEDULE.md` (rebalanced 1 Nov 2026).
