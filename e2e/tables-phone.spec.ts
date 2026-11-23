@@ -55,8 +55,8 @@ const PAGES: Array<{ path: string; tables: number; stacked: number; setup?: (pag
     // Class view: skill summary, teacher and app results, dated growth, the class list and the
     // roster preview; then one student's own report (two more tables).
     tables: 8,
-    // The three students in the class list.
-    stacked: 3,
+    // The class list and the two dated growth tables: 3 students, 3 students, 5 skills.
+    stacked: 11,
     setup: schoolWorkspace,
     open: async (page) => {
       // The roster preview shows once a class is chosen, "Import a roster" is open and a CSV is picked.
@@ -91,11 +91,33 @@ for (const width of [320, 390] as const) {
       // A cell whose text is wider than the cell, or a cell reaching past the screen (including one
       // inside a sideways-scrolling box), is clipped. A stacked table's header row is hidden for
       // screen readers only (a 1 px box), so its cells are not cells anyone sees.
-      const clipped = await page.evaluate((w) => [...document.querySelectorAll('td, th')]
+      const clipped = await page.evaluate((w) => [...document.querySelectorAll('td, th, caption')]
         .filter((el) => !(el.closest('thead') && el.closest('thead')!.getBoundingClientRect().width <= 1))
         .filter((el) => { const b = el.getBoundingClientRect(); return el.scrollWidth > el.clientWidth + 1 || b.left < -1 || b.right > w + 1; })
         .map((el) => (el.textContent ?? '').trim().slice(0, 60) || `<${el.tagName.toLowerCase()}>`), width);
       expect(clipped, `${path} clipped cells at ${width} px`).toEqual([]);
+      // A cell can also "fit" by breaking its words apart (the school workspace wraps anywhere):
+      // "vo / ca / bul / ary" passes the check above and cannot be read. No word in a cell or a
+      // caption may sit on two lines.
+      const split = await page.evaluate(() => {
+        const out: string[] = [];
+        for (const el of document.querySelectorAll('td, th, caption')) {
+          const head = el.closest('thead');
+          if (head && head.getBoundingClientRect().width <= 1) continue;
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+            for (const m of (n.textContent ?? '').matchAll(/[\p{L}\p{N}]+/gu)) {
+              const r = document.createRange();
+              r.setStart(n, m.index!);
+              r.setEnd(n, m.index! + m[0].length);
+              const tops = new Set([...r.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top)));
+              if (tops.size > 1) out.push(m[0]);
+            }
+          }
+        }
+        return out;
+      });
+      expect(split, `${path} words broken across lines at ${width} px`).toEqual([]);
       // A stacked table really is cards, and every value on a card says what it is: a bare "20"
       // under a hidden header means nothing.
       const cards = await page.evaluate(() => [...document.querySelectorAll('table.stack-on-phone tbody tr')].map((tr) => ({

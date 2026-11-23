@@ -348,6 +348,14 @@ export default function Institutions() {
     "App stories",
     "App minutes",
   ];
+  // The dated growth tables' columns, read the same way.
+  const levelCols = [uiText("Start"), "Latest", "Grade steps"];
+  const skillGrowthCols = [
+    "Paired students",
+    "Start questions / dates",
+    "Latest questions / dates",
+    "Change",
+  ];
   const classIds = new Set(
     classes
       .filter((c) => !selectedClass || c.id === selectedClass.id)
@@ -623,19 +631,19 @@ export default function Institutions() {
                 <details>
                   <summary>Dated class growth comparisons</summary>
                   <div className="school-table">
-                    <table>
+                    <table className="stack-on-phone" role="table">
                       <caption>
                         First and latest recorded level per child
                       </caption>
-                      <thead>
-                        <tr>
-                          <th>Student</th>
-                          <th>{uiText("Start")}</th>
-                          <th>Latest</th>
-                          <th>Grade steps</th>
+                      <thead role="rowgroup">
+                        <tr role="row">
+                          <th role="columnheader">Student</th>
+                          {levelCols.map((c) => (
+                            <th key={c} role="columnheader">{c}</th>
+                          ))}
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody role="rowgroup">
                         {students.map((s) => {
                           const r = studentReport(
                             s,
@@ -644,19 +652,19 @@ export default function Institutions() {
                             workspace.scores,
                           );
                           return (
-                            <tr key={s.id}>
-                              <th>{s.display_name}</th>
-                              <td>
+                            <tr key={s.id} role="row">
+                              <th role="rowheader">{s.display_name}</th>
+                              <td role="cell" data-label={levelCols[0]}>
                                 {r.start
                                   ? `${gradeLabel(r.start.reading_grade)} · ${date(r.start.assessed_on)}`
                                   : "Not assessed"}
                               </td>
-                              <td>
+                              <td role="cell" data-label={levelCols[1]}>
                                 {r.now
                                   ? `${gradeLabel(r.now.reading_grade)} · ${date(r.now.assessed_on)}`
                                   : "Not assessed"}
                               </td>
-                              <td>{r.levelDelta ?? "Needs two levels"}</td>
+                              <td role="cell" data-label={levelCols[2]}>{r.levelDelta ?? "Needs two levels"}</td>
                             </tr>
                           );
                         })}
@@ -664,38 +672,37 @@ export default function Institutions() {
                     </table>
                   </div>
                   <div className="school-table">
-                    <table>
+                    <table className="stack-on-phone" role="table">
                       <caption>
                         Skill growth · same children at both endpoints for each
                         skill
                       </caption>
-                      <thead>
-                        <tr>
-                          <th>Skill</th>
-                          <th>Paired students</th>
-                          <th>Start questions / dates</th>
-                          <th>Latest questions / dates</th>
-                          <th>Change</th>
+                      <thead role="rowgroup">
+                        <tr role="row">
+                          <th role="columnheader">Skill</th>
+                          {skillGrowthCols.map((c) => (
+                            <th key={c} role="columnheader">{c}</th>
+                          ))}
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody role="rowgroup">
                         {growth.skills.map((s) => (
-                          <tr key={s.skill}>
-                            <th>{s.skill}</th>
-                            <td>
+                          <tr key={s.skill} role="row">
+                            <th role="rowheader">{s.skill}</th>
+                            <td role="cell" data-label={skillGrowthCols[0]}>
                               {s.paired}/{students.length}
                             </td>
-                            <td>
+                            <td role="cell" data-label={skillGrowthCols[1]}>
                               {s.paired
                                 ? `${s.firstCorrect}/${s.firstTotal} · ${date(s.firstDates[0])}–${date(s.firstDates[s.firstDates.length - 1])}`
                                 : "Not assessed"}
                             </td>
-                            <td>
+                            <td role="cell" data-label={skillGrowthCols[2]}>
                               {s.paired
                                 ? `${s.lastCorrect}/${s.lastTotal} · ${date(s.lastDates[0])}–${date(s.lastDates[s.lastDates.length - 1])}`
                                 : "Not assessed"}
                             </td>
-                            <td>
+                            <td role="cell" data-label={skillGrowthCols[3]}>
                               {s.delta === null
                                 ? "Needs two results"
                                 : `${s.delta} pp`}
