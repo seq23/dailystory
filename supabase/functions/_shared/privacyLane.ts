@@ -15,143 +15,23 @@
 // Which routes are school-safe, and why: config/product_inference.json
 // paid_lanes[product-inference].text_chain.school_lane. Guard:
 // src/test/guards/school-privacy-lane.test.ts.
-//
-// Names (22 Nov 2026, R-KID-01): the same per-request context carries every name that must
-// not leave in clear: the names in the request body, the names the browser holds for the
-// reader (body.readerNames, added by src/lib/readerNames.ts), and, for a verified account, the account's
-// own display name and every child profile on it (a sibling typed into a request is one of
-// them). storyTextProvider.ts masks all of them on every tier. A forged name only adds a
-// mask to the caller's own request; it can never remove one.
 import { AsyncLocalStorage } from "node:async_hooks";
+// A URL import: Deno loads it; the app typecheck reads src/edge-imports.d.ts, and the edge tests
+// map it to a stub (vitest.config.ts), so they run the real lane lookup.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4?target=deno";
-import { expandNames, genderOf, namesFromCharacterInfo, type PrivateName } from "./deidentify.ts";
 
 export type PrivacyLane = "family" | "school";
 
-export interface RequestPrivacy {
-  lane: PrivacyLane;
-  /** Names masked in every model request made while serving this request. */
-  names: PrivateName[];
-}
+const laneStore = new AsyncLocalStorage<PrivacyLane>();
 
-// One store per process, even when a bundle holds two copies of this module: the log wrapper
-// below reads it, and a second store would leave its requests' names unredacted.
-const STORE = Symbol.for("t2r.requestPrivacy");
-// deno-lint-ignore no-explicit-any
-const privacyStore: AsyncLocalStorage<RequestPrivacy> = ((globalThis as any)[STORE] ??= new AsyncLocalStorage<RequestPrivacy>());
-
-/** Run fn with every chatCompletionWithFallback call inside it on this lane, masking these names. */
-export function withPrivacy<T>(privacy: RequestPrivacy, fn: () => T): T {
-  return privacyStore.run(privacy, fn);
+/** Run fn with every chatCompletionWithFallback call inside it on this lane. */
+export function withPrivacyLane<T>(lane: PrivacyLane, fn: () => T): T {
+  return laneStore.run(lane, fn);
 }
 
 /** The lane of the request being served, when one was set. */
 export function currentPrivacyLane(): PrivacyLane | undefined {
-  return privacyStore.getStore()?.lane;
-}
-
-/** The names of the request being served (none outside a request). */
-export function currentPrivateNames(): PrivateName[] {
-  return privacyStore.getStore()?.names ?? [];
-}
-
-const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-/** The text with every one of the names (and each 3+ letter part) replaced by "[name]". */
-export function redactNames(text: string, names: PrivateName[]): string {
-  let out = text;
-  for (const n of expandNames(names)) {
-    out = out.replace(new RegExp(`(?<![\\p{L}\\p{N}])${escapeRe(n)}(?![\\p{L}\\p{N}])`, "giu"), "[name]");
-  }
-  return out;
-}
-
-// Every log line written while a request is served has that request's names removed, so no
-// debug line (a prompt, a story, a model's answer) puts a child's name in the function logs.
-// One wrapper, installed once by every function that imports this module.
-const LOG_REDACTION = Symbol.for("t2r.logRedaction");
-function redactArg(arg: unknown, names: PrivateName[], seen = new WeakSet<object>(), depth = 0): unknown {
-  if (typeof arg === "string") return redactNames(arg, names);
-  if (arg instanceof Error) {
-    const text = String(arg.stack ?? `${arg.name}: ${arg.message}`);
-    const clean = redactNames(text, names);
-    return clean === text ? arg : clean;
-  }
-  if (!arg || typeof arg !== "object") return arg;
-  // Strings inside objects are redacted where they are, before any JSON escaping can hide a name.
-  if (seen.has(arg) || depth > 8) return "[…]";
-  seen.add(arg);
-  if (Array.isArray(arg)) return arg.map((v) => redactArg(v, names, seen, depth + 1));
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(arg)) out[redactNames(k, names)] = redactArg(v, names, seen, depth + 1);
-  return out;
-}
-export function installLogRedaction(target: Console = console): void {
-  // deno-lint-ignore no-explicit-any
-  const t = target as any;
-  if (t[LOG_REDACTION]) return;
-  t[LOG_REDACTION] = true;
-  for (const level of ["log", "info", "warn", "error", "debug"] as const) {
-    const original = t[level]?.bind(target);
-    if (!original) continue;
-    t[level] = (...args: unknown[]) => {
-      const names = currentPrivateNames();
-      original(...(names.length ? args.map((a) => redactArg(a, names)) : args));
-    };
-  }
-}
-installLogRedaction();
-
-const MAX_NAMES = 20;
-const MAX_NAME_CHARS = 60;
-
-const cleanName = (v: unknown): string | null => {
-  if (typeof v !== "string") return null;
-  const n = v.trim().slice(0, MAX_NAME_CHARS);
-  return n.length >= 2 ? n : null;
-};
-
-/** Names a request body carries for the reader (the child's name, display name, family names). */
-export function namesInBody(body: unknown): PrivateName[] {
-  // deno-lint-ignore no-explicit-any
-  const b = (body ?? {}) as any;
-  const out: PrivateName[] = [];
-  // deno-lint-ignore no-explicit-any
-  const from = (o: any) => {
-    if (!o || typeof o !== "object") return;
-    const gender = genderOf(o.gender ?? o.avatarType ?? o.avatar?.type);
-    for (const k of ["name", "childName", "displayName", "display_name"]) {
-      const n = cleanName(o[k]);
-      if (n) out.push({ name: n, gender });
-    }
-    for (const k of ["parentName", "siblingName"]) {
-      const n = cleanName(o[k]);
-      if (n) out.push({ name: n });
-    }
-  };
-  from({ childName: b.childName, displayName: b.displayName, gender: b.gender });
-  from(b.userInfo);
-  from(b.config?.userInfo);
-  from(b.characterInfo);
-  // The story bundle carries the reader in a "Character Info: {...}" block.
-  if (typeof b.bundle?.storyContent === "string") out.push(...namesFromCharacterInfo(b.bundle.storyContent));
-  if (Array.isArray(b.readerNames)) {
-    for (const v of b.readerNames.slice(0, MAX_NAMES)) {
-      const n = cleanName(v);
-      if (n) out.push({ name: n });
-    }
-  }
-  return out;
-}
-
-/** True when the word is one of the names, or one part of a multi-part name (case-insensitive). */
-export function isNameOf(word: string, names: PrivateName[]): boolean {
-  const w = word.trim().toLowerCase();
-  if (w.length < 2) return false;
-  return names.some(({ name }) => {
-    const n = name.trim().toLowerCase();
-    return n === w || n.split(/\s+/).includes(w);
-  });
+  return laneStore.getStore();
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -187,34 +67,29 @@ export interface LaneDeps {
   verifyUser: (token: string) => Promise<string>;
   /** public.institution_ai_lane(p_user, p_child), or throws. */
   laneOf: (userId: string, childProfileId: string | null) => Promise<string>;
-  /** The account's own display name and every child profile's display name, or throws. */
-  namesOf: (userId: string) => Promise<string[]>;
 }
 
 /**
- * The privacy of one request. No token, or the project's anon key (a guest), is the
- * family lane: a guest has no school record. A signed-in token is verified and looked
- * up; any failure on that path (token, lane or names) is the school lane, which only
- * uses routes that neither train on nor keep text. The body's names (and readerNames) are
- * masked whatever happens.
+ * The privacy lane for one request. No token, or the project's anon key (a guest), is
+ * the family lane: a guest has no school record. A signed-in token is verified and
+ * looked up; any failure on that path is the school lane.
  */
-export async function resolvePrivacy(
+export async function resolvePrivacyLane(
   authorization: string | null | undefined,
-  body: unknown,
+  childProfileId: string | null,
   deps: LaneDeps,
-): Promise<RequestPrivacy> {
-  const childProfileId = childProfileIdOf(body);
-  const given = namesInBody(body);
+): Promise<PrivacyLane> {
   const token = (authorization ?? "").replace(/^Bearer\s+/i, "").trim();
-  if (!token || jwtRole(token) === "anon") return { lane: childProfileId ? "school" : "family", names: given };
+  if (!token) return childProfileId ? "school" : "family";
+  const role = jwtRole(token);
+  if (role === "anon") return childProfileId ? "school" : "family";
   try {
     const userId = await deps.verifyUser(token);
-    const [lane, accountNames] = await Promise.all([deps.laneOf(userId, childProfileId), deps.namesOf(userId)]);
-    const names = [...given, ...accountNames.slice(0, 200).map(cleanName).filter((n): n is string => !!n).map((name) => ({ name }))];
-    return { lane: lane === "family" ? "family" : "school", names };
+    const lane = await deps.laneOf(userId, childProfileId);
+    return lane === "family" ? "family" : "school";
   } catch (e) {
     console.warn("privacy lane: could not confirm the account, using the school lane", e instanceof Error ? e.message : String(e));
-    return { lane: "school", names: given };
+    return "school";
   }
 }
 
@@ -237,31 +112,22 @@ export async function supabaseLaneDeps(): Promise<LaneDeps> {
       if (error) throw new Error(error.message);
       return String(data);
     },
-    namesOf: async (userId) => {
-      const [own, kids] = await Promise.all([
-        client.from("profiles").select("display_name").eq("user_id", userId),
-        client.from("child_profiles").select("display_name").eq("parent_user_id", userId),
-      ]);
-      if (own.error || kids.error) throw new Error((own.error ?? kids.error).message);
-      // deno-lint-ignore no-explicit-any
-      return [...(own.data ?? []), ...(kids.data ?? [])].map((r: any) => r?.display_name).filter((n: unknown): n is string => typeof n === "string");
-    },
   };
 }
 
-/** The privacy for an incoming edge request (production wiring; fails closed). */
-export async function privacyForRequest(req: Request, body: unknown): Promise<RequestPrivacy> {
+/** The lane for an incoming edge request (production wiring; fails closed). */
+export async function privacyLaneForRequest(req: Request, body: unknown): Promise<PrivacyLane> {
+  const child = childProfileIdOf(body);
   const auth = req.headers.get("Authorization");
   let deps: LaneDeps;
   try {
     deps = await supabaseLaneDeps();
   } catch (e) {
     // Without the database we cannot tell a school child from a family one.
-    const names = namesInBody(body);
     const token = (auth ?? "").replace(/^Bearer\s+/i, "").trim();
-    if (!childProfileIdOf(body) && (!token || jwtRole(token) === "anon")) return { lane: "family", names };
+    if (!child && (!token || jwtRole(token) === "anon")) return "family";
     console.warn("privacy lane: no database client, using the school lane", e instanceof Error ? e.message : String(e));
-    return { lane: "school", names };
+    return "school";
   }
-  return resolvePrivacy(auth, body, deps);
+  return resolvePrivacyLane(auth, child, deps);
 }

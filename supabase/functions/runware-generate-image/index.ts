@@ -19,7 +19,7 @@ import {
   buildImagePrompt,
   type ImageUserInfo,
 } from '../_shared/imagePrompt.ts';
-import { privacyForRequest } from '../_shared/privacyLane.ts';
+import { privacyLaneForRequest } from '../_shared/privacyLane.ts';
 import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
 
 const corsHeaders = {
@@ -255,8 +255,7 @@ Deno.serve(async (req) => {
   // the scene-writing step sends page text to the Lovable gateway (Gemini). Until both
   // are no-retention, a school child's page text never leaves here: the client shows its
   // static fallback picture. config/product_inference.json text_chain.school_lane.images.
-  const privacy = await privacyForRequest(req, payload);
-  if (privacy.lane === 'school') {
+  if ((await privacyLaneForRequest(req, payload)) === 'school') {
     return json({ success: false, skipped: 'school-privacy', error: 'Pictures are off for school accounts' });
   }
 
@@ -269,13 +268,10 @@ Deno.serve(async (req) => {
       user,
       sessionId,
       lovableApiKey: Deno.env.get('LOVABLE_API_KEY'),
-      // Every name of the reader and the account, not only the one in userInfo (R-KID-01).
-      privateNames: privacy.names,
     });
 
-    console.log(
-      `[image] page ${pageNumber} scene(${built.sceneSource}): ${built.scene}`,
-    );
+    // The scene's length only: page text can hold a child's name (R-KID-01).
+    console.log(`[image] page ${pageNumber} scene(${built.sceneSource}): ${built.scene.length} chars`);
 
     const imageURL = await callRunware(
       built.positivePrompt,

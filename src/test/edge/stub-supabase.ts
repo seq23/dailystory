@@ -7,8 +7,7 @@ type Result = { data: unknown; error: { message: string } | null };
 function query(table: string) {
   const rows = () => edgeState().tables[table] ?? [];
   let single: "one" | "maybe" | null = null;
-  const result = (): Result =>
-    edgeState().failing?.includes(table) ? { data: null, error: { message: `${table} unavailable` } } : { data: single ? rows()[0] ?? null : rows(), error: null };
+  const result = (): Result => ({ data: single ? rows()[0] ?? null : rows(), error: null });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const builder: any = new Proxy(
     {},

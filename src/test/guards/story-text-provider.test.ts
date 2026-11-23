@@ -3,6 +3,8 @@
 // order: OpenRouter :free (rotated) → Workers AI free → OpenRouter paid (prepaid
 // credit only) → OpenAI → backup content. No Gemini (its API terms forbid services
 // used by under-18s). A child's name never leaves on the free/third-party routes.
+// These run the story chain, which opts in to the free tier (freeTier: true, the reader's
+// name masked); every other caller takes safe routes only (school-privacy-lane.test.ts).
 import { describe, it, expect, beforeEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -51,7 +53,7 @@ describe("the chain: free first, paid last", () => {
 
   it("the order is OpenRouter :free (each model) → Workers AI → OpenRouter paid → OpenAI", async () => {
     const r = scripted(() => new Response("busy", { status: 429 }));
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
+    const out = await chatCompletionWithFallback(BODY, { freeTier: true, fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
     expect(out.response.ok).toBe(false);
     expect(r.calls.map((c) => (c.url === CF_URL ? "cf" : c.url === OPENAI_CHAT_URL ? "openai" : c.body.model))).toEqual([
       ...OPENROUTER_FREE_MODELS, "cf", OPENROUTER_PAID_MODEL, "openai",
@@ -60,7 +62,7 @@ describe("the chain: free first, paid last", () => {
 
   it("the first free model that answers writes the story; nothing paid is called", async () => {
     const r = scripted((url, _b, n) => (n === 1 ? new Response("rate limited", { status: 429 }) : new Response(OK, { status: 200 })));
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
+    const out = await chatCompletionWithFallback(BODY, { freeTier: true, fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
     expect(out.provider).toBe("openrouter-free");
     expect(r.calls.map((c) => c.body.model)).toEqual(OPENROUTER_FREE_MODELS.slice(0, 2));
     expect(r.calls.every((c) => c.url === OPENROUTER_CHAT_URL && /:free$/.test(c.body.model))).toBe(true);
@@ -68,13 +70,13 @@ describe("the chain: free first, paid last", () => {
 
   it("a 200 with no text does not count", async () => {
     const r = scripted((url) => (url === OPENROUTER_CHAT_URL ? new Response(answer(""), { status: 200 }) : new Response(OK, { status: 200 })));
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
+    const out = await chatCompletionWithFallback(BODY, { freeTier: true, fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
     expect(out.provider).toBe("cloudflare-free");
   });
 
   it("missing keys skip their tiers silently; OpenAI alone still works", async () => {
     const r = scripted(() => new Response(OK, { status: 200 }));
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf({ OPENAI_API_KEY: "sk-test" }) });
+    const out = await chatCompletionWithFallback(BODY, { freeTier: true, fetchImpl: r.fetchImpl, env: envOf({ OPENAI_API_KEY: "sk-test" }) });
     expect(out.provider).toBe("openai");
     expect(r.calls.map((c) => c.url)).toEqual([OPENAI_CHAT_URL]);
     expect(out.attempts.map((a) => a.provider)).toEqual(["openai"]);
@@ -86,11 +88,11 @@ describe("the chain: free first, paid last", () => {
       url === OPENAI_CHAT_URL ? new Response(OK, { status: 200 })
       : body.model === OPENROUTER_PAID_MODEL ? new Response("Insufficient credits", { status: 402 })
       : new Response("busy", { status: 429 }));
-    await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(keys), now: () => 1000 });
+    await chatCompletionWithFallback(BODY, { freeTier: true, fetchImpl: r.fetchImpl, env: envOf(keys), now: () => 1000 });
     const paid = r.calls.find((c) => c.body.model === OPENROUTER_PAID_MODEL)!;
     expect(paid.body.provider).toEqual({ data_collection: "deny" });
     const r2 = scripted((url) => (url === OPENAI_CHAT_URL ? new Response(OK, { status: 200 }) : new Response("busy", { status: 429 })));
-    await chatCompletionWithFallback(BODY, { fetchImpl: r2.fetchImpl, env: envOf(keys), now: () => 2000 });
+    await chatCompletionWithFallback(BODY, { freeTier: true, fetchImpl: r2.fetchImpl, env: envOf(keys), now: () => 2000 });
     expect(r2.calls.some((c) => c.body.model === OPENROUTER_PAID_MODEL)).toBe(false);
   });
 
@@ -136,7 +138,7 @@ describe("only real story text reaches a page", () => {
 
   it("a rejected answer moves the chain to the next model, and the page gets the real story", async () => {
     const r = scripted((_u, _b, n) => new Response(answer(n === 1 ? LIVE_BAD_PAGE : GOOD_PAGE.replace(/Aiden/g, "Kiki")), { status: 200 }));
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), accept: (t, f) => storyTextProblem(t, f) });
+    const out = await chatCompletionWithFallback(BODY, { freeTier: true, fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), accept: (t, f) => storyTextProblem(t, f) });
     expect(r.calls.map((c) => c.body.model)).toEqual(OPENROUTER_FREE_MODELS.slice(0, 2));
     expect(out.attempts[0].error).toMatch(/rejected: planning text/);
     expect((await out.response.json()).choices[0].message.content).toBe(GOOD_PAGE);
@@ -144,7 +146,7 @@ describe("only real story text reaches a page", () => {
 
   it("when every model writes planning text, nothing is served (the caller falls back to Backup Mode)", async () => {
     const r = scripted(() => new Response(answer(LIVE_BAD_PAGE), { status: 200 }));
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), accept: (t, f) => storyTextProblem(t, f) });
+    const out = await chatCompletionWithFallback(BODY, { freeTier: true, fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), accept: (t, f) => storyTextProblem(t, f) });
     expect(out.response.ok).toBe(false);
     expect(out.attempts.every((a) => /rejected/.test(a.error ?? ""))).toBe(true);
   });
@@ -152,7 +154,7 @@ describe("only real story text reaches a page", () => {
   it("OpenRouter is asked for no reasoning and a budget that cannot cut a page off; reasoning fields never reach the caller", async () => {
     const withReasoning = JSON.stringify({ choices: [{ finish_reason: "stop", message: { content: GOOD_PAGE, reasoning: "Let me analyze" } }] });
     const r = scripted(() => new Response(withReasoning, { status: 200 }));
-    const out = await chatCompletionWithFallback({ ...BODY, max_completion_tokens: 150 }, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
+    const out = await chatCompletionWithFallback({ ...BODY, max_completion_tokens: 150 }, { freeTier: true, fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS) });
     expect(r.calls[0].body.reasoning).toEqual({ enabled: false, exclude: true });
     expect(r.calls[0].body.max_tokens).toBeGreaterThanOrEqual(MIN_THIRD_PARTY_TOKENS);
     expect((await out.response.json()).choices[0].message.reasoning).toBeUndefined();
@@ -180,7 +182,7 @@ describe("a child's name never leaves on the free or third-party routes", () => 
 
   it("the outgoing body to every non-OpenAI tier contains no real name; the returned text has it back", async () => {
     const r = scripted((url) => (url === OPENAI_CHAT_URL ? new Response(OK, { status: 200 }) : new Response("busy", { status: 429 })));
-    await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), privateNames: ["Aiden"] });
+    await chatCompletionWithFallback(BODY, { freeTier: true, fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), privateNames: ["Aiden"] });
     const thirdParty = r.calls.filter((c) => c.url !== OPENAI_CHAT_URL);
     expect(thirdParty.length).toBe(OPENROUTER_FREE_MODELS.length + 2);
     for (const c of thirdParty) {
@@ -189,7 +191,7 @@ describe("a child's name never leaves on the free or third-party routes", () => 
     }
     resetProviderCircuit();
     const r2 = scripted(() => new Response(answer("Kiki and Kiki's dog flew to the moon."), { status: 200 }));
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r2.fetchImpl, env: envOf(ALL_KEYS) });
+    const out = await chatCompletionWithFallback(BODY, { freeTier: true, fetchImpl: r2.fetchImpl, env: envOf(ALL_KEYS) });
     expect(JSON.stringify(r2.calls[0].body)).not.toMatch(/aiden/i); // name found in Character Info without being passed
     expect((await out.response.json()).choices[0].message.content).toBe("Aiden and Aiden's dog flew to the moon.");
   });
@@ -215,7 +217,7 @@ describe("a child's name never leaves on the free or third-party routes", () => 
     resetProviderCircuit();
     const boyBody = { ...BODY, messages: [{ role: "user", content: 'Story for Aiden.\nCharacter Info: {"name":"Aiden","avatarType":"boy"}' }] };
     const r = scripted(() => new Response(answer("Milo saw his dog. He smiled."), { status: 200 }));
-    const out = await chatCompletionWithFallback(boyBody, { fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), privateNames: ["Aiden"] });
+    const out = await chatCompletionWithFallback(boyBody, { freeTier: true, fetchImpl: r.fetchImpl, env: envOf(ALL_KEYS), privateNames: ["Aiden"] });
     expect(JSON.stringify(r.calls[0].body)).toContain("Milo");
     expect(JSON.stringify(r.calls[0].body)).not.toMatch(/aiden|kiki/i);
     expect((await out.response.json()).choices[0].message.content).toBe("Aiden saw his dog. He smiled.");

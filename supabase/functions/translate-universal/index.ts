@@ -1,7 +1,7 @@
 // DIAGNOSTIC REDEPLOY: 2025-01-23T03:00:00Z - Force packaging inclusion
 console.log("[translate-universal] DIAGNOSTIC LOADED: 2025-01-23T03:00:00Z");
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
-import { privacyForRequest, withPrivacy } from "../_shared/privacyLane.ts";
+import { privacyLaneForRequest, withPrivacyLane } from "../_shared/privacyLane.ts";
 import { plainAnswerProblem } from "../_shared/storyOutputCheck.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
@@ -466,14 +466,13 @@ const handleRequest = async (req: Request): Promise<Response> => {
   }
 };
 
-// School children's text only on no-training/no-retention routes, and every name of the reader
-// and the account masked (../_shared/privacyLane.ts): every model call in the handler inherits
-// what is decided here.
+// School children's text only on no-training/no-retention routes (../_shared/privacyLane.ts):
+// every model call in the handler inherits the lane decided here from the signed-in account.
 serve(async (req: Request) => {
   if (req.method !== "POST") return handleRequest(req);
   // Read under the paid-call byte cap (../_shared/paidCallGuard.ts); not JSON → null, and the handler answers it.
   const { body: laneBody, refused } = await readJsonBeforeGuard(req, corsHeaders);
   if (refused) return refused;
-  const privacy = await privacyForRequest(req, laneBody);
-  return withPrivacy(privacy, () => handleRequest(req));
+  const lane = await privacyLaneForRequest(req, laneBody);
+  return withPrivacyLane(lane, () => handleRequest(req));
 });

@@ -68,14 +68,14 @@
 | Field | Description |
 |-------|-------------|
 | **Purpose** | Generate personalized AI stories for reading practice |
-| **Categories of Personal Data** | Reading preferences, grade level, interests, and the reader’s typed request; the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written |
+| **Categories of Personal Data** | Reading preferences, grade level, interests, and the reader’s typed request; story and quiz prompts have the reader’s name replaced by a stand-in (other names typed into a request are sent as written); text a reader asks to spell, translate or define is sent as written to routes that do not train on it |
 | **Legal Basis** | Contract (Art. 6(1)(b)) - service delivery |
 | **Source of Data** | User preferences and profile |
-| **Recipients** | OpenRouter, Cloudflare Workers AI, Lovable AI Gateway and, only when they fail, OpenAI (processors; text with the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written). Anthropic is no longer called (22 Nov 2026). Full list: /subprocessors |
+| **Recipients** | OpenRouter, Cloudflare Workers AI, Lovable AI Gateway and, only when they fail, OpenAI (processors; story text with the reader’s name replaced by a stand-in, except OpenAI, which receives the child’s first name; text a reader asks to spell, translate or define only to Workers AI, OpenRouter’s paid model and OpenAI). Anthropic is no longer called (22 Nov 2026). Full list: /subprocessors |
 | **Transfers to Third Countries** | USA |
 | **Transfer Safeguards** | The DPA each processor signed or accepted, as shown on /subprocessors (Lovable AI Gateway: in progress) |
 | **Retention Period** | Prompts: OpenAI keeps chat prompts up to 30 days for abuse monitoring; OpenRouter’s free models may log prompts (its paid model: zero retention); Generated stories: until session ends or saved |
-| **Technical Measures** | Before every AI text call, the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written; the same names are redacted from function logs; session isolation |
+| **Technical Measures** | Story and quiz prompts have the reader’s name replaced by a stand-in; text a reader asks to spell, translate or define never reaches a free model; function logs record lengths, not the text; session isolation |
 
 ### 3.4 Image Generation
 

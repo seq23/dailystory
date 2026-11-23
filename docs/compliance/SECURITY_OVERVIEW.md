@@ -90,7 +90,7 @@ The complete current list, with exactly what each vendor receives and which have
 | Vendor | Purpose | Data Access | Key Certifications |
 |---|---|---|---|
 | Supabase | Database & Auth | Full user data | SOC 2 Type II |
-| OpenAI | Story generation (last resort), speech-to-text | Story prompts, only when the other text models fail (age, grade, favorites, hobbies, typed request), with the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written; OpenAI keeps chat prompts up to 30 days for abuse monitoring; voice clips after a tap on the microphone | Enterprise API security |
+| OpenAI | Story generation (last resort), speech-to-text | Story prompts, only when the other text models fail (age, grade, favorites, hobbies, typed request), including the child’s first name (replaced by a stand-in for a school account), and text a reader asks to spell, translate or define when the other models fail; OpenAI keeps chat prompts up to 30 days for abuse monitoring; voice clips after a tap on the microphone | Enterprise API security |
 | Anthropic | AI fallback, no longer called | Nothing since 22 Nov 2026 | Enterprise API security |
 | Runware | Image generation | Picture scene, avatar look, age and favorite color; never a name | — |
 | ElevenLabs | Text-to-speech | Story text, including the child’s first name when the story uses it; tapped words; voice-mode speech | — |

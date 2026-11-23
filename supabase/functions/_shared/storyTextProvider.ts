@@ -15,10 +15,8 @@
 //   then the caller's backup content (Backup Mode stories, built-in definitions).
 // No Gemini anywhere: the Gemini API terms forbid services likely to be used by
 // under-18s. The Lovable AI gateway (Gemini models) is therefore not in this chain.
-// Every request, on every tier, is de-identified first (./deidentify.ts): no name of the
-// request's privacy context (./privacyLane.ts: the body's, the browser's and the verified
-// account's child profiles) leaves on any route, and each comes back into the text on
-// return (R-KID-01, 22 Nov 2026).
+// Every request on tiers 1–3 is de-identified first (./deidentify.ts): the child's
+// name never leaves on those routes, and comes back into the text on return.
 // The order, models and the per-provider terms check: config/product_inference.json
 // paid_lanes[product-inference].text_chain. Guard: src/test/guards/story-text-provider.test.ts.
 //
@@ -26,13 +24,20 @@
 // goes only to routes that neither train on nor keep the text. Tier 1 (OpenRouter
 // :free) is never tried; tier 2 (Workers AI, called directly: no training, no
 // retention) stays; tier 3 must carry provider { data_collection: "deny", zdr: true };
-// tier 4 OpenAI (API data not used for training) gets the masked request, as on every lane.
+// tier 4 OpenAI (API data not used for training) gets the masked request too.
 // assertSchoolSafeRequest() checks every school request before it is built into a
 // fetch; anything else is refused and the caller's backup content answers.
 // Guard: src/test/guards/school-privacy-lane.test.ts.
-import { deidentify, namesFromCharacterInfo, type PrivateName } from "./deidentify.ts";
+//
+// Names route (22 Nov 2026, R-KID-01): a request that may carry a child's name (spelling,
+// translation, definitions: a child's own writing and story sentences, unmasked) takes the
+// same safe routes as the school lane: never the OpenRouter :free tier (unknown terms count
+// as training), OpenRouter only with no collection and zero retention. That is the default:
+// only a caller that passes freeTier: true (the reader's name masked by the caller) may use
+// tier 1. Masking itself is unchanged. Guard: src/test/edge/child-names-never-leave.test.ts.
+import { deidentify, namesFromCharacterInfo } from "./deidentify.ts";
 import { stripReasoning } from "./storyOutputCheck.ts";
-import { currentPrivacyLane, currentPrivateNames, type PrivacyLane } from "./privacyLane.ts";
+import { currentPrivacyLane, type PrivacyLane } from "./privacyLane.ts";
 
 export const OPENROUTER_CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
 export const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions";
@@ -154,7 +159,7 @@ export function assertFreeOpenRouterModel(model: string): void {
 }
 
 /** The request with every child's name replaced, and a function to put them back. */
-export function maskBody(apiBody: Record<string, unknown>, extraNames: Array<string | PrivateName> = []) {
+export function maskBody(apiBody: Record<string, unknown>, extraNames: string[] = []) {
   // deno-lint-ignore no-explicit-any
   const messages = (apiBody.messages as any[]) ?? [];
   const contents = messages.map((m) => (typeof m?.content === "string" ? m.content : ""));
@@ -212,7 +217,7 @@ export async function chatCompletionWithFallback(
     fetchImpl?: FetchLike;
     env?: EnvLike;
     now?: () => number;
-    privateNames?: Array<string | PrivateName>;
+    privateNames?: string[];
     /** Why an answer must not be used (null = use it). A rejected answer moves to the next model. See ./storyOutputCheck.ts. */
     accept?: (content: string, finishReason: string | null) => string | null;
     /**
@@ -222,25 +227,33 @@ export async function chatCompletionWithFallback(
      * try is cut to the time remaining.
      */
     deadline?: number;
-    /** Privacy lane; defaults to the request's lane (./privacyLane.ts withPrivacy), else "family". */
+    /** Privacy lane; defaults to the request's lane (./privacyLane.ts withPrivacyLane), else "family". */
     lane?: PrivacyLane;
+    /**
+     * May this request use the OpenRouter :free tier? Default no: a request that may carry a
+     * child's name only takes routes that neither train on nor keep it (R-KID-01). Ignored
+     * on the school lane, which never uses it.
+     */
+    freeTier?: boolean;
   } = {},
 ): Promise<ProviderResult> {
   const lane: PrivacyLane = opts.lane ?? currentPrivacyLane() ?? "family";
   const school = lane === "school";
+  // School children, and any request that may carry a child's name: safe routes only.
+  const safeRoutes = school || opts.freeTier !== true;
   const fetchImpl: FetchLike = opts.fetchImpl ?? ((u, i) => fetch(u, i));
   // deno-lint-ignore no-explicit-any
   const env: EnvLike = opts.env ?? ((n) => (globalThis as any).Deno?.env.get(n));
   const now = opts.now ?? Date.now;
   const attempts: ProviderAttempt[] = [];
   let lastRefusal: Response | null = null;
-  const { masked, restore } = maskBody(apiBody, [...(opts.privateNames ?? []), ...currentPrivateNames()]);
+  const { masked, restore } = maskBody(apiBody, opts.privateNames ?? []);
   const accept = opts.accept ?? ((c: string) => (c.trim() ? null : "empty answer"));
 
-  const done = (provider: Provider, model: string | undefined, res: Response, text: string): ProviderResult => {
+  const done = (provider: Provider, model: string | undefined, res: Response, text: string, unmask: boolean): ProviderResult => {
     attempts.push({ provider, model, status: res.status });
     lastAttempts = attempts;
-    return { response: cleaned(text, restore), provider, attempts: attempts.slice(), lane };
+    return { response: cleaned(text, unmask ? restore : (x) => x), provider, attempts: attempts.slice(), lane };
   };
 
   const tryOnce = async (
@@ -254,7 +267,7 @@ export async function chatCompletionWithFallback(
       }
       timeoutMs = Math.min(timeoutMs, left);
     }
-    if (school) {
+    if (safeRoutes) {
       try {
         assertSchoolSafeRequest(provider, url, body as Record<string, unknown>);
       } catch (err) {
@@ -290,14 +303,14 @@ export async function chatCompletionWithFallback(
 
   // ── Tier 1: OpenRouter :free, rotated. Names masked.
   const openrouterKey = env("OPENROUTER_API_KEY");
-  if (school) {
-    attempts.push({ provider: "openrouter-free", status: null, error: "skipped: school lane (free endpoints may log or train on prompts)" });
+  if (safeRoutes) {
+    attempts.push({ provider: "openrouter-free", status: null, error: `skipped: ${school ? "school lane" : "may carry a child's name"} (free endpoints may log or train on prompts)` });
   } else if (openrouterKey) {
     const orHeaders = { Authorization: `Bearer ${openrouterKey}`, "HTTP-Referer": "https://time-2-read.com", "X-Title": "Time-2-Read" };
     for (const model of OPENROUTER_FREE_MODELS) {
       assertFreeOpenRouterModel(model);
       const r = await tryOnce("openrouter-free", model, OPENROUTER_CHAT_URL, orHeaders, { ...withFloor(toCompatibleBody(masked, model)), reasoning: OPENROUTER_NO_REASONING }, FREE_TIMEOUT_MS);
-      if (r.ok && r.res) return done("openrouter-free", model, r.res, r.text);
+      if (r.ok && r.res) return done("openrouter-free", model, r.res, r.text, true);
       if (!r.ok && r.status === 401) break; // bad key: no other model will help
     }
   }
@@ -307,22 +320,23 @@ export async function chatCompletionWithFallback(
   const cfToken = env("CLOUDFLARE_WORKERS_AI_TOKEN");
   if (cfAccount && cfToken) {
     const r = await tryOnce("cloudflare-free", CLOUDFLARE_FREE_MODEL, cloudflareChatUrl(cfAccount), { Authorization: `Bearer ${cfToken}` }, withFloor(toCompatibleBody(masked, CLOUDFLARE_FREE_MODEL)), FREE_TIMEOUT_MS);
-    if (r.ok && r.res) return done("cloudflare-free", CLOUDFLARE_FREE_MODEL, r.res, r.text);
+    if (r.ok && r.res) return done("cloudflare-free", CLOUDFLARE_FREE_MODEL, r.res, r.text, true);
   }
 
   // ── Tier 3: OpenRouter paid, prepaid credit only, no training. Names masked.
   if (openrouterKey && now() >= (skippedUntil["openrouter-paid"] ?? 0)) {
-    const body = { ...withFloor(toCompatibleBody(masked, OPENROUTER_PAID_MODEL)), reasoning: OPENROUTER_NO_REASONING, provider: school ? OPENROUTER_SCHOOL_PROVIDER : OPENROUTER_PAID_PROVIDER };
+    const body = { ...withFloor(toCompatibleBody(masked, OPENROUTER_PAID_MODEL)), reasoning: OPENROUTER_NO_REASONING, provider: safeRoutes ? OPENROUTER_SCHOOL_PROVIDER : OPENROUTER_PAID_PROVIDER };
     const r = await tryOnce("openrouter-paid", OPENROUTER_PAID_MODEL, OPENROUTER_CHAT_URL, { Authorization: `Bearer ${openrouterKey}`, "HTTP-Referer": "https://time-2-read.com", "X-Title": "Time-2-Read" }, body, PAID_TIMEOUT_MS);
-    if (r.ok && r.res) return done("openrouter-paid", OPENROUTER_PAID_MODEL, r.res, r.text);
+    if (r.ok && r.res) return done("openrouter-paid", OPENROUTER_PAID_MODEL, r.res, r.text, true);
     if (!r.ok && r.status !== null && isDeadKeyRefusal(r.status, r.text)) skippedUntil["openrouter-paid"] = now() + DEAD_KEY_SKIP_MS;
   }
 
-  // ── Tier 4: OpenAI, last resort (paid). Names masked.
+  // ── Tier 4: OpenAI, last resort (paid). The request as the caller wrote it.
   const openaiKey = env("OPENAI_API_KEY");
   if (openaiKey && now() >= (skippedUntil.openai ?? 0)) {
-    const r = await tryOnce("openai", String(apiBody.model ?? ""), OPENAI_CHAT_URL, { Authorization: `Bearer ${openaiKey}` }, masked, OPENAI_TIMEOUT_MS);
-    if (r.ok && r.res) return done("openai", String(apiBody.model ?? ""), r.res, r.text);
+    // School lane: the masked request (names never leave), restored on return.
+    const r = await tryOnce("openai", String(apiBody.model ?? ""), OPENAI_CHAT_URL, { Authorization: `Bearer ${openaiKey}` }, school ? masked : apiBody, OPENAI_TIMEOUT_MS);
+    if (r.ok && r.res) return done("openai", String(apiBody.model ?? ""), r.res, r.text, school);
     if (!r.ok && r.status !== null && isDeadKeyRefusal(r.status, r.text)) skippedUntil.openai = now() + DEAD_KEY_SKIP_MS;
   } else if (openaiKey) {
     attempts.push({ provider: "openai", status: null, error: "skipped: refused with no credit or a bad key in the last 10 minutes" });

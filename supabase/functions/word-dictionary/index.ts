@@ -5,7 +5,7 @@ import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
-import { privacyForRequest, withPrivacy, isNameOf, type RequestPrivacy } from "../_shared/privacyLane.ts";
+import { privacyLaneForRequest } from "../_shared/privacyLane.ts";
 import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
 import { parseModelJson, freeDictionaryLookup, builtInWordEntry } from "../_shared/wordFallback.ts";
 import { jsonAnswerProblem } from "../_shared/storyOutputCheck.ts";
@@ -283,10 +283,6 @@ serve(async (req) => {
   }
 
   let userLanguage = 'en'; // Default fallback
-  // The reader's and the account's names (../_shared/privacyLane.ts): a tapped name goes to no
-  // model and no dictionary, and is never logged (R-KID-01).
-  let privacy: RequestPrivacy | null = null;
-  const isPrivateName = (w: string) => !!privacy && isNameOf(w, privacy.names);
   try {
     const reqBody = await req.json();
     const { word, userLevel = 'easy', userLanguage: reqUserLanguage = 'en' } = reqBody;
@@ -304,13 +300,6 @@ serve(async (req) => {
       const cachedData = wordCache.get(cacheKey)!;
       console.log('📚 Cache hit for an educational word');
       return new Response(JSON.stringify(cachedData), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    privacy = await privacyForRequest(req, reqBody);
-    if (isPrivateName(cleanWord)) {
-      return new Response(JSON.stringify({ ...builtInWordEntry(cleanWord, userLanguage), source: 'name' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -361,7 +350,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     // free dictionary, so the child still sees a definition.
     if (await chargeCall(caller, 'word-dictionary')) throw new Error('paid call limit reached');
 
-    const { response, provider } = await withPrivacy(privacy, () => chatCompletionWithFallback({
+    const { response, provider } = await chatCompletionWithFallback({
         model: 'gpt-4o-mini',
         messages: [
           {
@@ -375,7 +364,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
         ],
         temperature: 0.3,
         max_tokens: 300,
-    }, { accept: jsonAnswerProblem('definition') }));
+    }, { accept: jsonAnswerProblem('definition'), lane: await privacyLaneForRequest(req, reqBody) });
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -452,7 +441,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     // built-in entry. 200, so the reader always has something to show.
     let fallbackWord = '';
     try { fallbackWord = String((await reqClone.json())?.word ?? '').toLowerCase().replace(/[.,!?;:'"()]/g, '').trim(); } catch { /* body unreadable */ }
-    const entry = (userLanguage === 'en' && fallbackWord && !isPrivateName(fallbackWord) ? await freeDictionaryLookup(fallbackWord) : null)
+    const entry = (userLanguage === 'en' && fallbackWord ? await freeDictionaryLookup(fallbackWord) : null)
       ?? builtInWordEntry(fallbackWord || 'this word', userLanguage);
     return new Response(JSON.stringify({ ...entry, source: 'fallback' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

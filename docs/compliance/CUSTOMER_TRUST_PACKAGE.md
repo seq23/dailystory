@@ -101,7 +101,7 @@ The complete current list, with exactly what each vendor receives, is [time-2-re
 
 | Vendor | Purpose | Data Processed | Location | DPA |
 |--------|---------|----------------|----------|-----|
-| OpenAI | Story text generation (last resort), speech-to-text | Story prompts, only when the other text models fail (age, grade, favorites, hobbies, typed request), with the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written; OpenAI keeps chat prompts up to 30 days for abuse monitoring; voice clips after a tap on the microphone | US | ✅ Signed |
+| OpenAI | Story text generation (last resort), speech-to-text | Story prompts, only when the other text models fail (age, grade, favorites, hobbies, typed request), including the child’s first name (replaced by a stand-in for a school account), and text a reader asks to spell, translate or define when the other models fail; OpenAI keeps chat prompts up to 30 days for abuse monitoring; voice clips after a tap on the microphone | US | ✅ Signed |
 | Anthropic | AI fallback, no longer called | Nothing since 22 Nov 2026 | US | ⏳ In progress |
 | ElevenLabs | Text-to-speech | Story text, including the child’s first name when the story uses it; words a reader taps; what the reader says in voice mode | US | ⏳ In progress |
 | Runware | Image generation | Picture scene and the reader’s avatar look, age and favorite color; never a name; generated images kept up to 7 days | EU/US | ⏳ In progress |
@@ -113,7 +113,7 @@ The complete current list, with exactly what each vendor receives, is [time-2-re
 | Cloudflare | Hosting, CDN, WAF | IP addresses, request metadata | Global | ✅ Signed |
 | GitHub | Source code, CI/CD | Source code only (no user data) | US | ✅ Signed |
 
-**Key:** ElevenLabs receives the child’s first name when a story uses it, because it reads the story aloud; Runware never receives a name. Every text model (OpenRouter, Cloudflare Workers AI, Lovable AI Gateway and OpenAI) receives text with the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written. OpenAI does not train on API data and keeps chat prompts up to 30 days for abuse monitoring.
+**Key:** ElevenLabs receives the child’s first name when a story uses it, because it reads the story aloud; Runware never receives a name. Story text and quizzes reach OpenRouter, Cloudflare Workers AI and the Lovable AI Gateway with the reader’s name replaced by a stand-in; other names typed into a request are sent as written. OpenAI receives story prompts, with the child’s first name, only when the other models fail. Text a reader asks to spell, translate or define is sent as written, so it may hold any name, and goes only to routes that do not train on it: Cloudflare Workers AI, OpenRouter’s paid model (no data collection, zero retention) and OpenAI. OpenAI does not train on API data and keeps chat prompts up to 30 days for abuse monitoring.
 
 ---
 
@@ -181,7 +181,7 @@ A: No. We never sell, rent, or share personal data for advertising or marketing.
 A: United States (Supabase on AWS). Application hosted on Cloudflare (global CDN).
 
 **Q: Do AI providers retain user data?**  
-A: Time-2-Read does not store voice clips. OpenAI does not train on API data and states how long it keeps each kind of call on its API data controls page (https://developers.openai.com/api/docs/guides/your-data). OpenRouter’s paid model is set to zero retention; its free models may log or train on prompts, which reach them with every name replaced by a stand-in. See /subprocessors.
+A: Time-2-Read does not store voice clips. OpenAI does not train on API data and states how long it keeps each kind of call on its API data controls page (https://developers.openai.com/api/docs/guides/your-data). OpenRouter’s paid model is set to zero retention; its free models may log or train on story prompts, which reach them with the reader’s name replaced by a stand-in; text a reader asks to spell, translate or define never goes to a free model. See /subprocessors.
 
 **Q: Can you sign our DPA?**  
 A: Yes. Contact privacy@time-2-read.com.

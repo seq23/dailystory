@@ -1047,6 +1047,8 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           // masked on every free/third-party route and put back in the returned text.
           const sent = await chatCompletionWithFallback(apiBody, {
             privateNames: [userInfo?.name, userInfo?.displayName],
+            // The reader's name is masked above, so the free tier stays (../_shared/storyTextProvider.ts).
+            freeTier: true,
             // Only real story text reaches a page: no planning text, nothing cut off (../_shared/storyOutputCheck.ts).
             // A whole story cut by the budget keeps its complete pages.
             // Live: long enough for the grade, no repeated sentence, not a copy of the
@@ -1084,14 +1086,14 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         
         // Store failed AI prompt for debugging (inline console logging)
         console.log(`❌ [DEBUG] Failed AI prompt for session ${sessionId}:`, {
-          systemPrompt: enhancedSystemPrompt.substring(0, 200) + '...',
-          userPrompt: finalUserPrompt.substring(0, 200) + '...',
+          systemPromptChars: enhancedSystemPrompt.length, // never the text: it holds the child's name (R-KID-01)
+          userPromptChars: finalUserPrompt.length,
           model: currentModel.name,
           tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
           pageNumber: config?.pageNumber || 1,
           attempt: attempt,
           success: false,
-          bundle: bundleForDebug,
+          bundleKeys: Object.keys(bundleForDebug ?? {}),
           apiResponse: {
             status: response.status,
             statusText: response.statusText,
@@ -1210,14 +1212,14 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         
         // Store reasoning token failure for debugging (inline console logging)
         console.log(`⚠️ [DEBUG] Reasoning token failure for session ${sessionId}:`, {
-          systemPrompt: enhancedSystemPrompt.substring(0, 200) + '...',
-          userPrompt: finalUserPrompt.substring(0, 200) + '...',
+          systemPromptChars: enhancedSystemPrompt.length, // never the text: it holds the child's name (R-KID-01)
+          userPromptChars: finalUserPrompt.length,
           model: currentModel.name,
           tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
           pageNumber: config?.pageNumber || 1,
           attempt: attempt,
           success: false,
-          bundle: bundleForDebug,
+          bundleKeys: Object.keys(bundleForDebug ?? {}),
           apiResponse: {
             status: response.status,
             contentLength,
@@ -1242,14 +1244,14 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       
       // Store successful AI prompt for debugging (inline console logging)
       console.log(`✅ [DEBUG] Successful AI prompt for session ${sessionId}:`, {
-        systemPrompt: enhancedSystemPrompt.substring(0, 200) + '...',
-        userPrompt: finalUserPrompt.substring(0, 200) + '...',
+        systemPromptChars: enhancedSystemPrompt.length, // never the text: it holds the child's name (R-KID-01)
+        userPromptChars: finalUserPrompt.length,
         model: currentModel.name,
         tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
         pageNumber: config?.pageNumber || 1,
         attempt: attempt,
         success: true,
-        bundle: bundleForDebug,
+        bundleKeys: Object.keys(bundleForDebug ?? {}),
         apiResponse: {
           status: response.status,
           contentLength: storyText?.length || 0,
@@ -1326,14 +1328,14 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         break;
       } else {
         console.log(`❌ ${currentModel.name} produced empty content:`, {
-          rawResponse: storyText,
+          contentChars: storyText?.length ?? 0,
           attempt,
           model: currentModel.name,
-          fullAPIResponse: data,
+          usage: data.usage,
           contentPath: 'choices[0].message.content',
           hasChoices: !!data.choices,
           choicesLength: data.choices?.length || 0,
-          messageContent: data.choices?.[0]?.message?.content || null
+          hasMessageContent: !!data.choices?.[0]?.message?.content
         });
         
         // PHASE 2: Treat empty content as an error to trigger model switching
@@ -1594,7 +1596,7 @@ Please generate the final story version with natural narrative flow.`;
       apiBody.temperature = 0.7;
     }
     
-    const { response } = await chatCompletionWithFallback(apiBody, { privateNames: privateNames.filter((n): n is string => !!n), accept: (text, finishReason) => storyTextProblem(text, finishReason) });
+    const { response } = await chatCompletionWithFallback(apiBody, { privateNames: privateNames.filter((n): n is string => !!n), freeTier: true, accept: (text, finishReason) => storyTextProblem(text, finishReason) });
     
     if (!response.ok) {
       console.warn('⚠️ Re-injection API call failed, using executed content as-is');
@@ -1735,6 +1737,7 @@ function rewritePageWithProvider(userInfo: any, deadline?: number, minWords = 0)
       max_completion_tokens: Math.max(200, Math.ceil(page.split(/\s+/).length * 3)),
     }, {
       privateNames: [userInfo?.name, userInfo?.displayName].filter((n): n is string => typeof n === 'string' && !!n),
+      freeTier: true,
       // A rewrite may not drop the page below its grade's floor (../_shared/livePage.ts).
       accept: (text, finishReason) => storyTextProblem(text, finishReason, Math.min(80, Math.floor(page.length / 2)))
         ?? (wordCount(text) < Math.min(minWords, wordCount(page)) ? `too short (${wordCount(text)} words)` : null),

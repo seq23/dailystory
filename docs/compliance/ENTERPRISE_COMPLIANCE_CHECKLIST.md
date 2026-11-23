@@ -127,7 +127,7 @@
 | Requirement | Status | Evidence |
 |---|---|---|
 | Only collect what is necessary | ✅ Done | Triggers truncate fields: `special_request` 500 chars, `hobbies` 300 chars, `detected_content` 300 chars |
-| No "just in case" data collection | ✅ Done | No analytics without consent; before any AI call, the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written (`supabase/functions/_shared/privacyLane.ts`), and the same names are redacted from function logs |
+| No "just in case" data collection | ✅ Done | No analytics without consent; story and quiz prompts have the reader’s name replaced by a stand-in (`supabase/functions/_shared/storyTextProvider.ts`); text a reader asks to spell, translate or define goes only to routes that do not train on it; function logs record lengths, not the text |
 
 ### Data Retention Policy 🟢
 
@@ -155,7 +155,7 @@
 | Vendor | Category | Data Processed | DPA Status |
 |---|---|---|---|
 | Supabase | Database & Auth | All user data | ✅ DPA accepted |
-| OpenAI | AI Story Generation (last resort), speech-to-text | Story prompts, only when the other text models fail (age, grade, favorites, hobbies, typed request), with the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written; OpenAI keeps chat prompts up to 30 days for abuse monitoring; voice clips after a tap on the microphone | ✅ DPA signed |
+| OpenAI | AI Story Generation (last resort), speech-to-text | Story prompts, only when the other text models fail (age, grade, favorites, hobbies, typed request), including the child’s first name (replaced by a stand-in for a school account), and text a reader asks to spell, translate or define when the other models fail; OpenAI keeps chat prompts up to 30 days for abuse monitoring; voice clips after a tap on the microphone | ✅ DPA signed |
 | Stripe | Payments | Email, payment tokens | ✅ DPA (PCI DSS) |
 | Resend | Email | Email addresses | ✅ DPA accepted |
 | Cloudflare | Hosting & CDN | IP addresses, traffic | ✅ DPA (standard) |

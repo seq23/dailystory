@@ -323,7 +323,7 @@ describe("request size: the real bytes, never the Content-Length the client clai
       const src = read(`supabase/functions/${fn}/index.ts`);
       // A clone parsed before the guard skips the cap: it must go through readJsonBeforeGuard.
       expect(src, fn).not.toMatch(/\.clone\(\)\s*\.\s*(json|text|arrayBuffer|formData|blob)\(/);
-      if (/privacyForRequest\(req, laneBody\)/.test(src)) {
+      if (/privacyLaneForRequest\(req, laneBody\)/.test(src)) {
         expect(src, fn).toMatch(/const \{ body: laneBody, refused \} = await readJsonBeforeGuard\(req, corsHeaders\);\s*\n\s*if \(refused\) return refused;/);
         laneReaders.push(fn);
       }

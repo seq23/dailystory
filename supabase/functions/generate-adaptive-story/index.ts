@@ -6,7 +6,7 @@ import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
 import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
 import { handleStreamlinedGeneration } from './streamlined-handler.ts';
-import { privacyForRequest, withPrivacy } from "../_shared/privacyLane.ts";
+import { privacyLaneForRequest, withPrivacyLane } from '../_shared/privacyLane.ts';
 import { checkFreeStoryAllowance, freeLimitResponse } from '../_shared/freeStoryAllowance.ts';
 import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
 
@@ -406,11 +406,10 @@ serve(async (req) => {
     // UNIFIED 4-TIER ARCHITECTURE: Handle pre-processed bundles from StoryGenerationService
     if (requestBody.bundle) {
       console.log('🎯 Processing bundle request');
-      // School children's text only on no-training/no-retention routes, and every name of the
-      // reader and the account masked (../_shared/privacyLane.ts). Decided from the signed-in
-      // account in the database; every model call in the handler inherits it.
-      const privacy = await privacyForRequest(req, requestBody);
-      return await withPrivacy(privacy, () => handleStreamlinedGeneration(requestBody));
+      // School children's text only on no-training/no-retention routes (../_shared/privacyLane.ts).
+      // Decided from the signed-in account in the database; every model call in the handler inherits it.
+      const lane = await privacyLaneForRequest(req, requestBody);
+      return await withPrivacyLane(lane, () => handleStreamlinedGeneration(requestBody));
     }
     
     // Missing bundle - proper error message

@@ -51,7 +51,7 @@ export async function runFunction(name: string, req: Request, mode: AiMode): Pro
   const outbound: Outbound[] = [];
   const logs: string[] = [];
 
-  // Logs: captured underneath the functions' own console wrappers, which install on import.
+  // Logs: every console line the function writes.
   const sink = (level: string) => (...args: unknown[]) => {
     logs.push(`${level} ${args.map((a) => (typeof a === "string" ? a : a instanceof Error ? String(a.stack ?? a.message) : safeJson(a))).join(" ")}`);
   };
@@ -59,8 +59,6 @@ export async function runFunction(name: string, req: Request, mode: AiMode): Pro
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (console as any)[level] = sink(level);
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  delete (console as any)[Symbol.for("t2r.logRedaction")];
 
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
