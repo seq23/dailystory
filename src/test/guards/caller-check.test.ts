@@ -4,7 +4,9 @@
 // check that fits its real caller (supabase/functions/_shared/callerCheck.ts), and functions
 // whose source was removed are removed from the project too. Addresses here are invented
 // (example.test); nothing is sent.
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { chmodSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -192,9 +194,37 @@ describe("retired functions leave the project, not only the repo", () => {
 
   it("the deploy deletes each retired function and proves it answers 404", () => {
     expect(listed.sort()).toEqual([...RETIRED].sort());
-    expect(wf).toContain('supabase functions delete "$func"');
-    expect(wf).toMatch(/\[ "\$code" = "404" \]/);
-    expect(wf).toMatch(/retired functions still live:\$failed"; exit 1/);
+  });
+
+  // Runs the step's real script with a fake `supabase`, `curl` and `sleep` on PATH.
+  const runStep = (deleteOut: string, deleteExit: number, httpCode: string) => {
+    const at = wf.indexOf("- name: Retired functions are removed from the project");
+    const body = wf.slice(wf.indexOf("run: |\n", at) + 7, wf.indexOf("\n      - name:", at));
+    const script = body.split("\n").map((l) => l.replace(/^ {10}/, "")).join("\n");
+    const dir = mkdtempSync(join(tmpdir(), "retired-"));
+    const fake = (name: string, text: string) => { writeFileSync(join(dir, name), `#!/bin/sh\n${text}\n`); chmodSync(join(dir, name), 0o755); };
+    fake("supabase", `echo "$1 $2 $3" >> "${dir}/deleted"; echo '${deleteOut}'; exit ${deleteExit}`);
+    fake("curl", `printf '${httpCode}'`);
+    fake("sleep", "exit 0");
+    const r = spawnSync("bash", ["-e", "-c", script], { cwd: dir, env: { PATH: `${dir}:${process.env.PATH}`, SUPABASE_PROJECT_ID: "x" }, encoding: "utf8" });
+    const deleted = existsSync(join(dir, "deleted")) ? readFileSync(join(dir, "deleted"), "utf8").trim().split("\n") : [];
+    rmSync(dir, { recursive: true, force: true });
+    return { code: r.status, out: r.stdout, deleted };
+  };
+
+  it("a function already gone passes whatever the CLI says, once it answers 404", () => {
+    const r = runStep("Function x does not exist on the Supabase project.", 1, "404");
+    expect(r.code, r.out).toBe(0);
+    expect(r.deleted).toHaveLength(RETIRED.length);
+    expect(r.out).toContain("clear-character-cache: gone (404)");
+  });
+
+  it("a function that still answers fails the deploy, even when the delete said it worked", () => {
+    for (const [said, exit] of [["Deleted Function", 0], ["Function x does not exist", 1], ["network error", 1]] as const) {
+      const r = runStep(said, exit, "200");
+      expect(r.code, said).toBe(1);
+      expect(r.out).toContain("retired functions still live: send-custom-auth-email");
+    }
   });
 
   it("no retired function has a folder, and nothing in the app still calls one", () => {
