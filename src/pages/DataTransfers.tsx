@@ -5,6 +5,7 @@ import { ArrowLeft, Globe, Shield, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SiteFooterNav } from "@/components/SiteFooterNav";
+import { DPA_LABEL, subprocessors } from "@/data/subprocessors";
 
 const DataTransfers = () => {
   useEffect(() => {
@@ -12,65 +13,6 @@ const DataTransfers = () => {
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', 'How Spry VSL LLC handles international data transfers for Time-2-Read under GDPR Articles 44-49, and where to send any question about them.');
   }, []);
-
-  const processors = [
-    {
-      name: "Supabase (Database & Auth)",
-      location: "United States",
-      purpose: "User authentication, data storage, edge functions",
-      safeguards: "Standard Contractual Clauses (SCCs), SOC 2 Type II certified",
-      website: "https://supabase.com/privacy",
-    },
-    {
-      name: "OpenAI (AI Story Generation, Speech-to-Text)",
-      location: "United States",
-      purpose: "Writes the story text with an AI model; turns short voice clips into text for voice commands and read-aloud practice",
-      safeguards: "Data Processing Agreement, no training on user data via API",
-      website: "https://openai.com/policies/privacy-policy",
-    },
-    {
-      name: "Stripe (Payments)",
-      location: "United States",
-      purpose: "Payment processing for premium subscriptions",
-      safeguards: "PCI DSS Level 1, SCCs, Privacy Shield successor",
-      website: "https://stripe.com/privacy",
-    },
-    {
-      name: "ElevenLabs (Text-to-Speech)",
-      location: "United States",
-      purpose: "Voice narration for stories",
-      safeguards: "Data Processing Agreement, audio not stored after generation",
-      website: "https://elevenlabs.io/privacy",
-    },
-    {
-      name: "Runware (Image Generation)",
-      location: "Europe / United States",
-      purpose: "AI illustration generation for story pages",
-      safeguards: "Data Processing Agreement, images generated on-demand",
-      website: "https://runware.ai",
-    },
-    {
-      name: "Resend (Email)",
-      location: "United States",
-      purpose: "Transactional emails (consent verification, notifications)",
-      safeguards: "Data Processing Agreement, SOC 2 Type II",
-      website: "https://resend.com/legal/privacy-policy",
-    },
-    {
-      name: "Cloudflare (Hosting & CDN)",
-      location: "Global",
-      purpose: "Website hosting, content delivery, DDoS protection",
-      safeguards: "Standard Contractual Clauses (SCCs), SOC 2 Type II, ISO 27001",
-      website: "https://www.cloudflare.com/privacypolicy/",
-    },
-    {
-      name: "GitHub (Source Code)",
-      location: "United States",
-      purpose: "Source code hosting and CI/CD pipelines",
-      safeguards: "Data Processing Agreement, SOC 2 Type II",
-      website: "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
-    },
-  ];
 
   return (
     <main className="min-h-screen bg-background">
@@ -87,7 +29,7 @@ const DataTransfers = () => {
         <p className="text-muted-foreground">
           How Spry VSL LLC handles cross-border data transfers under GDPR Articles 44–49.
         </p>
-        <p className="text-xs text-muted-foreground mt-1">Last updated: {new Date().toLocaleDateString()}</p>
+        <p className="text-xs text-muted-foreground mt-1">Last updated: November 22, 2026</p>
       </header>
 
       <section className="container mx-auto px-4 pb-12 space-y-8">
@@ -107,8 +49,8 @@ const DataTransfers = () => {
             </p>
             <p>We rely on the following legal mechanisms to ensure adequate protection:</p>
             <ul>
-              <li><strong>Standard Contractual Clauses (SCCs)</strong> — EU-approved contractual safeguards with each processor</li>
-              <li><strong>Data Processing Agreements (DPAs)</strong> — binding agreements defining data handling obligations</li>
+              <li><strong>Standard Contractual Clauses (SCCs)</strong> — EU-approved contractual safeguards, where a processor's agreement provides them</li>
+              <li><strong>Data Processing Agreements (DPAs)</strong> — binding agreements defining data handling obligations, with the processors marked "DPA signed" below</li>
               <li><strong>Technical safeguards</strong> — encryption in transit (TLS 1.2+) and at rest for all data</li>
               <li><strong>Access controls</strong> — role-based access with row-level security on all database tables</li>
             </ul>
@@ -128,21 +70,23 @@ const DataTransfers = () => {
                     <th className="text-left py-3 px-2 font-semibold">Processor</th>
                     <th className="text-left py-3 px-2 font-semibold">Location</th>
                     <th className="text-left py-3 px-2 font-semibold">Purpose</th>
-                    <th className="text-left py-3 px-2 font-semibold">Safeguards</th>
+                    <th className="text-left py-3 px-2 font-semibold">DPA</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {processors.map((p) => (
+                  {subprocessors.map((p) => (
                     <tr key={p.name} className="border-b last:border-0">
                       <td className="py-3 px-2 font-medium">
-                        <a href={p.website} target="_blank" rel="noopener noreferrer"
-                           className="text-primary hover:underline inline-flex items-center gap-1">
-                          {p.name} <ExternalLink className="w-3 h-3" />
-                        </a>
+                        {p.privacyUrl ? (
+                          <a href={p.privacyUrl} target="_blank" rel="noopener noreferrer"
+                             className="text-primary hover:underline inline-flex items-center gap-1">
+                            {p.name} <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : p.name}
                       </td>
                       <td className="py-3 px-2 text-muted-foreground">{p.location}</td>
                       <td className="py-3 px-2 text-muted-foreground">{p.purpose}</td>
-                      <td className="py-3 px-2 text-muted-foreground">{p.safeguards}</td>
+                      <td className="py-3 px-2 text-muted-foreground">{p.dpa ? DPA_LABEL[p.dpa] : "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -179,7 +123,7 @@ const DataTransfers = () => {
           <Link to="/privacy" className="text-primary hover:underline">{uiText("Privacy Policy")}</Link>
           <Link to="/gdpr" className="text-primary hover:underline">GDPR Rights</Link>
           <Link to="/ccpa" className="text-primary hover:underline">CCPA Rights</Link>
-          <Link to="/vendors" className="text-primary hover:underline">Vendor List</Link>
+          <Link to="/subprocessors" className="text-primary hover:underline">Subprocessors</Link>
         </div>
       </section>
       <SiteFooterNav />

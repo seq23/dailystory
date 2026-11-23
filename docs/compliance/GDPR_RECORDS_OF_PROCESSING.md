@@ -68,42 +68,42 @@
 | Field | Description |
 |-------|-------------|
 | **Purpose** | Generate personalized AI stories for reading practice |
-| **Categories of Personal Data** | Reading preferences, grade level, interests (no direct identifiers sent to AI) |
+| **Categories of Personal Data** | Reading preferences, grade level, interests, and the child’s first name, which OpenAI receives as written in the story prompt |
 | **Legal Basis** | Contract (Art. 6(1)(b)) - service delivery |
 | **Source of Data** | User preferences and profile |
-| **Recipients** | OpenAI (processor), Anthropic (fallback processor) |
+| **Recipients** | OpenAI (processor, story prompts as written); OpenRouter, Cloudflare Workers AI and Lovable AI Gateway (processors, text with every name replaced by a stand-in). Anthropic is no longer called (22 Nov 2026). Full list: /subprocessors |
 | **Transfers to Third Countries** | USA |
-| **Transfer Safeguards** | DPAs with zero-retention clauses |
+| **Transfer Safeguards** | OpenAI DPA (signed); the others as shown on /subprocessors |
 | **Retention Period** | Prompts: transient only; Generated stories: until session ends or saved |
-| **Technical Measures** | PII stripping before AI calls, session isolation |
+| **Technical Measures** | Names replaced by a stand-in before OpenRouter, Cloudflare Workers AI and Lovable AI Gateway calls; session isolation |
 
 ### 3.4 Image Generation
 
 | Field | Description |
 |-------|-------------|
 | **Purpose** | Generate illustrations for stories |
-| **Categories of Personal Data** | Character descriptions (based on avatar, not PII) |
+| **Categories of Personal Data** | The picture scene and the reader’s avatar look, age and favorite color; never a name |
 | **Legal Basis** | Contract (Art. 6(1)(b)) |
 | **Source of Data** | Derived from avatar settings |
 | **Recipients** | Runware (processor) |
 | **Transfers to Third Countries** | Europe / United States |
-| **Transfer Safeguards** | Standard API Terms (DPA accepted) |
+| **Transfer Safeguards** | Standard API Terms (DPA in progress) |
 | **Retention Period** | Images cached for session duration |
-| **Technical Measures** | No PII in prompts |
+| **Technical Measures** | No name in image prompts |
 
 ### 3.5 Voice/Text-to-Speech
 
 | Field | Description |
 |-------|-------------|
 | **Purpose** | Read stories aloud to users |
-| **Categories of Personal Data** | Story text only (no PII) |
+| **Categories of Personal Data** | Story text, which includes the child’s first name when the story uses it; words a reader taps to hear; what the reader says in voice mode |
 | **Legal Basis** | Contract (Art. 6(1)(b)) |
 | **Source of Data** | Generated story content |
 | **Recipients** | ElevenLabs (processor) |
 | **Transfers to Third Countries** | USA/EU |
-| **Transfer Safeguards** | Standard API Terms (DPA accepted) |
+| **Transfer Safeguards** | Standard API Terms (DPA in progress) |
 | **Retention Period** | Audio: transient only |
-| **Technical Measures** | No user identifiers transmitted |
+| **Technical Measures** | Encrypted in transit (TLS) |
 
 ### 3.6 Payment Processing
 
@@ -170,9 +170,9 @@
 | Stripe | USA/EU | Standard Contractual Clauses | PCI DSS, SOC 2 |
 | OpenAI | USA | Standard Contractual Clauses | Enterprise DPA |
 | Resend | USA | Standard Contractual Clauses | DPA |
-| ElevenLabs | USA/EU | Standard Contractual Clauses | DPA (standard terms) |
-| Runware | EU/USA | Standard API Terms | DPA (standard terms) |
-| Anthropic | USA | Standard Contractual Clauses | DPA (standard terms) |
+| ElevenLabs | USA/EU | Standard Contractual Clauses | DPA in progress |
+| Runware | EU/USA | Standard API Terms | DPA in progress |
+| Anthropic | USA | Standard Contractual Clauses | DPA in progress (no longer called) |
 
 ---
 

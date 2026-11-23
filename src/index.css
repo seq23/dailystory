@@ -875,13 +875,11 @@ All colors MUST be HSL.
       max-width: 42rem;
     }
   }
-    -webkit-tap-highlight-color: rgba(var(--primary), 0.1);
-    tap-highlight-color: rgba(var(--primary), 0.1);
-    transition: background-color 0.15s ease;
+  /* Ends @layer utilities. Three stray declarations with no selector sat here (rgba() on an HSL
+     variable, which browsers drop); .touch-feedback is defined above. */
   }
   
   .touch-feedback:active {
-    background-color: rgba(var(--primary), 0.1);
     transform: scale(0.98);
   }
   

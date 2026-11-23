@@ -18,7 +18,6 @@ export const SITE_LINKS: { to: string; label: string }[] = [
   { to: "/ccpa", label: "California privacy (CCPA)" },
   { to: "/gdpr", label: "GDPR rights" },
   { to: "/ferpa", label: "FERPA for schools" },
-  { to: "/vendors", label: "Vendors" },
   { to: "/subprocessors", label: "Subprocessors" },
   { to: "/data-transfers", label: "International data transfers" },
 ];

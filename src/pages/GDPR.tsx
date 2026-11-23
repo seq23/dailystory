@@ -168,8 +168,7 @@ export default function GDPR() {
             safeguards are in place through:
           </p>
           <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
-            <li>Standard Contractual Clauses (SCCs) with our processors</li>
-            <li>Data Processing Agreements with all vendors</li>
+            <li>Data processing agreements with our processors, including Standard Contractual Clauses (SCCs) where the agreement provides them (our <Link to="/subprocessors" className="text-primary hover:underline">Subprocessors</Link> page shows which are signed)</li>
             <li>Technical security measures including encryption</li>
           </ul>
         </section>
@@ -232,7 +231,7 @@ export default function GDPR() {
             <Link to="/privacy" className="text-primary hover:underline">{uiText("Privacy Policy")}</Link>
             <Link to="/terms" className="text-primary hover:underline">{uiText("Terms of Service")}</Link>
             <Link to="/ccpa" className="text-primary hover:underline">CCPA Rights</Link>
-            <Link to="/vendors" className="text-primary hover:underline">Our Vendors</Link>
+            <Link to="/subprocessors" className="text-primary hover:underline">Our Subprocessors</Link>
           </div>
         </section>
 

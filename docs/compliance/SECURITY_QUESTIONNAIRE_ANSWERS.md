@@ -57,7 +57,7 @@ A: Yes — first name, grade level, and reading preferences only. Parental conse
 A: No. We do not sell, rent, or share personal data with third parties for advertising or marketing purposes.
 
 **Q15: Do you use personal data to train AI models?**  
-A: No. All AI providers (OpenAI, Anthropic) are configured with zero-data-retention API settings. User data is never used for model training.
+A: We do not train AI models. OpenAI does not train on API data. OpenRouter’s free models may log or train on the prompts they receive, which have every child’s and family member’s name replaced by a stand-in before they leave; the paid model is set to no data collection and zero retention. Each vendor’s terms are linked on [/subprocessors](/subprocessors).
 
 **Q16: What is your data retention policy?**  
 A: Debug logs: 30 days. Security audit logs: 90 days. Inactive accounts: anonymized after 3 years. Active accounts: retained for duration of the account.
@@ -93,7 +93,7 @@ A: Via the `delete-user-account` edge function which performs cascading deletion
 A: Yes. Inactive accounts are automatically anonymized after 3 years via the `anonymize_old_user_data` database function.
 
 **Q27: What data do AI providers receive?**  
-A: Story generation prompts only — these contain reading preferences and story context but no personally identifiable information (no names, emails, or addresses).
+A: OpenAI receives story prompts as written, including the child’s first name, and short voice clips recorded after a tap on the microphone by a signed-in account. ElevenLabs receives story text, which includes the child’s first name when the story uses it, the words a reader taps to hear, and in voice mode what the reader says to the voice helper. Runware receives the picture scene and the reader’s avatar look, age and favorite color, never a name. OpenRouter, Cloudflare Workers AI and the Lovable AI Gateway receive text with every child’s and family member’s name replaced by a stand-in. No AI provider receives an email or address. The current list is [/subprocessors](/subprocessors).
 
 **Q28: Do you store voice recordings?**  
 A: No. Text-to-speech is server-side via ElevenLabs. Audio is generated on-demand and streamed; no recordings are stored.
@@ -320,16 +320,16 @@ A: DPIAs are conducted when introducing new processing activities that may impac
 ## SECTION 7 — THIRD-PARTY / SUBPROCESSORS (Q96–Q107)
 
 **Q96: Who are your subprocessors?**  
-A: Supabase (database/auth), OpenAI (AI story generation), Anthropic (AI fallback), Runware (image generation), ElevenLabs (text-to-speech), Stripe (payments), Resend (email), Cloudflare (hosting/CDN), GitHub (source code/CI/CD).
+A: Supabase (database/auth), Stripe (payments), Resend (email), ClassLink (school rosters), OpenRouter (AI story text), Cloudflare Workers AI (AI story text), OpenAI (AI story text and speech-to-text), Lovable AI Gateway (Google Gemini) (story page text), ElevenLabs (text-to-speech), Runware (image generation), Free Dictionary API (word definitions), Cloudflare (hosting/CDN), Google Fonts (web fonts), Microsoft Clarity (analytics on one parent form), GitHub (source code/CI/CD). Anthropic is no longer called (22 Nov 2026). The current list, with what each receives, is at [/subprocessors](/subprocessors).
 
 **Q97: Do you have DPAs with your vendors?**  
 A: Yes. DPAs signed with 6 of 9 vendors (Supabase, Stripe, Resend, Cloudflare, GitHub, OpenAI). Remaining 3 (ElevenLabs, Runware, Anthropic) are in progress. See `docs/compliance/VENDOR_DPA_TRACKER.md`.
 
 **Q98: Where can I see your subprocessor list?**  
-A: Public list at [/subprocessors](/subprocessors) and [/vendors](/vendors).
+A: Public list at [/subprocessors](/subprocessors) (/vendors now moves there).
 
 **Q99: Do vendors have access to personal data?**  
-A: Only Supabase (database), Stripe (payment info), and Resend (email addresses) process PII. AI vendors receive prompts/text with no personal information.
+A: Yes. Supabase (accounts and child profiles), Stripe (payment info), Resend (email addresses) and ClassLink (student names and roster ids for a connected school) process personal data. AI vendors do too: OpenAI receives story prompts as written, including the child’s first name, and voice clips after a tap on the microphone; ElevenLabs receives story text, which includes the child’s first name when the story uses it, tapped words and voice-mode speech; Runware receives the picture scene and the reader’s avatar look, age and favorite color, never a name; OpenRouter, Cloudflare Workers AI and the Lovable AI Gateway receive text with every name replaced by a stand-in. Exactly what each vendor receives is on [/subprocessors](/subprocessors).
 
 **Q100: How do you assess vendor risk?**  
 A: Vendors are tiered: High Risk (stores accounts, payments and email), Medium Risk (runs the AI features; prompts and voice clips can carry personal information), Low Risk (hosts and builds the site; Cloudflare sees IP addresses). See `docs/compliance/VENDOR_DPA_TRACKER.md`.
@@ -344,10 +344,10 @@ A: Yes. Annual review of vendor DPAs, certifications, and subprocessor changes.
 A: We update this list before a new subprocessor starts processing customer data. Schools and districts can ask us to email them when it changes. The list is at /subprocessors.
 
 **Q104: Do your AI vendors retain user data?**  
-A: No. OpenAI and Anthropic are configured with zero-data-retention API policies. Data is not used for model training.
+A: Time-2-Read does not store voice clips. OpenAI does not train on API data and states how long it keeps each kind of call on its API data controls page (https://developers.openai.com/api/docs/guides/your-data). OpenRouter’s paid model is set to no data collection and zero retention; its free models may log or train on prompts, which reach them with every name replaced by a stand-in. Each vendor’s terms are linked on [/subprocessors](/subprocessors).
 
 **Q105: Do you use any Chinese or Russian-based vendors?**  
-A: No. All vendors are US-based or EU-based companies.
+A: No. Each vendor and its location is on [/subprocessors](/subprocessors): US companies, Lovable (Sweden), and Free Dictionary API, which publishes no location. The AI models we use are made by OpenAI, NVIDIA, Google and Meta.
 
 **Q106: Do you use open-source software?**  
 A: Yes. The frontend uses open-source libraries (React, Tailwind CSS, etc.) which are regularly updated for security patches.

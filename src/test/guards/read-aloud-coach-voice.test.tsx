@@ -170,7 +170,7 @@ describe('the privacy pages say what happens to a voice clip', () => {
   const { readFileSync } = require('node:fs') as typeof import('node:fs');
   const { join } = require('node:path') as typeof import('node:path');
   const root = join(__dirname, '../../..');
-  const files = ['src/pages/Privacy.tsx', 'src/pages/Subprocessors.tsx', 'docs/privacy/data-inventory.md', 'docs/sales/capabilities.md', 'docs/sales/privacy-security.md'];
+  const files = ['src/pages/Privacy.tsx', 'src/data/subprocessors.ts', 'docs/privacy/data-inventory.md', 'docs/sales/capabilities.md', 'docs/sales/privacy-security.md'];
   const sentences = files.flatMap((f) => readFileSync(join(root, f), 'utf8').replace(/\s+/g, ' ')
     .split(/(?<=[.;|])\s+|<li>|\|/).map((text) => ({ f, text })))
     .filter(({ text }) => /voice clip|speech-to-text|transcription|a clip|the clip|no speech/i.test(text));
@@ -182,7 +182,7 @@ describe('the privacy pages say what happens to a voice clip', () => {
       expect(text, f).not.toMatch(/a tap with no speech sends nothing/i);
     }
     const retention = sentences.filter(({ text }) => /abuse-monitoring retention/i.test(text));
-    expect(retention.map(({ f }) => f).sort()).toEqual(['docs/privacy/data-inventory.md', 'src/pages/Privacy.tsx', 'src/pages/Subprocessors.tsx']);
+    expect(retention.map(({ f }) => f).sort()).toEqual(['docs/privacy/data-inventory.md', 'src/data/subprocessors.ts', 'src/pages/Privacy.tsx']);
     for (const { text } of retention) expect(text).toMatch(/developers\.openai\.com\/api\/docs\/guides\/your-data/);
   });
 

@@ -24,6 +24,28 @@ export default {
 			}
 		},
 		extend: {
+			// Long-form pages (privacy, terms, CCPA, accessibility, data transfers) use `prose`; its colours
+			// come from the site tokens, so every prose page matches the rest of the site from this one place.
+			typography: {
+				DEFAULT: {
+					css: {
+						"--tw-prose-body": "hsl(var(--foreground))",
+						"--tw-prose-headings": "hsl(var(--foreground))",
+						"--tw-prose-lead": "hsl(var(--muted-foreground))",
+						"--tw-prose-links": "hsl(var(--primary))",
+						"--tw-prose-bold": "hsl(var(--foreground))",
+						"--tw-prose-counters": "hsl(var(--muted-foreground))",
+						"--tw-prose-bullets": "hsl(var(--muted-foreground))",
+						"--tw-prose-hr": "hsl(var(--border))",
+						"--tw-prose-quotes": "hsl(var(--foreground))",
+						"--tw-prose-quote-borders": "hsl(var(--border))",
+						"--tw-prose-captions": "hsl(var(--muted-foreground))",
+						"--tw-prose-code": "hsl(var(--foreground))",
+						"--tw-prose-th-borders": "hsl(var(--border))",
+						"--tw-prose-td-borders": "hsl(var(--border))",
+					},
+				},
+			},
 			fontFamily: {
 				// Primary Typography System - Consistent 3-font hierarchy
 				'fun': ['Fredoka', 'cursive', 'sans-serif'],        // UI headers, titles
@@ -348,5 +370,5 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;

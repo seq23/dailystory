@@ -6,6 +6,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { JSDOM } from "jsdom";
+import { MOVED, movedPage } from "./moved-pages.mjs";
 
 const [distDir, entryFile] = process.argv.slice(2);
 if (!distDir || !entryFile) { console.error("usage: prerender-run.mjs <dist> <entry.mjs>"); process.exit(2); }
@@ -77,10 +78,16 @@ for (const appRoute of ["/auth"]) {
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, template);
 }
+// Old addresses that moved ship a page that sends the browser on (scripts/moved-pages.mjs).
+for (const [from, to] of Object.entries(MOVED)) {
+  const file = join(distDir, from.slice(1), "index.html");
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, movedPage(to));
+}
 const notFound = template
   .replace(/<title>[^<]*<\/title>/, "<title>Page not found | Time-2-Read</title>")
   .replace("</head>", `    <meta name="robots" content="noindex" />\n  </head>`);
 if (notFound === template) { console.error("PRERENDER_404_TEMPLATE the shell has no <title> to rename"); process.exit(1); }
 writeFileSync(join(distDir, "404.html"), notFound);
-console.log(`prerendered ${written.length} pages:\n  ${written.join("\n  ")}\n  /auth (app shell)\n  404.html`);
+console.log(`prerendered ${written.length} pages:\n  ${written.join("\n  ")}\n  /auth (app shell)\n  ${Object.entries(MOVED).map(([f, t]) => `${f} -> ${t} (moved)`).join("\n  ")}\n  404.html`);
 process.exit(0);

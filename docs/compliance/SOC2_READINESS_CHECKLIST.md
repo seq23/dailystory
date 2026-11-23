@@ -31,7 +31,7 @@ SOC 2 evaluates controls across five Trust Service Criteria. This checklist maps
 |---------|--------|----------------|
 | Security policies communicated | ✅ Done | Docs in repository, public legal pages |
 | Privacy notices to users | ✅ Done | `/privacy`, `/gdpr`, `/ccpa`, `/ferpa` |
-| Vendor transparency | ✅ Done | `/vendors`, `/subprocessors`, `/data-transfers` |
+| Vendor transparency | ✅ Done | `/subprocessors`, `/data-transfers` |
 | Incident communication plan | ✅ Done | 72-hour breach notification documented |
 
 ---
@@ -113,7 +113,7 @@ SOC 2 evaluates controls across five Trust Service Criteria. This checklist maps
 
 | Control | Status | Implementation |
 |---------|--------|----------------|
-| Vendor DPAs | ✅ Done | 9/9 signed or accepted (see `VENDOR_DPA_TRACKER.md`) |
+| Vendor DPAs | 🟡 In progress | 6 of 9 signed or accepted; ElevenLabs, Runware and Anthropic in progress (see `VENDOR_DPA_TRACKER.md`) |
 | Insurance | 🔴 Not yet | Cyber liability insurance not yet obtained |
 | Business continuity plan | 🔴 Not yet | Not formalized |
 

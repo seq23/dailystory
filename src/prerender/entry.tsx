@@ -18,7 +18,6 @@ import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
 import CCPA from "@/pages/CCPA";
 import Accessibility from "@/pages/Accessibility";
-import Vendors from "@/pages/Vendors";
 import GDPR from "@/pages/GDPR";
 import FERPA from "@/pages/FERPA";
 import DataTransfers from "@/pages/DataTransfers";
@@ -39,7 +38,6 @@ export const prerenderRoutes: { path: string; element: ReactElement }[] = [
   { path: "/terms", element: <Terms /> },
   { path: "/ccpa", element: <CCPA /> },
   { path: "/accessibility", element: <Accessibility /> },
-  { path: "/vendors", element: <Vendors /> },
   { path: "/gdpr", element: <GDPR /> },
   { path: "/ferpa", element: <FERPA /> },
   { path: "/data-transfers", element: <DataTransfers /> },

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooterNav } from "@/components/SiteFooterNav";
+import { DPA_LABEL, subprocessors } from "@/data/subprocessors";
 
 const Privacy = () => {
   useEffect(() => {
@@ -35,8 +36,8 @@ const Privacy = () => {
           </Button>
         </Link>
         <h1 className="text-3xl md:text-4xl font-bold text-foreground">{uiText("Privacy Policy")}</h1>
-        <p className="text-muted-foreground mt-2">Effective date: January 1, {new Date().getFullYear()}</p>
-        <p className="text-xs text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+        <p className="text-muted-foreground mt-2">Effective date: November 22, 2026</p>
+        <p className="text-xs text-muted-foreground">Last updated: November 22, 2026</p>
       </header>
 
       <section className="container mx-auto px-4 pb-12 space-y-6">
@@ -70,15 +71,13 @@ const Privacy = () => {
           <h2>3. Data Sharing &amp; Third-Party Processors</h2>
           <p>We do <strong>not sell</strong> personal information. Data is shared only with processors who act on our behalf:</p>
           <ul>
-            <li><strong>Supabase</strong> — Database, authentication (US, SCCs in place)</li>
-            <li><strong>OpenAI</strong> — AI story generation, and speech-to-text for voice clips (US, DPA, no training on API data)</li>
-            <li><strong>Stripe</strong> — Payment processing (US, PCI DSS Level 1)</li>
-            <li><strong>ElevenLabs</strong> — Text-to-speech narration (US, DPA)</li>
-            <li><strong>Runware</strong> — AI image generation (EU/US, DPA)</li>
-            <li><strong>Resend</strong> — Transactional email (US, SOC 2)</li>
-            <li><strong>Cloudflare</strong> — Hosting, CDN, and DDoS protection (Global, DPA)</li>
-            <li><strong>GitHub</strong> — Source code hosting and CI/CD (US, DPA, SOC 2)</li>
+            {subprocessors.map((sp) => (
+              <li key={sp.name}>
+                <strong>{sp.name}</strong> — {sp.purpose} ({sp.location}{sp.dpa ? `; ${DPA_LABEL[sp.dpa]}` : ""})
+              </li>
+            ))}
           </ul>
+          <p>What each one receives is listed on our <Link to="/subprocessors" className="text-primary hover:underline">Subprocessors</Link> page.</p>
           <p>See our <Link to="/data-transfers" className="text-primary hover:underline">International Data Transfers</Link> page for full details and safeguards.</p>
 
           {/* GDPR Art. 13(2)(a) — Retention */}
@@ -137,7 +136,8 @@ const Privacy = () => {
           <h2>7. International Data Transfers</h2>
           <p>
             Your data may be transferred to and processed in the United States. We protect these transfers using
-            Standard Contractual Clauses (SCCs) and Data Processing Agreements with all processors.
+            each processor's data processing agreement, including Standard Contractual Clauses (SCCs) where the
+            agreement provides them. Our Subprocessors page shows which agreements are signed.
             See our <Link to="/data-transfers" className="text-primary hover:underline">Data Transfers</Link> page for details.
           </p>
 
@@ -208,7 +208,7 @@ const Privacy = () => {
           <Link to="/ccpa" className="text-primary hover:underline">CCPA Rights</Link>
           <Link to="/ferpa" className="text-primary hover:underline">FERPA Compliance</Link>
           <Link to="/data-transfers" className="text-primary hover:underline">Data Transfers</Link>
-          <Link to="/vendors" className="text-primary hover:underline">Vendor List</Link>
+          <Link to="/subprocessors" className="text-primary hover:underline">Subprocessors</Link>
           <Link to="/terms" className="text-primary hover:underline">{uiText("Terms of Service")}</Link>
         </div>
       </section>

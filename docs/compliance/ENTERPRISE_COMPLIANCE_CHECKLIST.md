@@ -16,7 +16,7 @@
 | Data mapping (full data inventory) | ✅ Done | `docs/GDPR_RECORDS_OF_PROCESSING.md` — RoPA with 6 processing activities |
 | Lawful basis defined per data type | ✅ Done | `Privacy.tsx` Article 6 table + RoPA |
 | Data subject rights workflow (access/delete/export) | ✅ Done | `export-user-data` + `delete-user-account` edge functions |
-| DPAs with vendors | ✅ Done | All 9 vendor DPAs signed or accepted (standard API terms) |
+| DPAs with vendors | 🟡 In progress | 6 of 9 vendor DPAs signed or accepted (standard API terms); ElevenLabs, Runware and Anthropic in progress (`VENDOR_DPA_TRACKER.md`) |
 | Cookie consent | ✅ Done | `CookieConsent.tsx` — granular Essential/Analytics/Marketing |
 | Records of Processing Activities (RoPA) | ✅ Done | `docs/GDPR_RECORDS_OF_PROCESSING.md` |
 | GDPR legal page | ✅ Done | `/gdpr` route |
@@ -155,28 +155,28 @@
 | Vendor | Category | Data Processed | DPA Status |
 |---|---|---|---|
 | Supabase | Database & Auth | All user data | ✅ DPA accepted |
-| OpenAI | AI Story Generation | Anonymized prompts | ✅ Enterprise DPA |
+| OpenAI | AI Story Generation, speech-to-text | Story prompts as written, including the child’s first name; voice clips after a tap on the microphone | ✅ DPA signed |
 | Stripe | Payments | Email, payment tokens | ✅ DPA (PCI DSS) |
 | Resend | Email | Email addresses | ✅ DPA accepted |
 | Cloudflare | Hosting & CDN | IP addresses, traffic | ✅ DPA (standard) |
-| GitHub | Source Code & CI/CD | No user data | ✅ N/A |
-| Runware | AI Image Generation | No PII in prompts | ✅ DPA (standard) |
-| ElevenLabs | Text-to-Speech | No user identifiers | ✅ DPA (standard) |
-| Anthropic | AI fallback | Anonymized prompts | ✅ DPA (standard) |
+| GitHub | Source Code & CI/CD | No user data | ✅ DPA signed |
+| Runware | AI Image Generation | Picture scene and the reader’s avatar look, age and favorite color; never a name | ⏳ In progress |
+| ElevenLabs | Text-to-Speech | Story text, including the child’s first name when the story uses it; words a reader taps; what the reader says in voice mode | ⏳ In progress |
+| Anthropic | AI fallback, no longer called | Nothing since 22 Nov 2026 | ⏳ In progress |
 
 ### Vendor Risk Tiering 🟡
 
 | Tier | Vendors | Rationale |
 |---|---|---|
 | **High-risk** (stores personal data) | Supabase, Stripe | Direct PII/payment storage |
-| **Medium-risk** (processes data) | OpenAI, Resend, ElevenLabs | Transient processing |
-| **Low-risk** (infra only) | Cloudflare, GitHub, Runware | No PII exposure |
+| **Medium-risk** (processes data) | OpenAI, Resend, ElevenLabs, Runware | Transient processing; OpenAI and ElevenLabs receive the child’s first name in story text |
+| **Low-risk** (infra only) | Cloudflare, GitHub | Traffic metadata (Cloudflare) and source code (GitHub) only |
 
 ### Subprocessor Transparency 🟢
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| Vendor list published | ✅ Done | `/vendors` route |
+| Vendor list published | ✅ Done | `/subprocessors` route |
 | Data transfers documented | ✅ Done | `/data-transfers` route with SCCs |
 | Subprocessor changes communicated | 🟡 Not formalized | No notification mechanism yet |
 
@@ -194,7 +194,7 @@
 | CCPA Rights | ✅ Done | `/ccpa` |
 | FERPA Statement | ✅ Done | `/ferpa` |
 | Accessibility (WCAG 2.1 AA) | ✅ Done | `/accessibility` |
-| Vendor Disclosure | ✅ Done | `/vendors` |
+| Vendor Disclosure | ✅ Done | `/subprocessors` |
 | Data Transfer Policy | ✅ Done | `/data-transfers` |
 | Cookie Policy | ✅ Done | Embedded in `CookieConsent.tsx` |
 
@@ -206,7 +206,7 @@
 | Security Overview / Whitepaper | ❌ Not created | Draft when enterprise inquiries come |
 | Acceptable Use Policy (AUP) | ❌ Not created | Low priority — add to Terms if needed |
 | Incident Response Policy | ✅ Done | `docs/INCIDENT_RESPONSE_PLAN.md` |
-| Subprocessor List (standalone) | ✅ Done | `/vendors` page serves this purpose |
+| Subprocessor List (standalone) | ✅ Done | `/subprocessors` |
 
 ---
 
@@ -301,7 +301,7 @@
 
 ### "Do you support DPAs?"
 
-> **Yes for key vendors** (Supabase, OpenAI, Stripe, Resend). DPAs with ElevenLabs, Runware, and Anthropic are pending. We can provide a DPA template for B2B/school contracts when needed — this is on our Phase 2 roadmap.
+> **Yes for 6 of 9 vendors** (Supabase, Stripe, Resend, Cloudflare, GitHub, OpenAI). DPAs with ElevenLabs, Runware, and Anthropic are in progress. We can provide a DPA template for B2B/school contracts when needed — this is on our Phase 2 roadmap.
 
 ---
 

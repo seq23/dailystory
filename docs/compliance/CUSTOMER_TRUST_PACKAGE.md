@@ -87,6 +87,8 @@ Time-2-Read is an AI-powered children's reading platform that generates personal
 
 ## 4. Subprocessor List
 
+The complete current list, with exactly what each vendor receives, is [time-2-read.com/subprocessors](https://time-2-read.com/subprocessors). The tables below cover the vendors with a DPA on record.
+
 ### High Risk — Processes Personal Data
 
 | Vendor | Purpose | Data Processed | Location | DPA |
@@ -95,14 +97,14 @@ Time-2-Read is an AI-powered children's reading platform that generates personal
 | Stripe | Payment processing | Email, payment info | US | ✅ Signed |
 | Resend | Email delivery | Email addresses, transactional content | US | ✅ Signed |
 
-### Medium Risk — Transient Processing, No PII
+### Medium Risk — Transient Processing
 
 | Vendor | Purpose | Data Processed | Location | DPA |
 |--------|---------|----------------|----------|-----|
-| OpenAI | Story text generation | Story prompts only | US | ✅ Signed |
-| Anthropic | AI fallback | Story prompts only | US | ⏳ In progress |
-| ElevenLabs | Text-to-speech | Story text only | US | ⏳ In progress |
-| Runware | Image generation | Image prompts only | EU/US | ⏳ In progress |
+| OpenAI | Story text generation, speech-to-text | Story prompts as written, including the child’s first name; voice clips after a tap on the microphone | US | ✅ Signed |
+| Anthropic | AI fallback, no longer called | Nothing since 22 Nov 2026 | US | ⏳ In progress |
+| ElevenLabs | Text-to-speech | Story text, including the child’s first name when the story uses it; words a reader taps; what the reader says in voice mode | US | ⏳ In progress |
+| Runware | Image generation | Picture scene and the reader’s avatar look, age and favorite color; never a name | EU/US | ⏳ In progress |
 
 ### Low Risk — Infrastructure Only
 
@@ -111,7 +113,7 @@ Time-2-Read is an AI-powered children's reading platform that generates personal
 | Cloudflare | Hosting, CDN, WAF | IP addresses, request metadata | Global | ✅ Signed |
 | GitHub | Source code, CI/CD | Source code only (no user data) | US | ✅ Signed |
 
-**Key:** AI vendors (OpenAI, Anthropic, ElevenLabs, Runware) receive **zero personal information** — only story/image prompts. All are configured with zero-data-retention API settings. User data is never used for model training.
+**Key:** OpenAI and ElevenLabs receive the child’s first name when a story uses it; Runware never receives a name. OpenAI does not train on API data. The AI services that rewrite or explain text (OpenRouter, Cloudflare Workers AI, Lovable AI Gateway) receive it with every name replaced by a stand-in.
 
 ---
 
@@ -179,7 +181,7 @@ A: No. We never sell, rent, or share personal data for advertising or marketing.
 A: United States (Supabase on AWS). Application hosted on Cloudflare (global CDN).
 
 **Q: Do AI providers retain user data?**  
-A: No. Zero-data-retention API settings. Data is not used for model training.
+A: Time-2-Read does not store voice clips. OpenAI does not train on API data and states how long it keeps each kind of call on its API data controls page (https://developers.openai.com/api/docs/guides/your-data). OpenRouter’s paid model is set to zero retention; its free models may log or train on prompts, which reach them with every name replaced by a stand-in. See /subprocessors.
 
 **Q: Can you sign our DPA?**  
 A: Yes. Contact privacy@time-2-read.com.
@@ -205,7 +207,6 @@ Company: Spry VSL LLC
 - Privacy Policy: /privacy  
 - GDPR Rights: /gdpr  
 - CCPA Rights: /ccpa  
-- Vendors: /vendors  
 - Subprocessors: /subprocessors  
 - Data Transfers: /data-transfers  
 

@@ -5,7 +5,7 @@
   "collected_at": "2026-11-22T15:40:38.407Z",
   "state": "OK",
   "named_stop": null,
-  "sitemap_url_count": 36,
+  "sitemap_url_count": 35,
   "inspected_this_run": 36,
   "rotation": {
     "per_run_cap": 150,
@@ -14,12 +14,12 @@
   },
   "summary": {
     "by_coverage_state": {
-      "Submitted and indexed": 31,
-      "Alternate page with proper canonical tag": 4,
-      "URL is unknown to Google": 1
+      "Submitted and indexed": 30,
+      "URL is unknown to Google": 1,
+      "Alternate page with proper canonical tag": 4
     },
     "by_verdict": {
-      "PASS": 31,
+      "PASS": 30,
       "NEUTRAL": 5
     }
   },
@@ -108,18 +108,6 @@
       "googleCanonical": "https://time-2-read.com/accessibility",
       "userCanonical": "https://time-2-read.com/accessibility",
       "inspected_at": "2026-11-22T15:40:19.359Z"
-    },
-    {
-      "url": "https://time-2-read.com/vendors",
-      "verdict": "PASS",
-      "coverageState": "Submitted and indexed",
-      "lastCrawlTime": "2026-09-13T16:44:45Z",
-      "indexingState": "INDEXING_ALLOWED",
-      "robotsTxtState": "ALLOWED",
-      "pageFetchState": "SUCCESSFUL",
-      "googleCanonical": "https://time-2-read.com/vendors",
-      "userCanonical": "https://time-2-read.com/vendors",
-      "inspected_at": "2026-11-22T15:40:38.407Z"
     },
     {
       "url": "https://time-2-read.com/gdpr",

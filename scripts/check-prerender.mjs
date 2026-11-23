@@ -14,6 +14,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { clarityRuleBroken, loadsClarity } from "./clarity-loader.mjs";
+import { MOVED, movedPageProblems } from "./moved-pages.mjs";
 
 const SITE = "https://time-2-read.com";
 /** k4: the Spry Labs entity home every side business names as its parent (src/seo/entity.json). */
@@ -58,7 +59,7 @@ for (const loc of locs) {
   const lds = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
   const types = lds.flatMap((b) => (b["@graph"] ?? [b]).map((n) => n["@type"]));
   if (!types.includes("Organization")) fails.push(`${path}: shell JSON-LD lost`);
-  const isLanding = /^\/(?!about$|pricing$|privacy$|terms$|ccpa$|accessibility$|vendors$|gdpr$|ferpa$|data-transfers$|subprocessors$)[a-z0-9-]+$/.test(path);
+  const isLanding = /^\/(?!about$|pricing$|privacy$|terms$|ccpa$|accessibility$|gdpr$|ferpa$|data-transfers$|subprocessors$)[a-z0-9-]+$/.test(path);
   if (isLanding && !types.includes("FAQPage")) fails.push(`${path}: no FAQPage JSON-LD`);
   if (types.includes("Article") && /<(form|input|textarea)\b/i.test(root?.[2] ?? "")) fails.push(`${path}: guide page collects data`);
   const title = decode(html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "");
@@ -123,6 +124,12 @@ for (const loc of locs) {
 // Bing Webmaster site-ownership tag (public code, not a secret) must survive the build.
 const home = existsSync(join(dist, "index.html")) ? readFileSync(join(dist, "index.html"), "utf8") : "";
 if (!/<meta name="msvalidate\.01" content="306F2E6DD99A91CBBA16C94091284F00"/.test(home)) fails.push("/: dist/index.html lost the msvalidate.01 Bing verification tag");
+// Every moved address ships a page that sends visitors and crawlers to its new home.
+const sitemapPaths = locs.map((loc) => new URL(loc).pathname.replace(/\/+$/, "") || "/");
+for (const [from, to] of Object.entries(MOVED)) {
+  const file = join(dist, from.slice(1), "index.html");
+  fails.push(...movedPageProblems(from, to, existsSync(file) ? readFileSync(file, "utf8") : "", sitemapPaths));
+}
 // Rule 0: a run that checked no page, or found the byline on none, is a failure, not a pass.
 if (checked === 0) fails.push("PRERENDER_CHECK_NO_PAGES_CHECKED");
 if (bylines === 0) fails.push("PRERENDER_CHECK_NO_BYLINE_FOUND: no page carried a visible rel=\"author\" byline (c6)");
