@@ -22,16 +22,18 @@ const COLLECTORS = [
 ];
 
 describe("the daily Search Console workflow", () => {
-  it("is on a daily cron, not dispatch-only", () => {
+  // Weekly since 23 Nov 2026 (owner rule: daily only when something changes daily AND someone
+  // acts on it daily; Search Console is a rolling 28-day read that the weekly reports use).
+  it("is on a weekly cron, not dispatch-only", () => {
     expect(WORKFLOW).toMatch(/schedule:/);
-    const crons = [...WORKFLOW.matchAll(/cron:\s*'([^']+)'/g)].map((m) => m[1]);
+    const crons = [...WORKFLOW.matchAll(/cron:\s*["']([^"']+)["']/g)].map((m) => m[1]);
     expect(crons.length, "the workflow must carry at least one cron").toBeGreaterThan(0);
     for (const c of crons) {
       const f = c.trim().split(/\s+/);
       expect(f.length, `cron "${c}" must have five fields`).toBe(5);
-      // Daily: day-of-month and day-of-week both unrestricted.
-      expect(f[2], `cron "${c}" must run every day of the month`).toBe("*");
-      expect(f[4], `cron "${c}" must run every day of the week`).toBe("*");
+      // Weekly: every day of the month, exactly one day of the week.
+      expect(f[2], `cron "${c}" must not be tied to a day of the month`).toBe("*");
+      expect(f[4], `cron "${c}" must run on exactly one day of the week`).toMatch(/^[0-6]$/);
     }
   });
 
