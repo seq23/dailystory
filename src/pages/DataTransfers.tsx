@@ -63,35 +63,26 @@ const DataTransfers = () => {
             <CardTitle>Third-Party Sub-Processors</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-2 font-semibold">Processor</th>
-                    <th className="text-left py-3 px-2 font-semibold">Location</th>
-                    <th className="text-left py-3 px-2 font-semibold">Purpose</th>
-                    <th className="text-left py-3 px-2 font-semibold">DPA</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subprocessors.map((p) => (
-                    <tr key={p.name} className="border-b last:border-0">
-                      <td className="py-3 px-2 font-medium">
-                        {p.privacyUrl ? (
-                          <a href={p.privacyUrl} target="_blank" rel="noopener noreferrer"
-                             className="text-primary hover:underline inline-flex items-center gap-1">
-                            {p.name} <ExternalLink className="w-3 h-3" />
-                          </a>
-                        ) : p.name}
-                      </td>
-                      <td className="py-3 px-2 text-muted-foreground">{p.location}</td>
-                      <td className="py-3 px-2 text-muted-foreground">{p.purpose}</td>
-                      <td className="py-3 px-2 text-muted-foreground">{p.dpa ? DPA_LABEL[p.dpa] : "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {/* A stacked list, not a table: at phone width a four-column table hid Purpose and DPA
+                off-screen behind a sideways scroll (320 px capture, 22 Nov 2026). */}
+            <ul className="divide-y">
+              {subprocessors.map((p) => (
+                <li key={p.name} className="py-3 text-sm" data-testid="transfer-row">
+                  <p className="font-medium">
+                    {p.privacyUrl ? (
+                      <a href={p.privacyUrl} target="_blank" rel="noopener noreferrer"
+                         className="text-primary hover:underline inline-flex items-center gap-1">
+                        {p.name} <ExternalLink className="w-3 h-3 shrink-0" aria-hidden="true" />
+                      </a>
+                    ) : p.name}
+                  </p>
+                  <p className="text-muted-foreground">{p.purpose}</p>
+                  <p className="text-muted-foreground">
+                    {p.location}{p.dpa ? ` · ${DPA_LABEL[p.dpa]}` : ""}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
 

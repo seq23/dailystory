@@ -40,6 +40,17 @@ for (const width of [320, 390] as const) {
         expect(styles.ul.pad, `${path} list is indented`).toBeGreaterThan(0);
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth), `${path} fits ${width} px`).toBeLessThanOrEqual(width);
+      if (path === '/data-transfers') {
+        // Every processor's purpose and DPA status sits on screen, not behind a sideways scroll.
+        const rows = page.getByTestId('transfer-row');
+        await expect(rows).toHaveCount(15);
+        for (const row of await rows.all()) {
+          const box = await row.boundingBox();
+          expect(box!.x + box!.width, `${await row.locator('p').first().innerText()} fits ${width} px`).toBeLessThanOrEqual(width);
+        }
+        await expect(page.getByText(/· DPA signed$/)).toHaveCount(6);
+        await expect(page.getByText(/· DPA in progress$/)).toHaveCount(2);
+      }
       await page.screenshot({ path: testInfo.outputPath(`${path.slice(1)}-${width}.png`), fullPage: true });
     });
   }
