@@ -452,7 +452,10 @@ jobs:
             echo "feedback path unchanged: no TEST submission"; exit 0
           fi
           BASE="https://cpzeuogomaixamrtnnmj.supabase.co"
-          SERVICE_KEY=$(supabase projects api-keys --project-ref "$SUPABASE_PROJECT_ID" -o json | jq -r '.[] | select(.name=="service_role") | .api_key')
+          # The Management API call tts-usage-report.yml already proves (the CLI has no -o flag:
+          # that first run stopped here, 23 Nov 2026).
+          SERVICE_KEY=$(curl -sS --max-time 30 "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_ID/api-keys?reveal=true" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" | jq -r '.[] | select(.name=="service_role") | .api_key // empty' | head -1) || SERVICE_KEY=""
           [ -n "$SERVICE_KEY" ] && [ "$SERVICE_KEY" != "null" ] || die "NAMED STOP: the service key could not be read"
           echo "::add-mask::$SERVICE_KEY"
           admin() { curl -s --max-time 30 -H "apikey: $SERVICE_KEY" -H "Authorization: Bearer $SERVICE_KEY" -H "Content-Type: application/json" "$@"; }
@@ -486,6 +489,8 @@ jobs:
           if [ -n "$failed" ]; then die "the feedback form does not deliver:$failed"; fi
 
       - name: Retired functions are removed from the project
+        # Runs even when the form check above fails: the retired copies are live and unguarded.
+        if: ${{ !cancelled() }}
         run: |
           # A folder deleted here is NOT deleted on Supabase: the old code keeps answering.
           # 23 Nov 2026: four unguarded mailers and three paid-image functions were still live

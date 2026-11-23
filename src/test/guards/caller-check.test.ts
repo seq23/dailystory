@@ -133,6 +133,12 @@ describe("forms rule: the live feedback form is proven after every deploy that c
     expect(step).toContain("grep -qE 'send-feedback-notification/|FeedbackForm\\.tsx|_shared/callerCheck\\.ts|\\.github/workflows/deploy-functions\\.yml'");
   });
 
+  it("reads the service key the way tts-usage-report already proves, never the CLI's missing -o flag", () => {
+    expect(step).toContain('"https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_ID/api-keys?reveal=true"');
+    expect(step).not.toMatch(/supabase projects api-keys/);
+    expect(step).toContain('|| die "NAMED STOP: the service key could not be read"');
+  });
+
   it("deletes the test account when the step ends, pass or fail, and fails if it cannot", () => {
     const trap = step.indexOf("trap remove_test_account EXIT");
     expect(trap).toBeGreaterThan(step.indexOf('uid=$(printf \'%s\' "$link" | jq -r \'.id // .user.id // empty\')'));
@@ -172,6 +178,12 @@ describe("retired functions leave the project, not only the repo", () => {
   ];
   const wf = read(".github/workflows/deploy-functions.yml");
   const listed = (wf.match(/RETIRED="([^"]+)"/)?.[1] ?? "").split(/\s+/).filter(Boolean);
+
+  it("the retired step runs even when an earlier post-deploy check failed", () => {
+    const at = wf.indexOf("- name: Retired functions are removed from the project");
+    const head = wf.slice(at, wf.indexOf("run: |", at));
+    expect(head).toContain("if: ${{ !cancelled() }}");
+  });
 
   it("the deploy deletes each retired function and proves it answers 404", () => {
     expect(listed.sort()).toEqual([...RETIRED].sort());
