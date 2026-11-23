@@ -341,7 +341,7 @@ A: Via vendor status pages, email notifications, and DPA breach notification cla
 A: Yes. Annual review of vendor DPAs, certifications, and subprocessor changes.
 
 **Q103: Can you notify us before adding new subprocessors?**  
-A: Yes. We update the subprocessor page (/subprocessors) and notify affected customers before adding a new subprocessor.
+A: We update this list before a new subprocessor starts processing customer data. Schools and districts can ask us to email them when it changes. The list is at /subprocessors.
 
 **Q104: Do your AI vendors retain user data?**  
 A: No. OpenAI and Anthropic are configured with zero-data-retention API policies. Data is not used for model training.
