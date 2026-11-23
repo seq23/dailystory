@@ -75,13 +75,26 @@ docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ER
 docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.read_aloud_practice) < 20 then raise exception 'Read-aloud reapplication lost data'; end if; end \$\$;"
 echo 'Read-aloud practice limits, refusal reasons, local day, zone cap, access and reapplication checks passed.'
 
-# Parent incident notices: one send per incident and parent, retryable failures, app roles shut out, reapply keeps rows.
+# Parent incident notices: one send per incident, version and parent; retries never send twice;
+# app roles shut out; a row from before versions stops the follow-up migration; reapply keeps rows.
 incident_migration="${INCIDENT_MIGRATION:-supabase/migrations/20261123180000_incident_notices.sql}"
+versions_migration="${VERSIONS_MIGRATION:-supabase/migrations/20261123200000_incident_notice_versions.sql}"
+psql_in() { docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q "$@"; }
 docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "create table if not exists public.data_breach_log (id uuid primary key default gen_random_uuid(), breach_description text not null, data_types_affected text[] not null default '{}', users_affected_count integer default 0, severity text not null default 'low', remediation_steps text, status text not null default 'detected', logged_by text, users_notified_at timestamptz, created_at timestamptz not null default now(), updated_at timestamptz not null default now());"
-docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$incident_migration"
-docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < supabase/tests/incident_notices/claim.sql
-docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$incident_migration"
-docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.incident_notices) <> 3 then raise exception 'Incident reapplication lost data'; end if; end \$\$;"
+psql_in < "$incident_migration"
+# A row sent before versions existed cannot be matched to one: the follow-up stops, changing nothing.
+psql_in -c "insert into public.incident_notices (incident_id, parent_user_id, status) values ('2026-11-old', gen_random_uuid(), 'sent');"
+if out=$(psql_in --single-transaction < "$versions_migration" 2>&1); then
+  echo "The versions migration ran over a row with no version"; exit 1
+fi
+grep -q 'NAMED STOP INCIDENT_ROWS_WITHOUT_VERSION' <<<"$out" || { echo "Expected the named stop, got: $out"; exit 1; }
+psql_in -c "do \$\$ begin if exists (select 1 from information_schema.columns where table_name = 'incident_notices' and column_name = 'notice_version') then raise exception 'the stopped migration left a column behind'; end if; end \$\$;"
+psql_in -c "delete from public.incident_notices where incident_id = '2026-11-old';"
+psql_in --single-transaction < "$versions_migration"
+psql_in < supabase/tests/incident_notices/claim.sql
+psql_in < "$incident_migration"
+psql_in --single-transaction < "$versions_migration"
+docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.incident_notices) <> 4 or (select count(*) from public.incident_notice_versions) <> 3 then raise exception 'Incident reapplication lost data'; end if; if exists (select 1 from pg_proc where proname = 'incident_notice_claim' and pronargs = 2) then raise exception 'reapply brought back the old claim'; end if; end \$\$;"
 echo 'Incident notice claims, retries, access and reapplication checks passed.'
 
 # performance_metrics: no public INSERT (d10 audit). The table and its original policies come from

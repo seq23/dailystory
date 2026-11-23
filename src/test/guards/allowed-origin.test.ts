@@ -5,6 +5,7 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { allowedOrigin, applyAllowedOrigin, withAllowedOrigin } from "../../../supabase/functions/_shared/allowedOrigin";
+import { buildCorsHeaders, corsHeaders as healthCorsHeaders, handleHealthAndCors, withCors } from "../../../supabase/functions/_shared/healthCors";
 
 const root = join(__dirname, "../../..");
 const fnRoot = join(root, "supabase/functions");
@@ -123,15 +124,59 @@ describe("every function starts through the allowed-origin serve", () => {
     expect(s).toMatch(/Deno\.serve\(withAllowedOrigin\(handler\)\)/);
   });
 
-  it("no function's own code sets a wildcard origin any more", () => {
+  it("no function or shared helper sets an origin of its own: serve.ts is the only place that grants one", () => {
     const hits: string[] = [];
-    for (const d of fnDirs) {
-      for (const f of readdirSync(join(fnRoot, d), { recursive: true }) as string[]) {
-        if (!/\.(ts|js)$/.test(f)) continue;
-        if (/Access-Control-Allow-Origin['"]?\s*[:,]\s*['"]\*['"]/.test(readFileSync(join(fnRoot, d, f), "utf8"))) hits.push(`${d}/${f}`);
-      }
+    const sources = readdirSync(fnRoot, { recursive: true }) as string[];
+    expect(sources.filter((f) => f.startsWith("_shared")).length).toBeGreaterThan(50); // the helpers are read
+    for (const f of sources) {
+      if (!/\.(ts|js)$/.test(f) || f === join("_shared", "allowedOrigin.ts")) continue;
+      if (/Access-Control-Allow-Origin/i.test(readFileSync(join(fnRoot, f), "utf8"))) hits.push(f);
     }
     expect(hits).toEqual([]);
+  });
+});
+
+describe("the shared CORS helpers grant no origin, and serve.ts grants only ours", () => {
+  const strangers = [
+    "https://evil.example",
+    "null",
+    "https://time-2-read.com.evil.example", // subdomain trick
+    "https://evil.time-2-read.com",
+    "http://time-2-read.com", // http variant
+    "http://www.time-2-read.com",
+  ];
+  const helperReplies = async (origin: string | null, method: string) => {
+    const r = req(origin ?? undefined, method);
+    const wrapped = withCors(async () => new Response("{}", { status: 200 }));
+    return [
+      new Response(null, { headers: buildCorsHeaders(r) }),
+      new Response(null, { headers: buildCorsHeaders(r, { allowCredentials: true }) }),
+      handleHealthAndCors(req(origin ?? undefined, "OPTIONS"))!,
+      await wrapped(r),
+      new Response(null, { headers: healthCorsHeaders }),
+    ];
+  };
+
+  it("on their own, the helpers set no Allow-Origin for any origin, ours, a stranger's or none", async () => {
+    for (const origin of [...strangers, "https://time-2-read.com", null]) {
+      for (const method of ["OPTIONS", "POST"]) {
+        for (const res of await helperReplies(origin, method)) {
+          expect(res.headers.has("Access-Control-Allow-Origin"), `${origin} ${method}`).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("through serve.ts, null, subdomain tricks and http variants get no grant; our site gets its own origin", async () => {
+    for (const origin of strangers) {
+      for (const method of ["OPTIONS", "POST"]) {
+        for (const res of await helperReplies(origin, method)) {
+          expect(applyAllowedOrigin(req(origin, method), res).headers.has("Access-Control-Allow-Origin"), `${origin} ${method}`).toBe(false);
+        }
+      }
+    }
+    const ours = applyAllowedOrigin(req("https://time-2-read.com", "OPTIONS"), handleHealthAndCors(req("https://time-2-read.com", "OPTIONS"))!);
+    expect(ours.headers.get("Access-Control-Allow-Origin")).toBe("https://time-2-read.com");
   });
 });
 

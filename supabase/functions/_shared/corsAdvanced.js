@@ -42,9 +42,8 @@ export const COMPREHENSIVE_HEADER_BASELINE = [
 const headerUsageStats = {};
 const newHeadersDiscovered = new Set();
 
-// Dynamic CORS configuration
+// Dynamic CORS configuration. The allowed origin is set by ./serve.ts for every response.
 const DEFAULT_CORS_CONFIG = {
-  allowedOrigins: ['*'],
   allowedMethods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE', 'PATCH'],
   maxAge: 86400,
   exposeHeaders: [
@@ -106,13 +105,7 @@ function generateDynamicCorsHeaders(request, config = {}) {
     ? extractRequestedHeaders(request)
     : COMPREHENSIVE_HEADER_BASELINE;
   
-  // Dynamic origin handling (can be enhanced for specific origins)
-  const origin = request.headers.get('Origin');
-  const allowedOrigin = finalConfig.allowedOrigins.includes('*') ? '*' : 
-    (finalConfig.allowedOrigins.includes(origin || '') ? origin : finalConfig.allowedOrigins[0]);
-  
   return {
-    'Access-Control-Allow-Origin': allowedOrigin || '*',
     'Access-Control-Allow-Headers': allowedHeaders.join(', '),
     'Access-Control-Allow-Methods': finalConfig.allowedMethods.join(', '),
     'Access-Control-Max-Age': finalConfig.maxAge.toString(),
@@ -168,7 +161,6 @@ export function createDynamicCorsErrorResponse(error, request = null, status = 5
   // Inline fallback CORS for emergency cases
   if (!request) {
     const fallbackHeaders = {
-      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': COMPREHENSIVE_HEADER_BASELINE.join(', '),
       'Content-Type': 'application/json'
     };

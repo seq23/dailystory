@@ -1,10 +1,11 @@
 /**
- * Enhanced CORS handling with origin reflection and header mirroring
+ * CORS helpers: header mirroring and health replies (the origin is set by ./serve.ts)
  * Fixes Charlotte speech preflight failures
  */
 
+// Which origin may call is decided by ./serve.ts for every response (allowedOrigin.ts); these
+// helpers set only the other CORS headers.
 type CorsOptions = {
-  allowOrigins?: string[]; // if unset, reflect any Origin
   allowCredentials?: boolean; // default false
   allowMethods?: string[]; // default below
   allowHeaders?: string[];  // if unset, mirror Access-Control-Request-Headers
@@ -12,9 +13,7 @@ type CorsOptions = {
 };
 
 export function buildCorsHeaders(req: Request, opts: CorsOptions = {}) {
-  const origin = req.headers.get("Origin") ?? "";
   const {
-    allowOrigins,
     allowCredentials = false,
     allowMethods = ["GET","POST","OPTIONS","HEAD"],
     allowHeaders,
@@ -22,20 +21,6 @@ export function buildCorsHeaders(req: Request, opts: CorsOptions = {}) {
   } = opts;
 
   const h = new Headers();
-
-  // Origin handling
-  if (allowOrigins && allowOrigins.length > 0) {
-    const allowed = allowOrigins.includes(origin) ? origin : allowOrigins[0];
-    h.set("Access-Control-Allow-Origin", allowed);
-    h.set("Vary", "Origin");
-  } else if (origin) {
-    // reflect arbitrary origin
-    h.set("Access-Control-Allow-Origin", origin);
-    h.set("Vary", "Origin");
-  } else {
-    // no origin -> fallback to *
-    h.set("Access-Control-Allow-Origin", "*");
-  }
 
   if (allowCredentials) h.set("Access-Control-Allow-Credentials", "true");
 
@@ -103,7 +88,6 @@ export function withCors(
 
 // Legacy compatibility exports
 export const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
   "Access-Control-Max-Age": "600",

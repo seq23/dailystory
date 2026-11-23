@@ -47,8 +47,8 @@ const COMPREHENSIVE_HEADER_BASELINE: string[] = [
 ];
 
 // ============= CORS CONFIGURATION =============
+// The allowed origin is set by ./serve.ts for every response; this config never grants one.
 interface CorsConfig {
-  allowedOrigins: string[];
   allowedMethods: string[];
   maxAge: number;
   exposedHeaders: string[];
@@ -58,7 +58,6 @@ interface CorsConfig {
 }
 
 const DEFAULT_CORS_CONFIG: CorsConfig = {
-  allowedOrigins: ['*'],
   allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
   maxAge: 86400, // 24 hours
   exposedHeaders: ['x-request-id', 'x-response-time'],
@@ -113,13 +112,11 @@ function extractRequestedHeaders(request: Request): string[] {
 
 // ============= DYNAMIC CORS HEADER GENERATION =============
 function generateDynamicCorsHeaders(request: Request, config: CorsConfig = DEFAULT_CORS_CONFIG): Record<string, string> {
-  const origin = request.headers.get('Origin');
   const allowedHeaders = config.autoDetectHeaders 
     ? extractRequestedHeaders(request)
     : COMPREHENSIVE_HEADER_BASELINE;
   
   const headers: Record<string, string> = {
-    'Access-Control-Allow-Origin': origin || '*',
     'Access-Control-Allow-Methods': config.allowedMethods.join(', '),
     'Access-Control-Allow-Headers': allowedHeaders.join(', '),
     'Access-Control-Max-Age': '86400', // 24 hours cache
@@ -180,7 +177,6 @@ export function createDynamicCorsErrorResponse(
 ): Response {
   // Fallback CORS headers if request is not available
   const fallbackHeaders: Record<string, string> = {
-    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD',
     'Access-Control-Allow-Headers': COMPREHENSIVE_HEADER_BASELINE.join(', '),
     'Access-Control-Allow-Credentials': 'true'

@@ -5,8 +5,12 @@
 // address is the account's own sign-in email, read from the database (never from the body and
 // never child_profiles.parent_email, which the account owner can rewrite). One email per
 // parent, naming only that parent's own affected children. Every send is recorded per parent
-// (public.incident_notices); a re-run of the same incident sends only what has not been sent,
-// so a mailer outage is retried by running it again and nobody gets it twice.
+// and notice version (public.incident_notices); a re-run sends only what has not been sent,
+// so a mailer outage is retried by running it again and nobody gets the same notice twice.
+// An edited notice under the same incident id is a new version: it is sent only when the owner
+// says so (newVersion: true), parents who had the earlier one get it as an update, and the
+// record of the earlier one is kept. The incident is marked done in data_breach_log only when
+// every affected parent has the latest version.
 // dry-run (the default) shows the rendered email and the counts and sends nothing.
 // Pure (deps injected): guard src/test/guards/incident-notice.test.ts.
 import { adminOrCronRefusal, escapeHtml, json, type GetUser } from "../_shared/callerCheck.ts";
@@ -45,11 +49,21 @@ export interface NoticeEmail {
   subject: string;
   html: string;
   text: string;
-  /** The same key for the same incident and parent, so the mailer also refuses a repeat. */
+  /** One key per incident, version, parent and send key, so the mailer also drops a repeat. */
   idempotencyKey: string;
 }
 
-export type ClaimResult = "claimed" | "sent" | "sending";
+/** The mailer refused the email, so it did not go out (safe to send again under a new key).
+ *  Any other error from sendEmail means the outcome is unknown. */
+export class MailRefused extends Error {}
+
+export type ClaimStatus = "claimed" | "sent" | "sending" | "unsure";
+export interface Claim { status: ClaimStatus; key: number }
+export interface NoticeVersion { version: string; versionNo: number }
+export type SendResult =
+  | { status: "sent"; providerId: string | null }
+  | { status: "failed"; error: string }
+  | { status: "unsure"; error: string };
 
 export interface IncidentDeps {
   adminIds: string[];
@@ -60,21 +74,48 @@ export interface IncidentDeps {
   childrenOfParents: (parentIds: string[]) => Promise<ChildRow[]>;
   /** The account's sign-in email, or null when there is no such account or no address. */
   accountEmail: (userId: string) => Promise<string | null>;
+  /** The versions already recorded for this incident. */
+  noticeVersions: (incidentId: string) => Promise<NoticeVersion[]>;
+  /** Which of `parentIds` have a sent notice for this incident under any other version. */
+  parentsSentEarlier: (incidentId: string, version: string, parentIds: string[]) => Promise<string[]>;
   /** Records the incident once (data_breach_log, keyed by incident id). */
   logIncident: (incident: Incident, parentsAffected: number) => Promise<void>;
-  /** Atomically takes the right to send to this parent: "claimed" when never sent or last
-   *  failed; otherwise the row's status ("sent", or "sending" when a run is in flight or
-   *  stopped mid-send: never re-sent automatically, since it may have gone). */
-  claim: (incidentId: string, parentId: string) => Promise<ClaimResult>;
-  record: (incidentId: string, parentId: string, result: { status: "sent"; providerId: string | null } | { status: "failed"; error: string }) => Promise<void>;
-  /** Sends through Resend; throws on any refusal. Returns the provider's id. */
+  /** Records a version once (incident_notice_versions) and returns its number. */
+  addVersion: (incidentId: string, version: string, content: Record<string, unknown>) => Promise<number>;
+  /** Atomically takes the right to send this parent this version (incident_notice_claim). */
+  claim: (incidentId: string, version: string, parentId: string, resendUnsure: boolean) => Promise<Claim>;
+  record: (incidentId: string, version: string, parentId: string, result: SendResult) => Promise<void>;
+  /** data_breach_log: done = every affected parent has the latest version. */
+  setIncidentDone: (incidentId: string, done: boolean) => Promise<void>;
+  /** Sends one email; throws MailRefused when it surely did not go out, anything else when unknown. */
   sendEmail: (email: NoticeEmail) => Promise<string | null>;
   /** RESEND_API_KEY is set. */
   mailConfigured: boolean;
   pause?: (ms: number) => Promise<void>;
 }
 
-type Parsed = { incident: Incident; childIds: string[]; accountIds: string[]; mode: "dry-run" | "send" };
+/** Resend statuses that mean the email was not accepted. 409 (same key in flight or reused)
+ *  and 5xx are not here: the email may have gone. */
+const REFUSED_STATUSES = new Set([400, 401, 403, 404, 405, 413, 422, 429]);
+
+/** The real mailer. A timeout or network error is thrown as is: the outcome is unknown. */
+export function sendViaResend(fetchImpl: typeof fetch, apiKey: string): IncidentDeps["sendEmail"] {
+  return async ({ to, subject, html, text, idempotencyKey }) => {
+    const res = await fetchImpl("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+      body: JSON.stringify({ from: NOTICE_FROM, to: [to], reply_to: PRIVACY_INBOX, subject, html, text }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) {
+      const detail = `Resend ${res.status}: ${(await res.text().catch(() => "")).slice(0, 200)}`;
+      throw REFUSED_STATUSES.has(res.status) ? new MailRefused(detail) : new Error(detail);
+    }
+    return ((await res.json().catch(() => ({}))) as { id?: string }).id ?? null;
+  };
+}
+
+type Parsed = { incident: Incident; childIds: string[]; accountIds: string[]; mode: "dry-run" | "send"; newVersion: boolean; resendUnsure: boolean };
 
 function text(v: unknown, min: number, max: number): string | null {
   if (typeof v !== "string") return null;
@@ -113,10 +154,28 @@ export function parseIncident(body: unknown): Parsed | string {
   if (childIds.length + accountIds.length > MAX_IDS) return `at most ${MAX_IDS} ids per incident call`;
   const mode = b.mode ?? "dry-run";
   if (mode !== "dry-run" && mode !== "send") return 'mode is "dry-run" (default) or "send"';
+  // Only a literal true counts: "yes", 1 or "true" is not the owner saying so.
+  for (const flag of ["newVersion", "resendUnsure"] as const) {
+    if (b[flag] !== undefined && typeof b[flag] !== "boolean") return `${flag} is true or false`;
+  }
   return {
     incident: { incidentId, whenItHappened, whatHappened, dataInvolved: data as string[], whatWeAreDoing, whatYouCanDo, severity },
-    childIds, accountIds, mode,
+    childIds, accountIds, mode, newVersion: b.newVersion === true, resendUnsure: b.resendUnsure === true,
   };
+}
+
+/** What the parent reads (severity is not in the email, so it is not part of the version). */
+export function noticeContent(incident: Incident): Record<string, unknown> {
+  const { whenItHappened, whatHappened, dataInvolved, whatWeAreDoing, whatYouCanDo } = incident;
+  return { whenItHappened, whatHappened, dataInvolved, whatWeAreDoing, whatYouCanDo };
+}
+
+/** The version id: the first 16 hex characters of SHA-256 over the notice's text. */
+export async function noticeVersion(incident: Incident): Promise<string> {
+  const c = noticeContent(incident);
+  const canonical = JSON.stringify([c.whenItHappened, c.whatHappened, c.dataInvolved, c.whatWeAreDoing, c.whatYouCanDo]);
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(canonical));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
 }
 
 function nameList(names: string[]): string {
@@ -127,13 +186,20 @@ function nameList(names: string[]): string {
 const standardSteps = (about: string) =>
   `You don't need to do anything to keep using Time2Read. If you would like us to show you, or delete, the information we hold about ${about}, reply to this email and we will do it.`;
 
-/** One parent's notice. `children` are that parent's own affected children, by first name. */
-export function renderNotice(incident: Incident, children: string[]): { subject: string; html: string; text: string } {
+/** One parent's notice. `children` are that parent's own affected children, by first name.
+ *  `update`: this parent already had an earlier version of this notice. */
+export function renderNotice(incident: Incident, children: string[], opts: { update?: boolean } = {}): { subject: string; html: string; text: string } {
   const named = children.map((c) => c.trim()).filter(Boolean);
   const who = named.length === 0
     ? "your Time2Read account"
     : `your ${named.length === 1 ? "child" : "children"} ${nameList(named)}`;
-  const subject = "A privacy notice from Time2Read";
+  const subject = opts.update ? "An update to our privacy notice from Time2Read" : "A privacy notice from Time2Read";
+  const opening = opts.update
+    ? `We wrote to you earlier about a privacy incident at Time2Read that involved information about ${who}. This notice replaces that one with what we know now.`
+    : `We are writing to tell you about a privacy incident at Time2Read that involved information about ${who}.`;
+  const footer = opts.update
+    ? "This update is about your account, not marketing."
+    : "This is a one-time notice about your account, not marketing.";
   const steps = incident.whatYouCanDo ??
     standardSteps(named.length === 0 ? "your account" : named.length === 1 ? "your child" : "your children");
   const paras = (s: string) => s.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
@@ -141,7 +207,7 @@ export function renderNotice(incident: Incident, children: string[]): { subject:
   const lines = [
     "Hello,",
     "",
-    `We are writing to tell you about a privacy incident at Time2Read that involved information about ${who}.`,
+    opening,
     "",
     "WHAT HAPPENED",
     `When: ${incident.whenItHappened}`,
@@ -157,7 +223,7 @@ export function renderNotice(incident: Incident, children: string[]): { subject:
     `Reply to this email or write to ${PRIVACY_INBOX}.`,
     "",
     "Time2Read (Spry VSL LLC)",
-    "This is a one-time notice about your account, not marketing.",
+    footer,
   ];
 
   const h = (t: string) =>
@@ -169,7 +235,7 @@ export function renderNotice(incident: Incident, children: string[]): { subject:
 <body style="margin:0;padding:0;background:#ffffff;">
 <div style="max-width:560px;margin:0 auto;padding:24px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55;color:#1f2937;overflow-wrap:anywhere;">
 ${p("Hello,")}
-${p(`We are writing to tell you about a privacy incident at Time2Read that involved information about ${who}.`)}
+${p(opening)}
 ${h("What happened")}
 ${p(`When: ${incident.whenItHappened}`)}
 ${paras(incident.whatHappened).map(p).join("\n")}
@@ -182,10 +248,13 @@ ${paras(steps).map(p).join("\n")}
 ${h("Questions")}
 <p style="margin:0 0 14px;">Reply to this email or write to <a href="mailto:${PRIVACY_INBOX}" style="color:#1f2937;">${PRIVACY_INBOX}</a>.</p>
 <p style="margin:28px 0 4px;">Time2Read (Spry VSL LLC)</p>
-<p style="margin:0;font-size:13px;color:#6b7280;">This is a one-time notice about your account, not marketing.</p>
+<p style="margin:0;font-size:13px;color:#6b7280;">${escapeHtml(footer)}</p>
 </div></body></html>`;
   return { subject, html, text: lines.join("\n").replace(/\n{3,}/g, "\n\n") };
 }
+
+const scrub = (e: unknown) =>
+  (e instanceof Error ? e.message : String(e)).replace(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g, "[address]").slice(0, 300);
 
 export async function handleIncidentNotice(req: Request, deps: IncidentDeps, cors: Record<string, string>): Promise<Response> {
   if (req.method !== "POST") return json(405, { error: "POST only" }, cors);
@@ -201,17 +270,21 @@ export async function handleIncidentNotice(req: Request, deps: IncidentDeps, cor
   try { body = JSON.parse(raw); } catch { return json(400, { error: "JSON body required" }, cors); }
   const parsed = parseIncident(body);
   if (typeof parsed === "string") return json(400, { error: parsed }, cors);
-  const { incident, childIds, accountIds, mode } = parsed;
+  const { incident, childIds, accountIds, mode, newVersion, resendUnsure } = parsed;
   if (mode === "send" && !deps.mailConfigured) {
     return json(503, { error: "NAMED STOP RESEND_API_KEY: the mail key is not set; nothing was sent." }, cors);
   }
 
   // 2. Who is affected, from the database only. A parent is notified about their own
   //    affected children; an account named directly covers all of its child profiles.
+  //    Which version this text is, and who had an earlier one, from the database too.
+  const version = await noticeVersion(incident);
   const byParent = new Map<string, Map<string, string>>();
   const add = (parent: string) => byParent.get(parent) ?? byParent.set(parent, new Map()).get(parent)!;
   let unmatchedChildIds: string[] = [];
   const emails = new Map<string, string | null>();
+  let versions: NoticeVersion[] = [];
+  let hadEarlier = new Set<string>();
   try {
     if (childIds.length) {
       const rows = await deps.childrenByIds(childIds);
@@ -231,6 +304,9 @@ export async function handleIncidentNotice(req: Request, deps: IncidentDeps, cor
       const got = await Promise.all(chunk.map((id) => deps.accountEmail(id)));
       chunk.forEach((id, k) => emails.set(id, got[k]?.trim() || null));
     }
+    versions = await deps.noticeVersions(incident.incidentId);
+    const withAddress = [...emails.keys()].filter((id) => emails.get(id));
+    hadEarlier = new Set(versions.length && withAddress.length ? await deps.parentsSentEarlier(incident.incidentId, version, withAddress) : []);
   } catch (e) {
     console.error(`[notify-data-breach] READ_FAILED: ${e instanceof Error ? e.message : e}`);
     return json(503, { error: "The database could not be read; nothing was sent. Try again." }, cors);
@@ -239,64 +315,113 @@ export async function handleIncidentNotice(req: Request, deps: IncidentDeps, cor
   const parents = [...byParent.keys()].sort();
   const reachable = parents.filter((id) => emails.get(id));
   const noAddress = parents.length - reachable.length;
-  const preview = renderNotice(incident, [PREVIEW_CHILD]);
-  const summary = { incidentId: incident.incidentId, parents: parents.length, recipients: reachable.length, noAddress, unmatchedChildIds };
+  const latest = versions.reduce<NoticeVersion | null>((a, v) => (!a || v.versionNo > a.versionNo ? v : a), null);
+  const known = versions.find((v) => v.version === version) ?? null;
+  const versionInfo = {
+    version,
+    versionNo: known?.versionNo ?? (latest?.versionNo ?? 0) + 1,
+    isNew: !known,
+    hadEarlierVersion: reachable.filter((id) => hadEarlier.has(id)).length,
+  };
+  const summary = { incidentId: incident.incidentId, parents: parents.length, recipients: reachable.length, noAddress, unmatchedChildIds, notice: versionInfo };
 
   // 3. Zero recipients is a named stop, never a quiet "done".
   if (reachable.length === 0) {
     return json(422, { ...summary, error: "NAMED STOP NO_RECIPIENTS: no affected parent with an email address was found; nothing was sent.", code: "NO_RECIPIENTS" }, cors);
   }
+  // 4. Only the latest version, or a new one the owner asked for, is ever sent.
+  if (known && latest && known.versionNo !== latest.versionNo) {
+    return json(409, { ...summary, code: "OLDER_VERSION", error: `This is version ${known.versionNo} of the notice; version ${latest.versionNo} has replaced it. Nothing was sent. Send the latest text instead.` }, cors);
+  }
+  const editNeedsConfirm = !known && versions.length > 0;
   if (mode === "dry-run") {
-    return json(200, { mode, ...summary, sent: 0, preview: { from: NOTICE_FROM, subject: preview.subject, text: preview.text, html: preview.html } }, cors);
+    const preview = renderNotice(incident, [PREVIEW_CHILD]);
+    const update = versionInfo.hadEarlierVersion > 0 ? renderNotice(incident, [PREVIEW_CHILD], { update: true }) : null;
+    return json(200, {
+      mode, ...summary, sent: 0,
+      ...(editNeedsConfirm ? { next: `This text differs from version ${latest!.versionNo}. To send it as version ${versionInfo.versionNo}, run with "mode": "send" and "newVersion": true. ${versionInfo.hadEarlierVersion} parents who had an earlier version will get it as an update.` } : {}),
+      preview: { from: NOTICE_FROM, subject: preview.subject, text: preview.text, html: preview.html },
+      ...(update ? { updatePreview: { subject: update.subject, text: update.text, html: update.html } } : {}),
+    }, cors);
+  }
+  if (editNeedsConfirm && !newVersion) {
+    return json(409, { ...summary, code: "NEW_VERSION_NOT_CONFIRMED", error: `This text differs from version ${latest!.versionNo} of the notice for this incident. Nothing was sent. To send it as version ${versionInfo.versionNo}, run again with "newVersion": true (${versionInfo.hadEarlierVersion} parents who had an earlier version will get it as an update).` }, cors);
   }
 
-  // 4. Send. The incident is recorded first: if that fails, nothing is sent.
+  // 5. Send. The incident and this version are recorded first: if that fails, nothing is sent.
   try {
     await deps.logIncident(incident, parents.length);
+    await deps.addVersion(incident.incidentId, version, noticeContent(incident));
   } catch (e) {
     console.error(`[notify-data-breach] LOG_FAILED: ${e instanceof Error ? e.message : e}`);
     return json(503, { ...summary, error: "The incident could not be recorded; nothing was sent. Try again." }, cors);
   }
   const pause = deps.pause ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
-  let sent = 0, alreadySent = 0, inProgress = 0, failed = 0, attempted = 0;
+  let sent = 0, alreadySent = 0, inProgress = 0, failed = 0, unconfirmed = 0, held = 0, errors = 0, attempted = 0;
   let remaining = 0;
   for (const parentId of reachable) {
     if (attempted >= MAX_SENDS_PER_RUN) { remaining++; continue; }
-    let claim: ClaimResult;
+    let claim: Claim;
     try {
-      claim = await deps.claim(incident.incidentId, parentId);
+      claim = await deps.claim(incident.incidentId, version, parentId, resendUnsure);
     } catch (e) {
       console.error(`[notify-data-breach] CLAIM_FAILED: ${e instanceof Error ? e.message : e}`);
-      failed++;
+      errors++;
       continue;
     }
-    if (claim === "sent") { alreadySent++; continue; }
-    if (claim === "sending") { inProgress++; continue; }
+    if (claim.status === "sent") { alreadySent++; continue; }
+    if (claim.status === "sending") { inProgress++; continue; }
+    if (claim.status === "unsure") { held++; continue; }
     if (attempted > 0) await pause(SEND_SPACING_MS);
     attempted++;
     const names = [...byParent.get(parentId)!.values()].filter(Boolean).sort((a, b) => a.localeCompare(b));
-    const email = renderNotice(incident, names);
+    const email = renderNotice(incident, names, { update: hadEarlier.has(parentId) });
+    let result: SendResult;
     try {
-      const providerId = await deps.sendEmail({ to: emails.get(parentId)!, ...email, idempotencyKey: `incident-${incident.incidentId}-${parentId}` });
-      sent++;
-      await deps.record(incident.incidentId, parentId, { status: "sent", providerId }).catch((e) =>
-        console.error(`[notify-data-breach] RECORD_SENT_FAILED ${parentId}: ${e instanceof Error ? e.message : e}`));
+      const providerId = await deps.sendEmail({
+        to: emails.get(parentId)!, ...email,
+        idempotencyKey: `incident-${incident.incidentId}-${version}-${parentId}-${claim.key}`,
+      });
+      result = { status: "sent", providerId };
     } catch (e) {
-      failed++;
-      const error = (e instanceof Error ? e.message : String(e)).replace(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g, "[address]").slice(0, 300);
-      await deps.record(incident.incidentId, parentId, { status: "failed", error }).catch((e2) =>
-        console.error(`[notify-data-breach] RECORD_FAILED_FAILED ${parentId}: ${e2 instanceof Error ? e2.message : e2}`));
+      result = e instanceof MailRefused ? { status: "failed", error: scrub(e) } : { status: "unsure", error: scrub(e) };
+    }
+    try {
+      await deps.record(incident.incidentId, version, parentId, result);
+      if (result.status === "sent") sent++;
+      else if (result.status === "failed") failed++;
+      else unconfirmed++;
+    } catch (e) {
+      // The row stays 'sending': the next run retries it under the same key (the mailer drops a
+      // copy that went out) inside 23 hours, or holds it after that. Never counted as sent here.
+      console.error(`[notify-data-breach] RECORD_FAILED ${parentId}: ${e instanceof Error ? e.message : e}`);
+      errors++;
     }
   }
 
-  const complete = failed === 0 && remaining === 0 && inProgress === 0;
-  const status = failed > 0 ? 502 : remaining > 0 || inProgress > 0 ? 202 : 200;
-  const next = failed > 0
-    ? "Some notices failed and are recorded as failed. Run the same incident again to retry only those."
-    : remaining > 0
-      ? `Sent ${MAX_SENDS_PER_RUN} this run. Run the same incident again to continue.`
-      : inProgress > 0
-        ? "Some notices are mid-send in another run. Run the same incident again in 10 minutes: one that never finished is retried then, and one that went out is not sent twice."
-        : "Every reachable parent has this notice.";
-  return json(status, { mode, ...summary, sent, alreadySent, inProgress, failed, remaining, complete, next }, cors);
+  // 6. The incident is done only when every affected parent has the latest version.
+  let complete = noAddress === 0 && sent + alreadySent === reachable.length;
+  let incidentRecorded = true;
+  try {
+    await deps.setIncidentDone(incident.incidentId, complete);
+  } catch (e) {
+    console.error(`[notify-data-breach] INCIDENT_STATUS_FAILED: ${e instanceof Error ? e.message : e}`);
+    incidentRecorded = false;
+    complete = false;
+    errors++;
+  }
+
+  const problem = failed + unconfirmed + errors > 0;
+  const status = problem ? 502 : held > 0 ? 409 : remaining > 0 || inProgress > 0 ? 202 : 200;
+  const next = [
+    failed > 0 ? `${failed} notices were refused by the mailer and did not go out. Run the same incident again to retry only those.` : "",
+    unconfirmed > 0 ? `${unconfirmed} notices got no answer from the mailer. Run the same incident again within 23 hours: a copy that did go out is not sent twice.` : "",
+    errors > 0 ? (incidentRecorded ? "The database could not record some sends. Run the same incident again; nothing already sent is sent twice." : "The incident record could not be updated. Run the same incident again.") : "",
+    held > 0 ? `${held} notices were never confirmed and are more than 23 hours old, so they are not sent again by themselves. Look up incident-${incident.incidentId} in the Resend log; for any that did not go out, run again with "resendUnsure": true.` : "",
+    remaining > 0 ? `Sent at most ${MAX_SENDS_PER_RUN} this run. Run the same incident again to continue.` : "",
+    inProgress > 0 ? "Some notices are mid-send in another run. Run the same incident again in 10 minutes." : "",
+    noAddress > 0 ? `${noAddress} affected parents have no email address on file, so the incident stays open until they are reached another way.` : "",
+    complete ? "Every affected parent has this notice; the incident is marked parents_notified." : "",
+  ].filter(Boolean).join(" ");
+  return json(status, { mode, ...summary, sent, alreadySent, inProgress, failed, unconfirmed, held, errors, remaining, complete, next }, cors);
 }

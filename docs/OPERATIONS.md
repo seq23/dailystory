@@ -68,11 +68,27 @@ service key); anyone else gets 401/403 before the body is read.
 - **Dry run first (the default):** returns the counts (`parents`, `recipients`, `noAddress`) and
   the rendered email with a placeholder name. Nothing is sent or logged.
 - **Send:** `"mode": "send"`. The incident is logged in `data_breach_log` first (two-year COPPA
-  record); each parent is claimed in `incident_notices` before sending, so a re-run never sends
-  twice. A failed send is recorded `failed` (no address in the error) and the next run retries
-  only those; a run that died mid-send is retried after 10 minutes (the mailer's idempotency key
-  stops a second copy). At most 40 sends per run: a `202` with `remaining` means run it again.
-- **Stops:** zero reachable parents is `422 NO_RECIPIENTS`; no `RESEND_API_KEY` is a `503`.
+  record) and the text is stored as a numbered version in `incident_notice_versions`; each
+  parent is claimed in `incident_notices` (per incident, version and parent) before sending.
+  At most 40 sends per run: a `202` with `remaining` means run it again.
+- **Retries never send twice.** A send the mailer refused (4xx) is `failed`: nothing went out,
+  and the next run retries it under a fresh mailer key. A send with no answer (timeout, 5xx, a
+  run that died mid-send) is `unsure`: the next run retries it under the same key, so the
+  mailer drops a copy that did go out, but only within 23 hours of that key's first use (the
+  mailer forgets keys after 24). Past that it is held (`409`, `held`) and never sent by
+  itself: look up `incident-<incidentId>` in the Resend log and, for any that did not go out,
+  run again with `"resendUnsure": true`.
+- **An edited notice is a new version.** Changing the text under the same `incidentId` is
+  refused (`409 NEW_VERSION_NOT_CONFIRMED`, nothing sent) until you send it with
+  `"newVersion": true`. Parents who had an earlier version get it as "An update to our privacy
+  notice"; the record of who got the earlier one is kept. An older text is refused
+  (`409 OLDER_VERSION`). The dry run shows the version number, how many get it as an update,
+  and the update email. Severity alone is not a new version.
+- **Done:** the incident moves to `parents_notified` (and `users_notified_at` is set once) only
+  when every affected parent has the latest version. A parent with no address on file keeps it
+  `notifying_parents` until reached another way.
+- **Stops:** zero reachable parents is `422 NO_RECIPIENTS`; no `RESEND_API_KEY` is a `503`; a
+  database read or the incident log failing is a `503` with nothing sent.
   Until time-2-read.com is verified in Resend, every send records `failed` and can be re-run
   once the domain is verified.
 
@@ -84,7 +100,8 @@ curl -sS -X POST "https://<project>.supabase.co/functions/v1/notify-data-breach"
 
 `incident.json`: `incidentId` (lowercase, e.g. `2026-11-story-history`), `whenItHappened`,
 `whatHappened`, `dataInvolved` (list), `whatWeAreDoing`, optional `whatYouCanDo` and `severity`,
-`childIds` and/or `accountIds`, and `mode`.
+`childIds` and/or `accountIds`, `mode`, and only when needed `newVersion` / `resendUnsure`
+(`true`, nothing else).
 
 ## Schedule
 - Every scheduled job, in Central time, is listed in `docs/SCHEDULE.md` (rebalanced 1 Nov 2026).
