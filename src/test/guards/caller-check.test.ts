@@ -28,6 +28,7 @@ import {
 import {
   FEEDBACK_LIMITS,
   FEEDBACK_TO,
+  MAX_FEEDBACK_BODY_BYTES,
   type FeedbackDeps,
   type FeedbackEmail,
   handleFeedback,
@@ -439,6 +440,24 @@ describe("send-feedback-notification", () => {
     expect((await handleFeedback(fbReq({ ...FB, message: "x".repeat(17000) }), deps, cors)).status).toBe(413);
     expect((await handleFeedback(fbReq({ ...FB, rating: 9 }), deps, cors)).status).toBe(400);
     expect(sent).toHaveLength(1);
+  });
+
+  it("edges: a body of exactly the byte cap is read, one byte more is 413; ratings 1 and 5 pass, 0, 6 and 2.5 are 400", async () => {
+    const { deps, sent } = feedbackDeps();
+    // Pad with a multi-byte character so the cap is measured in bytes, not characters.
+    const sized = (bytes: number) => {
+      const base = JSON.stringify({ ...FB, pad: "" });
+      const room = bytes - new TextEncoder().encode(base).byteLength;
+      const pad = "é".repeat(Math.floor(room / 2)) + "x".repeat(room % 2);
+      const raw = JSON.stringify({ ...FB, pad });
+      expect(new TextEncoder().encode(raw).byteLength).toBe(bytes);
+      return raw;
+    };
+    expect((await handleFeedback(fbReq(sized(MAX_FEEDBACK_BODY_BYTES)), deps, cors)).status).toBe(200);
+    expect((await handleFeedback(fbReq(sized(MAX_FEEDBACK_BODY_BYTES + 1)), deps, cors)).status).toBe(413);
+    for (const rating of [1, 5]) expect((await handleFeedback(fbReq({ ...FB, rating }), deps, cors)).status).toBe(200);
+    for (const rating of [0, 6, 2.5, "4"]) expect((await handleFeedback(fbReq({ ...FB, rating }), deps, cors)).status).toBe(400);
+    expect(sent).toHaveLength(3);
   });
 
   it("the form sends no identity in the body", () => {
