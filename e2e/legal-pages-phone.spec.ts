@@ -18,11 +18,12 @@ for (const width of [320, 390] as const) {
       if (await consent.isVisible().catch(() => false)) await consent.click();
       const prose = page.locator('.prose');
       await expect(prose.first()).toBeVisible({ timeout: 20_000 });
+      // Blocks marked not-prose (cards, grids) keep their own styles, so only prose-styled elements count.
       const styles = await page.evaluate(() => {
         const css = (el: Element | null) => (el ? getComputedStyle(el) : null);
-        const h2 = css(document.querySelector('.prose h2'));
-        const p = css(document.querySelector('.prose p'));
-        const ul = css(document.querySelector('.prose ul'));
+        const h2 = css(document.querySelector('.prose h2:not(.not-prose *)'));
+        const p = css(document.querySelector('.prose p:not(.not-prose *)'));
+        const ul = css(document.querySelector('.prose ul:not(.not-prose *)'));
         return {
           h2: h2 && { size: parseFloat(h2.fontSize), weight: Number(h2.fontWeight) },
           p: p && { size: parseFloat(p.fontSize) },

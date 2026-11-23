@@ -38,7 +38,10 @@ for (const width of [320, 390] as const) {
 test('/vendors moves to /subprocessors', async ({ page }) => {
   await page.route('**/*', route => /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/)/.test(route.request().url())
     ? route.continue() : route.abort());
-  await page.goto('/vendors');
+  // The host serves dist/vendors/index.html at /vendors (as it does every prerendered page: live
+  // /privacy returns the prerendered title, checked 22 Nov 2026). vite preview only serves a
+  // folder's index.html with the trailing slash, so the browser opens that same file here.
+  await page.goto('/vendors/');
   await expect(page).toHaveURL(/\/subprocessors$/, { timeout: 20_000 });
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await expect(page.getByText('DPA signed', { exact: true })).toHaveCount(6);
