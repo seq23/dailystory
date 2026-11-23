@@ -224,8 +224,6 @@ The resilient loader now prioritizes local vendor bundle FIRST for all `@supabas
 |----------|---------------|---------------------|
 | elevenlabs-tts-smart | Tier 1 only | Tiers 2-4 |
 | elevenlabs-tts | Tier 1 only | Tiers 2-4 |
-| send-parental-notification | Tier 1 only | Tiers 2-4 |
-| notification-service | Tier 1 only (basic resilient loading) | Tiers 2-4 |
 
 #### 🟢 LOW PRIORITY - Analytics & Support
 **Status:** 📋 **PLANNED** (Phase 4)  

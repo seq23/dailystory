@@ -23,9 +23,6 @@ verify_jwt = true
 [functions.customer-portal]
 verify_jwt = true
 
-[functions.send-custom-auth-email]
-verify_jwt = true
-
 # ============================================
 # SECURITY & MONITORING FUNCTIONS
 # These require JWT authentication (verify_jwt = true)
@@ -37,19 +34,10 @@ verify_jwt = true
 [functions.log-security-event]
 verify_jwt = true
 
-[functions.notification-service]
-verify_jwt = true
-
 [functions.security-alert]
 verify_jwt = true
 
 [functions.security-dashboard]
-verify_jwt = true
-
-[functions.send-coppa-notification]
-verify_jwt = true
-
-[functions.send-parental-notification]
 verify_jwt = true
 
 # ============================================

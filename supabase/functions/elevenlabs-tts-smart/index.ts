@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 import { identifyCaller, chargeCall } from '../_shared/paidCallGuardDeno.ts';
 import { TTS_MAX_CHARACTERS } from '../_shared/languageVoiceMap.ts';
+import { sameSecret } from "../_shared/callerCheck.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -103,7 +104,7 @@ async function handle(req: Request): Promise<Response> {
   if (url.pathname.endsWith("/usage")) {
     const auth = (req.headers.get("Authorization") || "").replace("Bearer ", "").trim();
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    if (!serviceKey || auth !== serviceKey) {
+    if (!sameSecret(auth, serviceKey)) {
       return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
         status: 401, headers: { "Content-Type": "application/json" }
       });

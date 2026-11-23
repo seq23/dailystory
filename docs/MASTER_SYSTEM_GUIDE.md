@@ -536,7 +536,6 @@ analyzeVisualDetails() ← MAIN ENTRY POINT (called by orchestrator)
 - `get-monitoring-data` - Monitoring data retrieval
 - `model-performance-monitor` - Model performance tracking
 - `get-cost-analytics` - Cost analysis
-- `notification-service` - Notification management
 
 #### Support Functions (15 functions)
 - Translation, dictionary, word-related utilities

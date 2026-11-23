@@ -15,15 +15,9 @@ This document outlines the comprehensive COPPA (Children's Online Privacy Protec
 
 ### 2. Edge Functions
 
-#### `send-coppa-notification`
-- Sends immediate COPPA violation alerts to parents
-- Includes detected content, violation types, and guidance
-- Professional email template with privacy recommendations
-
-#### `send-parental-notification` 
-- Sends digest reports (daily/weekly/monthly)
-- Aggregates incident counts and recent violations
-- Provides parental guidance and compliance information
+#### Parent alert emails: none today
+`send-coppa-notification` and `send-parental-notification` were removed 23 Nov 2026: no code called it, and it would mail any address it was given.
+Incidents are logged (below); no email goes to parents about them.
 
 #### `log-personal-info-incident`
 - Logs all privacy incidents to database
@@ -36,16 +30,6 @@ This document outlines the comprehensive COPPA (Children's Online Privacy Protec
 - Logs incidents with proper user context
 - Handles authentication and error cases
 - Integrates with edge function for server-side logging
-
-#### `useCOPPANotification`
-- Sends immediate violation notifications
-- Uses real parent emails from child profiles
-- Handles email delivery errors gracefully
-
-#### `useParentalNotifications`
-- Manages digest notification system
-- Supports multiple report types (daily/weekly/monthly)
-- Formats incident data for parent consumption
 
 #### Updated `useValidationOnSubmit`
 - Integrated with incident logging system
@@ -90,12 +74,6 @@ This document outlines the comprehensive COPPA (Children's Online Privacy Protec
 ### Supabase Edge Functions
 All new functions configured in `supabase/config.toml`:
 ```toml
-[functions.send-coppa-notification]
-verify_jwt = false
-
-[functions.send-parental-notification]
-verify_jwt = false
-
 [functions.log-personal-info-incident]
 verify_jwt = false
 ```

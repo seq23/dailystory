@@ -2,7 +2,6 @@ import { uiText } from "@/i18n/uiText";
 import React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Shield } from 'lucide-react';
-import { useCOPPANotification } from '@/hooks/useCOPPANotification';
 
 interface ValidationFeedbackProps {
   hasErrors: boolean;

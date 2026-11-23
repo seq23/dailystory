@@ -123,7 +123,7 @@ jobs:
           ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino"
           
           # Test key functions (continue deployment regardless of results)
-          for func in "runware-generate-image" "ai-visual-scene-creator" "runware-template-ab" "runware-template-cd"; do
+          for func in "runware-generate-image"; do
             echo "  Testing $func..."
             response=$(curl -s -o /dev/null -w "%{http_code}" \
               -X POST "$BASE_URL/$func" \
@@ -394,6 +394,55 @@ jobs:
           echo "preflight checked $checked functions"
           if [ "$checked" -eq 0 ]; then echo "::error::no functions found to probe"; exit 1; fi
           if [ -n "$failed" ]; then echo "::error::functions that do not boot:$failed"; exit 1; fi
+
+      - name: Strangers are refused (post-deploy)
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          # 23 Nov 2026: each function that sends mail is called the way a stranger would
+          # (the public anon key, a forged schedule header) and must refuse. Nothing is sent:
+          # every call stops at the caller check. Guard: src/test/guards/caller-check.test.ts.
+          if [ -z "$SUPABASE_ANON_KEY" ]; then echo "::error::NAMED STOP: SUPABASE_ANON_KEY secret missing"; exit 1; fi
+          BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
+          failed=""
+          expect_refused() { # function expected-code [extra curl args]
+            local func="$1" want="$2"; shift 2
+            local code
+            code=$(curl -s -o /tmp/refused.json -w "%{http_code}" --max-time 30 -X POST "$BASE_URL/$func" \
+              -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+              -H "Content-Type: application/json" "$@" || echo 000)
+            if [ "$code" = "$want" ]; then echo "$func: refused a stranger with $code"; else echo "::error::$func answered a stranger with $code (want $want): $(head -c 200 /tmp/refused.json)"; failed="$failed $func"; fi
+          }
+          expect_refused verify-parental-consent 401 -d '{"child_profile_id":"00000000-0000-4000-8000-000000000000","parent_email":"nobody@example.test"}'
+          expect_refused traffic-alert 403 -H "x-ops-secret: forged" -d '{}'
+          expect_refused cost-report 401 -d '{"sendEmail":true}'
+          expect_refused cost-report 403 -H "x-ops-secret: forged" -d '{"sendEmail":true}'
+          expect_refused notify-data-breach 401 -d '{}'
+          expect_refused lifecycle-emails 403 -H "x-lifecycle-secret: forged" -d '{"action":"status"}'
+          if [ -n "$failed" ]; then echo "::error::functions that serve a stranger:$failed"; exit 1; fi
+
+      - name: Retired functions are removed from the project
+        run: |
+          # A folder deleted here is NOT deleted on Supabase: the old code keeps answering.
+          # 23 Nov 2026: four unguarded mailers and three paid-image functions were still live
+          # months after their source was removed. Each name below is deleted from the project
+          # when its folder is absent, and must then answer 404. Guard:
+          # src/test/guards/caller-check.test.ts.
+          RETIRED="send-custom-auth-email notification-service send-coppa-notification send-parental-notification ai-visual-scene-creator runware-template-ab runware-template-cd"
+          BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
+          failed=""
+          for func in $RETIRED; do
+            if [ -d "supabase/functions/$func" ]; then echo "::error::$func is listed as retired but its folder exists"; failed="$failed $func"; continue; fi
+            supabase functions delete "$func" --project-ref "$SUPABASE_PROJECT_ID" >/tmp/del.out 2>&1 || grep -qi "not found\|404" /tmp/del.out || { echo "::error::$func delete failed: $(tail -c 200 /tmp/del.out)"; failed="$failed $func"; continue; }
+            code=000
+            for attempt in 1 2 3 4 5 6; do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 -X OPTIONS "$BASE_URL/$func" || echo 000)
+              [ "$code" = "404" ] && break
+              sleep 10
+            done
+            if [ "$code" = "404" ]; then echo "$func: gone (404)"; else echo "::error::$func still answers $code after delete"; failed="$failed $func"; fi
+          done
+          if [ -n "$failed" ]; then echo "::error::retired functions still live:$failed"; exit 1; fi
 
       - name: Post-Deploy Function Warm-Up
         if: success()

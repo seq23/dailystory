@@ -95,16 +95,12 @@ git checkout <commit-hash> -- supabase/config.toml
 - create-checkout
 - create-premium-subscription
 - customer-portal
-- send-custom-auth-email
 
 **Security & Monitoring:**
 - log-personal-info-incident
 - log-security-event
-- notification-service
 - security-alert
 - security-dashboard
-- send-coppa-notification
-- send-parental-notification
 
 ### JWT Not Required (verify_jwt = false) - 26 Functions
 

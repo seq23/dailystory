@@ -50,6 +50,6 @@ export function estimateOpenAIChatCost(model: string, inputTokens: number, outpu
     'gpt-4o': { input: 0.003, output: 0.006 },
     'gpt-4': { input: 0.03, output: 0.06 },
   };
-  const p = pricing[model] || pricing['gpt-4o-mini'];
+  const p = pricing[model] ?? { input: 0.00015, output: 0.0006 };
   return (inputTokens / 1000) * p.input + (outputTokens / 1000) * p.output;
 }

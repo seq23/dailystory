@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
+import { cronSecretRefusal, OPS_SECRET_HEADER } from "../_shared/callerCheck.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +18,10 @@ serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
+  // Only the monthly schedule (.github/workflows/ops-reports.yml) may run this: it reads
+  // traffic and cost figures and emails the privacy inbox. An unset secret refuses everyone.
+  const refused = cronSecretRefusal(req, { header: OPS_SECRET_HEADER, name: 'OPS_CRON_SECRET', value: Deno.env.get('OPS_CRON_SECRET') }, corsHeaders);
+  if (refused) return refused;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';

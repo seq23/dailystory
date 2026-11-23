@@ -47,5 +47,14 @@ Four emails to the account holder, approved by Sequoia on 1 Nov 2026 (copy word 
 - **Local test:** the local copy honours `LIFECYCLE_RESEND_BASE` (a capture endpoint) and
   `LIFECYCLE_LOCAL_RECIPIENT` (the only address it will send to); the hosted project ignores both.
 
+## Who can make the site send email
+- Every edge function that sends email or spends paid quota checks its caller first; the
+  table is in [`supabase/functions/README.md`](../supabase/functions/README.md#caller-checks).
+- **Ops reports:** `.github/workflows/ops-reports.yml` runs `traffic-alert` (monthly) and
+  `cost-report` (quarterly) with the `OPS_CRON_SECRET` header. The cost report goes to the
+  address in the `COST_REPORT_EMAIL` secret (never committed). Both secrets are GitHub repo
+  secrets copied to the project by `sync-edge-secrets.yml`. Run one now:
+  `gh workflow run ops-reports.yml -R seq23/dailystory -f report=cost-report`.
+
 ## Schedule
 - Every scheduled job, in Central time, is listed in `docs/SCHEDULE.md` (rebalanced 1 Nov 2026).

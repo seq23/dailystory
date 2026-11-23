@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useValidationOnSubmit } from '@/hooks/useValidationOnSubmit';
-import { useCOPPANotification } from '@/hooks/useCOPPANotification';
 import { useIncidentLogger } from '@/hooks/useIncidentLogger';
-import { useParentalNotifications } from '@/hooks/useParentalNotifications';
 import { renderHook, act } from '@testing-library/react';
 
 // Mock the Supabase client
@@ -74,95 +72,6 @@ describe('COPPA Infrastructure', () => {
     });
   });
 
-  describe('COPPA Notifications', () => {
-    it('should send COPPA notifications with proper email structure', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
-        data: { success: true, messageId: 'test-message-id' },
-        error: null
-      });
-
-      const { result } = renderHook(() => useCOPPANotification());
-      
-      const response = await result.current.sendCOPPANotification({
-        parentEmail: 'parent@test.com',
-        childName: 'Test Child',
-        violations: ['personal_info_name', 'personal_info_location'],
-        detectedContent: 'My name is John and I live in Springfield'
-      });
-
-      expect(response.success).toBe(true);
-      expect(supabase.functions.invoke).toHaveBeenCalledWith(
-        'send-coppa-notification',
-        expect.objectContaining({
-          body: expect.objectContaining({
-            parentEmail: 'parent@test.com',
-            childName: 'Test Child',
-            violations: ['personal_info_name', 'personal_info_location'],
-            timestamp: expect.any(String)
-          })
-        })
-      );
-    });
-
-    it('should handle email sending errors gracefully', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
-        data: null,
-        error: { message: 'Email service unavailable' }
-      });
-
-      const { result } = renderHook(() => useCOPPANotification());
-      
-      const response = await result.current.sendCOPPANotification({
-        parentEmail: 'invalid@test.com',
-        childName: 'Test Child',
-        violations: ['test_violation'],
-        detectedContent: 'test content'
-      });
-
-      expect(response.success).toBe(false);
-      expect(response.error).toBe('Email service unavailable');
-    });
-  });
-
-  describe('Parental Notifications', () => {
-    it('should send digest notifications with proper formatting', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
-        data: { success: true, messageId: 'digest-message-id' },
-        error: null
-      });
-
-      const { result } = renderHook(() => useParentalNotifications());
-      
-      const response = await result.current.sendParentalNotification({
-        parentEmail: 'parent@test.com',
-        childName: 'Test Child',
-        incidentCount: 3,
-        recentViolations: [
-          {
-            timestamp: '2024-01-01T10:00:00Z',
-            violationType: 'personal_info_name',
-            content: 'My name is John'
-          }
-        ],
-        reportType: 'daily'
-      });
-
-      expect(response.success).toBe(true);
-      expect(supabase.functions.invoke).toHaveBeenCalledWith(
-        'send-parental-notification',
-        expect.objectContaining({
-          body: expect.objectContaining({
-            reportType: 'daily',
-            incidentCount: 3
-          })
-        })
-      );
-    });
-  });
-
   describe('Validation Integration', () => {
     it('should integrate incident logging with validation', async () => {
       const { result } = renderHook(() => useValidationOnSubmit());
@@ -194,25 +103,6 @@ describe('COPPA Infrastructure', () => {
   });
 
   describe('Edge Function Error Handling', () => {
-    it('should handle edge function timeouts', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      vi.mocked(supabase.functions.invoke).mockRejectedValueOnce(
-        new Error('Function timeout')
-      );
-
-      const { result } = renderHook(() => useCOPPANotification());
-      
-      const response = await result.current.sendCOPPANotification({
-        parentEmail: 'parent@test.com',
-        childName: 'Test Child',
-        violations: ['test'],
-        detectedContent: 'test'
-      });
-
-      expect(response.success).toBe(false);
-      expect(response.error).toBe('Failed to send notification');
-    });
-
     it('should handle malformed requests gracefully', async () => {
       const { result } = renderHook(() => useIncidentLogger());
       

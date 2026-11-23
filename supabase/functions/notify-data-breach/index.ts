@@ -1,20 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logCost } from "../_shared/costLogger.ts";
+import { adminIdsFrom, adminOrCronRefusal, escapeHtml } from "../_shared/callerCheck.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-function escapeHtml(str: unknown): string {
-  return String(str ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -22,41 +14,25 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Only service role or configured admins can trigger breach notifications
-    const authHeader = req.headers.get('Authorization');
+    // Only the service key or a configured admin can trigger breach notifications
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const resendKey = Deno.env.get('RESEND_API_KEY');
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // ── Authorization: require service_role token or an admin user ──
-    const token = authHeader?.replace('Bearer ', '').trim();
-    if (!token) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const adminUserIds = (Deno.env.get('ADMIN_USER_IDS') || '').split(',').map(s => s.trim()).filter(Boolean);
-    let authorized = false;
-
-    if (token === serviceRoleKey) {
-      authorized = true; // internal/service-role caller (e.g. pg_cron, other edge functions)
-    } else {
-      const { data: { user } } = await supabase.auth.getUser(token);
-      if (user && adminUserIds.includes(user.id)) {
-        authorized = true;
-      }
-    }
-
-    if (!authorized) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Forbidden' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // ── Who may call: an admin (ADMIN_USER_IDS) or the service key, compared in constant
+    // time (_shared/callerCheck.ts). Everyone else is refused before anything is read or sent.
+    const { refused } = await adminOrCronRefusal(req, {
+      adminIds: adminIdsFrom(Deno.env.get('ADMIN_USER_IDS')),
+      serviceKey: serviceRoleKey,
+      cors: corsHeaders,
+      async getUser(token) {
+        const { data, error } = await supabase.auth.getUser(token);
+        return error || !data?.user ? null : { id: data.user.id, email: data.user.email ?? null };
+      },
+    });
+    if (refused) return refused;
 
     const {
       breachDescription,

@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { validateTheme } from '@/utils/themeValidation';
 import { InputSanitizer } from '@/utils/inputSanitizer';
-import { useCOPPANotification } from './useCOPPANotification';
 import { useIncidentLogger } from './useIncidentLogger';
 import { useChildProfiles } from './useChildProfiles';
 import { DebugLogger } from '@/services/DebugLogger';
@@ -15,7 +14,6 @@ interface ValidationState {
 }
 
 export const useValidationOnSubmit = () => {
-  const { sendCOPPANotification } = useCOPPANotification();
   const { logIncident } = useIncidentLogger();
   const { activeChild } = useChildProfiles();
   const [validationState, setValidationState] = useState<ValidationState>({
@@ -130,7 +128,7 @@ export const useValidationOnSubmit = () => {
     }
 
     return allErrors.length === 0;
-  }, [validateField, sendCOPPANotification, logIncident, activeChild]);
+  }, [validateField, logIncident, activeChild]);
 
   const resetValidation = useCallback(() => {
     setValidationState({

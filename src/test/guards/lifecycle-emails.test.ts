@@ -269,7 +269,7 @@ describe('wiring, senders and the database', () => {
     const files: string[] = [];
     const walk = (d: string) => { for (const n of readdirSync(d)) { const p = join(d, n); if (n === '_vendor' || n === 'node_modules') continue; if (statSync(p).isDirectory()) walk(p); else if (p.endsWith('.ts')) files.push(p); } };
     walk(dir);
-    const froms = files.flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/from:\s*["'`][^"'`]*<([^>]+)>/g)].map((m) => m[1]));
+    const froms = files.flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/(?:from:|FROM\s*=)\s*["'`][^"'`]*<([^>]+)>/g)].map((m) => m[1]));
     expect(froms.length).toBeGreaterThanOrEqual(6);
     for (const a of froms) expect(a, a).toMatch(/@(time-2-read\.com|resend\.dev)$/);
     for (const f of files) expect(readFileSync(f, 'utf8'), f).not.toMatch(/time2read\.(com|app)|storyforge\.app/i);

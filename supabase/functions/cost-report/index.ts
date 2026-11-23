@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logCost } from "../_shared/costLogger.ts";
+import { adminIdsFrom, adminOrCronRefusal, OPS_SECRET_HEADER } from "../_shared/callerCheck.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,29 +26,23 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const resendKey = Deno.env.get('RESEND_API_KEY');
-    const adminEmail = 'seq.taylor@gmail.com';
-    const adminUserIds = (Deno.env.get('ADMIN_USER_IDS') || '').split(',').filter(Boolean);
+    // Where the report goes: a project secret, never an address in this public repo.
+    const adminEmail = (Deno.env.get('COST_REPORT_EMAIL') || '').trim();
 
     const sb = createClient(supabaseUrl, serviceKey);
 
-    // ── Authorization: admins (or service_role for pg_cron) only ──
-    // This generates/sends full financial reports, so it must not be public.
-    const token = req.headers.get('Authorization')?.replace('Bearer ', '').trim();
-    if (!token) {
-      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    let authorized = token === serviceKey;
-    if (!authorized) {
-      const { data: { user } } = await sb.auth.getUser(token);
-      authorized = !!user && adminUserIds.map(s => s.trim()).includes(user.id);
-    }
-    if (!authorized) {
-      return new Response(JSON.stringify({ success: false, error: 'Forbidden' }), {
-        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    // ── Who may call: an admin (the dashboard) or the quarterly schedule
+    // (.github/workflows/ops-reports.yml, OPS_CRON_SECRET). Full financial reports are never public.
+    const { refused } = await adminOrCronRefusal(req, {
+      adminIds: adminIdsFrom(Deno.env.get('ADMIN_USER_IDS')),
+      cron: { header: OPS_SECRET_HEADER, name: 'OPS_CRON_SECRET', value: Deno.env.get('OPS_CRON_SECRET') },
+      cors: corsHeaders,
+      async getUser(token) {
+        const { data, error } = await sb.auth.getUser(token);
+        return error || !data?.user ? null : { id: data.user.id, email: data.user.email ?? null };
+      },
+    });
+    if (refused) return refused;
 
     // Parse request body
     let startDate: string;
@@ -58,15 +53,15 @@ serve(async (req) => {
       try {
         const body = await req.json();
         startDate = body.startDate || getQuarterStart();
-        endDate = body.endDate || new Date().toISOString().split('T')[0];
+        endDate = body.endDate || new Date().toISOString().slice(0, 10);
         sendEmail = body.sendEmail !== false;
       } catch {
         startDate = getQuarterStart();
-        endDate = new Date().toISOString().split('T')[0];
+        endDate = new Date().toISOString().slice(0, 10);
       }
     } else {
       startDate = getQuarterStart();
-      endDate = new Date().toISOString().split('T')[0];
+      endDate = new Date().toISOString().slice(0, 10);
     }
 
     // Paginate through cost_tracking for the date range
@@ -152,6 +147,7 @@ serve(async (req) => {
     const monthlyBreakdown = [...monthlyMap.values()].sort((a, b) => a.month.localeCompare(b.month));
 
     const report = {
+      emailSent: false,
       period: { startDate, endDate },
       grandTotal: {
         cost: grandTotalCost,
@@ -167,8 +163,14 @@ serve(async (req) => {
     };
 
     // Send email if requested
-    console.log(`Email send check: sendEmail=${sendEmail}, hasResendKey=${!!resendKey}, adminEmail=${adminEmail}`);
-    if (sendEmail && resendKey && adminEmail) {
+    if (sendEmail && (!resendKey || !adminEmail)) {
+      const stop = `NAMED STOP ${!resendKey ? 'RESEND_API_KEY' : 'COST_REPORT_EMAIL'}: not set on the project; the report was not emailed.`;
+      console.error(`[cost-report] ${stop}`);
+      return new Response(JSON.stringify({ success: false, stop, report }), {
+        status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (sendEmail) {
       const emailHtml = buildReportEmail(report);
 
       console.log('Sending email via Resend...');
@@ -187,7 +189,8 @@ serve(async (req) => {
       });
 
       const emailBody = await emailRes.text();
-      console.log(`Resend response: status=${emailRes.status}, body=${emailBody}`);
+      console.log(`Resend response: status=${emailRes.status}`);
+      if (!emailRes.ok) console.error(`[cost-report] SEND_FAILED ${emailRes.status}: ${emailBody.slice(0, 200)}`);
 
       if (emailRes.ok) {
         logCost(sb, {

@@ -9,10 +9,9 @@ schedule); see the notes below for what moved.
 |---|---|---|---|
 | entity backlink watch | `entity-backlink-watch.yml` | Thu 07:20 CT | `20 7 * * 4` |
 | Lifecycle emails | `lifecycle-emails.yml` | `23 * * * *` (UTC; repeating, no fixed hour) | `23 * * * *` |
-| Monitor AI Visual Scene Creator - ERROR-001 FIX | `monitor-ai-visual.yml` | every day 01:15 CT | `15 1 * * *` |
 | Monitor Runware Generate Image | `monitor-runware-generate.yml` | every day 01:00 CT | `0 1 * * *` |
-| Monitor Template AB | `monitor-template-ab.yml` | every day 01:30 CT | `30 1 * * *` |
-| Monitor Template CD | `monitor-template-cd.yml` | every day 01:45 CT | `45 1 * * *` |
+| Ops report: traffic alert | `ops-reports.yml` | 1st of the month 04:00 CT | `0 4 1 * *` |
+| Ops report: quarterly cost | `ops-reports.yml` | 1st of Jan, Apr, Jul, Oct 04:20 CT | `20 4 1 1,4,7,10 *` |
 | Prerender live check | `prerender-live-check.yml` | `17 */4 * * *` (UTC; repeating, no fixed hour) | `17 */4 * * *` |
 | Search Console Daily | `search-console-daily.yml` | every day 01:40 CT | `40 1 * * *` |
 | Supabase keep-alive | `supabase-keep-alive.yml` | every day 00:41 CT | `41 0 * * *` |
@@ -23,6 +22,12 @@ schedule); see the notes below for what moved.
   (owner ruling, 1 Nov 2026): weekly maintenance, refresh and metrics jobs run there, staggered
   at least 15 minutes apart, never two in the same slot. Publishing, link checks and
   self-healing are not upkeep and keep their own days.
+
+## Changed on 23 Nov 2026
+- The traffic alert and the quarterly cost report moved from Supabase pg_cron (which called them
+  with the public anon key) to `ops-reports.yml`, which sends the `OPS_CRON_SECRET` header.
+- Monitor AI Visual, Monitor Template AB and Monitor Template CD were removed: they watched
+  functions whose source was deleted in July 2026 and which the deploy now removes from the project.
 
 ## Moved on 1 Nov 2026
 - Entity backlink watch: Monday → Thursday 07:20 CT.
