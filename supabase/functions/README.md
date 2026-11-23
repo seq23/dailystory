@@ -112,7 +112,7 @@ check that fits its real caller (23 Nov 2026; `_shared/callerCheck.ts`, `_shared
 | Caller | Check |
 |---|---|
 | A signed-in parent (verify-parental-consent) | `signedInUser`, then the child must be theirs; sent only to the account's confirmed sign-in email; name from the database; 5 per network and 50 overall a day |
-| An admin or the service key (cost-report, get-cost-analytics, notify-data-breach, prompt-studio, voice-overrides-admin) | `adminOrCronRefusal` (ADMIN_USER_IDS); prompt-studio's page sends its token as `?jwt=`, since a browser WebSocket cannot send headers |
+| An admin or the service key (cost-report, get-cost-analytics, notify-data-breach (parent incident notice; how to run it: docs/OPERATIONS.md), prompt-studio, voice-overrides-admin) | `adminOrCronRefusal` (ADMIN_USER_IDS); prompt-studio's page sends its token as `?jwt=`, since a browser WebSocket cannot send headers |
 | A schedule (traffic-alert, cost-report, lifecycle-emails) | `cronSecretRefusal`: a project secret in a header, constant-time; unset = refuse everyone, NAMED STOP |
 | The public feedback form | `handleFeedback`: `rateRefusal` per network, per account and overall; the owner's inbox from the COST_REPORT_EMAIL secret (the Resend team has no verified domain yet); identity only from a session; proven live after each deploy that changes it |
 | A reader of a paid feature | `paidCallRefusal` / `guardCallWithCors` |

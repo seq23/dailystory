@@ -1,171 +1,79 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { logCost } from "../_shared/costLogger.ts";
-import { adminIdsFrom, adminOrCronRefusal, escapeHtml } from "../_shared/callerCheck.ts";
+// The parent incident notice (Privacy.tsx: "parents are notified"). Owner only; the rules live
+// in ./handler.ts (pure). How to run it: docs/OPERATIONS.md "Parent incident notice".
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4?target=deno";
+import { adminIdsFrom } from "../_shared/callerCheck.ts";
+import { handleIncidentNotice, NOTICE_FROM, PRIVACY_INBOX } from "./handler.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+const must = <T>(r: { data: T; error: { message: string } | null }, what: string): T => {
+  if (r.error) throw new Error(`${what}: ${r.error.message}`);
+  return r.data;
+};
 
-  try {
-    // Only the service key or a configured admin can trigger breach notifications
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const resendKey = Deno.env.get('RESEND_API_KEY');
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const db = createClient(Deno.env.get("SUPABASE_URL") ?? "", serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const resendKey = Deno.env.get("RESEND_API_KEY") ?? "";
 
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
-
-    // ── Who may call: an admin (ADMIN_USER_IDS) or the service key, compared in constant
-    // time (_shared/callerCheck.ts). Everyone else is refused before anything is read or sent.
-    const { refused } = await adminOrCronRefusal(req, {
-      adminIds: adminIdsFrom(Deno.env.get('ADMIN_USER_IDS')),
-      serviceKey: serviceRoleKey,
-      cors: corsHeaders,
-      async getUser(token) {
-        const { data, error } = await supabase.auth.getUser(token);
-        return error || !data?.user ? null : { id: data.user.id, email: data.user.email ?? null };
-      },
-    });
-    if (refused) return refused;
-
-    const {
-      breachDescription,
-      dataTypesAffected,
-      severity,
-      remediationSteps,
-      notifyUsers,
-    } = await req.json();
-
-    // 1. Log the breach
-    const { data: breach, error: insertError } = await supabase
-      .from('data_breach_log')
-      .insert({
-        breach_description: breachDescription,
-        data_types_affected: dataTypesAffected || [],
-        severity: severity || 'medium',
-        remediation_steps: remediationSteps,
-        status: 'detected',
-        logged_by: 'system',
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      throw new Error(`Failed to log breach: ${insertError.message}`);
-    }
-
-    // 2. Count affected users
-    const { count } = await supabase
-      .from('profiles')
-      .select('id', { count: 'exact', head: true })
-      .eq('account_status', 'active');
-
-    await supabase
-      .from('data_breach_log')
-      .update({ users_affected_count: count || 0 })
-      .eq('id', breach.id);
-
-    // 3. If notifyUsers is true and we have Resend, send notifications
-    if (notifyUsers && resendKey) {
-      // Get all user emails
-      const { data: subscribers } = await supabase
-        .from('subscribers')
-        .select('email')
-        .limit(1000);
-
-      const emails = subscribers?.map(s => s.email).filter(Boolean) || [];
-
-      if (emails.length > 0) {
-        // Send batch notification via Resend (escape admin-supplied fields)
-        const safeDescription = escapeHtml(breachDescription);
-        const safeDataTypes = escapeHtml((dataTypesAffected || []).join(', '));
-        const safeRemediation = escapeHtml(remediationSteps || 'We are investigating and taking corrective action.');
-        const emailResponse = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${resendKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'Time-2-Read Security <privacy@time-2-read.com>',
-            to: emails.slice(0, 50), // Batch limit
-            subject: 'Important Security Notice from Time2Read',
-            html: `
-              <h2>Security Notice</h2>
-              <p>We are writing to inform you of a data security incident that may affect your Time2Read account.</p>
-              <p><strong>What happened:</strong> ${safeDescription}</p>
-              <p><strong>Data types potentially affected:</strong> ${safeDataTypes}</p>
-              <p><strong>What we're doing:</strong> ${safeRemediation}</p>
-              <p><strong>What you can do:</strong></p>
-              <ul>
-                <li>Change your password at <a href="https://time2read.lovable.app">time2read.lovable.app</a></li>
-                <li>Review your account for any unauthorized activity</li>
-                <li>Contact us at privacy@time-2-read.com with any concerns</li>
-              </ul>
-              <p>We take the security of your data seriously and apologize for any inconvenience.</p>
-              <p>— The Time2Read Security Team<br/>Spry VSL LLC</p>
-            `,
-          }),
-        });
-
-        if (emailResponse.ok) {
-          // Fire-and-forget cost tracking
-          logCost(supabase, {
-            sessionId: 'notify-data-breach',
-            provider: 'resend',
-            operationType: 'email_send',
-            modelUsed: 'resend-email',
-            cost: 0.001 * Math.min(emails.length, 50),
-            apiEndpoint: '/emails',
-            pricingModel: 'per_email',
-            quantityUsed: Math.min(emails.length, 50),
-            unitCost: 0.001,
-          });
-
-          await supabase
-            .from('data_breach_log')
-            .update({
-              users_notified_at: new Date().toISOString(),
-              status: 'users_notified',
-            })
-            .eq('id', breach.id);
-        }
+  return handleIncidentNotice(req, {
+    adminIds: adminIdsFrom(Deno.env.get("ADMIN_USER_IDS")),
+    serviceKey,
+    async getUser(token) {
+      const { data, error } = await db.auth.getUser(token);
+      return error || !data?.user ? null : { id: data.user.id, email: data.user.email ?? null };
+    },
+    async childrenByIds(ids) {
+      return must(await db.from("child_profiles").select("id, parent_user_id, display_name").in("id", ids), "child_profiles") ?? [];
+    },
+    async childrenOfParents(parentIds) {
+      return must(await db.from("child_profiles").select("id, parent_user_id, display_name").in("parent_user_id", parentIds), "child_profiles") ?? [];
+    },
+    async accountEmail(userId) {
+      const { data, error } = await db.auth.admin.getUserById(userId);
+      if (error) {
+        if (/not.?found|404/i.test(`${error.status ?? ""} ${error.message}`)) return null;
+        throw new Error(`auth user: ${error.message}`);
       }
-    }
-
-    // 4. Log to security audit
-    await supabase.rpc('log_security_event', {
-      event_type: 'data_breach_logged',
-      user_id_param: null,
-      details: {
-        breach_id: breach.id,
-        severity,
-        data_types: dataTypesAffected,
-        users_notified: notifyUsers,
-        timestamp: new Date().toISOString(),
-      },
-    });
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        breachId: breach.id,
-        usersAffected: count,
-        message: '72-hour GDPR notification window started',
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  } catch (error: any) {
-    console.error('Breach notification error:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
+      return data?.user?.email ?? null;
+    },
+    async logIncident(incident, parentsAffected) {
+      must(await db.from("data_breach_log").upsert({
+        incident_key: incident.incidentId,
+        breach_description: `${incident.whenItHappened}: ${incident.whatHappened}`,
+        data_types_affected: incident.dataInvolved,
+        severity: incident.severity,
+        remediation_steps: incident.whatWeAreDoing,
+        users_affected_count: parentsAffected,
+        status: "notifying_parents",
+        logged_by: "notify-data-breach",
+      }, { onConflict: "incident_key", ignoreDuplicates: true }), "data_breach_log");
+    },
+    async claim(incidentId, parentId) {
+      return String(must(await db.rpc("incident_notice_claim", { p_incident: incidentId, p_parent: parentId }), "claim")) as "claimed" | "sent" | "sending";
+    },
+    async record(incidentId, parentId, result) {
+      must(await db.from("incident_notices").update({
+        status: result.status,
+        provider_id: result.status === "sent" ? result.providerId : null,
+        last_error: result.status === "failed" ? result.error : null,
+        sent_at: result.status === "sent" ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      }).eq("incident_id", incidentId).eq("parent_user_id", parentId), "incident_notices");
+    },
+    async sendEmail({ to, subject, html, text, idempotencyKey }) {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+        body: JSON.stringify({ from: NOTICE_FROM, to: [to], reply_to: PRIVACY_INBOX, subject, html, text }),
+      });
+      if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      return ((await res.json().catch(() => ({}))) as { id?: string }).id ?? null;
+    },
+    mailConfigured: resendKey.length > 0,
+  }, corsHeaders);
 });

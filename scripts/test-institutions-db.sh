@@ -74,3 +74,12 @@ docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ER
 docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$read_aloud_reason_migration"
 docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.read_aloud_practice) < 20 then raise exception 'Read-aloud reapplication lost data'; end if; end \$\$;"
 echo 'Read-aloud practice limits, refusal reasons, local day, zone cap, access and reapplication checks passed.'
+
+# Parent incident notices: one send per incident and parent, retryable failures, app roles shut out, reapply keeps rows.
+incident_migration="${INCIDENT_MIGRATION:-supabase/migrations/20261123180000_incident_notices.sql}"
+docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "create table if not exists public.data_breach_log (id uuid primary key default gen_random_uuid(), breach_description text not null, data_types_affected text[] not null default '{}', users_affected_count integer default 0, severity text not null default 'low', remediation_steps text, status text not null default 'detected', logged_by text, users_notified_at timestamptz, created_at timestamptz not null default now(), updated_at timestamptz not null default now());"
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$incident_migration"
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < supabase/tests/incident_notices/claim.sql
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$incident_migration"
+docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.incident_notices) <> 3 then raise exception 'Incident reapplication lost data'; end if; end \$\$;"
+echo 'Incident notice claims, retries, access and reapplication checks passed.'
