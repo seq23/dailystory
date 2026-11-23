@@ -15,11 +15,25 @@ interface Subprocessor {
   dpaStatus: "signed" | "pending";
   privacyUrl: string;
   riskTier: "high" | "medium" | "low";
+  /** What it does for us, finishing "<name> …"; the tier's answer sentence is built from these. */
+  role: string;
 }
+
+/** Each tier's question; the answer under it is built from that tier's vendors (tierAnswer). */
+const TIERS = [
+  { tier: "high", question: "Which subprocessors store accounts, payments and email? (High risk)" },
+  { tier: "medium", question: "Which subprocessors run the AI features? (Medium risk)" },
+  { tier: "low", question: "Which subprocessors host and build the site? (Low risk)" },
+] as const;
+
+/** "Supabase runs …; Stripe takes …; Resend sends …." from the tier's own vendor list. */
+export const tierAnswer = (vendors: Pick<Subprocessor, "name" | "role">[]) =>
+  `${vendors.map((v) => `${v.name} ${v.role}`).join("; ")}.`;
 
 const subprocessors: Subprocessor[] = [
   {
     name: "Supabase",
+    role: "runs sign-in and the database (accounts, child profiles, reading data)",
     purpose: "Database, authentication, and edge functions",
     dataProcessed: "User accounts, profiles, reading data, child profiles",
     location: "United States (AWS)",
@@ -29,6 +43,7 @@ const subprocessors: Subprocessor[] = [
   },
   {
     name: "Stripe",
+    role: "takes payments for Premium",
     purpose: "Payment processing for premium subscriptions",
     dataProcessed: "Email, payment information, subscription status",
     location: "United States",
@@ -38,6 +53,7 @@ const subprocessors: Subprocessor[] = [
   },
   {
     name: "Resend",
+    role: "sends account and receipt email",
     purpose: "Transactional email delivery",
     dataProcessed: "Email addresses, transactional email content",
     location: "United States",
@@ -47,6 +63,7 @@ const subprocessors: Subprocessor[] = [
   },
   {
     name: "OpenAI",
+    role: "writes story text and turns voice clips into text",
     purpose: "Writes the story text with an AI model; speech-to-text for voice commands and read-aloud practice",
     dataProcessed: "Story prompts; short voice clips recorded only after a tap on the microphone by a signed-in account (not stored by Time-2-Read; OpenAI does not train on API data, and its API data-controls page, https://developers.openai.com/api/docs/guides/your-data, checked 22 Nov 2026, lists speech-to-text with no abuse-monitoring retention)",
     location: "United States",
@@ -56,6 +73,7 @@ const subprocessors: Subprocessor[] = [
   },
   {
     name: "Anthropic",
+    role: "is the fallback story writer",
     purpose: "AI fallback story generation (Claude)",
     dataProcessed: "Story prompts only — no personal information",
     location: "United States",
@@ -65,6 +83,7 @@ const subprocessors: Subprocessor[] = [
   },
   {
     name: "ElevenLabs",
+    role: "reads stories aloud",
     purpose: "Text-to-speech narration",
     dataProcessed: "Story text only — no personal information",
     location: "United States",
@@ -74,15 +93,17 @@ const subprocessors: Subprocessor[] = [
   },
   {
     name: "Runware",
+    role: "draws the story pictures",
     purpose: "AI image generation for story illustrations",
     dataProcessed: "Image prompts only — no personal information",
     location: "Europe / United States",
     dpaStatus: "signed",
-    privacyUrl: "https://runware.ai",
+    privacyUrl: "https://runware.ai/privacy",
     riskTier: "medium",
   },
   {
     name: "Cloudflare",
+    role: "hosts and protects the site and sees visitors’ IP addresses",
     purpose: "Hosting, CDN, DDoS protection, Web Application Firewall",
     dataProcessed: "IP addresses, request metadata",
     location: "Global",
@@ -92,6 +113,7 @@ const subprocessors: Subprocessor[] = [
   },
   {
     name: "GitHub",
+    role: "holds the source code and runs the builds (no user data)",
     purpose: "Source code hosting and CI/CD pipelines",
     dataProcessed: "Source code only — no user data",
     location: "United States",
@@ -188,13 +210,13 @@ const Subprocessors = () => {
         </div>
 
         {/* Risk tier sections */}
-        {(["high", "medium", "low"] as const).map((tier) => {
+        {TIERS.map(({ tier, question }) => {
           const tierProcessors = subprocessors.filter((s) => s.riskTier === tier);
-          const tierLabel = tier === "high" ? "Which subprocessors handle personal data? (High risk)" : tier === "medium" ? "Which subprocessors only process data briefly? (Medium risk)" : "Which subprocessors only run infrastructure? (Low risk)";
 
           return (
-            <div key={tier} className="mb-8">
-              <h2 className="text-lg font-semibold mb-4">{tierLabel}</h2>
+            <section key={tier} className="mb-8" aria-labelledby={`tier-${tier}`}>
+              <h2 id={`tier-${tier}`} className="text-lg font-semibold mb-2">{question}</h2>
+              <p className="text-sm text-muted-foreground mb-4" data-testid={`tier-answer-${tier}`}>{tierAnswer(tierProcessors)}</p>
               <div className="grid gap-4">
                 {tierProcessors.map((sp) => (
                   <Card key={sp.name}>
@@ -234,15 +256,15 @@ const Subprocessors = () => {
                   </Card>
                 ))}
               </div>
-            </div>
+            </section>
           );
         })}
 
         <article className="prose max-w-none dark:prose-invert mt-8">
           <h2>How will we tell you about changes to subprocessors?</h2>
           <p>
-            We will update this page when subprocessors are added or removed. Enterprise customers
-            with DPAs will be notified of material changes in advance.
+            We will update this page and notify affected customers before adding a new
+            subprocessor. We also update it when one is removed.
           </p>
           <p>
             For questions about our subprocessors, contact{" "}
