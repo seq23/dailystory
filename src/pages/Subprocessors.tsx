@@ -226,7 +226,7 @@ const Subprocessors = () => {
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <CardTitle className="text-base">{sp.name}</CardTitle>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2 whitespace-nowrap">
                           {getRiskBadge(sp.riskTier)}
                           {getDpaBadge(sp.dpaStatus)}
                         </div>
