@@ -60,7 +60,8 @@ const PAGES: Array<{ path: string; tables: number; stacked: number; setup?: (pag
     setup: schoolWorkspace,
     open: async (page) => {
       // The roster preview shows once a class is chosen and a CSV is picked.
-      await page.getByLabel('Class', { exact: true }).selectOption({ label: 'Room 12 · Second grade readers' });
+      // The label wraps the select, so its name also holds the chosen option ("Class All classes").
+      await page.getByRole('combobox', { name: /^Class\b/ }).selectOption({ label: 'Room 12 · Second grade readers' });
       await page.getByLabel('CSV roster').setInputFiles({ name: 'roster.csv', mimeType: 'text/csv', buffer: Buffer.from(ROSTER_CSV) });
       await expect(page.getByText('Roster preview')).toBeVisible();
       await page.getByText('Dated class growth comparisons').click();
@@ -88,9 +89,10 @@ for (const width of [320, 390] as const) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth), `${path} fits ${width} px`).toBeLessThanOrEqual(width);
       // A cell whose text is wider than the cell, or a cell reaching past the screen (including one
       // inside a sideways-scrolling box), is clipped. A stacked table's header row is hidden for
-      // screen readers only (1 px), so it is not a cell anyone sees.
+      // screen readers only (a 1 px box), so its cells are not cells anyone sees.
       const clipped = await page.evaluate((w) => [...document.querySelectorAll('td, th')]
-        .filter((el) => { const b = el.getBoundingClientRect(); return b.width > 1 && (el.scrollWidth > el.clientWidth + 1 || b.left < -1 || b.right > w + 1); })
+        .filter((el) => !(el.closest('thead') && el.closest('thead')!.getBoundingClientRect().width <= 1))
+        .filter((el) => { const b = el.getBoundingClientRect(); return el.scrollWidth > el.clientWidth + 1 || b.left < -1 || b.right > w + 1; })
         .map((el) => (el.textContent ?? '').trim().slice(0, 60) || `<${el.tagName.toLowerCase()}>`), width);
       expect(clipped, `${path} clipped cells at ${width} px`).toEqual([]);
       // A stacked table really is cards, and every value on a card says what it is: a bare "20"

@@ -30,7 +30,8 @@ jobs:
         # One Playwright run: a second run would wipe test-results/ and lose the first
         # run's captures. Voice commands use the fake microphone; the Start here! chip
         # is checked at 390/820/1280 px; /pricing voice and read-aloud at 390/820 px;
-        # /subprocessors and the five long-form legal pages at 320/390 px (the site has one light
+        # /subprocessors, the five long-form legal pages and the /schools, book companion and reading
+        # log tables at 320/390 px (the site has one light
         # theme, so light only); /vendors moving to /subprocessors.
         run: |
           npx vite preview --port 4173 --strictPort &
