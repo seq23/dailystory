@@ -55,8 +55,8 @@ const PAGES: Array<{ path: string; tables: number; stacked: number; setup?: (pag
     // Class view: skill summary, teacher and app results, dated growth, the class list and the
     // roster preview; then one student's own report (two more tables).
     tables: 8,
-    // The class list and the two dated growth tables: 3 students, 3 students, 5 skills.
-    stacked: 11,
+    // Every school workspace table is stacked (src/components/SchoolTable.tsx).
+    stacked: 8,
     setup: schoolWorkspace,
     open: async (page) => {
       // The roster preview shows once a class is chosen, "Import a roster" is open and a CSV is picked.
@@ -71,7 +71,7 @@ const PAGES: Array<{ path: string; tables: number; stacked: number; setup?: (pag
     },
   },
   { path: '/amazon/decodable-stories-1', tables: 1, stacked: 0 },
-  { path: '/20-minute-reading-log', tables: 1, stacked: 7 },
+  { path: '/20-minute-reading-log', tables: 1, stacked: 1 },
 ];
 
 for (const width of [320, 390] as const) {
@@ -124,7 +124,8 @@ for (const width of [320, 390] as const) {
         display: getComputedStyle(tr).display,
         unlabelled: [...tr.children].slice(1).filter((c) => !getComputedStyle(c, '::before').content.includes(c.getAttribute('data-label') || '\u0000')).length,
       })));
-      expect(cards.length, `${path}: stacked rows`).toBe(stacked);
+      await expect(page.locator('table.stack-on-phone'), `${path}: stacked tables`).toHaveCount(stacked);
+      expect(cards.length, `${path}: stacked rows`).toBeGreaterThanOrEqual(stacked);
       expect(cards.filter((c) => c.display !== 'block' || c.unlabelled > 0), `${path}: rows not shown as labelled cards`).toEqual([]);
       await page.screenshot({ path: testInfo.outputPath(`${path.slice(1).replace(/\//g, '_')}-${width}.png`), fullPage: true });
     });
