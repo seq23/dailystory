@@ -37,5 +37,6 @@ Deno.serve(async (req) => {
       if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 200)}`);
     },
     mailConfigured: resendKey.length > 0,
+    inbox: (Deno.env.get("COST_REPORT_EMAIL") ?? "").trim(),
   }, corsHeaders);
 });

@@ -1,12 +1,17 @@
 // verify-parental-consent: a signed-in parent asks for the COPPA consent email for one of
-// their own child profiles (23 Nov 2026). The caller names only the profile; who it goes
-// to and the child's name come from the database, so the function cannot be used to mail
-// anyone else. Pure (deps injected): guard src/test/guards/caller-check.test.ts.
+// their own child profiles (23 Nov 2026). The caller names only the profile. The email goes
+// only to the account's own verified sign-in address (never child_profiles.parent_email,
+// which the account owner can rewrite over REST), and the child's name comes from the
+// database, so the function cannot be used to mail anyone else. Pure (deps injected): guard src/test/guards/caller-check.test.ts.
 import { escapeHtml, json, rateRefusal, signedInUser, type GetUser, type RateHit } from "../_shared/callerCheck.ts";
 
-/** Consent emails per child profile per day, and per parent account per day. */
+/** Consent emails per child profile, parent account and network per day, and overall per day.
+ *  Real use is near zero (no app caller today); the overall cap is the floor that holds
+ *  against many throwaway accounts on many networks. */
 export const CONSENT_SENDS_PER_PROFILE_PER_DAY = 3;
 export const CONSENT_SENDS_PER_PARENT_PER_DAY = 10;
+export const CONSENT_SENDS_PER_NETWORK_PER_DAY = 5;
+export const CONSENT_SENDS_PER_DAY = 50;
 const DAY = 86400;
 const MAX_BODY_BYTES = 4 * 1024;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -14,7 +19,6 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export interface ChildProfileRow {
   id: string;
   parent_user_id: string;
-  parent_email: string | null;
   display_name: string | null;
 }
 
@@ -45,6 +49,8 @@ export interface ConsentDeps {
   mailConfigured: boolean;
   siteUrl: string;
   clientIp: string | null;
+  /** Hashed caller network, for the per-network cap. */
+  networkKey: string;
   newToken?: () => string;
   now?: () => number;
 }
@@ -75,17 +81,22 @@ export async function handleConsentRequest(req: Request, deps: ConsentDeps, cors
     return json(503, { error: "Please try again shortly." }, cors);
   }
   if (!child || child.parent_user_id !== user.id) return json(403, { error: "forbidden" }, cors);
-  if (!child.parent_email) return json(409, { error: "This profile has no parent email to send to.", code: "NO_PARENT_EMAIL" }, cors);
+  // The recipient is the account's own proven sign-in address: the owner cannot point it
+  // at a stranger the way they can edit child_profiles.parent_email.
+  const to = user.emailConfirmed === true && user.email ? user.email : null;
+  if (!to) return json(409, { error: "Please confirm your account email first.", code: "EMAIL_NOT_VERIFIED" }, cors);
   if (!deps.mailConfigured) {
     const stop = "NAMED STOP RESEND_API_KEY: the email key is not set on the project; nothing is sent.";
     console.error(`[verify-parental-consent] ${stop}`);
     return json(503, { error: "not configured", stop }, cors);
   }
 
-  // 4. At most a few per profile and per account per day (fails closed).
+  // 4. At most a few per profile, account and network per day, and 50 overall (fails closed).
   const limited = await rateRefusal(deps.hit, [
     { bucket: `consent:${child.id}`, window: DAY, max: CONSENT_SENDS_PER_PROFILE_PER_DAY },
     { bucket: `consentparent:${user.id}`, window: DAY, max: CONSENT_SENDS_PER_PARENT_PER_DAY },
+    { bucket: `consentnet:${deps.networkKey}`, window: DAY, max: CONSENT_SENDS_PER_NETWORK_PER_DAY },
+    { bucket: "consent:all", window: DAY, max: CONSENT_SENDS_PER_DAY },
   ], "verify-parental-consent", cors);
   if (limited) return limited;
 
@@ -96,7 +107,7 @@ export async function handleConsentRequest(req: Request, deps: ConsentDeps, cors
   try {
     consentId = await deps.insertConsent({
       child_profile_id: child.id,
-      parent_email: child.parent_email,
+      parent_email: to,
       consent_token: token,
       token_expires_at: expiresAt,
       ip_address: deps.clientIp,
@@ -110,7 +121,7 @@ export async function handleConsentRequest(req: Request, deps: ConsentDeps, cors
   const name = (child.display_name || "your child").trim();
   const link = `${deps.siteUrl.replace(/\/+$/, "")}/verify-consent?token=${encodeURIComponent(token)}`;
   try {
-    await deps.sendEmail({ to: child.parent_email, subject: consentSubject(name), html: consentHtml(name, link) });
+    await deps.sendEmail({ to, subject: consentSubject(name), html: consentHtml(name, link) });
   } catch (e) {
     console.error(`[verify-parental-consent] SEND_FAILED: ${e instanceof Error ? e.message : e}`);
     return json(502, { error: "The email could not be sent. Please try again later." }, cors);

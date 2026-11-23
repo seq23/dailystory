@@ -7,7 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const ALERT_EMAIL = 'privacy@time-2-read.com';
+// The app's Resend team has no verified domain, so it sends only from resend.dev and only to
+// the team owner's own address; the privacy inbox refused every alert (403). The owner's
+// inbox is the COST_REPORT_EMAIL secret (never in the repo) until time-2-read.com is verified.
 const COST_ALERT_THRESHOLD = 100;
 const SPIKE_MULTIPLIER = 1.5;
 const DROP_MULTIPLIER = 0.5;
@@ -29,6 +31,8 @@ serve(async (req: Request) => {
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
     if (!resendApiKey) throw new Error('RESEND_API_KEY not configured');
+    const ALERT_EMAIL = (Deno.env.get('COST_REPORT_EMAIL') || '').trim();
+    if (!ALERT_EMAIL) throw new Error('NAMED STOP COST_REPORT_EMAIL: the owner inbox is not set on the project');
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     const now = new Date();

@@ -14,7 +14,9 @@
 export type RateHit = (buckets: string[], windows: number[], limits: number[]) => Promise<string | null>;
 
 /** Supabase auth.getUser(token): the user, or null for no user (anon key, expired, revoked). */
-export type GetUser = (token: string) => Promise<{ id: string; email: string | null } | null>;
+/** A signed-in account. emailConfirmed: the account's email was proven (auth email_confirmed_at). */
+export type CallerUser = { id: string; email: string | null; emailConfirmed?: boolean };
+export type GetUser = (token: string) => Promise<CallerUser | null>;
 
 /** Header the scheduled ops reports (traffic-alert, cost-report) send OPS_CRON_SECRET in. */
 export const OPS_SECRET_HEADER = "x-ops-secret";
@@ -65,10 +67,10 @@ export async function signedInUser(
   req: Request,
   getUser: GetUser,
   cors: Record<string, string> = {},
-): Promise<{ id: string; email: string | null } | Response> {
+): Promise<CallerUser | Response> {
   const token = bearerToken(req);
   if (!token) return json(401, { error: "Please sign in.", code: "sign_in_required" }, cors);
-  let user: { id: string; email: string | null } | null = null;
+  let user: CallerUser | null = null;
   try {
     user = await getUser(token);
   } catch (e) {

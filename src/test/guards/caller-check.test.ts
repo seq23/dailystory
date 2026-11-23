@@ -18,6 +18,8 @@ import {
   type RateHit,
 } from "../../../supabase/functions/_shared/callerCheck";
 import {
+  CONSENT_SENDS_PER_DAY,
+  CONSENT_SENDS_PER_NETWORK_PER_DAY,
   CONSENT_SENDS_PER_PROFILE_PER_DAY,
   type ChildProfileRow,
   type ConsentDeps,
@@ -33,7 +35,6 @@ import {
 } from "../../../supabase/functions/prompt-studio/handler";
 import {
   FEEDBACK_LIMITS,
-  FEEDBACK_TO,
   MAX_FEEDBACK_BODY_BYTES,
   type FeedbackDeps,
   type FeedbackEmail,
@@ -59,10 +60,11 @@ function memoryHit(): RateHit & { counts: Map<string, number> } {
 }
 const brokenHit: RateHit = async () => { throw new Error("db down"); };
 
-const USERS: Record<string, { id: string; email: string }> = {
-  "token-parent": { id: "11111111-1111-4111-8111-111111111111", email: "parent@example.test" },
-  "token-other": { id: "22222222-2222-4222-8222-222222222222", email: "other@example.test" },
-  "token-admin": { id: "33333333-3333-4333-8333-333333333333", email: "admin@example.test" },
+const USERS: Record<string, { id: string; email: string; emailConfirmed: boolean }> = {
+  "token-parent": { id: "11111111-1111-4111-8111-111111111111", email: "parent@example.test", emailConfirmed: true },
+  "token-other": { id: "22222222-2222-4222-8222-222222222222", email: "other@example.test", emailConfirmed: true },
+  "token-admin": { id: "33333333-3333-4333-8333-333333333333", email: "admin@example.test", emailConfirmed: true },
+  "token-unconfirmed": { id: "44444444-4444-4444-8444-444444444444", email: "typed-any-address@example.test", emailConfirmed: false },
 };
 /** auth.getUser twin: the anon key and unknown tokens are no user. */
 const getUser: GetUser = async (t) => USERS[t] ?? null;
@@ -73,7 +75,9 @@ const ANON_KEY = "anon-key-is-public";
 const MAIL = /api\.resend\.com|npm:resend|new Resend\(/;
 const PAID = /api\.openai\.com|api\.runware\.ai|ai\.gateway\.lovable\.dev|openrouter\.ai|api\.elevenlabs\.io|generativelanguage\.googleapis\.com|api\.cloudflare\.com\/client\/v4\/accounts\/[^"'`]*\/ai|api\.anthropic\.com|api\.replicate\.com|api\.stability\.ai/;
 /** A call to one of the recognised checks, in the function's own folder. */
-const CHECK = /\b(paidCallRefusal|guardCallWithCors|guardCall|identifyCaller|cronSecretRefusal|signedInUser|adminOrCronRefusal|rateRefusal|verifyStripeEvent|handleConsentRequest|handleFeedback)\s*\(|requireAuth:\s*true/;
+// A rate limit alone is not a caller check: a mailer could rate-limit yet take its recipient from
+// the body (review note B, 23 Nov 2026). Each entry below fixes who the caller is or who receives.
+const CHECK = /\b(paidCallRefusal|guardCallWithCors|guardCall|identifyCaller|cronSecretRefusal|signedInUser|adminOrCronRefusal|verifyStripeEvent|handleConsentRequest|handleFeedback)\s*\(|requireAuth:\s*true/;
 
 /** The entry file and every local file it imports, transitively (shared helpers included). */
 function sourceFiles(entry: string): string[] {
@@ -119,10 +123,32 @@ describe("every function that sends mail or spends paid quota checks its caller"
   });
 });
 
+describe("forms rule: the live feedback form is proven after every deploy that changes its path", () => {
+  const wf = read(".github/workflows/deploy-functions.yml");
+  const at = wf.indexOf("- name: Feedback form delivers (post-deploy, TEST submissions)");
+  const step = wf.slice(at, wf.indexOf("\n      - name:", at + 10));
+
+  it("runs after the deploy, on the paths that carry a submission", () => {
+    expect(at).toBeGreaterThan(wf.indexOf("supabase functions deploy"));
+    expect(step).toContain("grep -qE 'send-feedback-notification/|FeedbackForm\\.tsx|_shared/callerCheck\\.ts'");
+  });
+
+  it("submits once signed out and once signed in, marked TEST, and fails the deploy unless both are accepted", () => {
+    expect(step).toContain('submit "signed out" "$SUPABASE_ANON_KEY"');
+    expect(step).toContain('submit "signed in" "$TOKEN"');
+    expect(step).toContain("TEST: automated check after deploy");
+    expect(step).toMatch(/\[ "\$code" = "200" \] && \[ "\$\(jq -r '\.success' \/tmp\/fb\.json\)" = "true" \]/);
+    expect(step).toMatch(/if \[ -n "\$failed" \]; then .*exit 1; fi/);
+    // The signed-in account is a reserved-domain test account; no real address is ever used.
+    expect(step.match(/[\w.+-]+@[a-z][\w-]*\.[a-z]+/gi)?.every((a) => a.endsWith(".test"))).toBe(true);
+  });
+});
+
 describe("retired functions leave the project, not only the repo", () => {
   const RETIRED = [
     "send-custom-auth-email", "notification-service", "send-coppa-notification", "send-parental-notification",
     "ai-visual-scene-creator", "runware-template-ab", "runware-template-cd",
+    "openai-tts", "openai-realtime", // removed in #182; the live copies do not mask children's names
   ];
   const wf = read(".github/workflows/deploy-functions.yml");
   const listed = (wf.match(/RETIRED="([^"]+)"/)?.[1] ?? "").split(/\s+/).filter(Boolean);
@@ -251,9 +277,12 @@ describe("rateRefusal", () => {
 
 const CHILD_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const OTHER_CHILD_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+const UNCONFIRMED_CHILD_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const PROFILES: Record<string, ChildProfileRow> = {
-  [CHILD_ID]: { id: CHILD_ID, parent_user_id: USERS["token-parent"].id, parent_email: "stored-parent@example.test", display_name: "Maya" },
-  [OTHER_CHILD_ID]: { id: OTHER_CHILD_ID, parent_user_id: USERS["token-other"].id, parent_email: "other-parent@example.test", display_name: "Leo" },
+  // parent_email is what the owner can rewrite over REST (RLS FOR ALL): the handler must never use it.
+  [CHILD_ID]: { id: CHILD_ID, parent_user_id: USERS["token-parent"].id, display_name: "Maya", parent_email: "rewritten-victim@example.test" } as ChildProfileRow,
+  [OTHER_CHILD_ID]: { id: OTHER_CHILD_ID, parent_user_id: USERS["token-other"].id, display_name: "Leo" },
+  [UNCONFIRMED_CHILD_ID]: { id: UNCONFIRMED_CHILD_ID, parent_user_id: USERS["token-unconfirmed"].id, display_name: "Ana" },
 };
 
 function consentDeps(over: Partial<ConsentDeps> = {}) {
@@ -269,6 +298,7 @@ function consentDeps(over: Partial<ConsentDeps> = {}) {
     mailConfigured: true,
     siteUrl: "https://time-2-read.com",
     clientIp: null,
+    networkKey: "net-a",
     newToken: () => "tok-1",
     now: () => Date.UTC(2026, 10, 23),
     ...over,
@@ -302,19 +332,66 @@ describe("verify-parental-consent", () => {
     }
   });
 
-  it("the recipient and the child's name come from the database; the body's are ignored", async () => {
+  it("the recipient is the account's verified email: the body's and the rewritable parent_email are ignored", async () => {
     const { deps, sent, inserted } = consentDeps();
     const r = await handleConsentRequest(consentReq("token-parent", {
       child_profile_id: CHILD_ID, parent_email: "victim@example.test", child_name: "<a href=x>Click</a>", to: "victim@example.test",
     }), deps, cors);
     expect(r.status).toBe(200);
     expect(sent).toHaveLength(1);
-    expect(sent[0].to).toBe("stored-parent@example.test");
+    expect(sent[0].to).toBe("parent@example.test");
     expect(sent[0].subject).toContain("Maya");
     expect(sent[0].html).toContain("Maya");
     expect(JSON.stringify(sent)).not.toMatch(/victim|Click/);
-    expect(inserted[0]).toMatchObject({ child_profile_id: CHILD_ID, parent_email: "stored-parent@example.test" });
+    expect(inserted[0]).toMatchObject({ child_profile_id: CHILD_ID, parent_email: "parent@example.test" });
     expect(sent[0].html).toContain("https://time-2-read.com/verify-consent?token=tok-1");
+  });
+
+  it("an account whose email was never confirmed (any typed address) is 409 and sends nothing", async () => {
+    const { deps, sent, inserted } = consentDeps();
+    const r = await handleConsentRequest(consentReq("token-unconfirmed", { child_profile_id: UNCONFIRMED_CHILD_ID }), deps, cors);
+    expect(r.status).toBe(409);
+    expect((await body(r)).code).toBe("EMAIL_NOT_VERIFIED");
+    expect(sent).toEqual([]);
+    expect(inserted).toEqual([]);
+  });
+
+  // Throwaway accounts: each a fresh verified account with its own child, on forged networks.
+  function throwaways(hit: RateHit, network: (i: number) => string) {
+    const sent: ConsentEmail[] = [];
+    const call = async (i: number) => {
+      const id = `${String(i).padStart(8, "0")}-0000-4000-8000-000000000000`;
+      const { deps } = consentDeps({
+        hit,
+        networkKey: network(i),
+        getUser: async (t) => (t === `throwaway-${i}` ? { id, email: `throwaway-${i}@example.test`, emailConfirmed: true } : null),
+        loadChild: async (c) => (c === id ? { id, parent_user_id: id, display_name: "Kid" } : null),
+        sendEmail: async (e) => { sent.push(e); },
+      });
+      return (await handleConsentRequest(consentReq(`throwaway-${i}`, { child_profile_id: id }), deps, cors)).status;
+    };
+    return { sent, call };
+  }
+
+  it(`many accounts on one network: ${CONSENT_SENDS_PER_NETWORK_PER_DAY} sends, then 429 with nothing sent`, async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { sent, call } = throwaways(memoryHit(), () => "net-shared");
+    const codes: number[] = [];
+    for (let i = 1; i <= CONSENT_SENDS_PER_NETWORK_PER_DAY + 1; i++) codes.push(await call(i));
+    expect(codes).toEqual([...Array(CONSENT_SENDS_PER_NETWORK_PER_DAY).fill(200), 429]);
+    expect(sent).toHaveLength(CONSENT_SENDS_PER_NETWORK_PER_DAY);
+    vi.restoreAllMocks();
+  });
+
+  it(`many accounts on forged networks: ${CONSENT_SENDS_PER_DAY} sends a day overall, then 429 with nothing sent`, async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { sent, call } = throwaways(memoryHit(), (i) => `net-${i}`);
+    const codes: number[] = [];
+    for (let i = 1; i <= CONSENT_SENDS_PER_DAY + 1; i++) codes.push(await call(i));
+    expect(codes.slice(0, CONSENT_SENDS_PER_DAY).every((c) => c === 200)).toBe(true);
+    expect(codes[CONSENT_SENDS_PER_DAY]).toBe(429);
+    expect(sent).toHaveLength(CONSENT_SENDS_PER_DAY);
+    vi.restoreAllMocks();
   });
 
   it(`at most ${CONSENT_SENDS_PER_PROFILE_PER_DAY} sends per profile per day, then 429`, async () => {
@@ -362,6 +439,7 @@ describe("verify-parental-consent", () => {
 
 // ───────────────────────── 4. send-feedback-notification (public form) ─────────────────────────
 
+const OWNER_INBOX = "owner-inbox@example.test";
 function feedbackDeps(over: Partial<FeedbackDeps> = {}) {
   const sent: FeedbackEmail[] = [];
   const deps: FeedbackDeps = {
@@ -370,6 +448,7 @@ function feedbackDeps(over: Partial<FeedbackDeps> = {}) {
     networkKey: "net-a",
     sendEmail: async (e) => { sent.push(e); },
     mailConfigured: true,
+    inbox: OWNER_INBOX,
     ...over,
   };
   return { deps, sent };
@@ -388,7 +467,7 @@ describe("send-feedback-notification", () => {
     const r = await handleFeedback(fbReq({ ...FB, to: "victim@example.test", user_email: "victim@example.test", user_id: "forged" }, ANON_KEY), deps, cors);
     expect(r.status).toBe(200);
     expect(sent).toHaveLength(1);
-    expect(sent[0].to).toBe(FEEDBACK_TO);
+    expect(sent[0].to).toBe(OWNER_INBOX);
     expect(sent[0].replyTo).toBeUndefined();
     expect(JSON.stringify(sent)).not.toMatch(/victim|forged/);
   });
@@ -424,7 +503,7 @@ describe("send-feedback-notification", () => {
     vi.restoreAllMocks();
   });
 
-  it("outages end refused: rate counter 503, missing mail key 503 NAMED STOP", async () => {
+  it("outages end refused: rate counter 503, missing mail key or inbox 503 NAMED STOP", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     let t = feedbackDeps({ hit: brokenHit });
     expect((await handleFeedback(fbReq(FB), t.deps, cors)).status).toBe(503);
@@ -433,6 +512,11 @@ describe("send-feedback-notification", () => {
     const r = await handleFeedback(fbReq(FB), t.deps, cors);
     expect(r.status).toBe(503);
     expect((await body(r)).stop).toMatch(/^NAMED STOP RESEND_API_KEY/);
+    expect(t.sent).toEqual([]);
+    t = feedbackDeps({ inbox: "" });
+    const r2 = await handleFeedback(fbReq(FB), t.deps, cors);
+    expect(r2.status).toBe(503);
+    expect((await body(r2)).stop).toMatch(/^NAMED STOP COST_REPORT_EMAIL/);
     expect(t.sent).toEqual([]);
     vi.restoreAllMocks();
   });
@@ -486,6 +570,15 @@ describe("traffic-alert and cost-report answer only the schedule (or an admin)",
     expect(entry).toBeGreaterThan(0);
     expect(check).toBeGreaterThan(entry);
     for (const later of ["createClient(", ".from(", "api.resend.com"]) expect(src.indexOf(later, entry)).toBeGreaterThan(check);
+  });
+
+  it("traffic-alert and feedback mail only the owner's inbox secret (the one address the app's Resend team reaches)", () => {
+    const alert = read("supabase/functions/traffic-alert/index.ts");
+    expect(alert).toMatch(/const ALERT_EMAIL = \(Deno\.env\.get\('COST_REPORT_EMAIL'\) \|\| ''\)\.trim\(\);\s*if \(!ALERT_EMAIL\) throw new Error\('NAMED STOP COST_REPORT_EMAIL/);
+    expect(read("supabase/functions/send-feedback-notification/index.ts")).toContain('inbox: (Deno.env.get("COST_REPORT_EMAIL") ?? "").trim(),');
+    for (const f of ["traffic-alert/index.ts", "send-feedback-notification/handler.ts", "send-feedback-notification/index.ts"]) {
+      expect(read(`supabase/functions/${f}`).replace(/[\w.-]+@resend\.dev/g, ""), f).not.toMatch(/[\w.+-]+@[a-z][\w-]*\.[a-z]{2,}/i);
+    }
   });
 
   it("cost-report: admin or schedule, recipient from a secret, no address in the repo", () => {

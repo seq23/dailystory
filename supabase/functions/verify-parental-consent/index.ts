@@ -2,7 +2,7 @@
 // The rules live in ./handler.ts (pure); this file only wires Supabase and Resend.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4?target=deno";
 import { handleConsentRequest } from "./handler.ts";
-import { clientIp } from "../_shared/paidCallGuard.ts";
+import { clientIp, sha256Short } from "../_shared/paidCallGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,7 +24,9 @@ Deno.serve(async (req: Request) => {
   return handleConsentRequest(req, {
     async getUser(token) {
       const { data, error } = await db.auth.getUser(token);
-      return error || !data?.user ? null : { id: data.user.id, email: data.user.email ?? null };
+      return error || !data?.user
+        ? null
+        : { id: data.user.id, email: data.user.email ?? null, emailConfirmed: !!data.user.email_confirmed_at };
     },
     async hit(buckets, windows, limits) {
       const { data, error } = await db.rpc("paid_call_hit", { p_buckets: buckets, p_windows: windows, p_limits: limits });
@@ -33,7 +35,7 @@ Deno.serve(async (req: Request) => {
     },
     async loadChild(id) {
       const { data, error } = await db.from("child_profiles")
-        .select("id, parent_user_id, parent_email, display_name").eq("id", id).maybeSingle();
+        .select("id, parent_user_id, display_name").eq("id", id).maybeSingle();
       if (error) throw new Error(error.message);
       return data;
     },
@@ -62,5 +64,6 @@ Deno.serve(async (req: Request) => {
     mailConfigured: resendKey.length > 0,
     siteUrl: Deno.env.get("SITE_URL") || "https://time-2-read.com",
     clientIp: ip === "unknown" ? null : ip,
+    networkKey: await sha256Short(ip),
   }, corsHeaders);
 });

@@ -1,12 +1,16 @@
-// send-feedback-notification: the feedback form's heads-up email to the Time2Read inbox.
+// send-feedback-notification: the feedback form's heads-up email to the owner's inbox.
 // It stays public (signed-out readers can send feedback), so the protection is: one fixed
 // recipient, server-side rate limits per network, per account and overall, a byte cap,
 // every field escaped, and the sender's identity only from a verified session, never
 // the body (23 Nov 2026). Pure (deps injected): guard src/test/guards/caller-check.test.ts.
 import { bearerToken, escapeHtml, json, rateRefusal, type GetUser, type RateHit, type RateWindow } from "../_shared/callerCheck.ts";
 
-export const FEEDBACK_TO = "hello@time-2-read.com";
-export const FEEDBACK_FROM = "Time2Read Reports <reports@resend.dev>";
+// Where feedback goes (23 Nov 2026, proven by a TEST submission to production): the app's
+// Resend team has no verified domain, so it sends only from resend.dev and only to the team
+// owner's own address. Feedback addressed to the hello inbox was refused (403) every
+// time. Until time-2-read.com is verified in that team, the one inbox that receives it is the
+// owner's, held in the COST_REPORT_EMAIL secret (never in the repo).
+export const FEEDBACK_FROM = "Time2Read Feedback <reports@resend.dev>";
 export const MAX_FEEDBACK_BODY_BYTES = 16 * 1024;
 const TEN_MIN = 600;
 const DAY = 86400;
@@ -31,6 +35,8 @@ export interface FeedbackDeps {
   networkKey: string;
   sendEmail: (email: FeedbackEmail) => Promise<void>;
   mailConfigured: boolean;
+  /** The one fixed recipient (COST_REPORT_EMAIL secret); empty = NAMED STOP. */
+  inbox: string;
 }
 
 interface Fields {
@@ -89,6 +95,11 @@ export async function handleFeedback(req: Request, deps: FeedbackDeps, cors: Rec
     console.error(`[send-feedback-notification] ${stop}`);
     return json(503, { error: "not configured", stop }, cors);
   }
+  if (!deps.inbox) {
+    const stop = "NAMED STOP COST_REPORT_EMAIL: the owner's inbox is not set on the project; nothing is sent.";
+    console.error(`[send-feedback-notification] ${stop}`);
+    return json(503, { error: "not configured", stop }, cors);
+  }
 
   const windows: RateWindow[] = FEEDBACK_LIMITS.perNetwork.map((w) => ({ bucket: `feedbackip:${deps.networkKey}`, ...w }));
   if (user) windows.push(...FEEDBACK_LIMITS.perAccount.map((w) => ({ bucket: `feedbackuser:${user!.id}`, ...w })));
@@ -116,7 +127,7 @@ export async function handleFeedback(req: Request, deps: FeedbackDeps, cors: Rec
 
   try {
     await deps.sendEmail({
-      to: FEEDBACK_TO,
+      to: deps.inbox,
       replyTo: user?.email ?? undefined,
       subject: `[Time2Read feedback] ${f.category.slice(0, 64)} (${f.rating}/5)`,
       html,

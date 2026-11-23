@@ -3,7 +3,7 @@ name: Ops reports
 # Two owner reports, moved here from pg_cron on 23 Nov 2026 (the monthly job called
 # traffic-alert with the public anon key, so anyone could too). Each function now answers only
 # the OPS_CRON_SECRET header (supabase/functions/_shared/callerCheck.ts):
-#   traffic-alert  monthly, 1st 04:00 CT: emails the privacy inbox when traffic or cost moves
+#   traffic-alert  monthly, 1st 04:00 CT: emails the owner's inbox when traffic or cost moves
 #   cost-report    quarterly, 1st of Jan/Apr/Jul/Oct 04:20 CT: emails the quarter's cost report
 # A missing secret is a NAMED STOP and fails the run; a report that was due but not emailed
 # fails the run.
