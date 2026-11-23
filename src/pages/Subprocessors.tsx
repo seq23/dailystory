@@ -327,15 +327,16 @@ const Subprocessors = () => {
           );
         })}
 
-        <article className="prose max-w-none dark:prose-invert mt-8">
-          <h2>How will we tell you about changes to subprocessors?</h2>
-          <p>
+        {/* The typography plugin is not installed, so this is styled like the tier sections above. */}
+        <article className="mt-8 space-y-3">
+          <h2 className="text-lg font-semibold">How will we tell you about changes to subprocessors?</h2>
+          <p className="text-muted-foreground">
             We update this list before a new subprocessor starts processing customer data.
             Schools and districts can ask us to email them when it changes.
           </p>
-          <p>
+          <p className="text-muted-foreground">
             For questions about our subprocessors, contact{" "}
-            <a href="mailto:privacy@time-2-read.com">privacy@time-2-read.com</a>.
+            <a href="mailto:privacy@time-2-read.com" className="text-primary hover:underline">privacy@time-2-read.com</a>.
           </p>
         </article>
 
