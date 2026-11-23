@@ -15,7 +15,7 @@ import type { SupportedLanguage } from "@/types/multilingual";
 import { useTranslation } from "react-i18next";
 import { startSpeechMeter } from "@/lib/voice/speechMeter";
 import { useSignedIn } from "@/hooks/useSignedIn";
-import { READ_ALOUD_FREE_SENTENCES_PER_DAY, READ_ALOUD_LIMIT_CODE, READ_ALOUD_UNAVAILABLE_CODE } from "@/lib/freeStoryAllowance";
+import { READ_ALOUD_CLIP_LIMIT_CODE, READ_ALOUD_FREE_SENTENCES_PER_DAY, READ_ALOUD_LIMIT_CODE, READ_ALOUD_UNAVAILABLE_CODE } from "@/lib/freeStoryAllowance";
 
 /** The day's free practice count as the server returned it (voice-to-text). */
 export interface PracticeCount { used: number; limit: number }
@@ -26,13 +26,17 @@ export function practiceCount(value: unknown): PracticeCount | null {
   return v && typeof v.used === "number" && typeof v.limit === "number" ? { used: v.used, limit: v.limit } : null;
 }
 
+/** Why voice-to-text refused a clip: today's sentences, this sentence's clips, or no count. */
+type PracticeRefusal = "limit" | "clipLimit" | "unavailable";
+
 /** voice-to-text's refusal of a practice clip (429/503 body on error.context), or null. */
-export async function practiceRefusal(error: unknown): Promise<{ kind: "limit" | "unavailable"; count: PracticeCount | null } | null> {
+export async function practiceRefusal(error: unknown): Promise<{ kind: PracticeRefusal; count: PracticeCount | null } | null> {
   const ctx = (error as { context?: { clone?: () => Response; json?: () => Promise<unknown> } } | null)?.context;
   if (!ctx || typeof ctx.json !== "function") return null;
   try {
     const body = (await (ctx.clone ? ctx.clone().json() : ctx.json())) as { code?: string } | null;
     if (body?.code === READ_ALOUD_LIMIT_CODE) return { kind: "limit", count: practiceCount(body) };
+    if (body?.code === READ_ALOUD_CLIP_LIMIT_CODE) return { kind: "clipLimit", count: practiceCount(body) };
     if (body?.code === READ_ALOUD_UNAVAILABLE_CODE) return { kind: "unavailable", count: null };
   } catch { /* not JSON */ }
   return null;
@@ -102,8 +106,9 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const [idx, setIdx] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [noSpeech, setNoSpeech] = useState(false);
-  // The server said no to a practice clip: today's free sentences are used, or it could not count.
-  const [refused, setRefused] = useState<"limit" | "unavailable" | null>(null);
+  // The server said no to a practice clip: today's free sentences are used, this sentence's
+  // clips are used (another sentence still works), or it could not count.
+  const [refused, setRefused] = useState<PracticeRefusal | null>(null);
   const [transcript, setTranscript] = useState("");
   const [passed, setPassed] = useState<boolean | null>(null);
   const [paceTip, setPaceTip] = useState<string>("");
@@ -114,6 +119,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   // The server counts a free account's practice (voice-to-text); this shows what it returned.
   const [practice, setPractice] = useState<PracticeCount | null>(null);
   const limitReached = refused === "limit";
+  const clipLimitReached = refused === "clipLimit";
   
   // NEW: Charlotte readiness and syllable display states.
   // When autoIntroduce is false (e.g. marketing previews), mark coach as ready
@@ -282,7 +288,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   const startRecording = useCallback(async () => {
     if (!signedIn) return;
-    if (limitReached) return;
+    if (limitReached || clipLimitReached) return;
     if (attempts >= MAX_ATTEMPTS_PER_SENTENCE) return;
 
     pauseStoryIfPlaying();
@@ -407,7 +413,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     autoStopTORef.current = window.setTimeout(() => {
       try { recorder.stop(); } catch {}
     }, SENTENCE_MAX_MS);
-  }, [attempts, idx, sentences, limitReached, signedIn]);
+  }, [attempts, idx, sentences, limitReached, clipLimitReached, signedIn]);
 
   const stopRecording = useCallback(() => {
     try { mediaRecorderRef.current?.stop(); } catch {}
@@ -579,6 +585,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const currentSentence = sentences[idx] || "";
 
   const nextSentence = async () => {
+    // This sentence's clips were used; another sentence may still be practised.
+    setRefused((r) => (r === "clipLimit" ? null : r));
     setTranscript("");
     setPassed(null);
     setPaceTip("");
@@ -611,6 +619,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   };
   
   const prevSentence = async () => {
+    // This sentence's clips were used; another sentence may still be practised.
+    setRefused((r) => (r === "clipLimit" ? null : r));
     setTranscript("");
     setPassed(null);
     setPaceTip("");
@@ -735,7 +745,9 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
             <p role="status" className="text-sm text-foreground" data-testid="coach-refused">
               {refused === "limit"
                 ? t('coach.limitReached', "Today's {{count}} free practice sentences are used up. Come back tomorrow, or Premium has unlimited practice.", { count: practice?.limit ?? READ_ALOUD_FREE_SENTENCES_PER_DAY })
-                : t('coach.countUnavailable', "We couldn't check today's practice count. Please try again in a minute.")}
+                : refused === "clipLimit"
+                  ? t('coach.clipLimitReached', "You've practised this sentence lots today! Try another one, or read it again tomorrow.")
+                  : t('coach.countUnavailable', "We couldn't check today's practice count. Please try again in a minute.")}
             </p>
           )}
 
@@ -755,7 +767,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                     size="lg" 
                     onClick={startRecording} 
                     className="bg-green-700 hover:bg-green-800 text-white font-semibold px-8 py-4 text-lg h-14" 
-                    disabled={limitReached || attempts >= MAX_ATTEMPTS_PER_SENTENCE}
+                    disabled={limitReached || clipLimitReached || attempts >= MAX_ATTEMPTS_PER_SENTENCE}
                   >
                     <Mic className="w-5 h-5 mr-2" />  {uiText("Start Reading!")} </Button>
                   <Button size="sm" variant="destructive" onClick={stopAllAudio} className="gap-2">

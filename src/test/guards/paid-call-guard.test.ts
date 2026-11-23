@@ -3,10 +3,12 @@
 // request with no Authorization header at all (confirmed live: HTTP 200 with audio),
 // so a loop could run up the ElevenLabs bill or use up the month's characters before
 // real children heard a word. Code: supabase/functions/_shared/paidCallGuard.ts.
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
+  BODY_TOO_LARGE_CODE,
+  BODY_UNREADABLE_CODE,
   DEFAULT_MAX_BODY_BYTES,
   GUEST_PASS_HEADER,
   PAID_CALL_LIMITS,
@@ -15,6 +17,7 @@ import {
   guardPaidCall,
   identifyPaidCaller,
   issueGuestPass,
+  readJsonCapped,
 } from "../../../supabase/functions/_shared/paidCallGuard";
 import { GUEST_PAID_FUNCTIONS, withGuestPass } from "@/lib/guestPass";
 
@@ -200,14 +203,126 @@ describe("story generation and the expensive functions", () => {
   });
 });
 
-describe("request size", () => {
-  it("a body over the cap is refused before any auth or paid work (413); voice-to-text allows recordings", async () => {
+describe("request size: the real bytes, never the Content-Length the client claims", () => {
+  // Reviewer, 22 Nov 2026: the cap read the client's Content-Length, so leaving it out
+  // (or lying, or chunking) made the body unbounded. readBodyCapped counts what arrives.
+  const user = { Authorization: `Bearer ${USER_TOKEN}` };
+  /** A body sent as a stream (chunked: no Content-Length), recording how much was pulled. */
+  function streamed(total: number, chunk = 4096, extra: Record<string, string> = {}, failAt?: number) {
+    let sent = 0;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(c) {
+        if (failAt !== undefined && sent >= failAt) { c.error(new Error("connection reset")); return; }
+        if (sent >= total) { c.close(); return; }
+        const n = Math.min(chunk, total - sent);
+        sent += n;
+        c.enqueue(new Uint8Array(n).fill(0x61));
+      },
+    });
+    const req = new Request("https://x.supabase.co/functions/v1/elevenlabs-tts", {
+      method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": "203.0.113.7", ...user, ...extra },
+      body: stream, duplex: "half",
+    } as RequestInit);
+    return { req, pulled: () => sent };
+  }
+  const bytes = (n: number) => new Request("https://x.supabase.co/functions/v1/elevenlabs-tts", {
+    method: "POST", headers: { "content-type": "application/json", ...user }, body: `{"text":"${"a".repeat(n - 11)}"}`,
+  });
+
+  it("abuse: a body over the cap with no Content-Length → 413, before auth and before TTS", async () => {
+    const { req } = streamed(DEFAULT_MAX_BODY_BYTES + 1);
+    expect(req.headers.get("content-length")).toBeNull();
+    const deps = fakeDeps();
+    const getUserId = vi.spyOn(deps, "getUserId");
     const tts = vi.fn(async () => {});
-    const big = post({ Authorization: `Bearer ${USER_TOKEN}`, "content-length": String(DEFAULT_MAX_BODY_BYTES + 1) });
-    expect((await paidFunction(big, fakeDeps(), tts)).status).toBe(413);
+    const res = await paidFunction(req, deps, tts);
+    expect(res.status).toBe(413);
+    expect(await res.json()).toMatchObject({ code: BODY_TOO_LARGE_CODE });
     expect(tts).not.toHaveBeenCalled();
+    expect(getUserId).not.toHaveBeenCalled();
+    expect(deps.counts.size).toBe(0);
+  });
+
+  it("abuse: a small Content-Length on a big body → 413 (the header is not believed)", async () => {
+    const { req } = streamed(DEFAULT_MAX_BODY_BYTES * 4, 4096, { "content-length": "12" });
+    expect(req.headers.get("content-length")).toBe("12");
+    const tts = vi.fn(async () => {});
+    expect((await paidFunction(req, fakeDeps(), tts)).status).toBe(413);
+    expect(tts).not.toHaveBeenCalled();
+  });
+
+  it("abuse: a chunked body is refused the moment it passes the cap; the rest is never read", async () => {
+    const total = 50 * 1024 * 1024;
+    const { req, pulled } = streamed(total, 1024);
+    const r = await guardPaidCall(req, "elevenlabs-tts", fakeDeps());
+    expect(r.refusal?.status).toBe(413);
+    // Pulled at most the cap plus the stream's read-ahead, never the 50 MB.
+    expect(pulled()).toBeLessThan(DEFAULT_MAX_BODY_BYTES + 64 * 1024);
+  });
+
+  it("no harm: a body exactly at the cap passes, and the function can still read all of it", async () => {
+    const req = bytes(DEFAULT_MAX_BODY_BYTES);
+    expect(new TextEncoder().encode(await req.clone().text()).byteLength).toBe(DEFAULT_MAX_BODY_BYTES);
+    const r = await guardPaidCall(req, "elevenlabs-tts", fakeDeps());
+    expect(r.refusal).toBeNull();
+    expect(((await req.json()) as { text: string }).text.length).toBe(DEFAULT_MAX_BODY_BYTES - 11);
+    // One byte more is refused.
+    expect((await guardPaidCall(bytes(DEFAULT_MAX_BODY_BYTES + 1), "elevenlabs-tts", fakeDeps())).refusal?.status).toBe(413);
+  });
+
+  it("no harm: a normal call, streamed or not, still works and its body is intact", async () => {
+    const tts = vi.fn(async () => {});
+    expect((await paidFunction(post(user), fakeDeps(), tts)).status).toBe(200);
+    const { req } = streamed(2000);
+    const r = await guardPaidCall(req, "elevenlabs-tts", fakeDeps());
+    expect(r.refusal).toBeNull();
+    expect((await req.text()).length).toBe(2000);
+    // A bodiless call (a GET, the live-voice WebSocket upgrade) is not read at all.
+    const get = new Request("https://x.supabase.co/functions/v1/openai-realtime", { headers: user });
+    expect((await guardPaidCall(get, "openai-realtime", fakeDeps(), { allowGuests: false })).refusal).toBeNull();
+    expect(tts).toHaveBeenCalledTimes(1);
+  });
+
+  it("outage: a body stream that breaks is a 400, never a pass and never a crash", async () => {
+    const { req } = streamed(10_000, 1000, {}, 3000);
+    const tts = vi.fn(async () => {});
+    const res = await paidFunction(req, fakeDeps(), tts);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ code: BODY_UNREADABLE_CODE });
+    expect(tts).not.toHaveBeenCalled();
+    // A body already read before the guard has no knowable size: refused, not passed.
+    const used = post(user);
+    await used.text();
+    expect((await guardPaidCall(used, "elevenlabs-tts", fakeDeps())).refusal?.status).toBe(400);
+  });
+
+  it("the privacy-lane step before the guard reads under the same cap (correct-spelling, translate-universal)", async () => {
+    const { req, pulled } = streamed(10 * 1024 * 1024, 1024);
+    expect(await readJsonCapped(req)).toHaveProperty("status", 413);
+    expect(pulled()).toBeLessThan(DEFAULT_MAX_BODY_BYTES + 64 * 1024);
+    const ok = post(user);
+    expect(await readJsonCapped(ok)).toEqual({ body: { text: "a" } });
+    expect(await ok.json()).toEqual({ text: "a" }); // the handler still reads the original
+    const notJson = new Request("https://x/fn", { method: "POST", body: "not json" });
+    expect(await readJsonCapped(notJson)).toEqual({ body: null });
+  });
+
+  it("one helper: the header-only check is gone and no guarded function parses a body before the cap", () => {
+    expect(read("supabase/functions/_shared/paidCallGuard.ts")).not.toMatch(/headers\.get\(["']content-length["']\)/i);
     expect(read("supabase/functions/voice-to-text/index.ts")).toMatch(/maxBodyBytes:\s*8 \* 1024 \* 1024/);
     expect(read("supabase/functions/elevenlabs-tts-smart/index.ts")).toMatch(/String\(rawText\)\.slice\(0, TTS_MAX_CHARACTERS\)/);
+    const guarded = readdirSync(join(root, "supabase/functions"))
+      .filter((d) => existsSync(join(root, "supabase/functions", d, "index.ts")))
+      .filter((d) => /paidCallGuardDeno\.ts/.test(read(`supabase/functions/${d}/index.ts`)));
+    expect(guarded.length).toBeGreaterThanOrEqual(16);
+    for (const fn of guarded) {
+      const src = read(`supabase/functions/${fn}/index.ts`);
+      // A clone parsed before the guard skips the cap: it must go through readJsonBeforeGuard.
+      expect(src, fn).not.toMatch(/\.clone\(\)\s*\.\s*(json|text|arrayBuffer|formData|blob)\(/);
+      if (/privacyLaneForRequest\(req, laneBody\)/.test(src)) {
+        expect(src, fn).toMatch(/const \{ body: laneBody, refused \} = await readJsonBeforeGuard\(req, corsHeaders\);\s*\n\s*if \(refused\) return refused;/);
+      }
+    }
   });
 });
 
