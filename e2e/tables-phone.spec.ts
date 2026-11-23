@@ -127,6 +127,8 @@ for (const width of [320, 390] as const) {
       await expect(page.locator('table.stack-on-phone'), `${path}: stacked tables`).toHaveCount(stacked);
       expect(cards.length, `${path}: stacked rows`).toBeGreaterThanOrEqual(stacked);
       expect(cards.filter((c) => c.display !== 'block' || c.unlabelled > 0), `${path}: rows not shown as labelled cards`).toEqual([]);
+      // A count of one reads as one: the student report said "1 stories completed".
+      expect(await page.locator('body').innerText(), `${path}: plural after a count of one`).not.toMatch(/(^|[^\d.,/])1 (stories|words)\b/);
       await page.screenshot({ path: testInfo.outputPath(`${path.slice(1).replace(/\//g, '_')}-${width}.png`), fullPage: true });
     });
   }

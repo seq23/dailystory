@@ -22,6 +22,9 @@ import { GRADES, GRADE_PROFILES } from "@/lib/grades";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import "./Institutions.css";
+
+/** "1 story", "2 stories": these lines are English-only copy. */
+const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 import { assessmentScores } from "@/lib/institutions/assessmentForm";
 import { InstitutionRosterImport } from "@/components/InstitutionRosterImport";
 import { SchoolTable } from "@/components/SchoolTable";
@@ -93,12 +96,12 @@ function StudentDetail({
         {gradeLabel(report.readingGrade)}
       </p>
       <p>
-        Teacher recorded: {report.stories} stories completed · {report.minutes}{" "}
+        Teacher recorded: {count(report.stories, "story", "stories")} completed · {report.minutes}{" "}
         {uiText("minutes")}
       </p>
       <p>
-        From the app: {app.stories} stories completed · {app.minutes}{" "}
-        {uiText("minutes")} · {app.wordsRead} words read
+        From the app: {count(app.stories, "story", "stories")} completed · {app.minutes}{" "}
+        {uiText("minutes")} · {count(app.wordsRead, "word", "words")} read
         {linked ? "" : " · No app profile linked"}
       </p>
       <h3>Growth from teacher-recorded assessments</h3>
@@ -483,7 +486,7 @@ export default function Institutions() {
                   <strong>
                     {teacherReadings.filter((r) => r.completed).length}
                   </strong>{" "}
-                  stories completed ·{" "}
+                  {teacherReadings.filter((r) => r.completed).length === 1 ? "story" : "stories"} completed ·{" "}
                   <strong>
                     {Math.round(
                       teacherReadings.reduce(
@@ -497,7 +500,7 @@ export default function Institutions() {
                 <p>
                   From the app:{" "}
                   <strong>{appReadings.filter((r) => r.completed).length}</strong>{" "}
-                  stories completed ·{" "}
+                  {appReadings.filter((r) => r.completed).length === 1 ? "story" : "stories"} completed ·{" "}
                   <strong>
                     {Math.round(
                       appReadings.reduce((n, r) => n + Number(r.minutes), 0) *
