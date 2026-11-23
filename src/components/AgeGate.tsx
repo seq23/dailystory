@@ -35,12 +35,12 @@ export const AgeGate = ({
   return (
     <div className="space-y-4">
       {/* COPPA Notice */}
-      <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-        <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+      <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
         <div className="text-sm">
-          <p className="font-medium text-blue-900 dark:text-blue-100">
+          <p className="font-medium text-blue-900">
              {uiText("Children's Privacy Protection")} </p>
-          <p className="text-blue-700 dark:text-blue-300 mt-1">
+          <p className="text-blue-700 mt-1">
              {uiText("We comply with COPPA (Children's Online Privacy Protection Act) to keep young readers safe.")} </p>
         </div>
       </div>
@@ -88,8 +88,8 @@ export const AgeGate = ({
                {uiText("Please enter a valid parent/guardian email address")} </p>
           )}
 
-          <Alert className="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
-            <AlertDescription className="text-xs text-amber-800 dark:text-amber-200">
+          <Alert className="bg-amber-50 border-amber-200">
+            <AlertDescription className="text-xs text-amber-800">
               <strong> {uiText("Important:")} </strong>  {uiText("We will send a verification email to this address. Your child's account features may be limited until a parent/guardian provides consent.")} </AlertDescription>
           </Alert>
         </div>

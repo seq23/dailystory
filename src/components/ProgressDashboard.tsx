@@ -102,35 +102,35 @@ export const ProgressDashboard = ({ userInfo, userId, isVisible, onClose, isPrem
           <TabsContent value="overview" className="space-y-6">
             {/* Key Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
                 <CardContent className="p-6 text-center">
-                  <BookOpen className="w-10 h-10 text-blue-600 dark:text-blue-400 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">{progress.storiesRead}</div>
-                  <div className="text-sm text-blue-600 dark:text-blue-400">{uiText("Stories Read")}</div>
+                  <BookOpen className="w-10 h-10 text-blue-600 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-blue-700">{progress.storiesRead}</div>
+                  <div className="text-sm text-blue-600">{uiText("Stories Read")}</div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+              <Card className="bg-gradient-to-br from-green-50 to-green-100">
                 <CardContent className="p-6 text-center">
-                  <Clock className="w-10 h-10 text-green-600 dark:text-green-400 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-green-700 dark:text-green-300">{formatTime(progress.totalReadingTimeMinutes)}</div>
-                  <div className="text-sm text-green-600 dark:text-green-400">{uiText("Reading Time")}</div>
+                  <Clock className="w-10 h-10 text-green-600 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-green-700">{formatTime(progress.totalReadingTimeMinutes)}</div>
+                  <div className="text-sm text-green-600">{uiText("Reading Time")}</div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+              <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
                 <CardContent className="p-6 text-center">
-                  <Star className="w-10 h-10 text-purple-600 dark:text-purple-400 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">{progress.wordsLearned}</div>
-                  <div className="text-sm text-purple-600 dark:text-purple-400">{uiText("Words Learned")}</div>
+                  <Star className="w-10 h-10 text-purple-600 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-purple-700">{progress.wordsLearned}</div>
+                  <div className="text-sm text-purple-600">{uiText("Words Learned")}</div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
+              <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
                 <CardContent className="p-6 text-center">
-                  <Library className="w-10 h-10 text-orange-600 dark:text-orange-400 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-orange-700 dark:text-orange-300">{progress.savedStories}</div>
-                  <div className="text-sm text-orange-600 dark:text-orange-400">{uiText("Saved Stories")}</div>
+                  <Library className="w-10 h-10 text-orange-600 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-orange-700">{progress.savedStories}</div>
+                  <div className="text-sm text-orange-600">{uiText("Saved Stories")}</div>
                 </CardContent>
               </Card>
             </div>

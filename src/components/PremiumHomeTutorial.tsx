@@ -42,7 +42,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       title: uiText("My Stories"),
       description: uiText("This is where the magic happens! Tap \"New Story\" to generate a personalized, never-ending story for your child. Each story is crafted using AI based on their name, age, grade, and interests."),
       color: "text-blue-600",
-      bg: "bg-blue-50 dark:bg-blue-950",
+      bg: "bg-blue-50",
       action: "stories",
       steps: [
         uiText("Tap the New Story button at the top"),
@@ -58,7 +58,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       title: uiText("Magic Wand (Re-write)"),
       description: uiText("See a magic wand icon while reading? Tap it to completely regenerate the story with fresh content and new illustrations — same child info, brand new adventure."),
       color: "text-purple-600",
-      bg: "bg-purple-50 dark:bg-purple-950",
+      bg: "bg-purple-50",
       steps: [
         uiText("Look for the wand icon while reading a story"),
         uiText("Tap it to start a fresh story without leaving the session"),
@@ -70,7 +70,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       title: uiText("Story Library"),
       description: uiText("Every story you save goes here. Re-read favorites anytime — all the original illustrations are preserved. You can also mark stories as favorites and organize your collection."),
       color: "text-orange-600",
-      bg: "bg-orange-50 dark:bg-orange-950",
+      bg: "bg-orange-50",
       action: "library",
       steps: [
         uiText("Tap \"Save Story\" at the end of any reading session"),
@@ -84,7 +84,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       title: uiText("Progress Dashboard"),
       description: uiText("Track your child's reading journey with real data — stories read, reading time, vocabulary words learned, quiz scores, game results, and reading streaks. All data is pulled from actual activity, never fake numbers."),
       color: "text-green-600",
-      bg: "bg-green-50 dark:bg-green-950",
+      bg: "bg-green-50",
       action: "progress",
       steps: [
         uiText("View stories read, reading time, and vocabulary count"),
@@ -98,7 +98,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       title: uiText("Reading Timer"),
       description: uiText("A built-in timer tracks each reading session. You can show or hide it from the sidebar toggles. Premium users can dismiss the timer and keep reading as long as they want."),
       color: "text-teal-600",
-      bg: "bg-teal-50 dark:bg-teal-950",
+      bg: "bg-teal-50",
       steps: [
         uiText("The timer starts automatically when a story begins"),
         uiText("Toggle it on/off from the sidebar under \"Reading Tools\""),
@@ -110,7 +110,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       title: uiText("Parent / Teacher Dashboard"),
       description: uiText("Manage child profiles, set up parental controls, and view detailed reading reports. You can create multiple child profiles — each gets personalized stories based on their own age, grade, and interests."),
       color: "text-indigo-600",
-      bg: "bg-indigo-50 dark:bg-indigo-950",
+      bg: "bg-indigo-50",
       action: "parent",
       steps: [
         uiText("Add child profiles with unique names, grades, and preferences"),
@@ -123,7 +123,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       title: uiText("Profile Settings"),
       description: uiText("Update your child's name, age, grade level, native language, avatar, favorite topics, and more. These details directly influence how stories are generated."),
       color: "text-gray-600",
-      bg: "bg-gray-50 dark:bg-gray-950",
+      bg: "bg-gray-50",
       action: "profile",
       steps: [
         uiText("Change name, grade, and reading level anytime"),
@@ -137,7 +137,7 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       title: uiText("My Account"),
       description: uiText("Manage your subscription, update billing information, and view your plan details."),
       color: "text-rose-600",
-      bg: "bg-rose-50 dark:bg-rose-950",
+      bg: "bg-rose-50",
       action: "account",
       steps: [
         uiText("View your current subscription plan and status"),
@@ -282,11 +282,11 @@ export const PremiumHomeTutorial = ({ userName, onNavigate }: PremiumHomeTutoria
       </div>
 
       {/* Feedback Callout */}
-      <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800">
+      <Card className="border-yellow-300 bg-yellow-50">
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row items-start gap-4">
-            <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-xl flex-shrink-0">
-              <MessageSquare className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+            <div className="p-3 bg-yellow-100 rounded-xl flex-shrink-0">
+              <MessageSquare className="w-8 h-8 text-yellow-600" />
             </div>
             <div>
               <h3 className="text-lg font-bold mb-1">{uiText("We'd Love Your Feedback!")}</h3>

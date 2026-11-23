@@ -173,7 +173,7 @@ export const FormStep1Essential = ({
           {validationWarnings.name && (
             <div className="space-y-1">
               {validationWarnings.name.map((warning, index) => (
-                <div key={index} className="text-xs text-amber-600 dark:text-amber-400">
+                <div key={index} className="text-xs text-amber-600">
                   ⚠️ {warning}
                 </div>
               ))}

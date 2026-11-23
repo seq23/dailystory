@@ -73,7 +73,7 @@ const CCPA = () => {
       </header>
 
       <section className="container mx-auto px-4 pb-12">
-        <article className="prose max-w-none dark:prose-invert">
+        <article className="prose max-w-none">
           <p className="lead">
             If you are a California resident, you have specific rights regarding your personal information
             under the California Consumer Privacy Act (CCPA). This page explains those rights and how to

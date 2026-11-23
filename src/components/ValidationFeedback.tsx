@@ -44,25 +44,25 @@ export const ValidationFeedback: React.FC<ValidationFeedbackProps> = ({
           )}
           
           {hasCoppaViolation && (
-            <div className="flex items-start gap-2 text-sm bg-amber-50 dark:bg-amber-950/20 p-3 rounded border border-amber-200 dark:border-amber-800">
-              <Shield className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="flex items-start gap-2 text-sm bg-amber-50 p-3 rounded border border-amber-200">
+              <Shield className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-600" />
               <div>
-                <p className="font-medium text-amber-800 dark:text-amber-200 mb-2">
+                <p className="font-medium text-amber-800 mb-2">
                    {uiText("Protecting Your Child's Privacy")} </p>
-                <p className="text-amber-700 dark:text-amber-300 mb-2">
+                <p className="text-amber-700 mb-2">
                    {uiText("For your child's safety, please avoid sharing:")} </p>
-                <ul className="list-disc list-inside space-y-1 text-xs text-amber-700 dark:text-amber-300 mb-3">
+                <ul className="list-disc list-inside space-y-1 text-xs text-amber-700 mb-3">
                   <li> {uiText("Phone numbers, addresses, or contact information")} </li>
                   <li> {uiText("Full names, birthdates, or personal details")} </li>
                   <li> {uiText("School names or specific locations")} </li>
                 </ul>
                 <div className="flex items-center gap-1 text-xs">
-                  <span className="text-amber-700 dark:text-amber-300"> {uiText("Learn more about")} </span>
+                  <span className="text-amber-700"> {uiText("Learn more about")} </span>
                   <a 
                     href="https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-amber-800 dark:text-amber-200 underline hover:no-underline font-medium"
+                    className="text-amber-800 underline hover:no-underline font-medium"
                   >
                      {uiText("COPPA compliance")} </a>
                 </div>

@@ -299,7 +299,7 @@ export const MultilingualWordTester = ({
             </div>
             <div>
               <strong>5. Phonetic Testing:</strong> Test irregular words to check pronunciation accuracy</div>
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+            <div className="p-3 bg-blue-50 rounded border border-blue-200">
               <strong>Expected Behavior:</strong> Word pronunciation should always be in English, but explanations should be in the selected native language. Syllable breakdowns should be clickable for individual pronunciation.
             </div>
           </div>

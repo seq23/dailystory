@@ -64,7 +64,7 @@ export const useStorySourceNotifications = () => {
               description: "AI generation is back online! Enjoying fresh new stories.",
               variant: "default",
               duration: 4000, // 4 seconds
-              className: "border-green-500 bg-green-50 text-green-800 dark:border-green-400 dark:bg-green-900/10 dark:text-green-400",
+              className: "border-green-500 bg-green-50 text-green-800",
             });
             
             // Prevent duplicate green notifications this session

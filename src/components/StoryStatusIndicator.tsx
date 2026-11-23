@@ -97,8 +97,8 @@ export const StoryStatusIndicator = () => {
         onClick={handleClick}
         className={cn(
           "flex items-center gap-2 shadow-lg transition-colors",
-          currentMode === 'backup' && "border-yellow-500 bg-yellow-50 text-yellow-800 hover:bg-yellow-100 dark:border-yellow-400 dark:bg-yellow-900/10 dark:text-yellow-400",
-          currentMode === 'emergency' && "border-red-500 bg-red-50 text-red-800 hover:bg-red-100 dark:border-red-400 dark:bg-red-900/10 dark:text-red-400"
+          currentMode === 'backup' && "border-yellow-500 bg-yellow-50 text-yellow-800 hover:bg-yellow-100",
+          currentMode === 'emergency' && "border-red-500 bg-red-50 text-red-800 hover:bg-red-100"
         )}
       >
         {currentMode === 'backup' && (

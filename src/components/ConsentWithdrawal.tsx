@@ -61,7 +61,7 @@ export function ConsentWithdrawal() {
       </CardHeader>
       <CardContent className="space-y-3">
         {withdrawn && (
-          <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-sm text-amber-700 dark:text-amber-300">
+          <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-sm text-amber-700">
             {uiText("Consent has been withdrawn. Only essential processing (authentication, core features) continues.")}
           </div>
         )}

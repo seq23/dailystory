@@ -74,7 +74,7 @@ export function AccountRestriction({ accountStatus, onStatusChange }: AccountRes
       </CardHeader>
       <CardContent>
         {isRestricted && (
-          <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-sm text-amber-700 dark:text-amber-300">
+          <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-sm text-amber-700">
             <strong>{uiText("Account Restricted:")}</strong> {uiText("Story generation, quizzes, and analytics are paused. Your data is safely preserved and can be reactivated anytime.")}
           </div>
         )}
