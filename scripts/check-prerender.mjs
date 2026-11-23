@@ -13,6 +13,7 @@
 // no app route (sign-in) in the sitemap; apple-touch-icon.png and site.webmanifest.
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { clarityRuleBroken, loadsClarity } from "./clarity-loader.mjs";
 
 const SITE = "https://time-2-read.com";
 /** k4: the Spry Labs entity home every side business names as its parent (src/seo/entity.json). */
@@ -30,6 +31,7 @@ let bylines = 0;
 const TITLE = [30, 65];
 const DESC = [120, 160];
 const failsFloor = (n, min) => n < Math.ceil(min * 0.75);
+if (clarityRuleBroken()) fails.push("CLARITY RULE: loadsClarity must catch a Clarity script, snippet or preload and pass the vendor named in text");
 if (failsFloor(500, TITLE[0]) || failsFloor(Math.ceil(TITLE[0] * 0.75), TITLE[0]) || !failsFloor(Math.ceil(DESC[0] * 0.75) - 1, DESC[0])) {
   fails.push("LENGTH RULE: failsFloor must pass anything over its ceiling and fail only below 75% of the floor");
 }
@@ -74,7 +76,7 @@ for (const loc of locs) {
   if (!existsSync(join("public", new URL(ogImage).pathname.slice(1)))) fails.push(`${path}: og:image ${ogImage} is not in public/`);
   // e9: public pages have no account/checkout form. The tag is mounted by
   // LoginScreen at runtime, never by the shared shell or a guide page.
-  if (/clarity\.ms|clarity\.js|\/clarity[-.]|microsoft clarity/i.test(html)) fails.push(`${path}: public page loads Clarity outside the parent form`);
+  if (loadsClarity(html)) fails.push(`${path}: public page loads Clarity outside the parent form`);
   const nodes = lds.flatMap((b) => b["@graph"] ?? [b]);
   const org = nodes.find((n) => /Organization/.test(n["@type"]));
   for (const k of ["name", "url", "logo", "sameAs", "parentOrganization"]) {
