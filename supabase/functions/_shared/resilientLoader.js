@@ -491,7 +491,6 @@ export async function createPaymentSupabaseClient() {
  */
 export function createPaymentUnavailableResponse(functionName) {
   const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
     'Access-Control-Max-Age': '600',
@@ -524,7 +523,6 @@ export function createPaymentUnavailableResponse(functionName) {
  */
 export function createImportFailureResponse(error, functionName) {
   const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
     'Access-Control-Max-Age': '600',

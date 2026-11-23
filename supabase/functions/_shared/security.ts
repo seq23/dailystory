@@ -7,9 +7,8 @@
 import { memoizedImport, createVendorFirstSupabaseClient } from '../_shared/resilientLoader.js';
 import { clientIp } from './paidCallGuard.ts';
 
-// Enhanced CORS headers with security policies
+// CORS and security headers. The allowed origin is set by ./serve.ts for every response.
 export const secureHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE, OPTIONS', // ERROR-001 FIX: Added HEAD
   'Access-Control-Max-Age': '600', // ERROR-001 FIX: Changed from 86400 to 600 (10 minutes)
@@ -35,7 +34,6 @@ export interface SecurityOptions {
     requests: number;
     windowMs: number;
   };
-  allowedOrigins?: string[];
   auditLog?: boolean;
 }
 
@@ -173,18 +171,6 @@ export class SecurityMiddleware {
   }
 
   /**
-   * Validate request origin
-   */
-  validateOrigin(req: Request, allowedOrigins?: string[]): void {
-    if (!allowedOrigins || allowedOrigins.includes('*')) return;
-
-    const origin = req.headers.get('Origin');
-    if (origin && !allowedOrigins.includes(origin)) {
-      throw new Error('Origin not allowed');
-    }
-  }
-
-  /**
    * Create secure response
    */
   createSecureResponse(data: any, status: number = 200, additionalHeaders: Record<string, string> = {}): Response {
@@ -250,9 +236,6 @@ export async function withSecurity(
           }
         });
       }
-
-      // Validate origin
-      security.validateOrigin(req, options.allowedOrigins);
 
       let user: AuthenticatedUser | undefined;
 
