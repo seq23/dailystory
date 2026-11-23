@@ -65,7 +65,7 @@ const subprocessors: Subprocessor[] = [
     name: "OpenAI",
     role: "writes story text and turns voice clips into text",
     purpose: "Writes the story text with an AI model; speech-to-text for voice commands and read-aloud practice",
-    dataProcessed: "Story prompts; short voice clips recorded only after a tap on the microphone by a signed-in account (not stored by Time-2-Read; OpenAI does not train on API data, and its API data-controls page, https://developers.openai.com/api/docs/guides/your-data, checked 22 Nov 2026, lists speech-to-text with no abuse-monitoring retention)",
+    dataProcessed: "Story prompts; short voice clips recorded only after a tap on the microphone by a signed-in account (not stored by Time-2-Read; OpenAI does not train on API data; its API data-controls page, checked 22 Nov 2026, lists speech-to-text with no abuse-monitoring retention)",
     location: "United States",
     dpaStatus: "signed",
     privacyUrl: "https://openai.com/policies/privacy-policy",
@@ -219,7 +219,7 @@ const Subprocessors = () => {
               <p className="text-sm text-muted-foreground mb-4" data-testid={`tier-answer-${tier}`}>{tierAnswer(tierProcessors)}</p>
               <div className="grid gap-4">
                 {tierProcessors.map((sp) => (
-                  <Card key={sp.name}>
+                  <Card key={sp.name} className="min-w-0 [overflow-wrap:anywhere]">
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <CardTitle className="text-base">{sp.name}</CardTitle>

@@ -20,6 +20,13 @@ for (const width of [320, 390] as const) {
         const box = await answer.boundingBox();
         expect(box!.x + box!.width, `${tier} answer fits the screen`).toBeLessThanOrEqual(width + 1);
       }
+      // Every vendor card fits too: a clipped card passes the page scrollWidth check (22 Nov 2026 capture).
+      const cards = page.locator('section[aria-labelledby^="tier-"] > .grid > *');
+      await expect(cards).toHaveCount(9);
+      for (const card of await cards.all()) {
+        const box = await card.boundingBox();
+        expect(box!.x + box!.width, `${await card.locator('h3').first().innerText()} card fits the screen`).toBeLessThanOrEqual(width + 1);
+      }
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       await page.screenshot({ path: testInfo.outputPath(`subprocessors-${width}-${colorScheme}.png`), fullPage: true });
     });
