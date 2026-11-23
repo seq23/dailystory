@@ -58,5 +58,7 @@ describe("/subprocessors", () => {
     expect(links.length).toBe(9);
     for (const u of links) expect(u.pathname, u.href).not.toMatch(/^\/?$/);
     expect(links.map((u) => u.href)).toContain("https://runware.ai/privacy");
+    // The OpenAI retention claim links its source rather than printing a bare URL that breaks the phone layout.
+    expect(screen.getByRole("link", { name: "OpenAI API data controls →" }).getAttribute("href")).toBe("https://developers.openai.com/api/docs/guides/your-data");
   });
 });

@@ -14,6 +14,8 @@ interface Subprocessor {
   location: string;
   dpaStatus: "signed" | "pending";
   privacyUrl: string;
+  /** Where a claim on the card comes from, shown as its own link. */
+  source?: { label: string; url: string };
   riskTier: "high" | "medium" | "low";
   /** What it does for us, finishing "<name> …"; the tier's answer sentence is built from these. */
   role: string;
@@ -66,6 +68,7 @@ const subprocessors: Subprocessor[] = [
     role: "writes story text and turns voice clips into text",
     purpose: "Writes the story text with an AI model; speech-to-text for voice commands and read-aloud practice",
     dataProcessed: "Story prompts; short voice clips recorded only after a tap on the microphone by a signed-in account (not stored by Time-2-Read; OpenAI does not train on API data; its API data-controls page, checked 22 Nov 2026, lists speech-to-text with no abuse-monitoring retention)",
+    source: { label: "OpenAI API data controls", url: "https://developers.openai.com/api/docs/guides/your-data" },
     location: "United States",
     dpaStatus: "signed",
     privacyUrl: "https://openai.com/policies/privacy-policy",
@@ -251,6 +254,16 @@ const Subprocessors = () => {
                         >
                           Privacy Policy →
                         </a>
+                        {sp.source && (
+                          <a
+                            href={sp.source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline text-sm inline-block"
+                          >
+                            {sp.source.label} →
+                          </a>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
