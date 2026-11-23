@@ -298,7 +298,7 @@ serve(async (req) => {
     // Check enhanced cache first (now includes 379 educational words pre-cached)
     if (wordCache.has(cacheKey)) {
       const cachedData = wordCache.get(cacheKey)!;
-      console.log(`📚 Cache hit for educational word: ${cleanWord}`);
+      console.log('📚 Cache hit for an educational word');
       return new Response(JSON.stringify(cachedData), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -393,7 +393,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     try {
       wordData = parseModelJson<WordData>(content);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', content);
+      console.error('Failed to parse the model response', { chars: String(content ?? '').length });
       // Fallback word data based on user language
       const fallbackLanguage = userLanguage === 'en' ? 'English' : (languageMap[userLanguage] || 'English');
       const fallbackDefinition = userLanguage === 'en' 
@@ -429,7 +429,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
     // Cache the result for future requests
     wordCache.set(cacheKey, wordData);
 
-    console.log(`Generated dictionary entry for: ${cleanWord} (${userLanguage}) - Total cache size: ${wordCache.size}`);
+    console.log(`Generated dictionary entry (${userLanguage}) - Total cache size: ${wordCache.size}`);
 
     return new Response(JSON.stringify(wordData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

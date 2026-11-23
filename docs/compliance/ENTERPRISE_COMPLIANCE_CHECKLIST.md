@@ -16,7 +16,7 @@
 | Data mapping (full data inventory) | ✅ Done | `docs/GDPR_RECORDS_OF_PROCESSING.md` — RoPA with 6 processing activities |
 | Lawful basis defined per data type | ✅ Done | `Privacy.tsx` Article 6 table + RoPA |
 | Data subject rights workflow (access/delete/export) | ✅ Done | `export-user-data` + `delete-user-account` edge functions |
-| DPAs with vendors | ✅ Done | All 9 vendor DPAs signed or accepted (standard API terms) |
+| DPAs with vendors | 🟡 In progress | 6 of 9 vendor DPAs signed or accepted (standard API terms); ElevenLabs, Runware and Anthropic in progress (`VENDOR_DPA_TRACKER.md`) |
 | Cookie consent | ✅ Done | `CookieConsent.tsx` — granular Essential/Analytics/Marketing |
 | Records of Processing Activities (RoPA) | ✅ Done | `docs/GDPR_RECORDS_OF_PROCESSING.md` |
 | GDPR legal page | ✅ Done | `/gdpr` route |
@@ -127,7 +127,7 @@
 | Requirement | Status | Evidence |
 |---|---|---|
 | Only collect what is necessary | ✅ Done | Triggers truncate fields: `special_request` 500 chars, `hobbies` 300 chars, `detected_content` 300 chars |
-| No "just in case" data collection | ✅ Done | No analytics without consent; PII stripped from AI prompts via `secure_debug_logging()` |
+| No "just in case" data collection | ✅ Done | No analytics without consent; story and quiz prompts have the reader’s name replaced by a stand-in (`supabase/functions/_shared/storyTextProvider.ts`); text a reader asks to spell, translate or define goes only to routes that do not train on it; function logs record lengths, not the text |
 
 ### Data Retention Policy 🟢
 
@@ -155,28 +155,28 @@
 | Vendor | Category | Data Processed | DPA Status |
 |---|---|---|---|
 | Supabase | Database & Auth | All user data | ✅ DPA accepted |
-| OpenAI | AI Story Generation | Anonymized prompts | ✅ Enterprise DPA |
+| OpenAI | AI Story Generation (last resort), speech-to-text | Story prompts, only when the other text models fail (age, grade, favorites, hobbies, typed request), including the child’s first name (replaced by a stand-in for a school account), and text a reader asks to spell, translate or define when the other models fail; OpenAI keeps chat prompts up to 30 days for abuse monitoring; voice clips after a tap on the microphone | ✅ DPA signed |
 | Stripe | Payments | Email, payment tokens | ✅ DPA (PCI DSS) |
 | Resend | Email | Email addresses | ✅ DPA accepted |
 | Cloudflare | Hosting & CDN | IP addresses, traffic | ✅ DPA (standard) |
-| GitHub | Source Code & CI/CD | No user data | ✅ N/A |
-| Runware | AI Image Generation | No PII in prompts | ✅ DPA (standard) |
-| ElevenLabs | Text-to-Speech | No user identifiers | ✅ DPA (standard) |
-| Anthropic | AI fallback | Anonymized prompts | ✅ DPA (standard) |
+| GitHub | Source Code & CI/CD | No user data | ✅ DPA signed |
+| Runware | AI Image Generation | Picture scene and the reader’s avatar look, age and favorite color; never a name | ⏳ In progress |
+| ElevenLabs | Text-to-Speech | Story text, including the child’s first name when the story uses it; words a reader taps; what the reader says in voice mode | ⏳ In progress |
+| Anthropic | AI fallback, no longer called | Nothing since 22 Nov 2026 | ⏳ In progress |
 
 ### Vendor Risk Tiering 🟡
 
 | Tier | Vendors | Rationale |
 |---|---|---|
 | **High-risk** (stores personal data) | Supabase, Stripe | Direct PII/payment storage |
-| **Medium-risk** (processes data) | OpenAI, Resend, ElevenLabs | Transient processing |
-| **Low-risk** (infra only) | Cloudflare, GitHub, Runware | No PII exposure |
+| **Medium-risk** (processes data) | OpenAI, Resend, ElevenLabs, Runware | Processes what we send; ElevenLabs receives the child’s first name in story text to read it aloud; OpenAI keeps chat prompts up to 30 days, Runware keeps images up to 7 days |
+| **Low-risk** (infra only) | Cloudflare, GitHub | Traffic metadata (Cloudflare) and source code (GitHub) only |
 
 ### Subprocessor Transparency 🟢
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| Vendor list published | ✅ Done | `/vendors` route |
+| Vendor list published | ✅ Done | `/subprocessors` route |
 | Data transfers documented | ✅ Done | `/data-transfers` route with SCCs |
 | Subprocessor changes communicated | 🟡 Not formalized | No notification mechanism yet |
 
@@ -194,7 +194,7 @@
 | CCPA Rights | ✅ Done | `/ccpa` |
 | FERPA Statement | ✅ Done | `/ferpa` |
 | Accessibility (WCAG 2.1 AA) | ✅ Done | `/accessibility` |
-| Vendor Disclosure | ✅ Done | `/vendors` |
+| Vendor Disclosure | ✅ Done | `/subprocessors` |
 | Data Transfer Policy | ✅ Done | `/data-transfers` |
 | Cookie Policy | ✅ Done | Embedded in `CookieConsent.tsx` |
 
@@ -206,7 +206,7 @@
 | Security Overview / Whitepaper | ❌ Not created | Draft when enterprise inquiries come |
 | Acceptable Use Policy (AUP) | ❌ Not created | Low priority — add to Terms if needed |
 | Incident Response Policy | ✅ Done | `docs/INCIDENT_RESPONSE_PLAN.md` |
-| Subprocessor List (standalone) | ✅ Done | `/vendors` page serves this purpose |
+| Subprocessor List (standalone) | ✅ Done | `/subprocessors` |
 
 ---
 
@@ -273,7 +273,7 @@
 
 ### "Where is data stored?"
 
-> **United States.** All user data is stored in Supabase (AWS us-east-1). Payment data is processed by Stripe (US/EU regional processing — we never see full card numbers). Static assets are served via Cloudflare's global CDN. AI processing is transient through OpenAI (US), Runware, and ElevenLabs — no user data is retained by these processors. All cross-border transfers are governed by Standard Contractual Clauses (SCCs). Full details at `/data-transfers`.
+> **United States.** All user data is stored in Supabase (AWS us-east-1). Payment data is processed by Stripe (US/EU regional processing — we never see full card numbers). Static assets are served via Cloudflare's global CDN. AI text, pictures and narration go to the AI vendors listed on `/subprocessors`; some keep what they receive for a set time (OpenAI keeps chat prompts up to 30 days for abuse monitoring; Runware keeps generated images up to 7 days). Where a vendor has signed or accepted a DPA with us, that agreement covers the transfer, including SCCs where it provides them; for ElevenLabs, Runware and the Lovable AI Gateway the DPA is still in progress. Full details at `/data-transfers`.
 
 ### "Do you sell data?"
 
@@ -281,15 +281,7 @@
 
 ### "Who are your subprocessors?"
 
-> **8 subprocessors**, all documented at `/vendors`:
-> - **Supabase** — Database & Authentication
-> - **OpenAI** — AI Story Generation
-> - **Runware** — AI Image Generation
-> - **ElevenLabs** — Text-to-Speech
-> - **Stripe** — Payment Processing (PCI DSS compliant)
-> - **Resend** — Transactional Email
-> - **Cloudflare** — Hosting, CDN, DDoS Protection
-> - **GitHub** — Source Code & CI/CD (no user data)
+> **Every subprocessor, with exactly what each one receives and its DPA status, is listed at `/subprocessors`** (the page renders from `src/data/subprocessors.ts`, which a test holds equal to the code and to `docs/compliance/VENDOR_DPA_TRACKER.md`).
 
 ### "How do you handle deletion requests?"
 
@@ -301,7 +293,7 @@
 
 ### "Do you support DPAs?"
 
-> **Yes for key vendors** (Supabase, OpenAI, Stripe, Resend). DPAs with ElevenLabs, Runware, and Anthropic are pending. We can provide a DPA template for B2B/school contracts when needed — this is on our Phase 2 roadmap.
+> **Yes for 6 of 9 vendors** (Supabase, Stripe, Resend, Cloudflare, GitHub, OpenAI). DPAs with ElevenLabs, Runware, and Anthropic are in progress. We can provide a DPA template for B2B/school contracts when needed — this is on our Phase 2 roadmap.
 
 ---
 

@@ -35,6 +35,5 @@
 | `/ccpa` | `src/pages/CCPA.tsx` | CCPA Rights |
 | `/ferpa` | `src/pages/FERPA.tsx` | FERPA Compliance |
 | `/accessibility` | `src/pages/Accessibility.tsx` | Accessibility Statement |
-| `/vendors` | `src/pages/Vendors.tsx` | Third-Party Vendor Transparency |
 | `/subprocessors` | `src/pages/Subprocessors.tsx` | Subprocessor List (Enterprise) |
 | `/data-transfers` | `src/pages/DataTransfers.tsx` | International Data Transfers |

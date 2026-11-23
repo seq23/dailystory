@@ -69,7 +69,7 @@ serve(async (req) => {
         temperature: 0.4,
       },
       // Output check: planning, cut-off or non-quiz JSON → next model (../_shared/quiz.ts).
-      { privateNames, lane, accept: (content, finishReason) => quizAnswerProblem(content, finishReason) },
+      { privateNames, lane, freeTier: true, accept: (content, finishReason) => quizAnswerProblem(content, finishReason) },
     );
     console.log("generate-quiz provider", { provider: p, attempts: attempts.map((a) => `${a.provider} ${a.model ?? ""} ${a.status ?? "-"}`) });
     if (response.ok) {

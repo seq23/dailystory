@@ -196,10 +196,13 @@ describe("story generation and the expensive functions", () => {
     expect((await guardPaidCall(post({ Authorization: `Bearer ${USER_TOKEN}` }), "voice-to-text", fakeDeps(), { allowGuests: false })).refusal).toBeNull();
   });
 
-  it("a guest pass does not open the signed-in-only live voice", async () => {
-    const { pass } = await issueGuestPass(SERVICE, 1_800_000_000);
-    const r = await guardPaidCall(post({ [GUEST_PASS_HEADER]: pass }), "openai-realtime", fakeDeps());
-    expect(r.refusal?.status).toBe(401);
+  it("the unused OpenAI voice functions are gone, not left deployed (22 Nov 2026)", () => {
+    // openai-tts was guest-passable with no caller in the app; openai-realtime had none either.
+    for (const fn of ["openai-tts", "openai-realtime"]) {
+      expect(existsSync(join(root, "supabase/functions", fn)), fn).toBe(false);
+      expect(read("supabase/config.toml"), fn).not.toContain(`[functions.${fn}]`);
+      expect(GUEST_PAID_FUNCTIONS as readonly string[]).not.toContain(fn);
+    }
   });
 });
 
@@ -277,9 +280,9 @@ describe("request size: the real bytes, never the Content-Length the client clai
     const r = await guardPaidCall(req, "elevenlabs-tts", fakeDeps());
     expect(r.refusal).toBeNull();
     expect((await req.text()).length).toBe(2000);
-    // A bodiless call (a GET, the live-voice WebSocket upgrade) is not read at all.
-    const get = new Request("https://x.supabase.co/functions/v1/openai-realtime", { headers: user });
-    expect((await guardPaidCall(get, "openai-realtime", fakeDeps(), { allowGuests: false })).refusal).toBeNull();
+    // A bodiless call (a GET) is not read at all.
+    const get = new Request("https://x.supabase.co/functions/v1/voice-to-text", { headers: user });
+    expect((await guardPaidCall(get, "voice-to-text", fakeDeps(), { allowGuests: false })).refusal).toBeNull();
     expect(tts).toHaveBeenCalledTimes(1);
   });
 
@@ -314,22 +317,26 @@ describe("request size: the real bytes, never the Content-Length the client clai
     const guarded = readdirSync(join(root, "supabase/functions"))
       .filter((d) => existsSync(join(root, "supabase/functions", d, "index.ts")))
       .filter((d) => /paidCallGuardDeno\.ts/.test(read(`supabase/functions/${d}/index.ts`)));
-    expect(guarded.length).toBeGreaterThanOrEqual(16);
+    expect(guarded.length).toBeGreaterThanOrEqual(15); // 17 until openai-tts and openai-realtime were deleted
+    const laneReaders: string[] = [];
     for (const fn of guarded) {
       const src = read(`supabase/functions/${fn}/index.ts`);
       // A clone parsed before the guard skips the cap: it must go through readJsonBeforeGuard.
       expect(src, fn).not.toMatch(/\.clone\(\)\s*\.\s*(json|text|arrayBuffer|formData|blob)\(/);
       if (/privacyLaneForRequest\(req, laneBody\)/.test(src)) {
         expect(src, fn).toMatch(/const \{ body: laneBody, refused \} = await readJsonBeforeGuard\(req, corsHeaders\);\s*\n\s*if \(refused\) return refused;/);
+        laneReaders.push(fn);
       }
     }
+    // The branch above must check something: translate and spelling read the lane from the capped body.
+    expect(laneReaders.sort()).toEqual(["correct-spelling", "translate-universal"]);
   });
 });
 
 describe("every paid function is wired to the guard", () => {
   const guestFns = [...GUEST_PAID_FUNCTIONS];
   const adminFns = ["elevenlabs-dictionary-manager", "generate-fallback-images", "unified-debug-service", "system-diagnostics"];
-  const signedInFns = ["openai-realtime", "voice-to-text"];
+  const signedInFns = ["voice-to-text"];
 
   it("guards before the paid API, and lets the guest pass header through CORS", () => {
     expect(guestFns.length).toBeGreaterThan(0);

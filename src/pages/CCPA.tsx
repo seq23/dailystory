@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SiteFooterNav } from "@/components/SiteFooterNav";
 
+// Categories of personal information collected in the past 12 months (Cal. Civ. Code 1798.110).
+const CATEGORIES = [
+  { category: "Identifiers", examples: "Name, email address, account name", purpose: "Account creation and communication" },
+  { category: "Internet Activity", examples: "Reading history, interactions with content", purpose: "Personalization and improvement" },
+  { category: "Inferences", examples: "Reading preferences, skill level", purpose: "Content personalization" },
+];
+
 const CCPA = () => {
   useEffect(() => {
     const title = "California Privacy Rights (CCPA) | Time-2-Read by Spry VSL LLC";
@@ -142,38 +149,17 @@ const CCPA = () => {
           <h2>Categories of Personal Information We Collect</h2>
           <p>In the past 12 months, we have collected the following categories of personal information:</p>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr>
-                  <th>{uiText("Category")}</th>
-                  <th>Examples</th>
-                  <th>Collected</th>
-                  <th>Purpose</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Identifiers</strong></td>
-                  <td>Name, email address, account name</td>
-                  <td>Yes</td>
-                  <td>Account creation and communication</td>
-                </tr>
-                <tr>
-                  <td><strong>Internet Activity</strong></td>
-                  <td>Reading history, interactions with content</td>
-                  <td>Yes</td>
-                  <td>Personalization and improvement</td>
-                </tr>
-                <tr>
-                  <td><strong>Inferences</strong></td>
-                  <td>Reading preferences, skill level</td>
-                  <td>Yes</td>
-                  <td>Content personalization</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          {/* One stacked row per category, not a four-column table: at 320 px the table's cells ran
+              off the screen (#182, 22 Nov 2026), as /privacy's did. */}
+          <ul className="not-prose divide-y border-y my-4 text-sm">
+            {CATEGORIES.map((row) => (
+              <li key={row.category} className="py-3" data-testid="category-row">
+                <p className="font-medium">{row.category} <span className="font-normal text-muted-foreground">· Collected: Yes</span></p>
+                <p className="text-muted-foreground"><span className="font-medium text-foreground">Examples:</span> {row.examples}</p>
+                <p className="text-muted-foreground"><span className="font-medium text-foreground">Purpose:</span> {row.purpose}</p>
+              </li>
+            ))}
+          </ul>
 
           <h2>Do Not Sell My Personal Information</h2>
           <p>
@@ -182,8 +168,10 @@ const CCPA = () => {
           </p>
           <p>
             While we do not sell personal information, we may share data with service providers who help
-            us operate our services (such as cloud hosting, payment processing, and email delivery). These
-            providers are contractually bound to use your information only for the purposes we specify.
+            us operate our services (such as cloud hosting, payment processing, email delivery and the AI
+            features). Most have signed or accepted a data processing agreement that limits them to the
+            purposes we specify; for a few it is still in progress. Each provider and its status is on
+            our <Link to="/subprocessors">Subprocessors page</Link>.
           </p>
 
           <h2>How to Exercise Your Rights</h2>

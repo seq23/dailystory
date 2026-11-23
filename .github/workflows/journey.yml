@@ -30,11 +30,12 @@ jobs:
         # One Playwright run: a second run would wipe test-results/ and lose the first
         # run's captures. Voice commands use the fake microphone; the Start here! chip
         # is checked at 390/820/1280 px; /pricing voice and read-aloud at 390/820 px;
-        # /subprocessors at 320/390 px, light and dark.
+        # /subprocessors and the five long-form legal pages at 320/390 px (the site has one light
+        # theme, so light only); /vendors moving to /subprocessors.
         run: |
           npx vite preview --port 4173 --strictPort &
           npx --yes wait-on@8.0.1 http://localhost:4173 --timeout 60000
-          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts e2e/story-choices.spec.ts e2e/story-voice.spec.ts e2e/start-here-chip.spec.ts e2e/pricing-voice.spec.ts e2e/header-phone.spec.ts e2e/subprocessors-phone.spec.ts --project=chromium --retries=1
+          PLAYWRIGHT_BASE_URL=http://localhost:4173 npx playwright test e2e/parent-journey.spec.ts e2e/story-choices.spec.ts e2e/story-voice.spec.ts e2e/start-here-chip.spec.ts e2e/pricing-voice.spec.ts e2e/header-phone.spec.ts e2e/subprocessors-phone.spec.ts e2e/legal-pages-phone.spec.ts --project=chromium --retries=1
       # The one upload: every capture for review (voice-*, start-here-*, pricing-voice-*),
       # and on a failure the traces and error snapshots too.
       - if: always()

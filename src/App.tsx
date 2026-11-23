@@ -24,7 +24,6 @@ import { AdminOnly } from "./components/AdminOnly";
 import TemplateTestingPage from "./pages/TemplateTestingPage";
 import CCPA from "./pages/CCPA";
 import Accessibility from "./pages/Accessibility";
-import Vendors from "./pages/Vendors";
 import GDPR from "./pages/GDPR";
 import FERPA from "./pages/FERPA";
 import VerifyConsent from "./pages/VerifyConsent";
@@ -115,7 +114,6 @@ const App = () => {
               <Route path="/prompt-studio" element={<PromptStudio />} />
               <Route path="/ccpa" element={<CCPA />} />
               <Route path="/accessibility" element={<Accessibility />} />
-              <Route path="/vendors" element={<Vendors />} />
               <Route path="/gdpr" element={<GDPR />} />
               <Route path="/ferpa" element={<FERPA />} />
               <Route path="/verify-consent" element={<VerifyConsent />} />

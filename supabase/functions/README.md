@@ -34,8 +34,6 @@ This directory contains all Edge Functions for the project. GitHub is the source
 - `elevenlabs-dictionary-manager` - JWT: false
 - `elevenlabs-tts-smart` - JWT: false
 - `elevenlabs-tts` - JWT: false
-- `openai-realtime` - JWT: false
-- `openai-tts` - JWT: false
 - `voice-to-text` - JWT: false
 - `word-dictionary` - JWT: false
 

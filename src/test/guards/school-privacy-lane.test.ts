@@ -101,12 +101,24 @@ describe("school lane: a school child's request never reaches a training route",
     expect(() => assertSchoolSafeRequest("cloudflare-free", CF_URL, { model: "m" })).not.toThrow();
   });
 
-  it("family routing is unchanged: free models first, no zdr flag", async () => {
+  it("family routing for the story chain (freeTier: true) is unchanged: free models first, no zdr flag", async () => {
     const r = recorder(() => new Response("busy", { status: 429 }));
-    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env });
+    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env, freeTier: true });
     expect(out.lane).toBe("family");
     expect(r.calls[0].body.model).toBe(OPENROUTER_FREE_MODELS[0]);
     expect(r.calls.find((c) => c.body.model === OPENROUTER_PAID_MODEL)!.body.provider).toEqual({ data_collection: "deny" });
+  });
+
+  it("a family request that may carry a child's name (the default) takes only safe routes (R-KID-01, 22 Nov 2026)", async () => {
+    const r = recorder(() => new Response("busy", { status: 429 }));
+    const out = await chatCompletionWithFallback(BODY, { fetchImpl: r.fetchImpl, env });
+    expect(out.lane).toBe("family");
+    expect(r.calls.length).toBeGreaterThan(0);
+    expect(r.calls.filter(isTrainingRoute)).toEqual([]);
+    expect(out.attempts[0]).toMatchObject({ provider: "openrouter-free", status: null });
+    expect(out.attempts[0].error).toMatch(/may carry a child's name/);
+    // Every route failing ends refused, never answered: the caller's backup content answers.
+    expect(out.response.ok).toBe(false);
   });
 });
 

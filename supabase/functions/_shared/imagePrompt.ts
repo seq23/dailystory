@@ -449,7 +449,7 @@ export async function distillScene(
       .trim();
 
     if (!isUsableScene(scene)) {
-      console.warn('[distiller] unusable scene, using extracted:', scene.slice(0, 80));
+      console.warn('[distiller] unusable scene, using extracted:', { chars: scene.length });
       return fallback;
     }
     return { scene: scene.slice(0, 300), source: 'ai' };

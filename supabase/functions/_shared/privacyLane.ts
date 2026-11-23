@@ -16,6 +16,9 @@
 // paid_lanes[product-inference].text_chain.school_lane. Guard:
 // src/test/guards/school-privacy-lane.test.ts.
 import { AsyncLocalStorage } from "node:async_hooks";
+// A URL import: Deno loads it; the app typecheck reads src/edge-imports.d.ts, and the edge tests
+// map it to a stub (vitest.config.ts), so they run the real lane lookup.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4?target=deno";
 
 export type PrivacyLane = "family" | "school";
 
@@ -92,9 +95,6 @@ export async function resolvePrivacyLane(
 
 /** The production dependencies: Supabase Auth and the service-role-only lane RPC. */
 export async function supabaseLaneDeps(): Promise<LaneDeps> {
-  // A runtime specifier: Deno loads it; the browser build's typecheck never resolves it.
-  const supabaseJs = "https://esm.sh/@supabase/supabase-js@2.57.4";
-  const { createClient } = await import(supabaseJs);
   // deno-lint-ignore no-explicit-any
   const env = (n: string) => (globalThis as any).Deno?.env.get(n) as string | undefined;
   const url = env("SUPABASE_URL");

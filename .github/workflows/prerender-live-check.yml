@@ -7,7 +7,7 @@ name: Prerender live check
 #      published yet) or PRERENDER_NOT_SERVED (published, but the host does not
 #      serve dist/<page>/index.html).
 #   2. The search-readiness rules this site keeps failing hold on the live host:
-#      TITLE_NOT_LIVE (b10) and CLARITY_STILL_LIVE (e9). A stale publish passes
+#      TITLE_NOT_LIVE (b10) and BANNED_HOST_LIVE (Clarity / Google Fonts). A stale publish passes
 #      step 1 and fails step 2 -- which is exactly the gap that let the 28 Oct
 #      fixes sit merged, green and unpublished while the audit re-reported them.
 #
@@ -33,5 +33,5 @@ jobs:
           page="$(curl -fsS https://time-2-read.com/my-child-hates-reading)"
           echo "$page" | grep -q 'data-prerendered="/my-child-hates-reading"' || { echo "::error::PRERENDER_NOT_SERVED /my-child-hates-reading served the SPA shell, not dist/my-child-hates-reading/index.html"; exit 1; }
           echo "live: homepage and guide page serve prerendered HTML"
-      - name: Live search readiness (b10 titles, e9 Clarity)
+      - name: Live search readiness (b10 titles, banned hosts)
         run: node scripts/check-live-readiness.mjs

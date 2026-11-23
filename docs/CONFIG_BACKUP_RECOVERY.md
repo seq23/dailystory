@@ -125,8 +125,6 @@ git checkout <commit-hash> -- supabase/config.toml
 - elevenlabs-dictionary-manager
 - elevenlabs-tts-smart
 - elevenlabs-tts
-- openai-realtime
-- openai-tts
 - voice-to-text
 - word-dictionary
 

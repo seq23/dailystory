@@ -4,6 +4,18 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooterNav } from "@/components/SiteFooterNav";
+import { DPA_LABEL, subprocessors } from "@/data/subprocessors";
+
+// GDPR Art. 13(1)(c): each kind of data, why we hold it and the legal basis.
+const LEGAL_BASIS = [
+  { category: "Account info (email, password)", purpose: "Authentication & account management", basis: "Contract performance (Art. 6(1)(b))" },
+  { category: "Child profile (display name, age, grade)", purpose: "Personalized reading experience", basis: "Parental consent (Art. 6(1)(a), Art. 8)" },
+  { category: "Reading progress & quiz scores", purpose: "Learning analytics & progress tracking", basis: "Legitimate interest (Art. 6(1)(f))" },
+  { category: "Payment data (via Stripe)", purpose: "Subscription billing", basis: "Contract performance (Art. 6(1)(b))" },
+  { category: "Usage data (pages viewed, features used)", purpose: "Service improvement", basis: "Consent (Art. 6(1)(a)) via cookie banner" },
+  { category: "Voice clips (signed-in accounts only, after a tap on the microphone)", purpose: "Speech-to-text for story voice commands and read-aloud practice", basis: "Parental consent (Art. 6(1)(a), Art. 8)" },
+  { category: "Device/browser info", purpose: "Security & fraud prevention", basis: "Legitimate interest (Art. 6(1)(f))" },
+];
 
 const Privacy = () => {
   useEffect(() => {
@@ -35,8 +47,8 @@ const Privacy = () => {
           </Button>
         </Link>
         <h1 className="text-3xl md:text-4xl font-bold text-foreground">{uiText("Privacy Policy")}</h1>
-        <p className="text-muted-foreground mt-2">Effective date: January 1, {new Date().getFullYear()}</p>
-        <p className="text-xs text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+        <p className="text-muted-foreground mt-2">Effective date: November 22, 2026</p>
+        <p className="text-xs text-muted-foreground">Last updated: November 22, 2026</p>
       </header>
 
       <section className="container mx-auto px-4 pb-12 space-y-6">
@@ -51,34 +63,29 @@ const Privacy = () => {
 
           {/* GDPR Art. 13(1)(c) — Purpose and legal basis */}
           <h2>2. Information We Collect &amp; Legal Basis</h2>
-          <table className="text-sm w-full">
-            <thead>
-              <tr><th className="text-left p-2">Data Category</th><th className="text-left p-2">Purpose</th><th className="text-left p-2">Legal Basis (GDPR Art. 6)</th></tr>
-            </thead>
-            <tbody>
-              <tr><td className="p-2">Account info (email, password)</td><td className="p-2">Authentication &amp; account management</td><td className="p-2">Contract performance (Art. 6(1)(b))</td></tr>
-              <tr><td className="p-2">Child profile (display name, age, grade)</td><td className="p-2">Personalized reading experience</td><td className="p-2">Parental consent (Art. 6(1)(a), Art. 8)</td></tr>
-              <tr><td className="p-2">Reading progress &amp; quiz scores</td><td className="p-2">Learning analytics &amp; progress tracking</td><td className="p-2">Legitimate interest (Art. 6(1)(f))</td></tr>
-              <tr><td className="p-2">Payment data (via Stripe)</td><td className="p-2">Subscription billing</td><td className="p-2">Contract performance (Art. 6(1)(b))</td></tr>
-              <tr><td className="p-2">Usage data (pages viewed, features used)</td><td className="p-2">Service improvement</td><td className="p-2">Consent (Art. 6(1)(a)) via cookie banner</td></tr>
-              <tr><td className="p-2">Voice clips (signed-in accounts only, after a tap on the microphone)</td><td className="p-2">Speech-to-text for story voice commands and read-aloud practice</td><td className="p-2">Parental consent (Art. 6(1)(a), Art. 8)</td></tr>
-              <tr><td className="p-2">Device/browser info</td><td className="p-2">Security &amp; fraud prevention</td><td className="p-2">Legitimate interest (Art. 6(1)(f))</td></tr>
-            </tbody>
-          </table>
+          {/* A stacked list, not a table: at 320 px the three-column table clipped its cells
+              (review of #182, 22 Nov 2026), the same fix as /data-transfers. */}
+          <ul className="not-prose divide-y border-y my-4 text-sm">
+            {LEGAL_BASIS.map((row) => (
+              <li key={row.category} className="py-3" data-testid="basis-row">
+                <p className="font-medium">{row.category}</p>
+                <p className="text-muted-foreground"><span className="sr-only">Purpose: </span>{row.purpose}</p>
+                <p className="text-muted-foreground"><span className="font-medium text-foreground">Legal basis (GDPR Art. 6):</span> {row.basis}</p>
+              </li>
+            ))}
+          </ul>
 
           {/* GDPR Art. 13(1)(e) — Recipients */}
           <h2>3. Data Sharing &amp; Third-Party Processors</h2>
           <p>We do <strong>not sell</strong> personal information. Data is shared only with processors who act on our behalf:</p>
           <ul>
-            <li><strong>Supabase</strong> — Database, authentication (US, SCCs in place)</li>
-            <li><strong>OpenAI</strong> — AI story generation, and speech-to-text for voice clips (US, DPA, no training on API data)</li>
-            <li><strong>Stripe</strong> — Payment processing (US, PCI DSS Level 1)</li>
-            <li><strong>ElevenLabs</strong> — Text-to-speech narration (US, DPA)</li>
-            <li><strong>Runware</strong> — AI image generation (EU/US, DPA)</li>
-            <li><strong>Resend</strong> — Transactional email (US, SOC 2)</li>
-            <li><strong>Cloudflare</strong> — Hosting, CDN, and DDoS protection (Global, DPA)</li>
-            <li><strong>GitHub</strong> — Source code hosting and CI/CD (US, DPA, SOC 2)</li>
+            {subprocessors.map((sp) => (
+              <li key={sp.name}>
+                <strong>{sp.name}</strong> — {sp.purpose} ({sp.location}; {DPA_LABEL[sp.dpa]})
+              </li>
+            ))}
           </ul>
+          <p>What each one receives is listed on our <Link to="/subprocessors" className="text-primary hover:underline">Subprocessors</Link> page.</p>
           <p>See our <Link to="/data-transfers" className="text-primary hover:underline">International Data Transfers</Link> page for full details and safeguards.</p>
 
           {/* GDPR Art. 13(2)(a) — Retention */}
@@ -136,8 +143,10 @@ const Privacy = () => {
           {/* GDPR Art. 13(1)(f) — International Transfers */}
           <h2>7. International Data Transfers</h2>
           <p>
-            Your data may be transferred to and processed in the United States. We protect these transfers using
-            Standard Contractual Clauses (SCCs) and Data Processing Agreements with all processors.
+            Your data may be transferred to and processed in the United States. Where a processor has signed or
+            accepted a data processing agreement with us, that agreement covers the transfer, including Standard
+            Contractual Clauses (SCCs) where it provides them; for some processors the agreement is still in
+            progress. Our Subprocessors page shows each processor's status.
             See our <Link to="/data-transfers" className="text-primary hover:underline">Data Transfers</Link> page for details.
           </p>
 
@@ -208,7 +217,7 @@ const Privacy = () => {
           <Link to="/ccpa" className="text-primary hover:underline">CCPA Rights</Link>
           <Link to="/ferpa" className="text-primary hover:underline">FERPA Compliance</Link>
           <Link to="/data-transfers" className="text-primary hover:underline">Data Transfers</Link>
-          <Link to="/vendors" className="text-primary hover:underline">Vendor List</Link>
+          <Link to="/subprocessors" className="text-primary hover:underline">Subprocessors</Link>
           <Link to="/terms" className="text-primary hover:underline">{uiText("Terms of Service")}</Link>
         </div>
       </section>

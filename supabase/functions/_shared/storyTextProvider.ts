@@ -28,6 +28,13 @@
 // assertSchoolSafeRequest() checks every school request before it is built into a
 // fetch; anything else is refused and the caller's backup content answers.
 // Guard: src/test/guards/school-privacy-lane.test.ts.
+//
+// Names route (22 Nov 2026, R-KID-01): a request that may carry a child's name (spelling,
+// translation, definitions: a child's own writing and story sentences, unmasked) takes the
+// same safe routes as the school lane: never the OpenRouter :free tier (unknown terms count
+// as training), OpenRouter only with no collection and zero retention. That is the default:
+// only a caller that passes freeTier: true (the reader's name masked by the caller) may use
+// tier 1. Masking itself is unchanged. Guard: src/test/edge/child-names-never-leave.test.ts.
 import { deidentify, namesFromCharacterInfo } from "./deidentify.ts";
 import { stripReasoning } from "./storyOutputCheck.ts";
 import { currentPrivacyLane, type PrivacyLane } from "./privacyLane.ts";
@@ -222,10 +229,18 @@ export async function chatCompletionWithFallback(
     deadline?: number;
     /** Privacy lane; defaults to the request's lane (./privacyLane.ts withPrivacyLane), else "family". */
     lane?: PrivacyLane;
+    /**
+     * May this request use the OpenRouter :free tier? Default no: a request that may carry a
+     * child's name only takes routes that neither train on nor keep it (R-KID-01). Ignored
+     * on the school lane, which never uses it.
+     */
+    freeTier?: boolean;
   } = {},
 ): Promise<ProviderResult> {
   const lane: PrivacyLane = opts.lane ?? currentPrivacyLane() ?? "family";
   const school = lane === "school";
+  // School children, and any request that may carry a child's name: safe routes only.
+  const safeRoutes = school || opts.freeTier !== true;
   const fetchImpl: FetchLike = opts.fetchImpl ?? ((u, i) => fetch(u, i));
   // deno-lint-ignore no-explicit-any
   const env: EnvLike = opts.env ?? ((n) => (globalThis as any).Deno?.env.get(n));
@@ -252,7 +267,7 @@ export async function chatCompletionWithFallback(
       }
       timeoutMs = Math.min(timeoutMs, left);
     }
-    if (school) {
+    if (safeRoutes) {
       try {
         assertSchoolSafeRequest(provider, url, body as Record<string, unknown>);
       } catch (err) {
@@ -288,8 +303,8 @@ export async function chatCompletionWithFallback(
 
   // ── Tier 1: OpenRouter :free, rotated. Names masked.
   const openrouterKey = env("OPENROUTER_API_KEY");
-  if (school) {
-    attempts.push({ provider: "openrouter-free", status: null, error: "skipped: school lane (free endpoints may log or train on prompts)" });
+  if (safeRoutes) {
+    attempts.push({ provider: "openrouter-free", status: null, error: `skipped: ${school ? "school lane" : "may carry a child's name"} (free endpoints may log or train on prompts)` });
   } else if (openrouterKey) {
     const orHeaders = { Authorization: `Bearer ${openrouterKey}`, "HTTP-Referer": "https://time-2-read.com", "X-Title": "Time-2-Read" };
     for (const model of OPENROUTER_FREE_MODELS) {
@@ -310,7 +325,7 @@ export async function chatCompletionWithFallback(
 
   // ── Tier 3: OpenRouter paid, prepaid credit only, no training. Names masked.
   if (openrouterKey && now() >= (skippedUntil["openrouter-paid"] ?? 0)) {
-    const body = { ...withFloor(toCompatibleBody(masked, OPENROUTER_PAID_MODEL)), reasoning: OPENROUTER_NO_REASONING, provider: school ? OPENROUTER_SCHOOL_PROVIDER : OPENROUTER_PAID_PROVIDER };
+    const body = { ...withFloor(toCompatibleBody(masked, OPENROUTER_PAID_MODEL)), reasoning: OPENROUTER_NO_REASONING, provider: safeRoutes ? OPENROUTER_SCHOOL_PROVIDER : OPENROUTER_PAID_PROVIDER };
     const r = await tryOnce("openrouter-paid", OPENROUTER_PAID_MODEL, OPENROUTER_CHAT_URL, { Authorization: `Bearer ${openrouterKey}`, "HTTP-Referer": "https://time-2-read.com", "X-Title": "Time-2-Read" }, body, PAID_TIMEOUT_MS);
     if (r.ok && r.res) return done("openrouter-paid", OPENROUTER_PAID_MODEL, r.res, r.text, true);
     if (!r.ok && r.status !== null && isDeadKeyRefusal(r.status, r.text)) skippedUntil["openrouter-paid"] = now() + DEAD_KEY_SKIP_MS;

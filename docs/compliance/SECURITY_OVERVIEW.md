@@ -85,15 +85,15 @@ All infrastructure enforces TLS (HTTPS) with no plaintext fallback.
 
 ## 7. Third-Party Services (Subprocessors)
 
-All vendors are vetted for security practices and bound by Data Processing Agreements:
+The complete current list, with exactly what each vendor receives and which have a signed DPA, is [time-2-read.com/subprocessors](https://time-2-read.com/subprocessors). The main vendors:
 
 | Vendor | Purpose | Data Access | Key Certifications |
 |---|---|---|---|
 | Supabase | Database & Auth | Full user data | SOC 2 Type II |
-| OpenAI | Story generation | Prompts only (no PII) | Enterprise API security |
-| Anthropic | AI fallback | Prompts only (no PII) | Enterprise API security |
-| Runware | Image generation | Image prompts (no PII) | — |
-| ElevenLabs | Text-to-speech | Story text (no PII) | — |
+| OpenAI | Story generation (last resort), speech-to-text | Story prompts, only when the other text models fail (age, grade, favorites, hobbies, typed request), including the child’s first name (replaced by a stand-in for a school account), and text a reader asks to spell, translate or define when the other models fail; OpenAI keeps chat prompts up to 30 days for abuse monitoring; voice clips after a tap on the microphone | Enterprise API security |
+| Anthropic | AI fallback, no longer called | Nothing since 22 Nov 2026 | Enterprise API security |
+| Runware | Image generation | Picture scene, avatar look, age and favorite color; never a name | — |
+| ElevenLabs | Text-to-speech | Story text, including the child’s first name when the story uses it; tapped words; voice-mode speech | — |
 | Stripe | Payments | Email, payment info | PCI DSS Level 1, SOC 2 |
 | Resend | Email delivery | Email addresses | SOC 2 Type II |
 | Cloudflare | Hosting/CDN | IP, request metadata | SOC 2, ISO 27001 |

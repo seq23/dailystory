@@ -243,6 +243,8 @@ personal_info_incidents (
 
 ### 3.2 Third-Party Vendor Tracking ✅ COMPLETE
 
+> **Superseded 22 Nov 2026.** This section is history. The current vendor list and each DPA status are on [/subprocessors](https://time-2-read.com/subprocessors) and in `docs/compliance/VENDOR_DPA_TRACKER.md`; /vendors now moves to /subprocessors.
+
 **Vendors Documented (at /vendors and docs/VENDOR_DPA_TRACKER.md):**
 
 | Vendor | Purpose | DPA Status |
@@ -271,7 +273,7 @@ personal_info_incidents (
 | GDPR Rights | `/gdpr` | ✅ Live | 2026-01-22 |
 | FERPA Compliance | `/ferpa` | ✅ Live | 2026-01-22 |
 | Accessibility Statement | `/accessibility` | ✅ Live | 2026-01-22 |
-| Vendors List | `/vendors` | ✅ Live | 2026-01-22 |
+| Vendors List | `/vendors` (superseded 22 Nov 2026: now moves to `/subprocessors`) | ✅ Live | 2026-01-22 |
 
 ### 4.2 Privacy Policy Contents ✅ COMPLETE
 
@@ -634,7 +636,7 @@ Time2Read LLC
 | GDPR Rights | `/gdpr` | ✅ Live |
 | FERPA Compliance | `/ferpa` | ✅ Live |
 | Accessibility Statement | `/accessibility` | ✅ Live |
-| Vendors List | `/vendors` | ✅ Live |
+| Vendors List | `/vendors` (superseded 22 Nov 2026: now moves to `/subprocessors`) | ✅ Live |
 | Incident Response Plan | `docs/INCIDENT_RESPONSE_PLAN.md` | ✅ Complete |
 | Accessibility Checklist | `docs/ACCESSIBILITY_CHECKLIST.md` | ✅ Complete |
 | GDPR Records of Processing | `docs/GDPR_RECORDS_OF_PROCESSING.md` | ✅ Complete |

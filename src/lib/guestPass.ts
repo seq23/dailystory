@@ -12,7 +12,6 @@ export const GUEST_PASS_HEADER = "x-t2r-guest";
 export const GUEST_PAID_FUNCTIONS = [
   "elevenlabs-tts",
   "elevenlabs-tts-smart",
-  "openai-tts",
   "elevenlabs-agent-signed-url",
   "translate-universal",
   "correct-spelling",

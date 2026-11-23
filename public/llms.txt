@@ -32,7 +32,6 @@ Time-2-Read creates never-ending, age-appropriate stories tailored to each child
 - [CCPA Rights](/ccpa): California privacy rights.
 - [FERPA](/ferpa): Education records compliance.
 - [Accessibility](/accessibility): WCAG conformance statement.
-- [Vendors](/vendors): Third-party service providers.
 - [Subprocessors](/subprocessors): Data subprocessor list.
 - [International Data Transfers](/data-transfers): Cross-border transfer safeguards.
 

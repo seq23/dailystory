@@ -8,21 +8,20 @@
 //
 // So this reads the LIVE host, the same HTML a crawler gets, and fails by name:
 //   b10 TITLE_NOT_LIVE     - a page's <title> does not name Time-2-Read
-//   e9  CLARITY_STILL_LIVE - a public page still loads Microsoft Clarity
+//   BANNED_HOST_LIVE       - a live page, or a script or style it loads, names Microsoft
+//                            Clarity or Google Fonts (both removed 22 Nov 2026; scripts/banned-hosts.mjs)
 //   k4  PARENT_NOT_LIVE    - a page's Organization does not name Spry Labs as its
 //                            parent (added 31 Oct 2026 with the entity work: the
 //                            same stale-publish gap hides it exactly the same way)
 // They all clear themselves the moment the current main is published. A failure is
 // therefore one action: publish, or fix the regression at source.
 import { readFileSync } from "node:fs";
-import { clarityRuleBroken, loadsClarity } from "./clarity-loader.mjs";
+import { BANNED_HOSTS, bannedHostsIn, bannedRuleBroken } from "./banned-hosts.mjs";
 
 // Overridable so the same assertions can be proved green against a local build
 // of dist before the guard is trusted against production.
 const SITE = process.env.LIVE_CHECK_ORIGIN ?? "https://time-2-read.com";
 const BRAND = "Time-2-Read";
-// Clarity now mounts only inside LoginScreen (useParentFormClarity), the
-// grown-up's account/checkout form. No sitemap page may ship the tag.
 // k4: every page's Organization names Spry Labs as its parent (src/seo/entity.json).
 const SPRY_LABS_ID = "https://billionairehighperformancecoach.com/spry-labs#organization";
 const UA = "Mozilla/5.0 (compatible; Time2ReadLiveCheck/1.0; +https://time-2-read.com)";
@@ -30,8 +29,7 @@ const UA = "Mozilla/5.0 (compatible; Time2ReadLiveCheck/1.0; +https://time-2-rea
 const locs = [...readFileSync("public/sitemap.xml", "utf8").matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
 if (locs.length === 0) { console.error("LIVE_CHECK_NO_SITEMAP_URLS"); process.exit(1); }
 
-// The sign-in app route is the one page that may carry Clarity, and it serves the
-// homepage's HTML anyway. check-prerender.mjs already refuses it in the sitemap.
+// The sign-in app route serves the homepage's HTML; check-prerender.mjs refuses it in the sitemap.
 const APP_ROUTES = new Set(["/auth"]);
 
 async function get(url) {
@@ -54,7 +52,8 @@ async function get(url) {
 }
 
 const fails = [];
-if (clarityRuleBroken()) fails.push("CLARITY RULE: loadsClarity must catch a Clarity script, snippet or preload and pass the vendor named in text");
+if (bannedRuleBroken()) fails.push(`BANNED HOST RULE: bannedHostsIn must catch ${BANNED_HOSTS.join(", ")} (and subdomains) and nothing else`);
+const assetsRead = new Set();
 let checked = 0;
 for (const loc of locs) {
   const path = new URL(loc).pathname.replace(/\/+$/, "") || "/";
@@ -70,12 +69,22 @@ for (const loc of locs) {
   const title = (html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "")
     .replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'");
   if (!title.includes(BRAND)) fails.push(`TITLE_NOT_LIVE ${path}: live title does not name ${BRAND}: "${title}"`);
-  if (loadsClarity(html)) fails.push(`CLARITY_STILL_LIVE ${path}: live page outside the parent form still loads Clarity`);
+  const named = bannedHostsIn(html);
+  if (named.length) fails.push(`BANNED_HOST_LIVE ${path}: live page names ${named.join(", ")}`);
+  // The scripts and styles the page loads from our own host, each read once.
+  for (const m of html.matchAll(/(?:src|href)="(\/assets\/[^"?#]+\.(?:js|css))"/g)) {
+    if (assetsRead.has(m[1])) continue;
+    assetsRead.add(m[1]);
+    let body;
+    try { body = await get(`${SITE}${m[1]}`); } catch (err) { fails.push(`ASSET_UNREACHABLE ${m[1]}: ${err.message}`); continue; }
+    const inAsset = bannedHostsIn(body);
+    if (inAsset.length) fails.push(`BANNED_HOST_LIVE ${m[1]} (loaded by ${path}): names ${inAsset.join(", ")}`);
+  }
   if (!html.includes(SPRY_LABS_ID)) fails.push(`PARENT_NOT_LIVE ${path}: live Organization does not name Spry Labs as its parent (${SPRY_LABS_ID})`);
 }
 
 // Rule 0: a run that looked at nothing is a failure, not a pass.
-if (checked === 0) { console.error("LIVE_CHECK_NOTHING_CHECKED"); process.exit(1); }
+if (checked === 0 || assetsRead.size === 0) { console.error(`LIVE_CHECK_NOTHING_CHECKED (${checked} pages, ${assetsRead.size} scripts and styles)`); process.exit(1); }
 
 if (fails.length) {
   for (const f of fails) console.error(`::error::${f}`);
@@ -87,4 +96,4 @@ if (fails.length) {
   );
   process.exit(1);
 }
-console.log(`live: ${checked} pages name ${BRAND} in their title, none loads Clarity, and each names Spry Labs as its parent`);
+console.log(`live: ${checked} pages name ${BRAND} in their title, none (nor the ${assetsRead.size} scripts and styles they load) names Clarity or Google Fonts, and each names Spry Labs as its parent`);

@@ -15,6 +15,8 @@ vi.mock('@/services/CharlotteVoiceService', () => ({ charlotteVoiceService: { st
 vi.mock('@/services/BrowserTTSService', () => ({ browserTTSService: { stop: () => {}, speakCoachMessage: async () => {} } }));
 
 import ReadAloudCoach from '@/components/ReadAloudCoach';
+import Privacy from '@/pages/Privacy';
+import { MemoryRouter } from 'react-router-dom';
 
 class FakeRecorder {
   static isTypeSupported = () => true;
@@ -170,7 +172,7 @@ describe('the privacy pages say what happens to a voice clip', () => {
   const { readFileSync } = require('node:fs') as typeof import('node:fs');
   const { join } = require('node:path') as typeof import('node:path');
   const root = join(__dirname, '../../..');
-  const files = ['src/pages/Privacy.tsx', 'src/pages/Subprocessors.tsx', 'docs/privacy/data-inventory.md', 'docs/sales/capabilities.md', 'docs/sales/privacy-security.md'];
+  const files = ['src/pages/Privacy.tsx', 'src/data/subprocessors.ts', 'docs/privacy/data-inventory.md', 'docs/sales/capabilities.md', 'docs/sales/privacy-security.md'];
   const sentences = files.flatMap((f) => readFileSync(join(root, f), 'utf8').replace(/\s+/g, ' ')
     .split(/(?<=[.;|])\s+|<li>|\|/).map((text) => ({ f, text })))
     .filter(({ text }) => /voice clip|speech-to-text|transcription|a clip|the clip|no speech/i.test(text));
@@ -182,13 +184,15 @@ describe('the privacy pages say what happens to a voice clip', () => {
       expect(text, f).not.toMatch(/a tap with no speech sends nothing/i);
     }
     const retention = sentences.filter(({ text }) => /abuse-monitoring retention/i.test(text));
-    expect(retention.map(({ f }) => f).sort()).toEqual(['docs/privacy/data-inventory.md', 'src/pages/Privacy.tsx', 'src/pages/Subprocessors.tsx']);
+    expect(retention.map(({ f }) => f).sort()).toEqual(['docs/privacy/data-inventory.md', 'src/data/subprocessors.ts', 'src/pages/Privacy.tsx']);
     for (const { text } of retention) expect(text).toMatch(/developers\.openai\.com\/api\/docs\/guides\/your-data/);
   });
 
   it('the consent basis is stated only for signed-in accounts, which is what the code enforces', () => {
-    const privacy = readFileSync(join(root, 'src/pages/Privacy.tsx'), 'utf8');
-    expect(privacy).toMatch(/Voice clips \(signed-in accounts only[^<]*<\/td>.*Parental consent/);
+    render(<MemoryRouter><Privacy /></MemoryRouter>);
+    const voice = screen.getAllByTestId('basis-row').filter((row) => row.textContent!.startsWith('Voice clips'));
+    expect(voice).toHaveLength(1);
+    expect(voice[0].textContent).toMatch(/^Voice clips \(signed-in accounts only, after a tap on the microphone\).*Parental consent \(Art\. 6\(1\)\(a\), Art\. 8\)$/);
     expect(readFileSync(join(root, 'supabase/functions/voice-to-text/index.ts'), 'utf8')).toMatch(/allowGuests: false/);
   });
 });

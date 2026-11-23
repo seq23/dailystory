@@ -68,42 +68,42 @@
 | Field | Description |
 |-------|-------------|
 | **Purpose** | Generate personalized AI stories for reading practice |
-| **Categories of Personal Data** | Reading preferences, grade level, interests (no direct identifiers sent to AI) |
+| **Categories of Personal Data** | Reading preferences, grade level, interests, and the reader’s typed request; story and quiz prompts have the reader’s name replaced by a stand-in (other names typed into a request are sent as written); text a reader asks to spell, translate or define is sent as written to routes that do not train on it |
 | **Legal Basis** | Contract (Art. 6(1)(b)) - service delivery |
 | **Source of Data** | User preferences and profile |
-| **Recipients** | OpenAI (processor), Anthropic (fallback processor) |
+| **Recipients** | OpenRouter, Cloudflare Workers AI, Lovable AI Gateway and, only when they fail, OpenAI (processors; story text with the reader’s name replaced by a stand-in, except OpenAI, which receives the child’s first name; text a reader asks to spell, translate or define only to Workers AI, OpenRouter’s paid model and OpenAI). Anthropic is no longer called (22 Nov 2026). Full list: /subprocessors |
 | **Transfers to Third Countries** | USA |
-| **Transfer Safeguards** | DPAs with zero-retention clauses |
-| **Retention Period** | Prompts: transient only; Generated stories: until session ends or saved |
-| **Technical Measures** | PII stripping before AI calls, session isolation |
+| **Transfer Safeguards** | The DPA each processor signed or accepted, as shown on /subprocessors (Lovable AI Gateway: in progress) |
+| **Retention Period** | Prompts: OpenAI keeps chat prompts up to 30 days for abuse monitoring; OpenRouter’s free models may log prompts (its paid model: zero retention); Generated stories: until session ends or saved |
+| **Technical Measures** | Story and quiz prompts have the reader’s name replaced by a stand-in; text a reader asks to spell, translate or define never reaches a free model; function logs record lengths, not the text; session isolation |
 
 ### 3.4 Image Generation
 
 | Field | Description |
 |-------|-------------|
 | **Purpose** | Generate illustrations for stories |
-| **Categories of Personal Data** | Character descriptions (based on avatar, not PII) |
+| **Categories of Personal Data** | The picture scene and the reader’s avatar look, age and favorite color; never a name |
 | **Legal Basis** | Contract (Art. 6(1)(b)) |
 | **Source of Data** | Derived from avatar settings |
 | **Recipients** | Runware (processor) |
 | **Transfers to Third Countries** | Europe / United States |
-| **Transfer Safeguards** | Standard API Terms (DPA accepted) |
-| **Retention Period** | Images cached for session duration |
-| **Technical Measures** | No PII in prompts |
+| **Transfer Safeguards** | Standard API Terms (DPA in progress) |
+| **Retention Period** | Runware keeps generated images up to 7 days; saved pictures until the story is deleted |
+| **Technical Measures** | No name in image prompts |
 
 ### 3.5 Voice/Text-to-Speech
 
 | Field | Description |
 |-------|-------------|
 | **Purpose** | Read stories aloud to users |
-| **Categories of Personal Data** | Story text only (no PII) |
+| **Categories of Personal Data** | Story text, which includes the child’s first name when the story uses it; words a reader taps to hear; what the reader says in voice mode |
 | **Legal Basis** | Contract (Art. 6(1)(b)) |
 | **Source of Data** | Generated story content |
 | **Recipients** | ElevenLabs (processor) |
 | **Transfers to Third Countries** | USA/EU |
-| **Transfer Safeguards** | Standard API Terms (DPA accepted) |
+| **Transfer Safeguards** | Standard API Terms (DPA in progress) |
 | **Retention Period** | Audio: transient only |
-| **Technical Measures** | No user identifiers transmitted |
+| **Technical Measures** | Encrypted in transit (TLS) |
 
 ### 3.6 Payment Processing
 
@@ -168,11 +168,11 @@
 |-----------|---------|-------------------|------------|
 | Supabase | USA | Standard Contractual Clauses | SOC 2 Type II |
 | Stripe | USA/EU | Standard Contractual Clauses | PCI DSS, SOC 2 |
-| OpenAI | USA | Standard Contractual Clauses | Enterprise DPA |
+| OpenAI | USA | OpenAI DPA (SCCs where it provides them) | DPA signed |
 | Resend | USA | Standard Contractual Clauses | DPA |
-| ElevenLabs | USA/EU | Standard Contractual Clauses | DPA (standard terms) |
-| Runware | EU/USA | Standard API Terms | DPA (standard terms) |
-| Anthropic | USA | Standard Contractual Clauses | DPA (standard terms) |
+| ElevenLabs | USA/EU | Standard API Terms | DPA in progress |
+| Runware | EU/USA | Standard API Terms | DPA in progress |
+| Anthropic | USA | None needed: no longer called (22 Nov 2026) | DPA in progress |
 
 ---
 

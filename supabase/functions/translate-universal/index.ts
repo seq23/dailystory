@@ -284,7 +284,8 @@ const handleRequest = async (req: Request): Promise<Response> => {
     }
 
     const requestData: TranslationRequest = await req.json();
-    console.log('Translation request:', requestData);
+    // Never the text itself: a child's writing and story sentences carry names (R-KID-01).
+    console.log('Translation request:', { texts: Array.isArray(requestData?.texts) ? requestData.texts.length : 1, targetLanguage: requestData?.targetLanguage });
 
     const { 
       text, 
@@ -356,7 +357,7 @@ const handleRequest = async (req: Request): Promise<Response> => {
               confidence: result.confidence || 0.8
             });
           } catch (error) {
-            console.error('Translation error for text:', textItem, error);
+            console.error('Translation error for one text', error instanceof Error ? error.message : String(error));
             // Fallback to original text
             translations.push({
               translatedText: textItem,

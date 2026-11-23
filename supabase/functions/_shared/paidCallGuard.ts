@@ -75,13 +75,6 @@ export const FUNCTION_LIMITS: Record<string, FunctionLimits> = {
     guestIp: [],
     allPerFunction: PAID_CALL_LIMITS.allPerFunction,
   },
-  // One live voice conversation per call; signed-in only.
-  "openai-realtime": {
-    user: [{ window: TEN_MIN, max: 10 }, { window: DAY, max: 40 }],
-    guest: [],
-    guestIp: [],
-    allPerFunction: { window: DAY, max: 500 },
-  },
 };
 
 export function limitsFor(fn: string): FunctionLimits {

@@ -11,9 +11,12 @@
 // BreadcrumbList on inner pages; a priced SoftwareApplication on the homepage;
 // the homepage links /about; every sitemap URL within three clicks of the homepage;
 // no app route (sign-in) in the sitemap; apple-touch-icon.png and site.webmanifest.
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import { clarityRuleBroken, loadsClarity } from "./clarity-loader.mjs";
+// And no file in dist (page, script, style, anything) names a banned host: Clarity is removed
+// and the fonts are self-hosted (22 Nov 2026, scripts/banned-hosts.mjs).
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
+import { BANNED_HOSTS, bannedHostsIn, bannedRuleBroken } from "./banned-hosts.mjs";
+import { MOVED, movedPageProblems } from "./moved-pages.mjs";
 
 const SITE = "https://time-2-read.com";
 /** k4: the Spry Labs entity home every side business names as its parent (src/seo/entity.json). */
@@ -31,7 +34,15 @@ let bylines = 0;
 const TITLE = [30, 65];
 const DESC = [120, 160];
 const failsFloor = (n, min) => n < Math.ceil(min * 0.75);
-if (clarityRuleBroken()) fails.push("CLARITY RULE: loadsClarity must catch a Clarity script, snippet or preload and pass the vendor named in text");
+if (bannedRuleBroken()) fails.push(`BANNED HOST RULE: bannedHostsIn must catch ${BANNED_HOSTS.join(", ")} (and subdomains) and nothing else`);
+// Every file the build ships, read as text (fonts and images too: a host name is ASCII wherever it sits).
+const distFiles = (dir) => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? distFiles(join(dir, n)) : [join(dir, n)]));
+const shipped = distFiles(dist);
+if (!shipped.some((f) => f.endsWith(".js")) || !shipped.some((f) => f.endsWith(".css"))) fails.push(`${dist}: no .js or no .css file found, so the banned-host scan read nothing that matters`);
+for (const f of shipped) {
+  const hosts = bannedHostsIn(readFileSync(f, "latin1"));
+  if (hosts.length) fails.push(`${relative(dist, f)}: names ${hosts.join(", ")} (Clarity is removed and fonts are self-hosted)`);
+}
 if (failsFloor(500, TITLE[0]) || failsFloor(Math.ceil(TITLE[0] * 0.75), TITLE[0]) || !failsFloor(Math.ceil(DESC[0] * 0.75) - 1, DESC[0])) {
   fails.push("LENGTH RULE: failsFloor must pass anything over its ceiling and fail only below 75% of the floor");
 }
@@ -58,7 +69,7 @@ for (const loc of locs) {
   const lds = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
   const types = lds.flatMap((b) => (b["@graph"] ?? [b]).map((n) => n["@type"]));
   if (!types.includes("Organization")) fails.push(`${path}: shell JSON-LD lost`);
-  const isLanding = /^\/(?!about$|pricing$|privacy$|terms$|ccpa$|accessibility$|vendors$|gdpr$|ferpa$|data-transfers$|subprocessors$)[a-z0-9-]+$/.test(path);
+  const isLanding = /^\/(?!about$|pricing$|privacy$|terms$|ccpa$|accessibility$|gdpr$|ferpa$|data-transfers$|subprocessors$)[a-z0-9-]+$/.test(path);
   if (isLanding && !types.includes("FAQPage")) fails.push(`${path}: no FAQPage JSON-LD`);
   if (types.includes("Article") && /<(form|input|textarea)\b/i.test(root?.[2] ?? "")) fails.push(`${path}: guide page collects data`);
   const title = decode(html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "");
@@ -74,9 +85,6 @@ for (const loc of locs) {
   const ogImage = html.match(/<meta property="og:image" content="([^"]+)"/)?.[1] ?? "";
   if (!ogImage.startsWith(`${SITE}/`)) fails.push(`${path}: og:image is not on ${SITE}: ${ogImage || "missing"}`);
   if (!existsSync(join("public", new URL(ogImage).pathname.slice(1)))) fails.push(`${path}: og:image ${ogImage} is not in public/`);
-  // e9: public pages have no account/checkout form. The tag is mounted by
-  // LoginScreen at runtime, never by the shared shell or a guide page.
-  if (loadsClarity(html)) fails.push(`${path}: public page loads Clarity outside the parent form`);
   const nodes = lds.flatMap((b) => b["@graph"] ?? [b]);
   const org = nodes.find((n) => /Organization/.test(n["@type"]));
   for (const k of ["name", "url", "logo", "sameAs", "parentOrganization"]) {
@@ -123,6 +131,12 @@ for (const loc of locs) {
 // Bing Webmaster site-ownership tag (public code, not a secret) must survive the build.
 const home = existsSync(join(dist, "index.html")) ? readFileSync(join(dist, "index.html"), "utf8") : "";
 if (!/<meta name="msvalidate\.01" content="306F2E6DD99A91CBBA16C94091284F00"/.test(home)) fails.push("/: dist/index.html lost the msvalidate.01 Bing verification tag");
+// Every moved address ships a page that sends visitors and crawlers to its new home.
+const sitemapPaths = locs.map((loc) => new URL(loc).pathname.replace(/\/+$/, "") || "/");
+for (const [from, to] of Object.entries(MOVED)) {
+  const file = join(dist, from.slice(1), "index.html");
+  fails.push(...movedPageProblems(from, to, existsSync(file) ? readFileSync(file, "utf8") : "", sitemapPaths));
+}
 // Rule 0: a run that checked no page, or found the byline on none, is a failure, not a pass.
 if (checked === 0) fails.push("PRERENDER_CHECK_NO_PAGES_CHECKED");
 if (bylines === 0) fails.push("PRERENDER_CHECK_NO_BYLINE_FOUND: no page carried a visible rel=\"author\" byline (c6)");

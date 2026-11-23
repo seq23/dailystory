@@ -289,7 +289,7 @@ export default function FERPA() {
             <Link to="/terms" className="text-primary hover:underline">{uiText("Terms of Service")}</Link>
             <Link to="/ccpa" className="text-primary hover:underline">CCPA Rights</Link>
             <Link to="/gdpr" className="text-primary hover:underline">GDPR Rights</Link>
-            <Link to="/vendors" className="text-primary hover:underline">Our Vendors</Link>
+            <Link to="/subprocessors" className="text-primary hover:underline">Our Subprocessors</Link>
           </div>
         </section>
 

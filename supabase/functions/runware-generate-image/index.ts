@@ -270,9 +270,8 @@ Deno.serve(async (req) => {
       lovableApiKey: Deno.env.get('LOVABLE_API_KEY'),
     });
 
-    console.log(
-      `[image] page ${pageNumber} scene(${built.sceneSource}): ${built.scene}`,
-    );
+    // The scene's length only: page text can hold a child's name (R-KID-01).
+    console.log(`[image] page ${pageNumber} scene(${built.sceneSource}): ${built.scene.length} chars`);
 
     const imageURL = await callRunware(
       built.positivePrompt,

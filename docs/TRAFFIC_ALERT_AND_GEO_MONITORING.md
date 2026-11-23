@@ -117,9 +117,7 @@ All cost-incurring edge functions log to `cost_tracking` via the shared `costLog
 | `correct-spelling` | openai | spelling_correction |
 | `translate-universal` | openai | translation_to/from_english |
 | `word-dictionary` | openai | word_definition |
-| `openai-tts` | openai | tts |
 | `voice-to-text` | openai | speech_to_text |
-| `openai-realtime` | openai | realtime_session |
 | `generate-fallback-images` | openai | image_generation (deprecated) |
 | `traffic-alert` | resend | email_send |
 | `send-coppa-notification` | resend | email_send |

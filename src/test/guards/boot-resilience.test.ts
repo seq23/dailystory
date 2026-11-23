@@ -15,7 +15,7 @@ describe('boot resilience (index.html)', () => {
     const guard = at('__t2r_probe__');
     expect(guard).toBeGreaterThan(-1);
     const firstOtherScript = Math.min(
-      ...['clarity', 'type="module"', 'application/ld+json'].map(at).filter((i) => i > -1),
+      ...['type="module"', 'application/ld+json'].map(at).filter((i) => i > -1),
     );
     expect(guard).toBeLessThan(firstOtherScript);
     expect(html).toMatch(/Object\.defineProperty\(window, name, \{ value: memoryStore\(\)/);

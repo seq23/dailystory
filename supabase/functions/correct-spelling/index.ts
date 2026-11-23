@@ -44,7 +44,8 @@ const handleRequest = async (req: Request): Promise<Response> => {
     }
 
     const requestData: SpellingRequest = await req.json();
-    console.log('Spelling correction request:', requestData);
+    // Never the text itself: it is a child's writing and may hold names (R-KID-01).
+    console.log('Spelling correction request:', { chars: String(requestData?.text ?? '').length, gradeLevel: requestData?.gradeLevel, context: requestData?.context });
 
     const { text, gradeLevel, context } = requestData;
     
@@ -122,12 +123,7 @@ const handleRequest = async (req: Request): Promise<Response> => {
     const hadErrors = correctedText !== text;
     const confidence = hadErrors ? 0.8 : 0.9;
 
-    console.log('Spelling correction completed:', { 
-      original: text, 
-      corrected: correctedText, 
-      hadErrors,
-      confidence 
-    });
+    console.log('Spelling correction completed:', { chars: text.length, hadErrors, confidence });
 
     return new Response(
       JSON.stringify({ 
