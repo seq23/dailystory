@@ -59,9 +59,10 @@ const PAGES: Array<{ path: string; tables: number; stacked: number; setup?: (pag
     stacked: 3,
     setup: schoolWorkspace,
     open: async (page) => {
-      // The roster preview shows once a class is chosen and a CSV is picked.
+      // The roster preview shows once a class is chosen, "Import a roster" is open and a CSV is picked.
       // The label wraps the select, so its name also holds the chosen option ("Class All classes").
       await page.getByRole('combobox', { name: /^Class\b/ }).selectOption({ label: 'Room 12 · Second grade readers' });
+      await page.getByText('Import a roster', { exact: true }).click();
       await page.getByLabel('CSV roster').setInputFiles({ name: 'roster.csv', mimeType: 'text/csv', buffer: Buffer.from(ROSTER_CSV) });
       await expect(page.getByText('Roster preview')).toBeVisible();
       await page.getByText('Dated class growth comparisons').click();
