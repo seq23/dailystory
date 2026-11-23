@@ -4,4 +4,10 @@
 -- functions writes to this table; the service role bypasses RLS and keeps working without a policy.
 -- Additive only: the table, its rows and the "view their own metrics" policy are untouched.
 -- Guard: supabase/tests/performance_metrics/insert.sql (run by scripts/test-institutions-db.sh).
-DROP POLICY IF EXISTS "System can insert metrics" ON public.performance_metrics;
+-- Production never had this table (the 2025 migration that made it was not applied there), so
+-- there the hole does not exist and this is a no-op; DROP POLICY ... ON a missing table errors.
+DO $$ BEGIN
+  IF to_regclass('public.performance_metrics') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "System can insert metrics" ON public.performance_metrics;
+  END IF;
+END $$;
