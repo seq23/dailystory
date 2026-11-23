@@ -20,6 +20,7 @@ beforeEach(() => {
   s.env = { ...ENV };
   s.userIdFor = (t) => (t === USER_TOKEN ? "user-1" : null);
   s.rpc = { paid_call_hit: null, institution_ai_lane: "family" };
+  s.failing = [];
   s.tables = {
     profiles: [{ display_name: PARENT, user_id: "user-1" }],
     child_profiles: [{ display_name: CHILD }, { display_name: SIBLING }],
@@ -125,14 +126,17 @@ describe("a guest's typed name (readerNames from the browser) never leaves", () 
 });
 
 describe("the account's names fail closed", () => {
-  it("when the database cannot answer, the lane is school and the body's names are still masked", async () => {
-    edgeState().tables = {};
-    edgeState().rpc = { paid_call_hit: null, institution_ai_lane: "family" };
-    const s = edgeState();
-    s.userIdFor = () => { throw new Error("auth down"); };
+  it("when the account's names cannot be read, the lane is school and the body's names are still masked", async () => {
+    // A signed-in, subscribed family account whose child profiles cannot be read: the RPC
+    // says "family", but nothing confirmed it, so the request must go the school way.
+    edgeState().failing = ["child_profiles"];
     const run = await runFunction("correct-spelling", post("correct-spelling", { text: `${CHILD} likes dragns`, gradeLevel: "1", readerNames: [CHILD] }), "echo");
+    expect(run.response.status).toBe(200);
+    expect(run.logs.some((l) => l.includes("using the school lane"))).toBe(true);
+    const models = run.outbound.filter((o) => o.body.includes('"messages"'));
+    expect(models.length).toBeGreaterThan(0);
     // No free route on the school lane, and no name on any route.
-    expect(run.outbound.some((o) => /openrouter\.ai.*|":free"/.test(o.url + o.body) && /:free/.test(o.body))).toBe(false);
+    expect(models.filter((o) => /:free"/.test(o.body)).map((o) => o.url)).toEqual([]);
     expect(leaks(run, [CHILD])).toEqual([]);
   });
 });

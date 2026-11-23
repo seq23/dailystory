@@ -6,8 +6,9 @@
 export const BANNED_HOSTS = ["clarity.ms", "fonts.googleapis.com", "fonts.gstatic.com"];
 
 const esc = (h) => h.replace(/\./g, "\\.");
-// The host itself or any subdomain of it (www.clarity.ms), never a longer host that ends the same way.
-const BANNED = new RegExp(`(?<![a-z0-9-])(?:[a-z0-9-]+\\.)*(${BANNED_HOSTS.map(esc).join("|")})(?![a-z0-9-]|\\.[a-z])`, "gi");
+// The host itself or any subdomain of it (www.clarity.ms: the dot before it is not a host letter),
+// never a longer host that ends or starts the same way (myclarity.ms, clarity.msn.com).
+const BANNED = new RegExp(`(?<![a-z0-9-])(${BANNED_HOSTS.map(esc).join("|")})(?![a-z0-9-]|\\.[a-z])`, "gi");
 
 /** Every banned host the text names, once each, lower-case. */
 export function bannedHostsIn(text) {

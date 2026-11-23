@@ -6,6 +6,8 @@ export interface EdgeState {
   tables: Record<string, Array<Record<string, unknown>>>;
   /** What each RPC answers. */
   rpc: Record<string, unknown>;
+  /** Tables whose reads answer with an error (a database that is down for them). */
+  failing?: string[];
   /** The user id a token belongs to (null = not a user). */
   userIdFor: (token: string) => string | null;
 }

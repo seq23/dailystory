@@ -26,9 +26,9 @@ for (const width of [320, 390] as const) {
       // Blocks marked not-prose (cards, grids) keep their own styles, so only prose-styled elements count.
       const styles = await page.evaluate(() => {
         const css = (el: Element | null) => (el ? getComputedStyle(el) : null);
-        const h2 = css(document.querySelector('.prose h2:not(.not-prose *)'));
-        const p = css(document.querySelector('.prose p:not(.not-prose *)'));
-        const ul = css(document.querySelector('.prose ul:not(.not-prose *)'));
+        const h2 = css(document.querySelector('.prose h2:not(.not-prose, .not-prose *)'));
+        const p = css(document.querySelector('.prose p:not(.not-prose, .not-prose *)'));
+        const ul = css(document.querySelector('.prose ul:not(.not-prose, .not-prose *)'));
         return {
           h2: h2 && { size: parseFloat(h2.fontSize), weight: Number(h2.fontWeight) },
           p: p && { size: parseFloat(p.fontSize) },
@@ -46,8 +46,8 @@ for (const width of [320, 390] as const) {
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth), `${path} fits ${width} px`).toBeLessThanOrEqual(width);
       // No cell clipped: a table cell whose text is wider than the cell, or a cell or stacked row
-      // reaching past the screen, fails (the 320 px /privacy table did both before 22 Nov 2026).
-      const clipped = await page.evaluate((w) => [...document.querySelectorAll('td, th, [data-testid="basis-row"], [data-testid="transfer-row"]')]
+      // reaching past the screen, fails (the 320 px /privacy and /ccpa tables did before 22 Nov 2026).
+      const clipped = await page.evaluate((w) => [...document.querySelectorAll('td, th, [data-testid="basis-row"], [data-testid="category-row"], [data-testid="transfer-row"]')]
         .filter((el) => { const b = el.getBoundingClientRect(); return el.scrollWidth > el.clientWidth + 1 || b.left < -1 || b.right > w + 1; })
         .map((el) => (el.textContent ?? '').trim().slice(0, 60)), width);
       expect(clipped, `${path} clipped cells at ${width} px`).toEqual([]);
@@ -55,6 +55,11 @@ for (const width of [320, 390] as const) {
         // Each legal-basis row stacks: its category, purpose and basis all on screen.
         await expect(page.getByTestId('basis-row')).toHaveCount(7);
         await expect(page.getByTestId('basis-row').filter({ hasText: 'Voice clips' })).toContainText('Parental consent (Art. 6(1)(a), Art. 8)');
+      }
+      if (path === '/ccpa') {
+        // The categories stack too: each one's examples and purpose on screen.
+        await expect(page.getByTestId('category-row')).toHaveCount(3);
+        await expect(page.getByTestId('category-row').filter({ hasText: 'Identifiers' })).toContainText('Account creation and communication');
       }
       if (path === '/data-transfers') {
         // Every processor's purpose and DPA status sits on screen, not behind a sideways scroll.
