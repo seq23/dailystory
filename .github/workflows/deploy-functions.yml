@@ -419,6 +419,8 @@ jobs:
           expect_refused cost-report 403 -H "x-ops-secret: forged" -d '{"sendEmail":true}'
           expect_refused notify-data-breach 401 -d '{}'
           expect_refused lifecycle-emails 403 -H "x-lifecycle-secret: forged" -d '{"action":"status"}'
+          expect_refused prompt-studio 401 -d '{"type":"analyze","positivePrompt":"probe"}'
+          expect_refused get-cost-analytics 401 -d '{}'
           if [ -n "$failed" ]; then echo "::error::functions that serve a stranger:$failed"; exit 1; fi
 
       - name: Retired functions are removed from the project

@@ -111,7 +111,7 @@ const App = () => {
               <Route path="/terms" element={<Terms />} />
               <Route path="/prompt-testing" element={<AdminOnly><PromptTesting /></AdminOnly>} />
               <Route path="/template-testing" element={<TemplateTestingPage />} />
-              <Route path="/prompt-studio" element={<PromptStudio />} />
+              <Route path="/prompt-studio" element={<AdminOnly><PromptStudio /></AdminOnly>} />
               <Route path="/ccpa" element={<CCPA />} />
               <Route path="/accessibility" element={<Accessibility />} />
               <Route path="/gdpr" element={<GDPR />} />

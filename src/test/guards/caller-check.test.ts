@@ -26,6 +26,12 @@ import {
   handleConsentRequest,
 } from "../../../supabase/functions/verify-parental-consent/handler";
 import {
+  MAX_BATCH as PROMPT_STUDIO_MAX_BATCH,
+  type PromptStudioDeps,
+  handlePromptStudio,
+  runRequest,
+} from "../../../supabase/functions/prompt-studio/handler";
+import {
   FEEDBACK_LIMITS,
   FEEDBACK_TO,
   MAX_FEEDBACK_BODY_BYTES,
@@ -516,5 +522,106 @@ describe("traffic-alert and cost-report answer only the schedule (or an admin)",
       expect(sync).toContain(`${n}: \${{ secrets.${n} }}`);
       expect(sync.match(/for n in ([^;]+);/)?.[1].split(/\s+/)).toContain(n);
     }
+  });
+});
+
+// ───────────────────────── Admin-only paid and cost tools (coordinator's call, 23 Nov 2026) ─────────────────────────
+
+describe("prompt-studio: only an admin reaches a socket or a paid call", () => {
+  const ADMIN = USERS["token-admin"].id;
+  function studio(over: Partial<PromptStudioDeps> = {}) {
+    const upgrade = vi.fn(() => new Response(null, { status: 200 }));
+    const generate = vi.fn(async () => ({ success: true as const, imageURL: "https://img.example.test/1.webp", cost: 0.002 }));
+    const deps: PromptStudioDeps = { adminIds: [ADMIN], getUser, upgrade, generate, paidConfigured: true, ...over };
+    return { deps, upgrade, generate };
+  }
+  const ws = (query = "", headers: Record<string, string> = {}) =>
+    new Request(`https://x/functions/v1/prompt-studio${query}`, { headers: { upgrade: "websocket", ...headers } });
+  const post = (payload: unknown, headers: Record<string, string> = {}) =>
+    new Request("https://x/functions/v1/prompt-studio", { method: "POST", headers, body: JSON.stringify(payload) });
+
+  it("no token, the anon key or a forged token is 401; a signed-in parent is 403; nothing opens or spends", async () => {
+    const { deps, upgrade, generate } = studio();
+    expect((await handlePromptStudio(ws(), deps, cors)).status).toBe(401);
+    expect((await handlePromptStudio(ws(`?jwt=${ANON_KEY}`), deps, cors)).status).toBe(401);
+    expect((await handlePromptStudio(ws("?jwt=forged.jwt.value"), deps, cors)).status).toBe(401);
+    expect((await handlePromptStudio(ws("?jwt=token-parent"), deps, cors)).status).toBe(403);
+    expect((await handlePromptStudio(post({ positivePrompt: "a fox" }, { Authorization: "Bearer token-parent" }), deps, cors)).status).toBe(403);
+    expect(upgrade).not.toHaveBeenCalled();
+    expect(generate).not.toHaveBeenCalled();
+  });
+
+  it("an admin's token in ?jwt= opens the socket; in the header the POST path generates once", async () => {
+    const { deps, upgrade, generate } = studio();
+    expect((await handlePromptStudio(ws("?jwt=token-admin"), deps, cors)).status).toBe(200);
+    expect(upgrade).toHaveBeenCalledTimes(1);
+    const r = await handlePromptStudio(post({ type: "generate", positivePrompt: "a fox" }, { Authorization: "Bearer token-admin" }), deps, cors);
+    expect(r.status).toBe(200);
+    expect((await body(r)).imageURL).toBe("https://img.example.test/1.webp");
+    expect(generate).toHaveBeenCalledTimes(1);
+  });
+
+  it("an empty admin list or auth unreachable admits no one", async () => {
+    const none = studio({ adminIds: [] });
+    expect((await handlePromptStudio(ws("?jwt=token-admin"), none.deps, cors)).status).toBe(403);
+    const down = studio({ getUser: async () => { throw new Error("auth down"); } });
+    expect((await handlePromptStudio(ws("?jwt=token-admin"), down.deps, cors)).status).not.toBe(200);
+    expect(none.upgrade).not.toHaveBeenCalled();
+    expect(down.upgrade).not.toHaveBeenCalled();
+  });
+
+  it("a missing RUNWARE_API_KEY is a NAMED STOP, after the gate (a stranger learns nothing)", async () => {
+    const { deps, upgrade } = studio({ paidConfigured: false });
+    const r = await handlePromptStudio(ws("?jwt=token-admin"), deps, cors);
+    expect(r.status).toBe(503);
+    expect((await body(r)).stop).toMatch(/^NAMED STOP RUNWARE_API_KEY/);
+    expect((await handlePromptStudio(ws(), deps, cors)).status).toBe(401);
+    expect(upgrade).not.toHaveBeenCalled();
+  });
+
+  it("a batch is capped, an empty prompt spends nothing", async () => {
+    const { deps, generate } = studio();
+    const sent: unknown[] = [];
+    await runRequest({ type: "batch", positivePrompt: "a fox", batchCount: 500 }, deps, (m) => sent.push(m));
+    expect(generate).toHaveBeenCalledTimes(PROMPT_STUDIO_MAX_BATCH);
+    generate.mockClear();
+    await runRequest({ type: "generate", positivePrompt: "   " }, deps, (m) => sent.push(m));
+    expect(generate).not.toHaveBeenCalled();
+  });
+
+  it("the real entry upgrades only through the gated handler; the page sends its token and sits behind AdminOnly", () => {
+    const src = read("supabase/functions/prompt-studio/index.ts");
+    expect(src).toMatch(/Deno\.serve\(\(req\) =>\s*handlePromptStudio\(req, \{/);
+    expect(src.match(/Deno\.upgradeWebSocket\(/g)).toHaveLength(1);
+    expect(src.indexOf("Deno.upgradeWebSocket(")).toBeGreaterThan(src.indexOf("upgrade(r) {"));
+    expect(src).toContain('adminIds: adminIdsFrom(Deno.env.get("ADMIN_USER_IDS"))');
+    expect(read("src/App.tsx")).toContain('<Route path="/prompt-studio" element={<AdminOnly><PromptStudio /></AdminOnly>} />');
+    expect(read("src/components/PromptStudio.tsx")).toMatch(/functions\/v1\/prompt-studio\?jwt=\$\{encodeURIComponent\(jwt\)\}/);
+    expect(read("supabase/config.toml")).toMatch(/\[functions\.prompt-studio\]\nverify_jwt = false/);
+  });
+});
+
+describe("get-cost-analytics: admin or service key only", () => {
+  it("checks ADMIN_USER_IDS with the shared admin check before any read; no any-signed-in-user path", () => {
+    const src = read("supabase/functions/get-cost-analytics/index.ts");
+    const gate = /const (\w+) = await adminOrCronRefusal\(req, \{\s*adminIds: adminIdsFrom\(Deno\.env\.get\('ADMIN_USER_IDS'\)\),[\s\S]*?\}\);\s*if \(\1\.refused\) return \1\.refused;/.exec(src);
+    expect(gate, "get-cost-analytics must return adminOrCronRefusal's refusal").not.toBeNull();
+    for (const later of [".from(", ".rpc("]) {
+      const at = src.indexOf(later);
+      if (at >= 0) expect(at).toBeGreaterThan(gate!.index);
+    }
+    expect(src.indexOf(".from(")).toBeGreaterThan(0);
+    expect(src).not.toMatch(/authorized = !!user/);
+  });
+
+  it("the page tells a signed-in non-admin it needs admin access, not to sign in", () => {
+    const hook = read("src/hooks/useCostAnalytics.ts");
+    expect(hook).toMatch(/status === 403[^?]*\?\s*'Admin access required to see cost data\.'/);
+  });
+
+  it("the deploy probe proves strangers are refused by both on the live project", () => {
+    const wf = read(".github/workflows/deploy-functions.yml");
+    expect(wf).toMatch(/expect_refused prompt-studio 401/);
+    expect(wf).toMatch(/expect_refused get-cost-analytics 401/);
   });
 });

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,9 +93,16 @@ export function PromptStudio() {
 
   // WebSocket connection
   useEffect(() => {
-    const connectWebSocket = () => {
+    let live = true;
+    const connectWebSocket = async () => {
+      if (!live) return;
       try {
-        const ws = new WebSocket('wss://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/prompt-studio');
+        // Admin only: the function checks this session token (sent as ?jwt=, since a
+        // browser WebSocket cannot carry an Authorization header) before any paid call.
+        const { data } = await supabase.auth.getSession();
+        const jwt = data?.session?.access_token;
+        if (!jwt || !live) return;
+        const ws = new WebSocket(`wss://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/prompt-studio?jwt=${encodeURIComponent(jwt)}`);
         
         ws.onopen = () => {
           DebugLogger.log('network', 'Connected to Prompt Studio WebSocket');
@@ -142,7 +150,7 @@ export function PromptStudio() {
         ws.onclose = () => {
           DebugLogger.log('network', 'Disconnected from Prompt Studio WebSocket, reconnecting in 3s');
           setWsConnected(false);
-          setTimeout(connectWebSocket, 3000); // Reconnect after 3 seconds
+          if (live) setTimeout(connectWebSocket, 3000); // Reconnect after 3 seconds, while the page is open
         };
 
         ws.onerror = (error) => {
@@ -160,6 +168,7 @@ export function PromptStudio() {
     connectWebSocket();
 
     return () => {
+      live = false;
       if (wsRef.current) {
         wsRef.current.close();
       }
