@@ -130,7 +130,7 @@ describe("forms rule: the live feedback form is proven after every deploy that c
 
   it("runs after the deploy, on the paths that carry a submission", () => {
     expect(at).toBeGreaterThan(wf.indexOf("supabase functions deploy"));
-    expect(step).toContain("grep -qE 'send-feedback-notification/|FeedbackForm\\.tsx|_shared/callerCheck\\.ts|\\.github/workflows/deploy-functions\\.yml'");
+    expect(step).toContain("grep -qE 'send-feedback-notification/|FeedbackForm\\.tsx|_shared/callerCheck\\.ts|_shared/(serve|allowedOrigin)\\.ts|\\.github/workflows/deploy-functions\\.yml'");
   });
 
   it("reads the service key the way tts-usage-report already proves, never the CLI's missing -o flag", () => {

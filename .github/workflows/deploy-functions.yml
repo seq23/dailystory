@@ -459,7 +459,7 @@ jobs:
           else
             changed=""
           fi
-          if ! printf '%s\n' "$changed" | grep -qE 'send-feedback-notification/|FeedbackForm\.tsx|_shared/callerCheck\.ts|\.github/workflows/deploy-functions\.yml'; then
+          if ! printf '%s\n' "$changed" | grep -qE 'send-feedback-notification/|FeedbackForm\.tsx|_shared/callerCheck\.ts|_shared/(serve|allowedOrigin)\.ts|\.github/workflows/deploy-functions\.yml'; then
             echo "feedback path unchanged: no TEST submission"; exit 0
           fi
           BASE="https://cpzeuogomaixamrtnnmj.supabase.co"
