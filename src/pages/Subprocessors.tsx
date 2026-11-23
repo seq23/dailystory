@@ -222,7 +222,7 @@ const Subprocessors = () => {
               <p className="text-sm text-muted-foreground mb-4" data-testid={`tier-answer-${tier}`}>{tierAnswer(tierProcessors)}</p>
               <div className="grid gap-4">
                 {tierProcessors.map((sp) => (
-                  <Card key={sp.name} className="min-w-0 [overflow-wrap:anywhere]">
+                  <Card key={sp.name} className="min-w-0">
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <CardTitle className="text-base">{sp.name}</CardTitle>
@@ -232,7 +232,7 @@ const Subprocessors = () => {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="[overflow-wrap:anywhere]">
                       <div className="grid gap-2 text-sm">
                         <div>
                           <span className="font-medium">Purpose:</span>{" "}
