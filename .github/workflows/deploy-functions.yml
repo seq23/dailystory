@@ -436,28 +436,42 @@ jobs:
           # refuses an address it cannot deliver to at once (403), so 200 means accepted for the
           # owner's inbox. The signed-in one is form-check@example.test, a reserved-domain test
           # account that lifecycle mail never writes to; its session comes from an admin magic
-          # link (no email is sent for it). Guard: src/test/guards/caller-check.test.ts.
+          # link (no email is sent for it), and it is deleted again when the step ends, pass or
+          # fail, so it never counts as a user. The functions are already live when this runs, so
+          # every failure says so. Guard: src/test/guards/caller-check.test.ts.
+          LIVE="functions from ${GITHUB_SHA:0:8} are already live in production; only this post-deploy check failed"
+          die() { echo "::error::$1 ($LIVE)"; exit 1; }
           if [ "$EVENT" = "push" ] && [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
-            changed=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$GITHUB_SHA" --jq '.files[].filename') || { echo "::error::could not list this push's files"; exit 1; }
+            changed=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$GITHUB_SHA" --jq '.files[].filename') || die "could not list this push's files"
           elif [ "$TARGET" = "send-feedback-notification" ]; then
             changed="supabase/functions/send-feedback-notification/"
           else
             changed=""
           fi
-          if ! printf '%s\n' "$changed" | grep -qE 'send-feedback-notification/|FeedbackForm\.tsx|_shared/callerCheck\.ts'; then
+          if ! printf '%s\n' "$changed" | grep -qE 'send-feedback-notification/|FeedbackForm\.tsx|_shared/callerCheck\.ts|\.github/workflows/deploy-functions\.yml'; then
             echo "feedback path unchanged: no TEST submission"; exit 0
           fi
           BASE="https://cpzeuogomaixamrtnnmj.supabase.co"
           SERVICE_KEY=$(supabase projects api-keys --project-ref "$SUPABASE_PROJECT_ID" -o json | jq -r '.[] | select(.name=="service_role") | .api_key')
-          [ -n "$SERVICE_KEY" ] && [ "$SERVICE_KEY" != "null" ] || { echo "::error::NAMED STOP: the service key could not be read"; exit 1; }
+          [ -n "$SERVICE_KEY" ] && [ "$SERVICE_KEY" != "null" ] || die "NAMED STOP: the service key could not be read"
           echo "::add-mask::$SERVICE_KEY"
           admin() { curl -s --max-time 30 -H "apikey: $SERVICE_KEY" -H "Authorization: Bearer $SERVICE_KEY" -H "Content-Type: application/json" "$@"; }
           admin -o /dev/null -X POST "$BASE/auth/v1/admin/users" -d '{"email":"form-check@example.test","email_confirm":true,"user_metadata":{"test_account":true}}'
-          hash=$(admin -X POST "$BASE/auth/v1/admin/generate_link" -d '{"type":"magiclink","email":"form-check@example.test"}' | jq -r '.hashed_token // .properties.hashed_token // empty')
-          [ -n "$hash" ] || { echo "::error::no magic link for the test account"; exit 1; }
+          link=$(admin -X POST "$BASE/auth/v1/admin/generate_link" -d '{"type":"magiclink","email":"form-check@example.test"}')
+          hash=$(printf '%s' "$link" | jq -r '.hashed_token // .properties.hashed_token // empty')
+          uid=$(printf '%s' "$link" | jq -r '.id // .user.id // empty')
+          [ -n "$uid" ] || die "the test account form-check@example.test could not be found or created"
+          remove_test_account() {
+            local rc=$? code
+            code=$(admin -o /dev/null -w "%{http_code}" -X DELETE "$BASE/auth/v1/admin/users/$uid" || echo 000)
+            if [ "$code" = "200" ]; then echo "test account removed"; else echo "::error::the test account form-check@example.test was not deleted (HTTP $code), so it counts as a user ($LIVE)"; rc=1; fi
+            exit "$rc"
+          }
+          trap remove_test_account EXIT
+          [ -n "$hash" ] || die "no magic link for the test account"
           TOKEN=$(curl -s --max-time 30 -X POST "$BASE/auth/v1/verify" -H "apikey: $SUPABASE_ANON_KEY" -H "Content-Type: application/json" \
             -d "{\"type\":\"magiclink\",\"token_hash\":\"$hash\"}" | jq -r '.access_token // empty')
-          [ -n "$TOKEN" ] || { echo "::error::no session for the test account"; exit 1; }
+          [ -n "$TOKEN" ] || die "no session for the test account"
           echo "::add-mask::$TOKEN"
           failed=""
           submit() { # label bearer
@@ -469,7 +483,7 @@ jobs:
           }
           submit "signed out" "$SUPABASE_ANON_KEY"
           submit "signed in" "$TOKEN"
-          if [ -n "$failed" ]; then echo "::error::the feedback form does not deliver:$failed"; exit 1; fi
+          if [ -n "$failed" ]; then die "the feedback form does not deliver:$failed"; fi
 
       - name: Retired functions are removed from the project
         run: |

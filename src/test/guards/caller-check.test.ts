@@ -130,7 +130,27 @@ describe("forms rule: the live feedback form is proven after every deploy that c
 
   it("runs after the deploy, on the paths that carry a submission", () => {
     expect(at).toBeGreaterThan(wf.indexOf("supabase functions deploy"));
-    expect(step).toContain("grep -qE 'send-feedback-notification/|FeedbackForm\\.tsx|_shared/callerCheck\\.ts'");
+    expect(step).toContain("grep -qE 'send-feedback-notification/|FeedbackForm\\.tsx|_shared/callerCheck\\.ts|\\.github/workflows/deploy-functions\\.yml'");
+  });
+
+  it("deletes the test account when the step ends, pass or fail, and fails if it cannot", () => {
+    const trap = step.indexOf("trap remove_test_account EXIT");
+    expect(trap).toBeGreaterThan(step.indexOf('uid=$(printf \'%s\' "$link" | jq -r \'.id // .user.id // empty\')'));
+    expect(trap).toBeLessThan(step.indexOf('submit "signed out"'));
+    const fn = step.slice(step.indexOf("remove_test_account() {"), trap);
+    expect(fn).toContain('-X DELETE "$BASE/auth/v1/admin/users/$uid"');
+    expect(fn).toMatch(/if \[ "\$code" = "200" \]; then .*; else .*rc=1; fi/);
+    expect(fn).toContain('exit "$rc"');
+  });
+
+  it("every failure after the deploy says the functions are already live", () => {
+    expect(step).toMatch(/LIVE="functions from \$\{GITHUB_SHA:0:8\} are already live in production; only this post-deploy check failed"/);
+    expect(step).toContain('die() { echo "::error::$1 ($LIVE)"; exit 1; }');
+    const errors = step.split("\n").filter((l) => l.includes("::error::"));
+    expect(errors.length).toBeGreaterThanOrEqual(3);
+    // Each ::error either names the live state itself or is a per-submission line that feeds die.
+    expect(errors.filter((l) => !l.includes("$LIVE") && !l.includes('failed="$failed $1"'))).toEqual([]);
+    expect(step.split("\n").filter((l) => /\bexit 1\b/.test(l) && !l.includes("die()"))).toEqual([]);
   });
 
   it("submits once signed out and once signed in, marked TEST, and fails the deploy unless both are accepted", () => {
@@ -138,7 +158,7 @@ describe("forms rule: the live feedback form is proven after every deploy that c
     expect(step).toContain('submit "signed in" "$TOKEN"');
     expect(step).toContain("TEST: automated check after deploy");
     expect(step).toMatch(/\[ "\$code" = "200" \] && \[ "\$\(jq -r '\.success' \/tmp\/fb\.json\)" = "true" \]/);
-    expect(step).toMatch(/if \[ -n "\$failed" \]; then .*exit 1; fi/);
+    expect(step).toMatch(/if \[ -n "\$failed" \]; then die "the feedback form does not deliver:\$failed"; fi/);
     // The signed-in account is a reserved-domain test account; no real address is ever used.
     expect(step.match(/[\w.+-]+@[a-z][\w-]*\.[a-z]+/gi)?.every((a) => a.endsWith(".test"))).toBe(true);
   });
