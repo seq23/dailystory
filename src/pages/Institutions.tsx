@@ -101,7 +101,7 @@ function StudentDetail({
       </p>
       <p>
         From the app: {count(app.stories, "story", "stories")} completed · {app.minutes}{" "}
-        {uiText("minutes")} · {count(app.wordsRead, "word", "words")} read
+        {uiText("minutes")} · {count(app.wordsRead, "word read", "words read")}
         {linked ? "" : " · No app profile linked"}
       </p>
       <h3>Growth from teacher-recorded assessments</h3>
