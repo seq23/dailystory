@@ -88,6 +88,8 @@ echo 'Incident notice claims, retries, access and reapplication checks passed.'
 # the production migration itself, so the "before" state is the real one, not a hand copy.
 metrics_base=supabase/migrations/20250805053503_4e55a0e6-bee1-4150-99ee-46da857a037f.sql
 metrics_migration="${METRICS_MIGRATION:-supabase/migrations/20261123190000_performance_metrics_no_public_insert.sql}"
+# Production has no performance_metrics table: the migration must apply there as a no-op.
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$metrics_migration"
 sed -n '/^CREATE TABLE IF NOT EXISTS public.performance_metrics/,/^WITH CHECK (true);/p' "$metrics_base" \
   | docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q
 # Before the change a stranger CAN insert: proves the test below would see the hole.
