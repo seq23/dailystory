@@ -6,6 +6,7 @@ import {
   installLogRedaction,
   isNameOf,
   namesInBody,
+  privacyForRequest,
   redactNames,
   resolvePrivacy,
   withPrivacy,
@@ -45,6 +46,17 @@ describe("which names a request carries", () => {
     const p = await resolvePrivacy(`Bearer ${userJwt}`, { readerNames: ["Ada"] }, deps(new Error("db down")));
     expect(p.lane).toBe("school");
     expect(p.names.map((n) => n.name)).toEqual(["Ada"]);
+  });
+
+  it("with no database client, a signed-in or child request goes the school way; a guest stays family", async () => {
+    // No SUPABASE_URL / service key here (no Deno env), so the production deps cannot be built.
+    const req = (auth?: string) => new Request("https://x.test/f", { method: "POST", headers: auth ? { Authorization: auth } : {} });
+    const signedIn = await privacyForRequest(req(`Bearer ${userJwt}`), { readerNames: ["Ada"] });
+    expect(signedIn).toEqual({ lane: "school", names: [{ name: "Ada" }] });
+    const child = await privacyForRequest(req(), { childProfileId: "6f1c2b3a-1d2e-4f5a-8b9c-0d1e2f3a4b5c" });
+    expect(child.lane).toBe("school");
+    const guest = await privacyForRequest(req(), { readerNames: ["Ada"] });
+    expect(guest).toEqual({ lane: "family", names: [{ name: "Ada" }] });
   });
 
   it("a tapped word is a name when it is a whole name or one part of one", () => {
