@@ -2,11 +2,10 @@
 // This function ONLY reads from the subscribers table cache
 // Stripe sync happens in background via sync-subscription-status function
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 

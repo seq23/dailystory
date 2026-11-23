@@ -1,11 +1,11 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
+import { clientIp } from "../_shared/paidCallGuard.ts";
 
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Max-Age': '600',
@@ -25,10 +25,7 @@ interface AuthenticatedUser {
 
 // Helper function to get client IP
 function getClientIP(req: Request): string {
-  return req.headers.get('x-forwarded-for') || 
-         req.headers.get('x-real-ip') || 
-         req.headers.get('cf-connecting-ip') || 
-         'unknown';
+  return clientIp(req);
 }
 
 // Helper function to validate JWT and get user

@@ -1,9 +1,8 @@
 // Security Dashboard - Admin only access
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Max-Age": "600",
   "Vary": "Origin, Access-Control-Request-Headers",

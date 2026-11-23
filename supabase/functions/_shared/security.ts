@@ -5,6 +5,7 @@
  */
 
 import { memoizedImport, createVendorFirstSupabaseClient } from '../_shared/resilientLoader.js';
+import { clientIp } from './paidCallGuard.ts';
 
 // Enhanced CORS headers with security policies
 export const secureHeaders = {
@@ -168,9 +169,7 @@ export class SecurityMiddleware {
    * Get client IP address
    */
   getClientIP(req: Request): string {
-    return req.headers.get('x-forwarded-for') || 
-           req.headers.get('x-real-ip') || 
-           'unknown';
+    return clientIp(req);
   }
 
   /**

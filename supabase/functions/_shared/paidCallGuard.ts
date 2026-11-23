@@ -104,10 +104,22 @@ function json(status: number, body: Record<string, unknown>, extra: Record<strin
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...extra } });
 }
 
+// The caller's address for per-address limits and records (d10 audit, 23 Nov 2026). Cloudflare
+// fronts the project (responses carry cf-ray) and writes cf-connecting-ip itself, replacing any
+// value the caller sent, so it is read first. The first X-Forwarded-For hop is whatever the
+// caller typed: a forged one per request used to open a fresh guest-pass, feedback and consent
+// bucket each time. It is only the fallback, for a request that reaches us without Cloudflare.
 export function clientIp(req: Request): string {
+  const cf = (req.headers.get("cf-connecting-ip") ?? "").trim();
+  if (cf) return cf;
   const fwd = req.headers.get("x-forwarded-for");
   if (fwd) return (fwd.split(",")[0] ?? "").trim() || "unknown";
-  return req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "unknown";
+  return req.headers.get("x-real-ip")?.trim() || "unknown";
+}
+
+export function clientIpOrNull(req: Request): string | null {
+  const ip = clientIp(req);
+  return ip === "unknown" ? null : ip;
 }
 
 function bearer(req: Request): string {

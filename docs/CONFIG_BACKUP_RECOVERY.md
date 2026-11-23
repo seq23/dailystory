@@ -107,7 +107,6 @@ git checkout <commit-hash> -- supabase/config.toml
 **AI & Content Generation:**
 - ai-visual-scene-creator
 - background-image-pregeneration
-- clear-character-cache
 - correct-spelling
 - generate-adaptive-story
 - generate-fallback-images
@@ -132,7 +131,6 @@ git checkout <commit-hash> -- supabase/config.toml
 
 **System & Debug:**
 - get-cost-analytics
-- get-monitoring-data
 - model-performance-monitor
 - system-diagnostics
 - unified-debug-service

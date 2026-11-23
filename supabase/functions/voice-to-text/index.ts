@@ -1,5 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logCost } from "../_shared/costLogger.ts";
 import { guardCallWithCors } from "../_shared/paidCallGuardDeno.ts";
@@ -12,7 +12,6 @@ import { handleVoiceToText } from "../_shared/voiceToText.ts";
 
 // The handler and its tests: ../_shared/voiceToText.ts. This file wires the live parts.
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-t2r-guest",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS, HEAD",
   "Access-Control-Max-Age": "600",

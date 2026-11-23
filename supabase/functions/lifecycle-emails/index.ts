@@ -6,7 +6,7 @@
 // POST {"action":"pause"}   kill switch on: nothing is sent until resumed
 // POST {"action":"resume"}  kill switch off
 // POST {"action":"status"}  paused?, mailing address present?, sent counts
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4?target=deno";
 import { runLifecycleSweep } from "../_shared/lifecycleEmail/core.ts";
 import { lifecycleDeps } from "../_shared/lifecycleEmail/deps.ts";

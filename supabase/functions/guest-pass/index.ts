@@ -3,12 +3,11 @@
 // anon key alone being enough. Each pass is rate limited on its own and per IP
 // (supabase/functions/_shared/paidCallGuard.ts); this function limits how many passes
 // one IP can take. The app fetches and caches it: src/lib/guestPass.ts.
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { PAID_CALL_LIMITS, clientIp, issueGuestPass, sha256Short } from "../_shared/paidCallGuard.ts";
 import { paidCallDeps } from "../_shared/paidCallGuardDeno.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };

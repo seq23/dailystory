@@ -6,7 +6,10 @@ name: Supabase keep-alive
 # they can be edited or switched off; this one exists for the single purpose of staying awake and
 # fails loudly, with an issue, the day the project stops answering.
 #
-# Two requests: auth health (the gateway) and the cache-health function (runs inside the project).
+# Two requests: auth health (the gateway, expects 200) and image-proxy with no url (runs inside the
+# project, expects its own 400 "Missing url parameter": proof the function runtime answered, with no
+# fetch and no cost). cache-health was the second request until it was retired on 23 Nov 2026 (it
+# answered anyone with cache internals). Guard: src/test/guards/caller-check.test.ts.
 # The anon key is the public client key; it lives in the SUPABASE_ANON_KEY repo secret.
 
 on:
@@ -32,19 +35,22 @@ jobs:
       PROJECT_URL: https://cpzeuogomaixamrtnnmj.supabase.co
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
     steps:
-      - name: Auth health and cache-health function
+      - name: Auth health and the image-proxy function
         shell: bash
         run: |
           set -Eeuo pipefail
           if [ -z "${SUPABASE_ANON_KEY}" ]; then echo "SUPABASE_ANON_KEY secret is not set"; exit 1; fi
           fail=0
-          for path in auth/v1/health functions/v1/cache-health; do
-            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+          probe() { # path expected-code expected-body ("" = any)
+            code=$(curl -sS -o /tmp/ka.txt -w '%{http_code}' --max-time 30 \
               -H "apikey: ${SUPABASE_ANON_KEY}" -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-              "${PROJECT_URL}/${path}" || echo 000)
-            echo "${path} -> ${code}"
-            [ "${code}" = "200" ] || fail=1
-          done
+              "${PROJECT_URL}/$1" || echo 000)
+            echo "$1 -> ${code}"
+            [ "${code}" = "$2" ] || fail=1
+            if [ -n "$3" ] && [ "$(cat /tmp/ka.txt 2>/dev/null)" != "$3" ]; then echo "$1: unexpected body"; fail=1; fi
+          }
+          probe auth/v1/health 200 ""
+          probe functions/v1/image-proxy 400 "Missing url parameter"
           exit ${fail}
       - name: Open an issue if the project did not answer
         if: failure()
@@ -53,5 +59,5 @@ jobs:
         run: |
           gh issue create -R "${GITHUB_REPOSITORY}" \
             --title "Supabase project did not answer the keep-alive ($(date -u +%F))" \
-            --body "The daily keep-alive got a non-200 from the Supabase project. If the project is paused, restore it at https://supabase.com/dashboard/project/cpzeuogomaixamrtnnmj and re-run this workflow. If the key was rotated, update the SUPABASE_ANON_KEY repo secret. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --body "The daily keep-alive got an unexpected answer from the Supabase project. If the project is paused, restore it at https://supabase.com/dashboard/project/cpzeuogomaixamrtnnmj and re-run this workflow. If the key was rotated, update the SUPABASE_ANON_KEY repo secret. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
             || true

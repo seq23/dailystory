@@ -40,7 +40,6 @@
 
 // Story Session Cache - Persistent storage for story content across navigation
 import { DifficultyLevel } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
 
 interface CachedStorySession {
@@ -352,15 +351,6 @@ export class StorySessionCache {
         DebugLogger.warn('story', 'Failed to clear character state', error);
       }
 
-      // Clear character consistency cache through backend
-      try {
-        await supabase.functions.invoke('get-monitoring-data', {
-          body: { action: 'cleanup', userId }
-        });
-        DebugLogger.log('story', `Cleared character consistency cache for user: ${userId}`);
-      } catch (error) {
-        DebugLogger.warn('story', 'Failed to clear character consistency cache', error);
-      }
     }
     
     // Comprehensive cache clearing for cross-session contamination prevention

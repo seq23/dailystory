@@ -5,14 +5,13 @@
 // NEVER DELETE: Keep as fallback until user confirms Runware system is stable
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 import { logCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Max-Age': '600',
   'Vary': 'Origin, Access-Control-Request-Headers',

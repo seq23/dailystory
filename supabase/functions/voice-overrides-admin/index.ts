@@ -4,7 +4,7 @@
 // POST { action: "list" }                              → all overrides
 // POST { action: "upsert", language_code, voice_id, display_name?, accent_note?, model_id? }
 // POST { action: "delete", language_code }
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { adminIdsFrom, adminOrCronRefusal } from "../_shared/callerCheck.ts";
 
@@ -56,7 +56,6 @@ function pickBestEnglishVoice(candidates: any[]): any | null {
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Vary': 'Origin, Access-Control-Request-Headers',

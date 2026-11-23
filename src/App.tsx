@@ -110,7 +110,7 @@ const App = () => {
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/prompt-testing" element={<AdminOnly><PromptTesting /></AdminOnly>} />
-              <Route path="/template-testing" element={<TemplateTestingPage />} />
+              <Route path="/template-testing" element={<AdminOnly><TemplateTestingPage /></AdminOnly>} />
               <Route path="/prompt-studio" element={<AdminOnly><PromptStudio /></AdminOnly>} />
               <Route path="/ccpa" element={<CCPA />} />
               <Route path="/accessibility" element={<Accessibility />} />
@@ -123,7 +123,7 @@ const App = () => {
               <Route path="/success" element={<PaymentSuccess />} />
               <Route path="/cancel" element={<PaymentCancel />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
-              <Route path="/admin/voices" element={<VoiceAdmin />} />
+              <Route path="/admin/voices" element={<AdminOnly><VoiceAdmin /></AdminOnly>} />
               <Route path="/amazon" element={<BookCompanionIndex />} />
               {COMPANION_BOOKS.map((b) => (
                 <Route key={b.slug} path={`/amazon/${b.slug}`} element={<BookCompanion slug={b.slug} />} />

@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynamicCorsOptionsResponse } from "../_shared/corsAdvanced.js";
 import { EdgeErrorHandler } from "../_shared/errorHandling.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";

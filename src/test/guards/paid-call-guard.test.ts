@@ -14,6 +14,8 @@ import {
   PAID_CALL_LIMITS,
   type PaidCallDeps,
   chargePaidCall,
+  clientIp,
+  clientIpOrNull,
   guardPaidCall,
   identifyPaidCaller,
   issueGuestPass,
@@ -415,5 +417,43 @@ describe("the app sends a guest pass only when signed out", () => {
     expect(calls.map((c) => c.url)).toEqual([URL_TTS]);
     expect(calls[0].headers.get("Authorization")).toBe(`Bearer ${USER_TOKEN}`);
     expect(calls[0].headers.get(GUEST_PASS_HEADER)).toBeNull();
+  });
+});
+
+describe("the caller's address cannot be chosen by the caller (d10 audit)", () => {
+  const r = (h: Record<string, string>) => new Request("https://example.test/f", { headers: h });
+
+  it("Cloudflare's cf-connecting-ip wins over a forged X-Forwarded-For", () => {
+    expect(clientIp(r({ "cf-connecting-ip": "198.51.100.9", "x-forwarded-for": "203.0.113.1, 10.0.0.1" }))).toBe("198.51.100.9");
+    expect(clientIp(r({ "cf-connecting-ip": " 198.51.100.9 ", "x-real-ip": "203.0.113.2" }))).toBe("198.51.100.9");
+  });
+
+  it("a new forged X-Forwarded-For per request does not open a new bucket while Cloudflare names the caller", () => {
+    const seen = new Set(["203.0.113.1", "203.0.113.2", "203.0.113.3"].map((f) => clientIp(r({ "cf-connecting-ip": "198.51.100.9", "x-forwarded-for": f }))));
+    expect([...seen]).toEqual(["198.51.100.9"]);
+  });
+
+  it("without Cloudflare it falls back to the first forwarded hop, then x-real-ip, then unknown", () => {
+    expect(clientIp(r({ "x-forwarded-for": "203.0.113.1, 10.0.0.1" }))).toBe("203.0.113.1");
+    expect(clientIp(r({ "cf-connecting-ip": "  ", "x-forwarded-for": "203.0.113.1" }))).toBe("203.0.113.1");
+    expect(clientIp(r({ "x-real-ip": "203.0.113.2" }))).toBe("203.0.113.2");
+    expect(clientIp(r({}))).toBe("unknown");
+    expect(clientIpOrNull(r({}))).toBeNull();
+    expect(clientIpOrNull(r({ "cf-connecting-ip": "198.51.100.9" }))).toBe("198.51.100.9");
+  });
+
+  it("every function that limits or records by address reads it through clientIp, never a raw header", () => {
+    const raw: string[] = [];
+    const fnRoot = join(root, "supabase/functions");
+    for (const d of readdirSync(fnRoot, { withFileTypes: true }).filter((e) => e.isDirectory())) {
+      for (const f of readdirSync(join(fnRoot, d.name), { recursive: true }) as string[]) {
+        const rel = `${d.name}/${f}`;
+        if (!/\.(ts|js)$/.test(f) || rel === "_shared/paidCallGuard.ts") continue;
+        // corsAdvanced only lists header names it allows.
+        if (["_shared/corsAdvanced.js", "_shared/corsAdvanced.ts"].includes(rel)) continue;
+        if (/headers\.get\(\s*['"](x-forwarded-for|x-real-ip|cf-connecting-ip)['"]/i.test(readFileSync(join(fnRoot, rel), "utf8"))) raw.push(rel);
+      }
+    }
+    expect(raw).toEqual([]);
   });
 });

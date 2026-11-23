@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
@@ -6,7 +6,6 @@ import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 // Inline CORS helpers to avoid external dependencies
 function createCorsResponse(data: any, status = 200): Response {
   const headers = { 
-    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Content-Type': 'application/json' 
@@ -29,7 +28,6 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Max-Age': '600',

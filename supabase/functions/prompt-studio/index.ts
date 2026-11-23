@@ -2,9 +2,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4?target=deno";
 import { adminIdsFrom } from "../_shared/callerCheck.ts";
 import { handlePromptStudio, runRequest, type GenerateParams, type GenerateResult } from "./handler.ts";
+import { serve } from "../_shared/serve.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 const runwareKey = Deno.env.get("RUNWARE_API_KEY") ?? "";
@@ -53,7 +53,7 @@ const db = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABA
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-Deno.serve((req) =>
+serve((req) =>
   handlePromptStudio(req, {
     adminIds: adminIdsFrom(Deno.env.get("ADMIN_USER_IDS")),
     async getUser(token) {

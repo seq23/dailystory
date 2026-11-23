@@ -130,7 +130,7 @@ describe("forms rule: the live feedback form is proven after every deploy that c
 
   it("runs after the deploy, on the paths that carry a submission", () => {
     expect(at).toBeGreaterThan(wf.indexOf("supabase functions deploy"));
-    expect(step).toContain("grep -qE 'send-feedback-notification/|FeedbackForm\\.tsx|_shared/callerCheck\\.ts|\\.github/workflows/deploy-functions\\.yml'");
+    expect(step).toContain("grep -qE 'send-feedback-notification/|FeedbackForm\\.tsx|_shared/callerCheck\\.ts|_shared/(serve|allowedOrigin)\\.ts|\\.github/workflows/deploy-functions\\.yml'");
   });
 
   it("reads the service key the way tts-usage-report already proves, never the CLI's missing -o flag", () => {
@@ -175,6 +175,11 @@ describe("retired functions leave the project, not only the repo", () => {
     "send-custom-auth-email", "notification-service", "send-coppa-notification", "send-parental-notification",
     "ai-visual-scene-creator", "runware-template-ab", "runware-template-cd",
     "openai-tts", "openai-realtime", // removed in #182; the live copies do not mask children's names
+    // d10 audit (23 Nov 2026): open to anyone, no caller in the app. clear-character-cache deleted
+    // any session's character cache rows given its id (service key, no caller check); cache-health
+    // answered anyone with cache internals and let them clear the import cache; get-monitoring-data
+    // and vendor-first-selftest answered anyone with internals.
+    "vendor-first-selftest", "cache-health", "get-monitoring-data", "clear-character-cache",
   ];
   const wf = read(".github/workflows/deploy-functions.yml");
   const listed = (wf.match(/RETIRED="([^"]+)"/)?.[1] ?? "").split(/\s+/).filter(Boolean);
@@ -197,8 +202,26 @@ describe("retired functions leave the project, not only the repo", () => {
     const app = readdirSync(join(root, "src"), { recursive: true }) as string[];
     const callers = app
       .filter((p) => /\.(ts|tsx)$/.test(p) && !p.includes("test"))
-      .filter((p) => RETIRED.some((f) => readFileSync(join(root, "src", p), "utf8").includes(`"${f}"`) || readFileSync(join(root, "src", p), "utf8").includes(`'${f}'`)));
+      // Any mention counts: a quoted name, or the name inside a full functions/v1 URL (the app
+      // called clear-character-cache by URL, which a quoted-name check missed).
+      .filter((p) => RETIRED.some((f) => {
+        const src = readFileSync(join(root, "src", p), "utf8");
+        return src.includes(`"${f}"`) || src.includes(`'${f}'`) || src.includes(`functions/v1/${f}`);
+      }));
     expect(callers).toEqual([]);
+  });
+
+  it("no config block, keep-alive probe or shared module is left behind for a retired function", () => {
+    const toml = read("supabase/config.toml");
+    for (const f of RETIRED) expect(toml, f).not.toContain(`[functions.${f}]`);
+    // The keep-alive used to call cache-health; it now proves the runtime answers through
+    // image-proxy's own 400, and a 404 (gone) or 200 (some other answer) fails it.
+    const ka = read(".github/workflows/supabase-keep-alive.yml");
+    for (const f of RETIRED) expect(ka, f).not.toContain(`functions/v1/${f}`);
+    expect(ka).toContain('probe functions/v1/image-proxy 400 "Missing url parameter"');
+    expect(ka).toContain('[ "${code}" = "$2" ] || fail=1');
+    expect(ka).toContain("exit ${fail}");
+    expect(existsSync(join(fnRoot, "_shared", "CacheCoordinator.ts"))).toBe(false);
   });
 
   it("the post-deploy check calls each mailer as a stranger and must be refused", () => {
@@ -716,7 +739,10 @@ describe("prompt-studio: only an admin reaches a socket or a paid call", () => {
 
   it("the real entry upgrades only through the gated handler; the page sends its token and sits behind AdminOnly", () => {
     const src = read("supabase/functions/prompt-studio/index.ts");
-    expect(src).toMatch(/Deno\.serve\(\(req\) =>\s*handlePromptStudio\(req, \{/);
+    // serve is _shared/serve.ts (Deno.serve through the allowed-origin rewrite, which passes a 101
+    // upgrade through untouched); src/test/guards/allowed-origin.test.ts pins that.
+    expect(src).toMatch(/^serve\(\(req\) =>\s*handlePromptStudio\(req, \{/m);
+    expect(src).toContain('import { serve } from "../_shared/serve.ts";');
     expect(src.match(/Deno\.upgradeWebSocket\(/g)).toHaveLength(1);
     expect(src.indexOf("Deno.upgradeWebSocket(")).toBeGreaterThan(src.indexOf("upgrade(r) {"));
     expect(src).toContain('adminIds: adminIdsFrom(Deno.env.get("ADMIN_USER_IDS"))');

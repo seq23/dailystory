@@ -7,9 +7,9 @@ import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { paidCallRefusal, adminUserIds, readJsonBeforeGuard } from "../_shared/paidCallGuardDeno.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "../_shared/serve.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-t2r-guest',
   'Access-Control-Max-Age': '600',
   'Vary': 'Origin, Access-Control-Request-Headers',
@@ -161,7 +161,7 @@ const handleRequest = async (req: Request): Promise<Response> => {
 
 // School children's text only on no-training/no-retention routes (../_shared/privacyLane.ts):
 // every model call in the handler inherits the lane decided here from the signed-in account.
-Deno.serve(async (req: Request) => {
+serve(async (req: Request) => {
   if (req.method !== "POST") return handleRequest(req);
   // Read under the paid-call byte cap (../_shared/paidCallGuard.ts); not JSON → null, and the handler answers it.
   const { body: laneBody, refused } = await readJsonBeforeGuard(req, corsHeaders);

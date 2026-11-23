@@ -8,7 +8,7 @@
 // (../_shared/quiz.ts), and a quiz written from the story text itself when no model
 // gives a usable one. A child always gets a quiz; the answer says where it came from.
 // Guard: src/test/guards/story-quiz.test.ts.
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
 import { privacyLaneForRequest } from "../_shared/privacyLane.ts";
 import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
@@ -23,7 +23,6 @@ import {
 } from "../_shared/quiz.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-t2r-guest",
 };
 const json = (body: unknown, status = 200) =>
