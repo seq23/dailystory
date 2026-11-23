@@ -339,6 +339,15 @@ export default function Institutions() {
   );
   const ids = new Set(enrollments.map((e) => e.student_id));
   const students = workspace.students.filter((s) => ids.has(s.id));
+  // One list names the class-list columns: the header row, and each cell's label on a phone card.
+  const studentCols = [
+    uiText("School grade"),
+    uiText("Reads at"),
+    uiText("Stories"),
+    uiText("Minutes"),
+    "App stories",
+    "App minutes",
+  ];
   const classIds = new Set(
     classes
       .filter((c) => !selectedClass || c.id === selectedClass.id)
@@ -707,22 +716,21 @@ export default function Institutions() {
                   </p>
                 ) : (
                   <div className="school-table">
-                    <table>
+                    {/* Seven columns clip at 320 and 390 px, so on a phone each student is a card
+                        (.stack-on-phone in index.css; e2e/tables-phone.spec.ts). */}
+                    <table className="stack-on-phone" role="table">
                       <caption>
                         Select a student for dated reading and skill history
                       </caption>
-                      <thead>
-                        <tr>
-                          <th>Student</th>
-                          <th>{uiText("School grade")}</th>
-                          <th>{uiText("Reads at")}</th>
-                          <th>{uiText("Stories")}</th>
-                          <th>{uiText("Minutes")}</th>
-                          <th>App stories</th>
-                          <th>App minutes</th>
+                      <thead role="rowgroup">
+                        <tr role="row">
+                          <th role="columnheader">Student</th>
+                          {studentCols.map((c) => (
+                            <th key={c} role="columnheader">{c}</th>
+                          ))}
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody role="rowgroup">
                         {students.map((s) => {
                           const r = studentReport(
                             s,
@@ -738,8 +746,8 @@ export default function Institutions() {
                             "app",
                           );
                           return (
-                            <tr key={s.id}>
-                              <td>
+                            <tr key={s.id} role="row">
+                              <td role="cell">
                                 <button
                                   className="school-student"
                                   onClick={() => setStudentId(s.id)}
@@ -747,12 +755,18 @@ export default function Institutions() {
                                   {s.display_name}
                                 </button>
                               </td>
-                              <td>{gradeLabel(r.schoolGrade)}</td>
-                              <td>{gradeLabel(r.readingGrade)}</td>
-                              <td>{r.stories}</td>
-                              <td>{r.minutes}</td>
-                              <td>{a.stories}</td>
-                              <td>{a.minutes}</td>
+                              {[
+                                gradeLabel(r.schoolGrade),
+                                gradeLabel(r.readingGrade),
+                                r.stories,
+                                r.minutes,
+                                a.stories,
+                                a.minutes,
+                              ].map((v, i) => (
+                                <td key={studentCols[i]} role="cell" data-label={studentCols[i]}>
+                                  {v}
+                                </td>
+                              ))}
                             </tr>
                           );
                         })}
