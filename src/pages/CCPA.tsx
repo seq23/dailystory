@@ -182,8 +182,10 @@ const CCPA = () => {
           </p>
           <p>
             While we do not sell personal information, we may share data with service providers who help
-            us operate our services (such as cloud hosting, payment processing, and email delivery). These
-            providers are contractually bound to use your information only for the purposes we specify.
+            us operate our services (such as cloud hosting, payment processing, email delivery and the AI
+            features). Most have signed or accepted a data processing agreement that limits them to the
+            purposes we specify; for a few it is still in progress. Each provider and its status is on
+            our <Link to="/subprocessors">Subprocessors page</Link>.
           </p>
 
           <h2>How to Exercise Your Rights</h2>

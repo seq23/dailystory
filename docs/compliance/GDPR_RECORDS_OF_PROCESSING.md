@@ -68,14 +68,14 @@
 | Field | Description |
 |-------|-------------|
 | **Purpose** | Generate personalized AI stories for reading practice |
-| **Categories of Personal Data** | Reading preferences, grade level, interests, and the child’s first name, which OpenAI receives as written in the story prompt |
+| **Categories of Personal Data** | Reading preferences, grade level, interests, and the reader’s typed request; the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written |
 | **Legal Basis** | Contract (Art. 6(1)(b)) - service delivery |
 | **Source of Data** | User preferences and profile |
-| **Recipients** | OpenAI (processor, story prompts as written); OpenRouter, Cloudflare Workers AI and Lovable AI Gateway (processors, text with every name replaced by a stand-in). Anthropic is no longer called (22 Nov 2026). Full list: /subprocessors |
+| **Recipients** | OpenRouter, Cloudflare Workers AI, Lovable AI Gateway and, only when they fail, OpenAI (processors; text with the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written). Anthropic is no longer called (22 Nov 2026). Full list: /subprocessors |
 | **Transfers to Third Countries** | USA |
-| **Transfer Safeguards** | OpenAI DPA (signed); the others as shown on /subprocessors |
-| **Retention Period** | Prompts: transient only; Generated stories: until session ends or saved |
-| **Technical Measures** | Names replaced by a stand-in before OpenRouter, Cloudflare Workers AI and Lovable AI Gateway calls; session isolation |
+| **Transfer Safeguards** | The DPA each processor signed or accepted, as shown on /subprocessors (Lovable AI Gateway: in progress) |
+| **Retention Period** | Prompts: OpenAI keeps chat prompts up to 30 days for abuse monitoring; OpenRouter’s free models may log prompts (its paid model: zero retention); Generated stories: until session ends or saved |
+| **Technical Measures** | Before every AI text call, the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written; the same names are redacted from function logs; session isolation |
 
 ### 3.4 Image Generation
 
@@ -88,7 +88,7 @@
 | **Recipients** | Runware (processor) |
 | **Transfers to Third Countries** | Europe / United States |
 | **Transfer Safeguards** | Standard API Terms (DPA in progress) |
-| **Retention Period** | Images cached for session duration |
+| **Retention Period** | Runware keeps generated images up to 7 days; saved pictures until the story is deleted |
 | **Technical Measures** | No name in image prompts |
 
 ### 3.5 Voice/Text-to-Speech
@@ -168,11 +168,11 @@
 |-----------|---------|-------------------|------------|
 | Supabase | USA | Standard Contractual Clauses | SOC 2 Type II |
 | Stripe | USA/EU | Standard Contractual Clauses | PCI DSS, SOC 2 |
-| OpenAI | USA | Standard Contractual Clauses | Enterprise DPA |
+| OpenAI | USA | OpenAI DPA (SCCs where it provides them) | DPA signed |
 | Resend | USA | Standard Contractual Clauses | DPA |
-| ElevenLabs | USA/EU | Standard Contractual Clauses | DPA in progress |
+| ElevenLabs | USA/EU | Standard API Terms | DPA in progress |
 | Runware | EU/USA | Standard API Terms | DPA in progress |
-| Anthropic | USA | Standard Contractual Clauses | DPA in progress (no longer called) |
+| Anthropic | USA | None needed: no longer called (22 Nov 2026) | DPA in progress |
 
 ---
 

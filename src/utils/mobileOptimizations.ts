@@ -128,30 +128,6 @@ export const getMobileAnimationConfig = () => ({
 });
 
 /**
- * Font loading optimizations for mobile
- */
-export const optimizeFontLoading = () => {
-  // Load critical fonts as stylesheets
-  const criticalFonts = [
-    'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap'
-  ];
-
-  criticalFonts.forEach(fontUrl => {
-    try {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = fontUrl;
-      link.crossOrigin = 'anonymous';
-      document.head.appendChild(link);
-    } catch (error) {
-      // Suppress Chrome extension interference errors
-      console.debug('Font loading skipped:', error);
-    }
-  });
-};
-
-/**
  * Add global error handler to suppress Chrome extension and postMessage errors
  */
 export const suppressChromeExtensionErrors = () => {
@@ -472,7 +448,6 @@ export const initializeMobileOptimizations = (config: Partial<MobileOptimization
 
   if (finalConfig.enablePerformanceOptimizations) {
     cleanupFunctions.push(applyPerformanceOptimizations());
-    optimizeFontLoading();
   }
 
   if (finalConfig.enableAccessibilityFeatures) {

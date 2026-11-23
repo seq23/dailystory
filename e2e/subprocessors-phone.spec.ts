@@ -21,15 +21,17 @@ for (const width of [320, 390] as const) {
     }
     // Every vendor card fits too: a clipped card passes the page scrollWidth check (22 Nov 2026 capture).
     const cards = page.locator('section[aria-labelledby^="tier-"] > .grid > *');
-    await expect(cards).toHaveCount(15);
+    await expect(cards).toHaveCount(13);
     for (const card of await cards.all()) {
       const box = await card.boundingBox();
       expect(box!.x + box!.width, `${await card.locator('h3').first().innerText()} card fits the screen`).toBeLessThanOrEqual(width + 1);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    // DPA status (owner, 22 Nov 2026): 6 signed, ElevenLabs and Runware in progress, from src/data/subprocessors.ts.
+    // DPA status (owner, 22 Nov 2026): 6 signed; ElevenLabs, Runware and Lovable in progress; every
+    // other card its own tracker-backed status, from src/data/subprocessors.ts.
     await expect(page.getByText('DPA signed', { exact: true })).toHaveCount(6);
-    await expect(page.getByText('DPA in progress', { exact: true })).toHaveCount(2);
+    await expect(page.getByText('DPA in progress', { exact: true })).toHaveCount(3);
+    await expect(page.getByTestId(/^dpa-/)).toHaveCount(13);
     await page.screenshot({ path: testInfo.outputPath(`subprocessors-${width}.png`), fullPage: true });
   });
 }

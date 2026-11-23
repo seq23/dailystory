@@ -91,7 +91,7 @@ Applies to:
 ## 9. Vendor Security
 
 - Only vetted vendors with established security practices are used
-- Vendors processing personal data must have Data Processing Agreements (DPAs)
+- Vendors processing personal data must have Data Processing Agreements (DPAs). *Superseded 22 Nov 2026 as a statement of fact: some DPAs are still in progress; each vendor’s current status is on [/subprocessors](/subprocessors) and in `docs/compliance/VENDOR_DPA_TRACKER.md`.*
 - Vendor list maintained and publicly disclosed at [/vendors](/vendors) and [/subprocessors](/subprocessors)
 - Vendor security posture reviewed annually
 - See `docs/VENDOR_DPA_TRACKER.md` for DPA status

@@ -4,6 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { hmrGroupingPlugin } from "./vite-plugins/hmrGroupingPlugin";
 import { prerenderPlugin } from "./vite-plugins/prerenderPlugin";
+import { fontPreloadPlugin } from "./vite-plugins/fontPreloadPlugin";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -20,6 +21,8 @@ export default defineConfig(({ mode }) => ({
       debounceMs: 200,
       showDetails: false
     }),
+    // Preload the self-hosted first-screen fonts (src/fonts.ts).
+    mode !== 'development' && !process.env.VITEST && fontPreloadPlugin(),
     // Real HTML for public pages at build time (survives Lovable's publish build).
     mode !== 'development' && !process.env.VITEST && prerenderPlugin(),
   ].filter(Boolean),

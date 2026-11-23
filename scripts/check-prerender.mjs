@@ -11,9 +11,11 @@
 // BreadcrumbList on inner pages; a priced SoftwareApplication on the homepage;
 // the homepage links /about; every sitemap URL within three clicks of the homepage;
 // no app route (sign-in) in the sitemap; apple-touch-icon.png and site.webmanifest.
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import { clarityRuleBroken, loadsClarity } from "./clarity-loader.mjs";
+// And no file in dist (page, script, style, anything) names a banned host: Clarity is removed
+// and the fonts are self-hosted (22 Nov 2026, scripts/banned-hosts.mjs).
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
+import { BANNED_HOSTS, bannedHostsIn, bannedRuleBroken } from "./banned-hosts.mjs";
 import { MOVED, movedPageProblems } from "./moved-pages.mjs";
 
 const SITE = "https://time-2-read.com";
@@ -32,7 +34,15 @@ let bylines = 0;
 const TITLE = [30, 65];
 const DESC = [120, 160];
 const failsFloor = (n, min) => n < Math.ceil(min * 0.75);
-if (clarityRuleBroken()) fails.push("CLARITY RULE: loadsClarity must catch a Clarity script, snippet or preload and pass the vendor named in text");
+if (bannedRuleBroken()) fails.push(`BANNED HOST RULE: bannedHostsIn must catch ${BANNED_HOSTS.join(", ")} (and subdomains) and nothing else`);
+// Every file the build ships, read as text (fonts and images too: a host name is ASCII wherever it sits).
+const distFiles = (dir) => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? distFiles(join(dir, n)) : [join(dir, n)]));
+const shipped = distFiles(dist);
+if (!shipped.some((f) => f.endsWith(".js")) || !shipped.some((f) => f.endsWith(".css"))) fails.push(`${dist}: no .js or no .css file found, so the banned-host scan read nothing that matters`);
+for (const f of shipped) {
+  const hosts = bannedHostsIn(readFileSync(f, "latin1"));
+  if (hosts.length) fails.push(`${relative(dist, f)}: names ${hosts.join(", ")} (Clarity is removed and fonts are self-hosted)`);
+}
 if (failsFloor(500, TITLE[0]) || failsFloor(Math.ceil(TITLE[0] * 0.75), TITLE[0]) || !failsFloor(Math.ceil(DESC[0] * 0.75) - 1, DESC[0])) {
   fails.push("LENGTH RULE: failsFloor must pass anything over its ceiling and fail only below 75% of the floor");
 }
@@ -75,9 +85,6 @@ for (const loc of locs) {
   const ogImage = html.match(/<meta property="og:image" content="([^"]+)"/)?.[1] ?? "";
   if (!ogImage.startsWith(`${SITE}/`)) fails.push(`${path}: og:image is not on ${SITE}: ${ogImage || "missing"}`);
   if (!existsSync(join("public", new URL(ogImage).pathname.slice(1)))) fails.push(`${path}: og:image ${ogImage} is not in public/`);
-  // e9: public pages have no account/checkout form. The tag is mounted by
-  // LoginScreen at runtime, never by the shared shell or a guide page.
-  if (loadsClarity(html)) fails.push(`${path}: public page loads Clarity outside the parent form`);
   const nodes = lds.flatMap((b) => b["@graph"] ?? [b]);
   const org = nodes.find((n) => /Organization/.test(n["@type"]));
   for (const k of ["name", "url", "logo", "sameAs", "parentOrganization"]) {

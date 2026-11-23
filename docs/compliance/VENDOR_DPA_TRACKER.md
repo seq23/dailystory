@@ -20,7 +20,7 @@ This document tracks the status of Data Processing Agreements (DPAs) with all th
 |--------|---------|----------------|------------|---------|
 | **Supabase** | Database, Auth, Edge Functions | User accounts, profiles, reading data, child profiles | ✅ Signed | [Supabase DPA](https://supabase.com/legal/dpa) |
 | **Stripe** | Payment Processing | Email, payment info, subscription data | ✅ Signed | [Stripe DPA](https://stripe.com/dpa) |
-| **OpenAI** | AI Story Generation, speech-to-text | Story prompts as written, including the child’s first name; short voice clips after a tap on the microphone | ✅ Signed | [OpenAI DPA](https://openai.com/policies/data-processing-agreement) |
+| **OpenAI** | AI Story Generation (last resort), speech-to-text | Story prompts (age, grade, favorites, hobbies, typed request) with the account’s, child profiles’ and reader’s names replaced; other typed names as written; kept up to 30 days for abuse monitoring; short voice clips after a tap on the microphone | ✅ Signed | [OpenAI DPA](https://openai.com/policies/data-processing-agreement) |
 | **Resend** | Email Delivery | Email addresses, transactional email content | ✅ Signed | [Resend DPA](https://resend.com/legal/dpa) |
 | **Cloudflare** | Hosting, CDN, DDoS Protection | IP addresses, request metadata | ✅ Signed | [Cloudflare DPA](https://www.cloudflare.com/cloudflare-customer-dpa/) |
 | **GitHub** | Source Code, CI/CD | Source code only (no user data) | ✅ Signed | [GitHub DPA](https://github.com/customer-terms/github-data-protection-agreement) |
@@ -30,7 +30,21 @@ This document tracks the status of Data Processing Agreements (DPAs) with all th
 
 ---
 
-The public list, with exactly what each vendor receives, is [/subprocessors](https://time-2-read.com/subprocessors); its DPA badges come from `src/data/subprocessors.ts`, which a test (`src/test/guards/subprocessors-page.test.tsx`) holds equal to the status column above. A status change goes in both places in the same PR. Vendors on /subprocessors with no row here (ClassLink, OpenRouter, Cloudflare Workers AI, Lovable AI Gateway, Free Dictionary API, Google Fonts, Microsoft Clarity) have no DPA status recorded, and the page shows none for them.
+The public list, with exactly what each vendor receives, is [/subprocessors](https://time-2-read.com/subprocessors); its badges come from `src/data/subprocessors.ts`, which a test (`src/test/guards/subprocessors-page.test.tsx`) holds equal to the status column above and to the table below. A status change goes in both places in the same PR.
+
+---
+
+## Other vendors on /subprocessors
+
+Vendors outside the nine above, each checked against the vendor's live legal page on 22 Nov 2026. A "DPA signed" status here links the page that makes it so. These are not counted in the 9 above.
+
+| Vendor | What we send | Status | Source |
+|--------|--------------|--------|--------|
+| **Cloudflare Workers AI** | Story prompts, with the account’s, child profiles’ and reader’s names replaced | DPA signed (Cloudflare) | [Cloudflare Customer DPA](https://www.cloudflare.com/cloudflare-customer-dpa/) (v6.4, April 2026): covers all Cloudflare cloud services under the same account and Self-Serve Subscription Agreement as the hosting row above |
+| **OpenRouter** | Story prompts and text a reader asks about, with the account’s, child profiles’ and reader’s names replaced | DPA signed (part of terms) | [OpenRouter Terms s.10.2](https://openrouter.ai/terms) (updated 31 Aug 2026): "The DPA is incorporated by reference into, and made a part of, these Terms"; [OpenRouter DPA](https://openrouter.ai/data-processing-agreement) |
+| **Lovable AI Gateway (Google Gemini)** | A story page’s text, with the account’s, child profiles’ and reader’s names replaced | DPA in progress | [Lovable DPA](https://lovable.dev/data-processing-agreement) (updated 6 Nov 2025) covers Business and Enterprise plans only; our plan is not confirmed as one of them |
+| **ClassLink** | Nothing: we read a school’s rosters from ClassLink (GET requests only) | School’s provider (district DPA) | [ClassLink privacy](https://www.classlink.com/company/privacy); the district contracts with ClassLink, and our only call is `supabase/functions/_shared/institutionRoster.ts` |
+| **Free Dictionary API** | One word, with no account details; a reader’s or account’s name is never sent | No personal data sent | [`supabase/functions/_shared/wordFallback.ts`](../../supabase/functions/_shared/wordFallback.ts) and `word-dictionary/index.ts` (names answered without any outside call) |
 
 ---
 
@@ -50,7 +64,7 @@ The public list, with exactly what each vendor receives, is [/subprocessors](htt
 | Tier | Vendors | Criteria |
 |------|---------|----------|
 | **High Risk** (stores personal data) | Supabase, Stripe, Resend | Direct access to PII |
-| **Medium Risk** (processes data transiently) | OpenAI, Anthropic, ElevenLabs, Runware | Receives prompts and text, which can include the child’s first name (OpenAI, ElevenLabs) |
+| **Medium Risk** (processes content we send) | OpenAI, Anthropic, ElevenLabs, Runware | Receives prompts, text or picture scenes. ElevenLabs gets story text with the child’s name, to read it aloud; OpenAI keeps chat prompts up to 30 days and Runware keeps images up to 7 days |
 | **Low Risk** (infrastructure only) | Cloudflare, GitHub | No direct user data processing |
 
 ---

@@ -4,8 +4,11 @@
 // sends data to is listed (Anthropic, which no code calls, is not), and the owner's notice wording
 // is the same on the page, in Q103 and in the DPA template. Owner, same day: 6 of the 9 tracked
 // vendors have a signed DPA and 3 are in progress; the badges show exactly what the tracker records,
-// and no doc says AI vendors get no personal information (OpenAI and ElevenLabs get the child's
-// first name).
+// and no doc says AI vendors get no personal information (ElevenLabs gets the child's first name to
+// read it aloud; names a reader types that are not on the account go to the text models as written).
+// Coordinator, after the #182 review: every vendor has a badge backed by exactly one tracker row
+// (the nine in the DPA matrix, the rest in its "Other vendors" table), and a "signed" badge needs
+// the vendor's legal page linked in that row.
 import React from "react";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -15,7 +18,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import Subprocessors, { tierAnswer } from "@/pages/Subprocessors";
 import Privacy from "@/pages/Privacy";
 import DataTransfers from "@/pages/DataTransfers";
-import { subprocessors, type Subprocessor } from "@/data/subprocessors";
+import { DPA_LABEL, subprocessors, type DpaStatus, type Subprocessor } from "@/data/subprocessors";
 
 const root = join(__dirname, "../../..");
 afterEach(cleanup);
@@ -69,34 +72,49 @@ const hostsInCode = () => {
 const claims = (host: string, h: string) => host === h || host.endsWith(`.${h}`);
 
 
-// VENDOR_DPA_TRACKER.md's status matrix: "| **Vendor** | … | ✅ Signed | … |" per row.
+// VENDOR_DPA_TRACKER.md: the DPA matrix ("| **Vendor** | purpose | data | ✅ Signed | [DPA](https://…) |",
+// the nine her count covers) and the "Other vendors" table ("| **Vendor** | data | <badge label> | source |").
 const TRACKER = "docs/compliance/VENDOR_DPA_TRACKER.md";
-type DpaRow = { name: string; dpa: NonNullable<Subprocessor["dpa"]> | "other" };
-const trackerRows = (md: string): DpaRow[] =>
-  [...md.split("## Vendor DPA Status Matrix")[1]?.split("\n---")[0].matchAll(/^\| \*\*([^*]+)\*\* \|.*\| (✅ Signed|⏳ In progress|[^|]+) \| [^|]+ \|$/gm) ?? []]
-    .map((m) => ({ name: m[1], dpa: m[2] === "✅ Signed" ? "signed" : m[2] === "⏳ In progress" ? "in-progress" : "other" }));
-/** Problems by name; empty = every badge on the page is what the tracker records. */
+type DpaRow = { name: string; dpa: DpaStatus | "other"; source: string | null; matrix: boolean };
+const MATRIX_STATUS: Record<string, DpaStatus> = { "✅ Signed": "signed", "⏳ In progress": "in-progress" };
+const BY_LABEL = Object.fromEntries(Object.entries(DPA_LABEL).map(([k, v]) => [v, k as DpaStatus]));
+const section = (md: string, heading: string) => md.split(`\n## ${heading}\n`)[1]?.split("\n---")[0] ?? "";
+const tableRows = (text: string) => [...text.matchAll(/^\| \*\*([^*]+)\*\* \|(.*)\|$/gm)].map((m) => ({ name: m[1], cells: m[2].split(" | ").map((c) => c.trim()) }));
+const httpsLink = (cell = "") => cell.match(/\]\((https:\/\/[^)\s]+)\)/)?.[1] ?? null;
+const trackerRows = (md: string): DpaRow[] => [
+  ...tableRows(section(md, "Vendor DPA Status Matrix")).map(({ name, cells }) =>
+    ({ name, dpa: MATRIX_STATUS[cells[2]] ?? ("other" as const), source: httpsLink(cells[3]), matrix: true })),
+  ...tableRows(section(md, "Other vendors on /subprocessors")).map(({ name, cells }) =>
+    ({ name, dpa: BY_LABEL[cells[1]] ?? ("other" as const), source: httpsLink(cells[2]), matrix: false })),
+];
+const SIGNED = (d: DpaRow["dpa"]) => d === "signed" || d === "signed-cloudflare" || d === "signed-terms";
+/** Problems by name; empty = every badge on the page is what exactly one tracker row records. */
 function dpaProblems(vendors: Pick<Subprocessor, "name" | "dpa">[], rows: DpaRow[]): string[] {
-  if (rows.length === 0) return ["the tracker's status table parsed to zero rows (the table moved)"];
+  if (rows.length === 0) return ["the tracker's status tables parsed to zero rows (a table moved)"];
   const problems: string[] = [];
   for (const v of vendors) {
-    const row = rows.find((r) => r.name === v.name);
-    if (!row && v.dpa) problems.push(`${v.name}: shows "${v.dpa}" but the tracker has no row`);
-    if (row && row.dpa !== (v.dpa ?? "none")) problems.push(`${v.name}: page "${v.dpa ?? "none"}", tracker "${row.dpa}"`);
+    const mine = rows.filter((r) => r.name === v.name);
+    if (mine.length === 0) { problems.push(`${v.name}: shows "${v.dpa}" but the tracker has no row`); continue; }
+    if (mine.length > 1) problems.push(`${v.name}: ${mine.length} tracker rows`);
+    const row = mine[0];
+    if (row.dpa !== v.dpa) problems.push(`${v.name}: page "${v.dpa}", tracker "${row.dpa}"`);
+    if (SIGNED(row.dpa) && !row.source) problems.push(`${v.name}: "${row.dpa}" with no https source link in the tracker`);
   }
+  // The matrix keeps her nine as counted (Anthropic stays, no longer called); the other table lists only vendors on the page.
+  for (const r of rows) if (!r.matrix && !vendors.some((v) => v.name === r.name)) problems.push(`${r.name}: an "Other vendors" row for a vendor not on /subprocessors`);
   return problems;
 }
 // Counts like "6 of 9 vendor DPAs" or "9/9 signed" anywhere in the compliance docs must match the
-// tracker. SECURITY_QUESTIONNAIRE_ANSWERS.md is read as written (owner, 22 Nov 2026).
+// tracker's nine. Only Q97 is exempt: it stays word for word (owner, 22 Nov 2026).
 const COUNT_CLAIM = /\b(?:all\s+)?(\d+)\s*(?:of|\/)\s*(\d+)\b(?=[^|\n]{0,30}(?:vendor|DPA|signed))|\ball\s+(\d+)\s+vendor DPAs/gi;
 function countProblems(docs: { path: string; text: string }[], signed: number, total: number): string[] {
   return docs.flatMap(({ path, text }) => [...text.matchAll(COUNT_CLAIM)]
     .filter((m) => (m[3] ? [m[3], m[3]] : [m[1], m[2]]).join("/") !== `${signed}/${total}`)
     .map((m) => `${path}: "${m[0]}" but the tracker records ${signed} of ${total}`));
 }
-// "AI vendors get no personal information" in any of its forms: false since OpenAI and ElevenLabs
-// receive the child's first name (owner rulings, 22 Nov 2026).
-const NO_PII_CLAIM = /\bno PII\b|no personal(?:ly identifiable)? information|zero personal information|no direct identifiers|\bnot PII\b|PII stripping|anonymi[sz]ed prompts|no user identifiers/i;
+// "AI vendors get no personal information" in any of its forms: false, since ElevenLabs receives the
+// child's first name and names typed into a request that are not on the account go as written.
+const NO_PII_CLAIM = /\bno PII\b|no personal(?:ly identifiable)? information|zero personal information|no direct identifiers|\bnot PII\b|PII stripp(?:ing|ed)|anonymi[sz]ed prompts|no user identifiers/i;
 const complianceDocs = () => readdirSync(join(root, "docs/compliance")).filter((f) => f.endsWith(".md"))
   .map((f) => ({ path: `docs/compliance/${f}`, text: readFileSync(join(root, "docs/compliance", f), "utf8") }));
 
@@ -141,41 +159,71 @@ describe("/subprocessors", () => {
     expect(subprocessors.filter((s) => !s.hosts.length).map((s) => s.name).sort()).toEqual(["Cloudflare", "GitHub"]);
   });
 
-  it("each DPA badge is what the tracker records: 6 of 9 signed, 3 in progress", () => {
+  it("each DPA badge is what the tracker records: 6 of 9 signed, 3 in progress, the rest in their own table", () => {
     const rows = trackerRows(readFileSync(join(root, TRACKER), "utf8"));
+    const matrix = rows.filter((r) => r.matrix);
     // Her ruling, 22 Nov 2026: these six signed (accepting the vendor's terms counts), these three in progress.
-    expect(rows.filter((r) => r.dpa === "signed").map((r) => r.name).sort()).toEqual(["Cloudflare", "GitHub", "OpenAI", "Resend", "Stripe", "Supabase"]);
-    expect(rows.filter((r) => r.dpa === "in-progress").map((r) => r.name).sort()).toEqual(["Anthropic", "ElevenLabs", "Runware"]);
-    expect(rows).toHaveLength(9);
+    expect(matrix.filter((r) => r.dpa === "signed").map((r) => r.name).sort()).toEqual(["Cloudflare", "GitHub", "OpenAI", "Resend", "Stripe", "Supabase"]);
+    expect(matrix.filter((r) => r.dpa === "in-progress").map((r) => r.name).sort()).toEqual(["Anthropic", "ElevenLabs", "Runware"]);
+    expect(matrix).toHaveLength(9);
+    // Checked against each vendor's live legal page, 22 Nov 2026 (links in the tracker rows).
+    expect(Object.fromEntries(rows.filter((r) => !r.matrix).map((r) => [r.name, r.dpa]))).toEqual({
+      "Cloudflare Workers AI": "signed-cloudflare",
+      OpenRouter: "signed-terms",
+      "Lovable AI Gateway (Google Gemini)": "in-progress",
+      ClassLink: "school-provider",
+      "Free Dictionary API": "no-personal-data",
+    });
     expect(dpaProblems(subprocessors, rows)).toEqual([]);
     page();
     const shown = (id: string) => screen.queryAllByTestId(id).map((b) => b.closest(".min-w-0")!.querySelector("h3")!.textContent).sort();
     expect(shown("dpa-signed")).toEqual(["Cloudflare", "GitHub", "OpenAI", "Resend", "Stripe", "Supabase"]);
-    expect(shown("dpa-in-progress")).toEqual(["ElevenLabs", "Runware"]);
+    expect(shown("dpa-in-progress")).toEqual(["ElevenLabs", "Lovable AI Gateway (Google Gemini)", "Runware"]);
+    expect(shown("dpa-signed-cloudflare")).toEqual(["Cloudflare Workers AI"]);
+    expect(shown("dpa-signed-terms")).toEqual(["OpenRouter"]);
+    expect(shown("dpa-school-provider")).toEqual(["ClassLink"]);
+    expect(shown("dpa-no-personal-data")).toEqual(["Free Dictionary API"]);
+    // Every card carries exactly one badge, with the label its status names.
+    expect(screen.getAllByTestId(/^dpa-/)).toHaveLength(subprocessors.length);
+    for (const v of subprocessors) expect(screen.getAllByText(DPA_LABEL[v.dpa]).length, v.name).toBeGreaterThan(0);
     expect(screen.getAllByText("DPA signed")).toHaveLength(6);
-    expect(screen.getAllByText("DPA in progress")).toHaveLength(2);
+    expect(screen.getAllByText("DPA in progress")).toHaveLength(3);
   });
 
-  it("the DPA check catches a badge the tracker does not back", () => {
-    const rows = trackerRows(readFileSync(join(root, TRACKER), "utf8"));
-    const flip = (name: string, dpa: Subprocessor["dpa"]) => subprocessors.map((v) => (v.name === name ? { ...v, dpa } : v));
+  it("the DPA check catches a badge the tracker does not back, and a signed row with no source", () => {
+    const md = readFileSync(join(root, TRACKER), "utf8");
+    const rows = trackerRows(md);
+    const flip = (name: string, dpa: DpaStatus) => subprocessors.map((v) => (v.name === name ? { ...v, dpa } : v));
     expect(dpaProblems(flip("ElevenLabs", "signed"), rows)).toEqual(['ElevenLabs: page "signed", tracker "in-progress"']);
-    expect(dpaProblems(flip("Google Fonts", "signed"), rows)).toEqual(['Google Fonts: shows "signed" but the tracker has no row']);
-    expect(dpaProblems(flip("Stripe", undefined), rows)).toEqual(['Stripe: page "none", tracker "signed"']);
+    expect(dpaProblems(flip("Lovable AI Gateway (Google Gemini)", "signed-terms"), rows)).toEqual(['Lovable AI Gateway (Google Gemini): page "signed-terms", tracker "in-progress"']);
+    // A badge with no tracker row: a vendor added to the page but not to the tracker.
+    expect(dpaProblems([...subprocessors, { name: "NewVendor", dpa: "no-personal-data" }], rows)).toEqual(['NewVendor: shows "no-personal-data" but the tracker has no row']);
+    // A "signed" row whose source link is gone.
+    const unlinked = md.replace("[OpenRouter Terms s.10.2](https://openrouter.ai/terms)", "OpenRouter Terms s.10.2").replace("[OpenRouter DPA](https://openrouter.ai/data-processing-agreement)", "OpenRouter DPA");
+    expect(dpaProblems(subprocessors, trackerRows(unlinked))).toEqual(['OpenRouter: "signed-terms" with no https source link in the tracker']);
+    const matrixUnlinked = md.replace("[Stripe DPA](https://stripe.com/dpa)", "Stripe DPA");
+    expect(dpaProblems(subprocessors, trackerRows(matrixUnlinked))).toEqual(['Stripe: "signed" with no https source link in the tracker']);
+    // The same vendor in both tables.
+    expect(dpaProblems(subprocessors, [...rows, { ...rows.find((r) => r.name === "ClassLink")!, matrix: true }])).toEqual(["ClassLink: 2 tracker rows"]);
+    expect(dpaProblems(subprocessors.filter((v) => v.name !== "ClassLink"), rows)).toEqual(['ClassLink: an "Other vendors" row for a vendor not on /subprocessors']);
     expect(dpaProblems(subprocessors, [])).toHaveLength(1);
     expect(trackerRows("| **Runware** | x | y | ✅ Signed | z |")).toEqual([]);
   });
 
   it("every DPA count in the compliance docs matches the tracker", () => {
     const rows = trackerRows(readFileSync(join(root, TRACKER), "utf8"));
-    const docs = complianceDocs().filter((d) => !d.path.endsWith("SECURITY_QUESTIONNAIRE_ANSWERS.md"));
+    const matrix = rows.filter((r) => r.matrix);
+    const withoutQ97 = (d: { path: string; text: string }) => d.path.endsWith("SECURITY_QUESTIONNAIRE_ANSWERS.md")
+      ? { ...d, text: d.text.split("**Q97")[0] + "**Q98" + d.text.split("**Q97")[1].split("**Q98")[1] } : d;
+    const docs = complianceDocs().map(withoutQ97);
     expect(docs.length).toBeGreaterThanOrEqual(10);
-    const signed = rows.filter((r) => r.dpa === "signed").length;
-    expect(countProblems(docs, signed, rows.length)).toEqual([]);
+    expect(docs.find((d) => d.path.endsWith("SECURITY_QUESTIONNAIRE_ANSWERS.md"))!.text).toContain("**Q96");
+    const signed = matrix.filter((r) => r.dpa === "signed").length;
+    expect(countProblems(docs, signed, matrix.length)).toEqual([]);
     // It sees the counts it checks, and catches the ones that were there before 22 Nov 2026.
     expect(docs.flatMap((d) => [...d.text.matchAll(COUNT_CLAIM)]).length).toBeGreaterThanOrEqual(4);
     for (const bad of ["All 9 vendor DPAs signed or accepted", "| Vendor DPAs | ✅ Done | 9/9 signed or accepted |"]) {
-      expect(countProblems([{ path: "x.md", text: bad }], signed, rows.length), bad).toHaveLength(1);
+      expect(countProblems([{ path: "x.md", text: bad }], signed, matrix.length), bad).toHaveLength(1);
     }
   });
 
@@ -188,7 +236,7 @@ describe("/subprocessors", () => {
       expect(container.textContent!.match(NO_PII_CLAIM)?.[0], name).toBeUndefined();
       unmount();
     }
-    for (const bad of ["Story prompts (no PII)", "AI vendors receive prompts/text with no personal information.", "receive **zero personal information**", "| No PII in prompts |"]) {
+    for (const bad of ["Story prompts (no PII)", "AI vendors receive prompts/text with no personal information.", "receive **zero personal information**", "| No PII in prompts |", "PII stripped from AI prompts via `secure_debug_logging()`"]) {
       expect(bad, bad).toMatch(NO_PII_CLAIM);
     }
   });
@@ -199,8 +247,10 @@ describe("/subprocessors", () => {
       const { container, unmount } = render(<MemoryRouter>{el}</MemoryRouter>);
       for (const v of subprocessors) expect(container.textContent, `${name} names ${v.name}`).toContain(v.name);
       expect(container.textContent, `${name} names no vendor we do not use`).not.toMatch(/Anthropic/);
-      for (const v of subprocessors.filter((x) => x.dpa)) {
-        expect(container.textContent, `${name}: ${v.name}`).toMatch(new RegExp(`${v.name}[^]*?${v.dpa === "signed" ? "DPA signed" : "DPA in progress"}`));
+      const esc = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      for (const v of subprocessors) {
+        // The vendor's own status, before the next vendor's name.
+        expect(container.textContent, `${name}: ${v.name}`).toMatch(new RegExp(`${esc(v.name)}[^]{0,400}?${esc(DPA_LABEL[v.dpa])}`));
       }
       unmount();
     }
@@ -222,7 +272,7 @@ describe("/subprocessors", () => {
     page();
     const links = screen.getAllByRole("link", { name: /Privacy Policy →/ }).map((a) => new URL(a.getAttribute("href")!));
     expect(links.length).toBe(subprocessors.filter((s) => s.privacyUrl).length);
-    expect(links.length).toBeGreaterThanOrEqual(14);
+    expect(links.length).toBeGreaterThanOrEqual(12);
     for (const u of links) expect(u.pathname, u.href).not.toMatch(/^\/?$/);
     expect(links.map((u) => u.href)).toContain("https://runware.ai/privacy");
     expect(screen.getAllByText("Publishes no privacy policy")).toHaveLength(subprocessors.filter((s) => !s.privacyUrl).length);

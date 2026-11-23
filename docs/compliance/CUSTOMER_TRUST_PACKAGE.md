@@ -97,14 +97,14 @@ The complete current list, with exactly what each vendor receives, is [time-2-re
 | Stripe | Payment processing | Email, payment info | US | ✅ Signed |
 | Resend | Email delivery | Email addresses, transactional content | US | ✅ Signed |
 
-### Medium Risk — Transient Processing
+### Medium Risk — Processes What We Send
 
 | Vendor | Purpose | Data Processed | Location | DPA |
 |--------|---------|----------------|----------|-----|
-| OpenAI | Story text generation, speech-to-text | Story prompts as written, including the child’s first name; voice clips after a tap on the microphone | US | ✅ Signed |
+| OpenAI | Story text generation (last resort), speech-to-text | Story prompts, only when the other text models fail (age, grade, favorites, hobbies, typed request), with the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written; OpenAI keeps chat prompts up to 30 days for abuse monitoring; voice clips after a tap on the microphone | US | ✅ Signed |
 | Anthropic | AI fallback, no longer called | Nothing since 22 Nov 2026 | US | ⏳ In progress |
 | ElevenLabs | Text-to-speech | Story text, including the child’s first name when the story uses it; words a reader taps; what the reader says in voice mode | US | ⏳ In progress |
-| Runware | Image generation | Picture scene and the reader’s avatar look, age and favorite color; never a name | EU/US | ⏳ In progress |
+| Runware | Image generation | Picture scene and the reader’s avatar look, age and favorite color; never a name; generated images kept up to 7 days | EU/US | ⏳ In progress |
 
 ### Low Risk — Infrastructure Only
 
@@ -113,7 +113,7 @@ The complete current list, with exactly what each vendor receives, is [time-2-re
 | Cloudflare | Hosting, CDN, WAF | IP addresses, request metadata | Global | ✅ Signed |
 | GitHub | Source code, CI/CD | Source code only (no user data) | US | ✅ Signed |
 
-**Key:** OpenAI and ElevenLabs receive the child’s first name when a story uses it; Runware never receives a name. OpenAI does not train on API data. The AI services that rewrite or explain text (OpenRouter, Cloudflare Workers AI, Lovable AI Gateway) receive it with every name replaced by a stand-in.
+**Key:** ElevenLabs receives the child’s first name when a story uses it, because it reads the story aloud; Runware never receives a name. Every text model (OpenRouter, Cloudflare Workers AI, Lovable AI Gateway and OpenAI) receives text with the account’s and child profiles’ names and the reader’s name replaced by a stand-in; other names typed into a request are sent as written. OpenAI does not train on API data and keeps chat prompts up to 30 days for abuse monitoring.
 
 ---
 

@@ -6,6 +6,17 @@ import { Button } from "@/components/ui/button";
 import { SiteFooterNav } from "@/components/SiteFooterNav";
 import { DPA_LABEL, subprocessors } from "@/data/subprocessors";
 
+// GDPR Art. 13(1)(c): each kind of data, why we hold it and the legal basis.
+const LEGAL_BASIS = [
+  { category: "Account info (email, password)", purpose: "Authentication & account management", basis: "Contract performance (Art. 6(1)(b))" },
+  { category: "Child profile (display name, age, grade)", purpose: "Personalized reading experience", basis: "Parental consent (Art. 6(1)(a), Art. 8)" },
+  { category: "Reading progress & quiz scores", purpose: "Learning analytics & progress tracking", basis: "Legitimate interest (Art. 6(1)(f))" },
+  { category: "Payment data (via Stripe)", purpose: "Subscription billing", basis: "Contract performance (Art. 6(1)(b))" },
+  { category: "Usage data (pages viewed, features used)", purpose: "Service improvement", basis: "Consent (Art. 6(1)(a)) via cookie banner" },
+  { category: "Voice clips (signed-in accounts only, after a tap on the microphone)", purpose: "Speech-to-text for story voice commands and read-aloud practice", basis: "Parental consent (Art. 6(1)(a), Art. 8)" },
+  { category: "Device/browser info", purpose: "Security & fraud prevention", basis: "Legitimate interest (Art. 6(1)(f))" },
+];
+
 const Privacy = () => {
   useEffect(() => {
     const title = "Privacy Policy | Time-2-Read by Spry VSL LLC";
@@ -52,20 +63,17 @@ const Privacy = () => {
 
           {/* GDPR Art. 13(1)(c) — Purpose and legal basis */}
           <h2>2. Information We Collect &amp; Legal Basis</h2>
-          <table className="text-sm w-full">
-            <thead>
-              <tr><th className="text-left p-2">Data Category</th><th className="text-left p-2">Purpose</th><th className="text-left p-2">Legal Basis (GDPR Art. 6)</th></tr>
-            </thead>
-            <tbody>
-              <tr><td className="p-2">Account info (email, password)</td><td className="p-2">Authentication &amp; account management</td><td className="p-2">Contract performance (Art. 6(1)(b))</td></tr>
-              <tr><td className="p-2">Child profile (display name, age, grade)</td><td className="p-2">Personalized reading experience</td><td className="p-2">Parental consent (Art. 6(1)(a), Art. 8)</td></tr>
-              <tr><td className="p-2">Reading progress &amp; quiz scores</td><td className="p-2">Learning analytics &amp; progress tracking</td><td className="p-2">Legitimate interest (Art. 6(1)(f))</td></tr>
-              <tr><td className="p-2">Payment data (via Stripe)</td><td className="p-2">Subscription billing</td><td className="p-2">Contract performance (Art. 6(1)(b))</td></tr>
-              <tr><td className="p-2">Usage data (pages viewed, features used)</td><td className="p-2">Service improvement</td><td className="p-2">Consent (Art. 6(1)(a)) via cookie banner</td></tr>
-              <tr><td className="p-2">Voice clips (signed-in accounts only, after a tap on the microphone)</td><td className="p-2">Speech-to-text for story voice commands and read-aloud practice</td><td className="p-2">Parental consent (Art. 6(1)(a), Art. 8)</td></tr>
-              <tr><td className="p-2">Device/browser info</td><td className="p-2">Security &amp; fraud prevention</td><td className="p-2">Legitimate interest (Art. 6(1)(f))</td></tr>
-            </tbody>
-          </table>
+          {/* A stacked list, not a table: at 320 px the three-column table clipped its cells
+              (review of #182, 22 Nov 2026), the same fix as /data-transfers. */}
+          <ul className="not-prose divide-y border-y my-4 text-sm">
+            {LEGAL_BASIS.map((row) => (
+              <li key={row.category} className="py-3" data-testid="basis-row">
+                <p className="font-medium">{row.category}</p>
+                <p className="text-muted-foreground"><span className="sr-only">Purpose: </span>{row.purpose}</p>
+                <p className="text-muted-foreground"><span className="font-medium text-foreground">Legal basis (GDPR Art. 6):</span> {row.basis}</p>
+              </li>
+            ))}
+          </ul>
 
           {/* GDPR Art. 13(1)(e) — Recipients */}
           <h2>3. Data Sharing &amp; Third-Party Processors</h2>
@@ -73,7 +81,7 @@ const Privacy = () => {
           <ul>
             {subprocessors.map((sp) => (
               <li key={sp.name}>
-                <strong>{sp.name}</strong> — {sp.purpose} ({sp.location}{sp.dpa ? `; ${DPA_LABEL[sp.dpa]}` : ""})
+                <strong>{sp.name}</strong> — {sp.purpose} ({sp.location}; {DPA_LABEL[sp.dpa]})
               </li>
             ))}
           </ul>
@@ -135,9 +143,10 @@ const Privacy = () => {
           {/* GDPR Art. 13(1)(f) — International Transfers */}
           <h2>7. International Data Transfers</h2>
           <p>
-            Your data may be transferred to and processed in the United States. We protect these transfers using
-            each processor's data processing agreement, including Standard Contractual Clauses (SCCs) where the
-            agreement provides them. Our Subprocessors page shows which agreements are signed.
+            Your data may be transferred to and processed in the United States. Where a processor has signed or
+            accepted a data processing agreement with us, that agreement covers the transfer, including Standard
+            Contractual Clauses (SCCs) where it provides them; for some processors the agreement is still in
+            progress. Our Subprocessors page shows each processor's status.
             See our <Link to="/data-transfers" className="text-primary hover:underline">Data Transfers</Link> page for details.
           </p>
 

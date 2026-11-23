@@ -113,9 +113,7 @@ const Subprocessors = () => {
                         <CardTitle className="text-base">{sp.name}</CardTitle>
                         <div className="flex flex-wrap gap-2 whitespace-nowrap">
                           {getRiskBadge(sp.riskTier)}
-                          {sp.dpa && (
-                            <Badge variant="outline" className="text-xs" data-testid={`dpa-${sp.dpa}`}>{DPA_LABEL[sp.dpa]}</Badge>
-                          )}
+                          <Badge variant="outline" className="text-xs" data-testid={`dpa-${sp.dpa}`}>{DPA_LABEL[sp.dpa]}</Badge>
                         </div>
                       </div>
                     </CardHeader>

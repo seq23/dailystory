@@ -18,15 +18,26 @@ export interface Subprocessor {
   /** Hosts (or "esm.sh/<sdk>") our code calls or loads for this vendor; the page guard fails on a host in code that no card claims. */
   hosts: string[];
   /**
-   * The vendor's data processing agreement, as VENDOR_DPA_TRACKER.md records it (owner, 22 Nov 2026:
-   * accepting a vendor's published terms counts as signing). Omitted when the tracker has no row.
+   * The vendor's data processing agreement, exactly as VENDOR_DPA_TRACKER.md records it (owner,
+   * 22 Nov 2026: accepting a vendor's published terms counts as signing). Every vendor has one:
+   * the tracker's DPA matrix holds the original nine, its "Other vendors" table the rest, each
+   * "signed" row with the vendor's live legal page linked.
    */
-  dpa?: "signed" | "in-progress";
+  dpa: DpaStatus;
 }
 
-export const DPA_LABEL: Record<NonNullable<Subprocessor["dpa"]>, string> = {
+export type DpaStatus = "signed" | "in-progress" | "signed-cloudflare" | "signed-terms" | "school-provider" | "no-personal-data";
+
+export const DPA_LABEL: Record<DpaStatus, string> = {
   signed: "DPA signed",
   "in-progress": "DPA in progress",
+  // Workers AI runs under the same Cloudflare account and Customer DPA as the hosting.
+  "signed-cloudflare": "DPA signed (Cloudflare)",
+  // OpenRouter's Terms (s.10.2) incorporate its DPA by reference.
+  "signed-terms": "DPA signed (part of terms)",
+  // ClassLink is the school's own roster provider: it sends us the roster; we send it nothing.
+  "school-provider": "School’s provider (district DPA)",
+  "no-personal-data": "No personal data sent",
 };
 
 export const subprocessors: Subprocessor[] = [
@@ -71,33 +82,36 @@ export const subprocessors: Subprocessor[] = [
     location: "United States",
     privacyUrl: "https://www.classlink.com/company/privacy",
     riskTier: "high",
+    dpa: "school-provider",
     hosts: ["classlink.com"],
   },
   {
     name: "OpenRouter",
     role: "writes story text, quizzes and word help first",
     purpose: "AI text models (free models first, then one paid model)",
-    dataProcessed: "Story prompts and text a reader asks about, with every child’s and family member’s name replaced by a stand-in before it leaves. Free models may log or train on prompts; the paid model is set to no data collection and zero retention",
+    dataProcessed: "Story prompts and text a reader asks about. The account’s and child profiles’ names and the reader’s name are replaced by a stand-in before it leaves; other names typed into a request are sent as written. Free models may log or train on prompts; the paid model is set to no data collection and zero retention",
     location: "United States",
     privacyUrl: "https://openrouter.ai/privacy",
     riskTier: "medium",
+    dpa: "signed-terms",
     hosts: ["openrouter.ai"],
   },
   {
     name: "Cloudflare Workers AI",
     role: "writes story text when OpenRouter’s free models don’t answer",
     purpose: "AI text model (Meta Llama) run by Cloudflare",
-    dataProcessed: "Story prompts and text a reader asks about, with every child’s and family member’s name replaced by a stand-in before it leaves",
+    dataProcessed: "Story prompts and text a reader asks about. The account’s and child profiles’ names and the reader’s name are replaced by a stand-in before it leaves; other names typed into a request are sent as written",
     location: "Global (Cloudflare network)",
     privacyUrl: "https://www.cloudflare.com/privacypolicy/",
     riskTier: "medium",
+    dpa: "signed-cloudflare",
     hosts: ["api.cloudflare.com"],
   },
   {
     name: "OpenAI",
     role: "writes story text when the other text models fail and turns voice clips into text",
     purpose: "Last-resort story text model; speech-to-text for voice commands and read-aloud practice",
-    dataProcessed: "Story prompts as written, including the child’s first name; short voice clips recorded only after a tap on the microphone by a signed-in account (not stored by Time-2-Read; OpenAI does not train on API data; its API data-controls page, checked 22 Nov 2026, lists speech-to-text with no abuse-monitoring retention)",
+    dataProcessed: "Story prompts, used only when the other text models fail: the reader’s age, grade, favorites, hobbies and typed request, with the account’s and child profiles’ names and the reader’s name replaced by a stand-in (other names typed into a request are sent as written; OpenAI keeps chat prompts up to 30 days for abuse monitoring); short voice clips recorded only after a tap on the microphone by a signed-in account (not stored by Time-2-Read; OpenAI does not train on API data; its API data-controls page, checked 22 Nov 2026, lists speech-to-text with no abuse-monitoring retention)",
     source: { label: "OpenAI API data controls", url: "https://developers.openai.com/api/docs/guides/your-data" },
     location: "United States",
     privacyUrl: "https://openai.com/policies/privacy-policy",
@@ -109,10 +123,11 @@ export const subprocessors: Subprocessor[] = [
     name: "Lovable AI Gateway (Google Gemini)",
     role: "writes the one-line scene for each story picture",
     purpose: "AI model that turns a story page into a picture description",
-    dataProcessed: "The story page’s text, with the child’s name replaced by a stand-in before it leaves",
+    dataProcessed: "The story page’s text. The account’s and child profiles’ names and the reader’s name are replaced by a stand-in before it leaves; other names typed into a request are sent as written",
     location: "Sweden (Lovable) and Google’s servers",
     privacyUrl: "https://lovable.dev/privacy",
     riskTier: "medium",
+    dpa: "in-progress",
     hosts: ["ai.gateway.lovable.dev"],
   },
   {
@@ -130,7 +145,7 @@ export const subprocessors: Subprocessor[] = [
     name: "Runware",
     role: "draws the story pictures",
     purpose: "AI image generation for story illustrations",
-    dataProcessed: "The picture scene, plus the reader’s avatar look, age and favorite color; never a name",
+    dataProcessed: "The picture scene, plus the reader’s avatar look, age and favorite color; never a name. Runware keeps generated images up to 7 days",
     location: "Europe / United States",
     privacyUrl: "https://runware.ai/privacy",
     riskTier: "medium",
@@ -141,9 +156,10 @@ export const subprocessors: Subprocessor[] = [
     name: "Free Dictionary API",
     role: "looks up a word when our own dictionary has no entry",
     purpose: "Word definitions",
-    dataProcessed: "One word at a time, sent from our server with no account details",
+    dataProcessed: "One word at a time, sent from our server with no account details; a word that is a reader’s or account’s name is never sent",
     location: "Not published",
     riskTier: "medium",
+    dpa: "no-personal-data",
     hosts: ["dictionaryapi.dev"],
   },
   {
@@ -156,26 +172,6 @@ export const subprocessors: Subprocessor[] = [
     riskTier: "low",
     dpa: "signed",
     hosts: [],
-  },
-  {
-    name: "Google Fonts",
-    role: "serves the site’s fonts and sees visitors’ IP addresses",
-    purpose: "Web fonts",
-    dataProcessed: "IP addresses and browser details of every visitor",
-    location: "Global",
-    privacyUrl: "https://developers.google.com/fonts/faq/privacy",
-    riskTier: "low",
-    hosts: ["fonts.googleapis.com", "fonts.gstatic.com"],
-  },
-  {
-    name: "Microsoft Clarity",
-    role: "records how signed-out parents use the sign-in form",
-    purpose: "Usage analytics on the parent sign-in and sign-up form only",
-    dataProcessed: "Clicks, scrolls and page details on that form, and the visitor’s IP address; never loaded for a signed-in account or on children’s screens",
-    location: "United States",
-    privacyUrl: "https://www.microsoft.com/privacy/privacystatement",
-    riskTier: "low",
-    hosts: ["clarity.ms"],
   },
   {
     name: "GitHub",

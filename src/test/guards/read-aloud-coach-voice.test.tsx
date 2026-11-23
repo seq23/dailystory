@@ -15,6 +15,8 @@ vi.mock('@/services/CharlotteVoiceService', () => ({ charlotteVoiceService: { st
 vi.mock('@/services/BrowserTTSService', () => ({ browserTTSService: { stop: () => {}, speakCoachMessage: async () => {} } }));
 
 import ReadAloudCoach from '@/components/ReadAloudCoach';
+import Privacy from '@/pages/Privacy';
+import { MemoryRouter } from 'react-router-dom';
 
 class FakeRecorder {
   static isTypeSupported = () => true;
@@ -187,8 +189,10 @@ describe('the privacy pages say what happens to a voice clip', () => {
   });
 
   it('the consent basis is stated only for signed-in accounts, which is what the code enforces', () => {
-    const privacy = readFileSync(join(root, 'src/pages/Privacy.tsx'), 'utf8');
-    expect(privacy).toMatch(/Voice clips \(signed-in accounts only[^<]*<\/td>.*Parental consent/);
+    render(<MemoryRouter><Privacy /></MemoryRouter>);
+    const voice = screen.getAllByTestId('basis-row').filter((row) => row.textContent!.startsWith('Voice clips'));
+    expect(voice).toHaveLength(1);
+    expect(voice[0].textContent).toMatch(/^Voice clips \(signed-in accounts only, after a tap on the microphone\).*Parental consent \(Art\. 6\(1\)\(a\), Art\. 8\)$/);
     expect(readFileSync(join(root, 'supabase/functions/voice-to-text/index.ts'), 'utf8')).toMatch(/allowGuests: false/);
   });
 });

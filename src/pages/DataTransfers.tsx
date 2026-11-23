@@ -78,7 +78,7 @@ const DataTransfers = () => {
                   </p>
                   <p className="text-muted-foreground">{p.purpose}</p>
                   <p className="text-muted-foreground">
-                    {p.location}{p.dpa ? ` · ${DPA_LABEL[p.dpa]}` : ""}
+                    {p.location} · {DPA_LABEL[p.dpa]}
                   </p>
                 </li>
               ))}
