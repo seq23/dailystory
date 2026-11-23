@@ -6,7 +6,8 @@
  * The count is public.read_aloud_practice_hit (migration 20261122120000_read_aloud_practice.sql):
  * the account's own LOCAL day (time zone set once from the browser, changed at most every
  * READ_ALOUD_ZONE_CHANGE_DAYS days), a refused clip costs nothing, and it returns the day's
- * used and limit, which the coach shows as they are.
+ * used and limit, which the coach shows as they are, and a refusal says which cap it hit
+ * (reason "clips" or "sentences", migration 20261122180000_read_aloud_refusal_reason.sql).
  *
  * Outages (owner's reviewer, 22 Nov 2026): when the plan cannot be read the account is
  * treated as free (a paying family gets today's 5, never a 503); only a count that cannot
@@ -31,10 +32,16 @@ export const READ_ALOUD_FREE_CLIPS_PER_SENTENCE = 30;
 export const READ_ALOUD_ZONE_CHANGE_DAYS = 30;
 
 export const READ_ALOUD_LIMIT_CODE = "READ_ALOUD_LIMIT_REACHED";
+/** One sentence's READ_ALOUD_FREE_CLIPS_PER_SENTENCE clips are used today; other sentences are left. */
+export const READ_ALOUD_CLIP_LIMIT_CODE = "READ_ALOUD_CLIP_LIMIT_REACHED";
 export const READ_ALOUD_UNAVAILABLE_CODE = "READ_ALOUD_CHECK_UNAVAILABLE";
 
+// The coach shows its own translated copy of these (src/i18n/locales, coach.*); these are
+// the server's English, for any other caller.
 export const READ_ALOUD_LIMIT_MESSAGE =
   `Today's ${READ_ALOUD_FREE_SENTENCES_PER_DAY} free practice sentences are used up. Come back tomorrow, or Premium has unlimited practice.`;
+export const READ_ALOUD_CLIP_LIMIT_MESSAGE =
+  "You've practised this sentence lots today! Try another one, or read it again tomorrow.";
 export const READ_ALOUD_UNAVAILABLE_MESSAGE =
   "We couldn't check today's practice count. Please try again in a minute.";
 
@@ -120,6 +127,13 @@ export async function checkReadAloud(userId: string, sentence: unknown, timeZone
     deps.report("read_aloud_count_failed", `unreadable answer: ${JSON.stringify(raw)?.slice(0, 120)}`);
     return refuse(503, READ_ALOUD_UNAVAILABLE_CODE, READ_ALOUD_UNAVAILABLE_MESSAGE, null);
   }
-  if (!raw.allowed) return refuse(429, READ_ALOUD_LIMIT_CODE, READ_ALOUD_LIMIT_MESSAGE, used);
-  return { allowed: true, practice: { used, limit } };
+  if (raw.allowed) return { allowed: true, practice: { used, limit } };
+  // Each cap its own true message (reviewer, 22 Nov 2026: a child out of one sentence's
+  // clips was told the day's sentences were used up). Out of clips with sentences left:
+  // "try another one". Out of clips with none left: "try another one" would be false, so
+  // the day's message, which is then true. A refusal with no known reason is unknown.
+  if (raw.reason === "clips" && used < limit) return refuse(429, READ_ALOUD_CLIP_LIMIT_CODE, READ_ALOUD_CLIP_LIMIT_MESSAGE, used);
+  if (raw.reason === "clips" || raw.reason === "sentences") return refuse(429, READ_ALOUD_LIMIT_CODE, READ_ALOUD_LIMIT_MESSAGE, used);
+  deps.report("read_aloud_count_failed", `refusal with no reason: ${JSON.stringify(raw)?.slice(0, 120)}`);
+  return refuse(503, READ_ALOUD_UNAVAILABLE_CODE, READ_ALOUD_UNAVAILABLE_MESSAGE, null);
 }

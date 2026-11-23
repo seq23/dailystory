@@ -4,7 +4,7 @@ import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
 import { privacyLaneForRequest, withPrivacyLane } from "../_shared/privacyLane.ts";
 import { plainAnswerProblem } from "../_shared/storyOutputCheck.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
-import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
+import { paidCallRefusal, adminUserIds, readJsonBeforeGuard } from "../_shared/paidCallGuardDeno.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -167,8 +167,9 @@ const handleRequest = async (req: Request): Promise<Response> => {
 // every model call in the handler inherits the lane decided here from the signed-in account.
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return handleRequest(req);
-  let laneBody: unknown = null;
-  try { laneBody = await req.clone().json(); } catch { /* the handler answers bad JSON itself */ }
+  // Read under the paid-call byte cap (../_shared/paidCallGuard.ts); not JSON → null, and the handler answers it.
+  const { body: laneBody, refused } = await readJsonBeforeGuard(req, corsHeaders);
+  if (refused) return refused;
   const lane = await privacyLaneForRequest(req, laneBody);
   return withPrivacyLane(lane, () => handleRequest(req));
 });

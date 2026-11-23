@@ -18,6 +18,7 @@ export const TRIAL_DAYS = 7;
 export {
   READ_ALOUD_FREE_SENTENCES_PER_DAY,
   READ_ALOUD_LIMIT_CODE,
+  READ_ALOUD_CLIP_LIMIT_CODE,
   READ_ALOUD_UNAVAILABLE_CODE,
 } from "../../supabase/functions/_shared/readAloudAllowance";
 

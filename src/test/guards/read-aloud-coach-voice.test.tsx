@@ -94,10 +94,10 @@ describe('read-aloud practice and the child\'s voice', () => {
     data: null,
     error: { name: 'FunctionsHttpError', context: new Response(JSON.stringify({ success: false, code, ...extra }), { status }) },
   });
-  const practiseOnce = async () => {
+  const practiseOnce = async (targetText = "The fox runs.") => {
     (window as any).AudioContext = meter(255);
     localStorage.clear();
-    render(<ReadAloudCoach targetText="The fox runs." autoIntroduce={false} />);
+    render(<ReadAloudCoach targetText={targetText} autoIntroduce={false} />);
     const start = await screen.findByRole('button', { name: /Start Reading/ });
     await act(async () => { fireEvent.click(start); });
     await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
@@ -130,6 +130,28 @@ describe('read-aloud practice and the child\'s voice', () => {
     await practiseOnce();
     expect(screen.getByTestId('coach-refused').textContent).toMatch(/5 free practice sentences are used up/);
     expect(screen.getByTestId('coach-count').textContent).toMatch(/5\/5/);
+    expect((startButton() as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  // Reviewer, 22 Nov 2026: one sentence's clips used up told the child "5 sentences used up".
+  it('one sentence\'s clips used up: the child is told that sentence is done for today, and another sentence still works', async () => {
+    mocks.invoke.mockResolvedValue(refusedBy(429, 'READ_ALOUD_CLIP_LIMIT_REACHED', { used: 2, limit: 5 }));
+    await practiseOnce('The fox runs. The cat sits.');
+    const said = screen.getByTestId('coach-refused').textContent ?? '';
+    expect(said).toMatch(/practised this sentence lots today/);
+    expect(said).not.toMatch(/sentences are used up/);
+    expect(screen.getByTestId('coach-count').textContent).toMatch(/2\/5/);
+    expect((startButton() as HTMLButtonElement).disabled).toBe(true);
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next sentence/ })); });
+    expect(screen.queryByTestId('coach-refused')).toBeNull();
+    expect((startButton() as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('the day\'s limit is not lifted by moving to another sentence', async () => {
+    mocks.invoke.mockResolvedValue(refusedBy(429, 'READ_ALOUD_LIMIT_REACHED', { used: 5, limit: 5 }));
+    await practiseOnce('The fox runs. The cat sits.');
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next sentence/ })); });
+    expect(screen.getByTestId('coach-refused').textContent).toMatch(/5 free practice sentences are used up/);
     expect((startButton() as HTMLButtonElement).disabled).toBe(true);
   });
 

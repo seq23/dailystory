@@ -14,6 +14,7 @@ do $$ declare r jsonb; begin
   end loop;
   r := pg_temp.hit('70000000-0000-0000-0000-000000000001', 's6', 'America/Chicago');
   perform public.test_assert(not (r->>'allowed')::boolean and (r->>'used')::int = 5 and (r->>'limit')::int = 5, 'the sixth sentence is refused with used 5 of 5');
+  perform public.test_assert(r->>'reason' = 'sentences', 'the sixth sentence is refused for the day''s sentences');
   perform public.test_assert((select count(*) = 5 from public.read_aloud_practice where user_id = '70000000-0000-0000-0000-000000000001'), 'a refused sentence is not counted');
   r := pg_temp.hit('70000000-0000-0000-0000-000000000001', 's1', 'America/Chicago');
   perform public.test_assert((r->>'allowed')::boolean, 'a retry of a counted sentence is allowed at the limit');
@@ -21,6 +22,19 @@ do $$ declare r jsonb; begin
   perform pg_temp.hit('70000000-0000-0000-0000-000000000001', 's1', 'America/Chicago');
   r := pg_temp.hit('70000000-0000-0000-0000-000000000001', 's1', 'America/Chicago');
   perform public.test_assert(not (r->>'allowed')::boolean, 'the fourth clip of one sentence is refused');
+  perform public.test_assert(r->>'reason' = 'clips', 'the fourth clip is refused for its sentence''s clips, not the day''s sentences');
+end $$;
+
+-- The clip cap with sentences left: refused for the clips, and the day's count is unchanged.
+do $$ declare r jsonb; begin
+  for i in 1..3 loop
+    r := pg_temp.hit('70000000-0000-0000-0000-000000000007', 'one', 'UTC');
+    perform public.test_assert((r->>'allowed')::boolean and r->>'reason' is null, 'clip ' || i || ' of one sentence allowed, no reason');
+  end loop;
+  r := pg_temp.hit('70000000-0000-0000-0000-000000000007', 'one', 'UTC');
+  perform public.test_assert(not (r->>'allowed')::boolean and r->>'reason' = 'clips' and (r->>'used')::int = 1, 'the fourth clip is refused for clips with 1 of 5 sentences used');
+  r := pg_temp.hit('70000000-0000-0000-0000-000000000007', 'two', 'UTC');
+  perform public.test_assert((r->>'allowed')::boolean and (r->>'used')::int = 2, 'another sentence is still allowed after one sentence''s clips run out');
 end $$;
 
 -- The day is the family's local day, not UTC. Kiritimati (UTC+14) and Pago Pago (UTC-11) are

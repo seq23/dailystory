@@ -184,7 +184,7 @@ export interface IdentifyOptions {
   allowGuests?: boolean;
   /** Only the service role or a user in ADMIN_USER_IDS. */
   adminUserIds?: string[];
-  /** Largest request body accepted (Content-Length). Default DEFAULT_MAX_BODY_BYTES. */
+  /** Largest request body accepted, counted in bytes as it arrives (readBodyCapped). Default DEFAULT_MAX_BODY_BYTES. */
   maxBodyBytes?: number;
   /** What the sign-in is for, finishing "Please sign in …", e.g. "to make a new story". */
   signInFor?: string;
@@ -194,6 +194,76 @@ export interface IdentifyOptions {
 
 /** A page of text is a few KB; 64 KiB leaves room and stops a pasted book. */
 export const DEFAULT_MAX_BODY_BYTES = 64 * 1024;
+
+export const BODY_TOO_LARGE_CODE = "BODY_TOO_LARGE";
+export const BODY_UNREADABLE_CODE = "BODY_UNREADABLE";
+const bodyTooLarge = () => json(413, { success: false, error: "That request is too large.", code: BODY_TOO_LARGE_CODE });
+const bodyUnreadable = (e: unknown) => {
+  console.warn(`[paid-call-guard] ${BODY_UNREADABLE_CODE}: ${e instanceof Error ? e.message : e}`);
+  return json(400, { success: false, error: "We couldn't read that request. Please try again.", code: BODY_UNREADABLE_CODE });
+};
+
+/**
+ * The request body, read through a byte counter: the 413 Response the moment more than
+ * maxBytes have arrived (the rest is never read), a 400 when the stream fails, else the
+ * bytes. The Content-Length a client sends is never trusted: it can be left out, be
+ * false, or be absent because the body is chunked (reviewer, 22 Nov 2026). This reads
+ * (consumes) req.body; readCloneCapped keeps the original readable.
+ */
+export async function readBodyCapped(req: Request, maxBytes: number): Promise<Uint8Array | Response> {
+  if (!req.body) return new Uint8Array(0);
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        reader.cancel().catch(() => {});
+        return bodyTooLarge();
+      }
+      chunks.push(value);
+    }
+  } catch (e) {
+    return bodyUnreadable(e);
+  }
+  const bytes = new Uint8Array(total);
+  let at = 0;
+  for (const c of chunks) { bytes.set(c, at); at += c.byteLength; }
+  return bytes;
+}
+
+/**
+ * readBodyCapped on a clone, so the function can still read the original. A bodiless
+ * request (GET, a WebSocket upgrade) is never cloned. clone() throws when the body was
+ * already read: its size is then unknown, so it is refused.
+ */
+async function readCloneCapped(req: Request, maxBytes: number): Promise<Uint8Array | Response> {
+  if (!req.body) return new Uint8Array(0);
+  try {
+    return await readBodyCapped(req.clone(), maxBytes);
+  } catch (e) {
+    return bodyUnreadable(e);
+  }
+}
+
+/**
+ * The JSON body for a step that must run before the guard (the privacy lane picks its
+ * model route from it), read under the same byte cap so nothing parses an unbounded
+ * body: { body } (null when it is not JSON; the handler answers that) or the 413/400.
+ * Reads a clone, so the handler can still read the original.
+ */
+export async function readJsonCapped(req: Request, maxBytes = DEFAULT_MAX_BODY_BYTES): Promise<{ body: unknown } | Response> {
+  const read = await readCloneCapped(req, maxBytes);
+  if (read instanceof Response) return read;
+  try {
+    return { body: JSON.parse(new TextDecoder().decode(read)) };
+  } catch {
+    return { body: null };
+  }
+}
 
 /** Who is calling, or the 401/403 Response to return. */
 export async function identifyPaidCaller(
@@ -206,11 +276,9 @@ export async function identifyPaidCaller(
   const token = bearer(req);
   const refuse = () => json(401, { success: false, error: signInMessage(opts.signInFor), code: "SIGN_IN_REQUIRED" });
 
-  const maxBody = opts.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES;
-  const length = Number(req.headers.get("content-length") || "0");
-  if (Number.isFinite(length) && length > maxBody) {
-    return json(413, { success: false, error: "That request is too large.", code: "BODY_TOO_LARGE" });
-  }
+  // The real body, counted as it arrives, before any auth or paid work.
+  const body = await readCloneCapped(req, opts.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES);
+  if (body instanceof Response) return body;
 
   if (deps.serviceKey && token === deps.serviceKey) return { kind: "service", ip };
 

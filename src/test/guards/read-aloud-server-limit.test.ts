@@ -4,9 +4,12 @@
 // its local day, zone cap and access are proven in Postgres by supabase/tests/read_aloud/practice.sql).
 import { describe, expect, it, vi } from 'vitest';
 import {
+  READ_ALOUD_CLIP_LIMIT_CODE,
+  READ_ALOUD_CLIP_LIMIT_MESSAGE,
   READ_ALOUD_FREE_CLIPS_PER_SENTENCE,
   READ_ALOUD_FREE_SENTENCES_PER_DAY,
   READ_ALOUD_LIMIT_CODE,
+  READ_ALOUD_LIMIT_MESSAGE,
   READ_ALOUD_UNAVAILABLE_CODE,
   type ReadAloudDeps,
 } from '../../../supabase/functions/_shared/readAloudAllowance';
@@ -17,7 +20,7 @@ const FREE_ROW = { subscribed: false, subscription_end: null, override_premium: 
 const PREMIUM_ROW = { subscribed: true, subscription_end: '2035-01-01T00:00:00Z' };
 const OVERRIDE_ROW = { subscribed: false, override_premium: true, override_end: '2035-01-01T00:00:00Z' };
 
-/** read_aloud_practice_hit for one day: distinct sentences capped, clips per sentence capped. */
+/** read_aloud_practice_hit for one day: distinct sentences capped, clips per sentence capped; a refusal names its cap. */
 function practiceCounter() {
   const clips = new Map<string, number>();
   return vi.fn(async (userId: string, key: string, _tz: string | null) => {
@@ -25,11 +28,11 @@ function practiceCounter() {
     const k = `${userId}|${key}`;
     const n = clips.get(k);
     if (n !== undefined) {
-      if (n >= READ_ALOUD_FREE_CLIPS_PER_SENTENCE) return { allowed: false, used: mine.length, limit: READ_ALOUD_FREE_SENTENCES_PER_DAY };
+      if (n >= READ_ALOUD_FREE_CLIPS_PER_SENTENCE) return { allowed: false, reason: 'clips', used: mine.length, limit: READ_ALOUD_FREE_SENTENCES_PER_DAY };
       clips.set(k, n + 1);
       return { allowed: true, used: mine.length, limit: READ_ALOUD_FREE_SENTENCES_PER_DAY };
     }
-    if (mine.length >= READ_ALOUD_FREE_SENTENCES_PER_DAY) return { allowed: false, used: mine.length, limit: READ_ALOUD_FREE_SENTENCES_PER_DAY };
+    if (mine.length >= READ_ALOUD_FREE_SENTENCES_PER_DAY) return { allowed: false, reason: 'sentences', used: mine.length, limit: READ_ALOUD_FREE_SENTENCES_PER_DAY };
     clips.set(k, 1);
     return { allowed: true, used: mine.length + 1, limit: READ_ALOUD_FREE_SENTENCES_PER_DAY };
   });
@@ -91,6 +94,41 @@ describe('voice-to-text counts free read-aloud practice on the server', () => {
     const w = world();
     for (let i = 0; i < READ_ALOUD_FREE_CLIPS_PER_SENTENCE; i++) expect((await w.send({ sentence: 'The fox runs.' })).status).toBe(200);
     expect((await w.send({ sentence: 'The fox runs.' })).status).toBe(429);
+  });
+
+  // Reviewer, 22 Nov 2026: a child out of one sentence's clips was told "5 sentences used up".
+  it('message: one sentence\'s clips used up (sentences left) → the clip message, not the day\'s', async () => {
+    const w = world();
+    for (let i = 0; i < READ_ALOUD_FREE_CLIPS_PER_SENTENCE; i++) await w.send({ sentence: 'The fox runs.' });
+    const r = await w.send({ sentence: 'The fox runs.' });
+    expect(r).toMatchObject({ status: 429, body: { code: READ_ALOUD_CLIP_LIMIT_CODE, error: READ_ALOUD_CLIP_LIMIT_MESSAGE, used: 1, limit: 5 } });
+    expect(r.body.error).not.toMatch(/sentences are used up/);
+    // And it is true: another sentence still works today.
+    expect((await w.send({ sentence: 'The cat sits.' })).status).toBe(200);
+  });
+
+  it('message: the day\'s sentences used up → the sentence message', async () => {
+    const w = world();
+    for (let i = 1; i <= 5; i++) await w.send({ sentence: `S ${i}` });
+    const r = await w.send({ sentence: 'S 6' });
+    expect(r).toMatchObject({ status: 429, body: { code: READ_ALOUD_LIMIT_CODE, error: READ_ALOUD_LIMIT_MESSAGE, used: 5 } });
+  });
+
+  it('message: out of clips AND out of sentences → the day\'s message ("try another one" would be false)', async () => {
+    const w = world();
+    for (let i = 1; i <= 5; i++) await w.send({ sentence: `S ${i}` });
+    for (let i = 1; i < READ_ALOUD_FREE_CLIPS_PER_SENTENCE; i++) await w.send({ sentence: 'S 5' });
+    const r = await w.send({ sentence: 'S 5' });
+    await expect(w.practiceHit.mock.results[w.practiceHit.mock.results.length - 1]?.value).resolves.toMatchObject({ allowed: false, reason: 'clips' });
+    expect(r).toMatchObject({ status: 429, body: { code: READ_ALOUD_LIMIT_CODE, error: READ_ALOUD_LIMIT_MESSAGE } });
+  });
+
+  it('outage: a refusal that names no cap is unknown ("try again"), never a guessed message', async () => {
+    const w = world({ practiceHit: async () => ({ allowed: false, used: 2, limit: 5 }) });
+    const r = await w.send({ sentence: 'The fox runs.' });
+    expect(r).toMatchObject({ status: 503, body: { code: READ_ALOUD_UNAVAILABLE_CODE } });
+    expect(w.transcribe).not.toHaveBeenCalled();
+    expect(w.report).toHaveBeenCalledWith('read_aloud_count_failed', expect.stringContaining('no reason'));
   });
 
   it('abuse: command mode is not counted and returns a command or nothing, never a practice transcript', async () => {

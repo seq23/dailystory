@@ -5,6 +5,7 @@ import {
   chargePaidCall,
   guardPaidCall,
   identifyPaidCaller,
+  readJsonCapped,
   type IdentifyOptions,
   type PaidCallDeps,
   type PaidCaller,
@@ -65,7 +66,20 @@ export async function guardCallWithCors(
 ): Promise<{ caller: PaidCaller; refused: null } | { caller: null; refused: Response }> {
   const { caller, refusal } = await guardCall(req, fn, opts);
   if (!refusal) return { caller, refused: null };
-  const headers = new Headers(refusal.headers);
+  return { caller: null, refused: withCors(refusal, cors) };
+}
+
+function withCors(res: Response, cors: Record<string, string>): Response {
+  const headers = new Headers(res.headers);
   for (const [k, v] of Object.entries(cors)) if (!headers.has(k)) headers.set(k, v);
-  return { caller: null, refused: new Response(refusal.body, { status: refusal.status, headers }) };
+  return new Response(res.body, { status: res.status, headers });
+}
+
+/** readJsonCapped (./paidCallGuard.ts) with CORS on its 413/400, for the privacy-lane wrappers. */
+export async function readJsonBeforeGuard(
+  req: Request,
+  cors: Record<string, string>,
+): Promise<{ body: unknown; refused: null } | { body: null; refused: Response }> {
+  const read = await readJsonCapped(req);
+  return read instanceof Response ? { body: null, refused: withCors(read, cors) } : { body: read.body, refused: null };
 }

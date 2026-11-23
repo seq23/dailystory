@@ -966,6 +966,7 @@
     "signIn": "Connecte-toi pour t’entraîner à lire à voix haute.",
     "noSpeech": "Je ne t’ai pas entendu. Touche « Commence à lire » et lis la phrase à voix haute.",
     "limitReached": "Les {{count}} phrases d'entraînement gratuites d'aujourd'hui sont utilisées. Reviens demain, ou Premium offre un entraînement illimité.",
+    "clipLimitReached": "Tu as beaucoup pratiqué cette phrase aujourd'hui ! Essaie une autre phrase, ou relis-la demain.",
     "countUnavailable": "Nous n'avons pas pu vérifier ton entraînement du jour. Réessaie dans une minute."
   },
   "postSession": {

@@ -968,6 +968,7 @@
     "signIn": "登录后即可练习朗读。",
     "noSpeech": "我没有听到你的声音。点“开始朗读”，大声读出这句话。",
     "limitReached": "今天的 {{count}} 个免费练习句子已经用完了。明天再来，或者 Premium 可以无限练习。",
+    "clipLimitReached": "你今天已经练习这个句子很多次了！试试别的句子，或者明天再读这一句。",
     "countUnavailable": "暂时无法查看今天的练习次数。请一分钟后再试。"
   },
   "postSession": {

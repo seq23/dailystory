@@ -952,6 +952,7 @@
     "signIn": "Sign in to practise reading out loud.",
     "noSpeech": "I didn’t hear you. Tap Start Reading and read the sentence out loud.",
     "limitReached": "Today's {{count}} free practice sentences are used up. Come back tomorrow, or Premium has unlimited practice.",
+    "clipLimitReached": "You've practised this sentence lots today! Try another one, or read it again tomorrow.",
     "countUnavailable": "We couldn't check today's practice count. Please try again in a minute."
   },
   "vocabulary": {

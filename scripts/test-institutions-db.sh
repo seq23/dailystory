@@ -66,8 +66,11 @@ echo 'Anonymous diagnostic size, rate, access, and reapplication checks passed.'
 
 # Free read-aloud practice per local day: limits, local date, zone change cap, access, reapply.
 read_aloud_migration="${READ_ALOUD_MIGRATION:-supabase/migrations/20261122120000_read_aloud_practice.sql}"
+read_aloud_reason_migration="${READ_ALOUD_REASON_MIGRATION:-supabase/migrations/20261122180000_read_aloud_refusal_reason.sql}"
 docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$read_aloud_migration"
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$read_aloud_reason_migration"
 docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < supabase/tests/read_aloud/practice.sql
 docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$read_aloud_migration"
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$read_aloud_reason_migration"
 docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.read_aloud_practice) < 20 then raise exception 'Read-aloud reapplication lost data'; end if; end \$\$;"
-echo 'Read-aloud practice limits, local day, zone cap, access and reapplication checks passed.'
+echo 'Read-aloud practice limits, refusal reasons, local day, zone cap, access and reapplication checks passed.'
