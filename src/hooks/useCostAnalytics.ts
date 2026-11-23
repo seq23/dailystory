@@ -113,9 +113,11 @@ export function useCostAnalytics(autoLoad = true): CostAnalyticsState {
           status === 401 || status === 403 || /401|403|forbidden|unauthor/i.test(message);
         setForbidden(isAuth);
         setError(
-          isAuth
-            ? 'Sign-in required — sign in to see cost data.'
-            : `${message}${status ? ` (HTTP ${status})` : ''}`
+          status === 403 || /403|forbidden|admin/i.test(message)
+            ? 'Admin access required to see cost data.'
+            : isAuth
+              ? 'Sign-in required — sign in to see cost data.'
+              : `${message}${status ? ` (HTTP ${status})` : ''}`
         );
         setCostSummary(null);
         setTotalCostSummary(null);

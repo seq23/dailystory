@@ -26,7 +26,7 @@ describe("every edge function module compiles (a module that does not compile do
 
   it("finds the functions", () => {
     expect(fns.length).toBeGreaterThan(40);
-    expect(fns).toContain("send-coppa-notification");
+    expect(fns).toContain("verify-parental-consent");
   });
 
   it("no syntax error and no duplicate declaration in any function or shared module", () => {

@@ -6,6 +6,7 @@
 // POST { action: "delete", language_code }
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { adminIdsFrom, adminOrCronRefusal } from "../_shared/callerCheck.ts";
 
 // Search terms per language for the ElevenLabs Shared Voice Library.
 // Kept intentionally broad to maximize hit rate; we then filter to English-labelled voices.
@@ -76,30 +77,18 @@ serve(async (req) => {
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const sb = createClient(supabaseUrl, serviceKey);
 
-  // ── Authorization: admin only ──
-  const token = req.headers.get('Authorization')?.replace('Bearer ', '').trim();
-  if (!token) return json({ error: 'Unauthorized' }, 401);
-
-  const adminUserIds = (Deno.env.get('ADMIN_USER_IDS') || '')
-    .split(',').map(s => s.trim()).filter(Boolean);
-  let authorized = token === serviceKey;
-  let actingUserId: string | null = null;
-  if (!authorized) {
-    const { data: { user }, error: userError } = await sb.auth.getUser(token);
-    if (userError || !user) {
-      return json({ error: 'Sign in required', code: 'sign_in_required' }, 401);
-    }
-    if (adminUserIds.length === 0) {
-      console.error('[voice-overrides-admin] ADMIN_USER_IDS is not configured; denying access');
-      return json({ error: 'Admin access is not configured', code: 'admin_not_configured' }, 403);
-    }
-    if (!adminUserIds.includes(user.id)) {
-      return json({ error: 'Admin access required', code: 'admin_required' }, 403);
-    }
-    authorized = true;
-    actingUserId = user.id;
-  }
-  if (!authorized) return json({ error: 'Forbidden' }, 403);
+  // ── Authorization: an admin (ADMIN_USER_IDS) or the service key; _shared/callerCheck.ts ──
+  const auth = await adminOrCronRefusal(req, {
+    adminIds: adminIdsFrom(Deno.env.get('ADMIN_USER_IDS')),
+    serviceKey,
+    cors: corsHeaders,
+    async getUser(token) {
+      const { data, error } = await sb.auth.getUser(token);
+      return error || !data?.user ? null : { id: data.user.id, email: data.user.email ?? null };
+    },
+  });
+  if (auth.refused) return auth.refused;
+  const actingUserId = auth.userId;
 
   let body: any;
   try { body = await req.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }

@@ -10,24 +10,17 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4?target=deno";
 import { runLifecycleSweep } from "../_shared/lifecycleEmail/core.ts";
 import { lifecycleDeps } from "../_shared/lifecycleEmail/deps.ts";
+import { cronSecretRefusal } from "../_shared/callerCheck.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-
-function sameSecret(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let d = 0;
-  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return d === 0;
-}
 
 serve(async (req) => {
   // The deploy probes every function's OPTIONS preflight for a 2xx (deploy-functions.yml boot check).
   if (req.method === "OPTIONS") return new Response(null, { status: 204 });
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
-  const secret = Deno.env.get("LIFECYCLE_CRON_SECRET");
-  if (!secret) return json({ stop: "NAMED STOP LIFECYCLE_CRON_SECRET: the sweep secret is not set on the project; nothing runs." }, 503);
-  if (!sameSecret(req.headers.get("x-lifecycle-secret") ?? "", secret)) return json({ error: "forbidden" }, 403);
+  const refused = cronSecretRefusal(req, { header: "x-lifecycle-secret", name: "LIFECYCLE_CRON_SECRET", value: Deno.env.get("LIFECYCLE_CRON_SECRET") });
+  if (refused) return refused;
 
   const { action = "sweep" } = await req.json().catch(() => ({}));
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });

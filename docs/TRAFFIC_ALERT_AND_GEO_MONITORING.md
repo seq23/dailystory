@@ -63,16 +63,12 @@ Tracks AI call volume by operation type for cost estimation.
 | estimated_cost | numeric | Estimated cost in USD |
 | provider | text | e.g., openai, runware, elevenlabs |
 
-### 4. pg_cron Schedule
+### 4. Schedule
 
-```sql
--- Runs 1st of every month at 9:00 AM UTC
-SELECT cron.schedule(
-  'monthly-traffic-alert',
-  '0 9 1 * *',
-  $$ SELECT net.http_post(...) $$
-);
-```
+`.github/workflows/ops-reports.yml` runs it on the 1st of every month at 04:00 CT with the
+`x-ops-secret` header (`OPS_CRON_SECRET`). The function refuses every other caller (403), and
+refuses everyone (503, NAMED STOP) when the secret is not set. The old pg_cron job, which sent
+the public anon key, was unscheduled on 23 Nov 2026.
 
 ## Security & Privacy
 
@@ -85,10 +81,7 @@ SELECT cron.schedule(
 
 Invoke manually to test:
 ```bash
-curl -X POST https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/traffic-alert \
-  -H "Authorization: Bearer <anon_key>" \
-  -H "Content-Type: application/json" \
-  -d '{"time": "manual-test"}'
+gh workflow run ops-reports.yml -R seq23/dailystory -f report=traffic-alert
 ```
 
 If no thresholds are exceeded, returns `alert_sent: false` with current stats.
@@ -120,8 +113,4 @@ All cost-incurring edge functions log to `cost_tracking` via the shared `costLog
 | `voice-to-text` | openai | speech_to_text |
 | `generate-fallback-images` | openai | image_generation (deprecated) |
 | `traffic-alert` | resend | email_send |
-| `send-coppa-notification` | resend | email_send |
-| `send-parental-notification` | resend | email_send |
-| `send-custom-auth-email` | resend | email_send |
-| `notification-service` | resend | email_send |
 | `notify-data-breach` | resend | email_send |

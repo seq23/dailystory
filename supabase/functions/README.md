@@ -13,7 +13,6 @@ This directory contains all Edge Functions for the project. GitHub is the source
 - `create-checkout` - JWT: true
 - `create-premium-subscription` - JWT: true
 - `customer-portal` - JWT: true
-- `send-custom-auth-email` - JWT: true
 - `stripe-webhook` - JWT: false (Stripe signature verification instead)
 - `validate-discount-code` - JWT: false
 
@@ -96,16 +95,33 @@ The following services are **deprecated** and should not be imported directly:
 ### Security & Monitoring Functions
 - `log-personal-info-incident` - JWT: true
 - `log-security-event` - JWT: true
-- `notification-service` - JWT: true
 - `security-alert` - JWT: true
 - `security-dashboard` - JWT: true
-- `send-coppa-notification` - JWT: true
-- `send-parental-notification` - JWT: true
 
 ### System & Debug Functions
 - `get-monitoring-data` - JWT: false
 - `model-performance-monitor` - JWT: false
 - `system-diagnostics` - JWT: false
+
+## Caller checks
+
+Every function that sends email or spends paid quota checks its caller first, with the
+check that fits its real caller (23 Nov 2026; `_shared/callerCheck.ts`, `_shared/paidCallGuardDeno.ts`).
+`verify_jwt` is not a check: the anon key is public.
+
+| Caller | Check |
+|---|---|
+| A signed-in parent (verify-parental-consent) | `signedInUser`, then the child must be theirs; sent only to the account's confirmed sign-in email; name from the database; 5 per network and 50 overall a day |
+| An admin or the service key (cost-report, get-cost-analytics, notify-data-breach, prompt-studio, voice-overrides-admin) | `adminOrCronRefusal` (ADMIN_USER_IDS); prompt-studio's page sends its token as `?jwt=`, since a browser WebSocket cannot send headers |
+| A schedule (traffic-alert, cost-report, lifecycle-emails) | `cronSecretRefusal`: a project secret in a header, constant-time; unset = refuse everyone, NAMED STOP |
+| The public feedback form | `handleFeedback`: `rateRefusal` per network, per account and overall; the owner's inbox from the COST_REPORT_EMAIL secret (the Resend team has no verified domain yet); identity only from a session; proven live after each deploy that changes it |
+| A reader of a paid feature | `paidCallRefusal` / `guardCallWithCors` |
+| Stripe | `verifyStripeEvent` |
+
+Guard: `src/test/guards/caller-check.test.ts` finds every function that sends mail or calls a
+paid host and fails when its own code calls none of these. A function whose folder is deleted
+stays live on Supabase until deleted there: add its name to `RETIRED` in
+`.github/workflows/deploy-functions.yml`.
 
 ## Entry File Requirements
 

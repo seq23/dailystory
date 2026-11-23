@@ -75,9 +75,6 @@ verify_jwt = true
 [functions.model-performance-monitor]
 verify_jwt = false
 
-[functions.notification-service]
-verify_jwt = true
-
 [functions.process-story-content]
 verify_jwt = false
 
@@ -90,15 +87,6 @@ verify_jwt = true
 [functions.security-dashboard]
 verify_jwt = true
 
-[functions.send-coppa-notification]
-verify_jwt = true
-
-[functions.send-custom-auth-email]
-verify_jwt = true
-
-[functions.send-parental-notification]
-verify_jwt = true
-
 [functions.send-feedback-notification]
 verify_jwt = false
 
@@ -109,6 +97,15 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.template-service]
+verify_jwt = false
+
+# Admin only, checked in code (ADMIN_USER_IDS). verify_jwt is off because a browser WebSocket
+# cannot send an Authorization header; the page sends its session token as ?jwt= instead.
+[functions.prompt-studio]
+verify_jwt = false
+
+# Called only by .github/workflows/ops-reports.yml with the OPS_CRON_SECRET header (checked in code).
+[functions.traffic-alert]
 verify_jwt = false
 
 [functions.translate-universal]

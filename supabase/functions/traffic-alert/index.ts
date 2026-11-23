@@ -1,12 +1,15 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
+import { cronSecretRefusal, OPS_SECRET_HEADER } from "../_shared/callerCheck.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const ALERT_EMAIL = 'privacy@time-2-read.com';
+// The app's Resend team has no verified domain, so it sends only from resend.dev and only to
+// the team owner's own address; the privacy inbox refused every alert (403). The owner's
+// inbox is the COST_REPORT_EMAIL secret (never in the repo) until time-2-read.com is verified.
 const COST_ALERT_THRESHOLD = 100;
 const SPIKE_MULTIPLIER = 1.5;
 const DROP_MULTIPLIER = 0.5;
@@ -17,6 +20,10 @@ serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
+  // Only the monthly schedule (.github/workflows/ops-reports.yml) may run this: it reads
+  // traffic and cost figures and emails the privacy inbox. An unset secret refuses everyone.
+  const refused = cronSecretRefusal(req, { header: OPS_SECRET_HEADER, name: 'OPS_CRON_SECRET', value: Deno.env.get('OPS_CRON_SECRET') }, corsHeaders);
+  if (refused) return refused;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
@@ -24,6 +31,8 @@ serve(async (req: Request) => {
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
     if (!resendApiKey) throw new Error('RESEND_API_KEY not configured');
+    const ALERT_EMAIL = (Deno.env.get('COST_REPORT_EMAIL') || '').trim();
+    if (!ALERT_EMAIL) throw new Error('NAMED STOP COST_REPORT_EMAIL: the owner inbox is not set on the project');
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     const now = new Date();

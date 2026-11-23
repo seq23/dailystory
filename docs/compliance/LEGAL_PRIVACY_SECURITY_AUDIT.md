@@ -97,7 +97,7 @@ SELECT tablename, rowsecurity FROM pg_tables WHERE tablename = 'parental_consent
 - Real-time content validation for personal information (email, phone, address)
 - `personal_info_incidents` database table for logging violations
 - Incident logging edge function: `supabase/functions/log-personal-info-incident/`
-- Parent notification system: `supabase/functions/send-coppa-notification/`
+- Parent notification system: none. `send-coppa-notification` was removed 23 Nov 2026: no code called it, and it would mail any address it was given.
 
 **Database Schema:**
 ```sql
@@ -503,8 +503,6 @@ Templates available for:
 | `log-security-event` | Security audit logging | Yes |
 | `security-alert` | Security alerting | Yes |
 | `security-dashboard` | Security monitoring | Yes |
-| `send-coppa-notification` | Parent notifications | Yes |
-| `send-parental-notification` | Parent digest reports | Yes |
 
 **Payment Functions:**
 | Function | Purpose | JWT Required |
@@ -662,7 +660,7 @@ Time2Read LLC
 | Export User Data Function | `supabase/functions/export-user-data/index.ts` | ✅ NEW |
 | Verify Parental Consent | `supabase/functions/verify-parental-consent/index.ts` | ✅ NEW |
 | Confirm Parental Consent | `supabase/functions/confirm-parental-consent/index.ts` | ✅ NEW |
-| COPPA Notification | `supabase/functions/send-coppa-notification/` | ✅ |
+| COPPA Notification | none (send-coppa-notification removed 23 Nov 2026: no code called it, and it would mail any address it was given) | ❌ |
 | Personal Info Logging | `supabase/functions/log-personal-info-incident/` | ✅ |
 
 ---

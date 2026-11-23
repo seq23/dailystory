@@ -65,8 +65,7 @@ export function FeedbackForm({ onClose }: FeedbackFormProps) {
             message: data.message,
             page_url: window.location.href,
             user_agent: navigator.userAgent,
-            user_email: user?.email ?? null,
-            user_id: user?.id ?? null,
+            // Who sent it comes from the session token the client attaches, never the body.
           },
         })
         .catch((err) => {

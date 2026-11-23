@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { adminIdsFrom, adminOrCronRefusal } from "../_shared/callerCheck.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -57,23 +58,18 @@ serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const sb = createClient(supabaseUrl, serviceKey);
 
-    // ── Authorization: any signed-in user (or service_role). Admin allow-list removed. ──
-    const token = req.headers.get('Authorization')?.replace('Bearer ', '').trim();
-    if (!token) {
-      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    let authorized = token === serviceKey;
-    if (!authorized) {
-      const { data: { user } } = await sb.auth.getUser(token);
-      authorized = !!user;
-    }
-    if (!authorized) {
-      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    // ── Authorization: an admin (ADMIN_USER_IDS, as AdminOnly and voice-overrides-admin) or
+    //    the service key. Any other signed-in account is 403 (23 Nov 2026). ──
+    const auth = await adminOrCronRefusal(req, {
+      adminIds: adminIdsFrom(Deno.env.get('ADMIN_USER_IDS')),
+      async getUser(token) {
+        const { data, error } = await sb.auth.getUser(token);
+        return error || !data?.user ? null : { id: data.user.id, email: data.user.email ?? null };
+      },
+      serviceKey,
+      cors: corsHeaders,
+    });
+    if (auth.refused) return auth.refused;
 
     const today = new Date().toISOString().split('T')[0];
     const now = new Date();

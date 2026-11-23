@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Daily health check for deployed edge functions. One script for every monitor
-# workflow (monitor-runware-generate, monitor-template-ab, monitor-template-cd,
-# monitor-ai-visual), so a fix lands in all of them at once.
+# Daily health check for deployed edge functions, used by monitor-runware-generate.yml.
+# (monitor-template-ab, monitor-template-cd and monitor-ai-visual were removed on 23 Nov 2026
+# with the retired functions they watched.)
 #
 # Usage: scripts/monitor/function-health.sh FUNCTION [FUNCTION ...]
 #

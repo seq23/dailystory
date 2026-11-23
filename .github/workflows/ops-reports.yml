@@ -1,0 +1,65 @@
+name: Ops reports
+
+# Two owner reports, moved here from pg_cron on 23 Nov 2026 (the monthly job called
+# traffic-alert with the public anon key, so anyone could too). Each function now answers only
+# the OPS_CRON_SECRET header (supabase/functions/_shared/callerCheck.ts):
+#   traffic-alert  monthly, 1st 04:00 CT: emails the owner's inbox when traffic or cost moves
+#   cost-report    quarterly, 1st of Jan/Apr/Jul/Oct 04:20 CT: emails the quarter's cost report
+# A missing secret is a NAMED STOP and fails the run; a report that was due but not emailed
+# fails the run.
+on:
+  schedule:
+    - cron: "0 4 1 * *"
+      timezone: America/Chicago
+    - cron: "20 4 1 1,4,7,10 *"
+      timezone: America/Chicago
+  workflow_dispatch:
+    inputs:
+      report:
+        description: "traffic-alert or cost-report"
+        required: true
+        default: traffic-alert
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ops-reports
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PROJECT_URL: https://cpzeuogomaixamrtnnmj.supabase.co
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      OPS_CRON_SECRET: ${{ secrets.OPS_CRON_SECRET }}
+      SCHEDULE: ${{ github.event.schedule }}
+      REPORT_INPUT: ${{ github.event.inputs.report }}
+    steps:
+      - name: Run the report
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$SCHEDULE" in
+            "0 4 1 * *") REPORT=traffic-alert ;;
+            "20 4 1 1,4,7,10 *") REPORT=cost-report ;;
+            "") REPORT="$REPORT_INPUT" ;;
+            *) echo "::error::unknown schedule $SCHEDULE"; exit 1 ;;
+          esac
+          case "$REPORT" in traffic-alert|cost-report) ;; *) echo "::error::unknown report $REPORT"; exit 1 ;; esac
+          if [ -z "$OPS_CRON_SECRET" ]; then echo "::error::NAMED STOP: repo secret OPS_CRON_SECRET is not set"; exit 1; fi
+          code=$(curl -sS -o /tmp/out.json -w '%{http_code}' --max-time 120 -X POST \
+            "$PROJECT_URL/functions/v1/$REPORT" \
+            -H "apikey: $SUPABASE_ANON_KEY" -H "x-ops-secret: $OPS_CRON_SECRET" \
+            -H "Content-Type: application/json" -d '{}' || echo 000)
+          echo "$REPORT answered HTTP $code"
+          # Figures only; never the whole body (it can hold per-location counts).
+          jq -c '{success, alert_sent, alert_type, stop, emailSent: .report.emailSent}' /tmp/out.json 2>/dev/null || head -c 300 /tmp/out.json
+          [ "$code" = "200" ] || { echo "::error::$REPORT answered $code ($(jq -r '.stop // .error // empty' /tmp/out.json 2>/dev/null))"; exit 1; }
+          if [ "$REPORT" = "cost-report" ]; then
+            [ "$(jq -r '.report.emailSent' /tmp/out.json)" = "true" ] || { echo "::error::cost-report ran but the email was not sent"; exit 1; }
+          else
+            [ "$(jq -r '.success' /tmp/out.json)" = "true" ] || { echo "::error::traffic-alert did not finish"; exit 1; }
+          fi
