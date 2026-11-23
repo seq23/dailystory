@@ -1,9 +1,9 @@
 {
   "schema": "search-loop-cap-v1",
-  "max_live_pages": 22,
+  "max_live_pages": 25,
   "config_value": null,
-  "reason": "up from 20 to 22: Google impressions 505 in the last 28 days beat 19 in the 28 before",
-  "last_eval_week": "2026-W47",
+  "reason": "up from 22 to 25: Google impressions 562 in the last 28 days beat 107 in the 28 before",
+  "last_eval_week": "2026-W48",
   "history": [
     {
       "at": "2026-11-06T23:12:38.813Z",
@@ -31,11 +31,18 @@
       "from": 20,
       "to": 22,
       "reason": "up from 20 to 22: Google impressions 505 in the last 28 days beat 19 in the 28 before"
+    },
+    {
+      "at": "2026-11-23T22:54:30.690Z",
+      "week": "2026-W48",
+      "from": 22,
+      "to": 25,
+      "reason": "up from 22 to 25: Google impressions 562 in the last 28 days beat 107 in the 28 before"
     }
   ],
   "held": {},
   "impressions": {
-    "last_28": 505,
-    "prev_28": 19
+    "last_28": 562,
+    "prev_28": 107
   }
 }

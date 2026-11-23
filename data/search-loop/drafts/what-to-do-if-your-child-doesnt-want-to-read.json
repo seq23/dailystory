@@ -1,0 +1,109 @@
+{
+  "h1": "What to Do If Your Child Doesn't Want to Read",
+  "title_lead": "What to Do If Your Child Doesn't Want to Read",
+  "meta_description": "Practical steps to help a reluctant reader find books they enjoy, build a simple habit, and feel good about reading again.",
+  "direct_answer": "Reluctant reading is when a child avoids books despite having the skills to read. It often signals a mismatch between the child's interests and the material offered, or a need for more choice and lower pressure.",
+  "sections": [
+    {
+      "heading": "Why does my child resist reading?",
+      "paragraphs": [
+        "Children resist reading for many reasons. The books might be too hard, too easy, or simply boring to them. Some kids feel pressure to perform, which turns reading into a test instead of a pleasure. Others have not yet found a genre or format that sparks curiosity. Fatigue after school, competing activities, and a lack of choice all play a part. Understanding the specific reason helps you respond with empathy instead of frustration."
+      ],
+      "bullets": [
+        "Books feel too difficult or too babyish.",
+        "Topics do not match the child's interests.",
+        "Reading feels like a chore or homework.",
+        "No quiet time or comfortable spot to read.",
+        "Child prefers moving, building, or talking over sitting still."
+      ]
+    },
+    {
+      "heading": "How can I make reading feel like a choice?",
+      "paragraphs": [
+        "Give your child real control over what they read. Visit the library together and let them pick anything — graphic novels, magazines, joke books, or nonfiction about a favorite animal. Keep a rotating basket of books in the living room, the car, and their bedroom. Say yes to rereading favorites. When children choose, they invest their own curiosity. That ownership is the strongest driver of voluntary reading."
+      ],
+      "bullets": [
+        "Let the child pick every book for two weeks.",
+        "Include comics, audiobooks, and how-to guides.",
+        "Display books face-out where they are easy to grab.",
+        "Swap titles monthly to keep the selection fresh.",
+        "Model choosing your own reading material aloud."
+      ]
+    },
+    {
+      "heading": "What small habits build a reading routine?",
+      "paragraphs": [
+        "Tie reading to an existing anchor — after snack, before bath, or during a sibling's practice. Keep sessions short. Ten minutes of engaged reading beats thirty minutes of staring at a page. Use a timer the child sets. Celebrate the act of sitting with a book, not the number of pages finished. Consistency matters more than duration. A daily five-minute habit grows into a lifelong pattern."
+      ],
+      "bullets": [
+        "Anchor reading to a predictable daily moment.",
+        "Start with five to ten minutes.",
+        "Let the child set a visible timer.",
+        "Track streaks on a simple calendar.",
+        "Keep the mood light and pressure-free."
+      ]
+    },
+    {
+      "heading": "When should I step back and when should I step in?",
+      "paragraphs": [
+        "Step back when your child is browsing, flipping, or reading silently. Presence without pressure builds confidence. Step in when they ask for help decoding a word, want to discuss a plot twist, or invite you to read aloud together. Offer to buddy-read: you read a page, they read a page. This shares the load and keeps the story moving. Your role is a supportive partner, not a judge."
+      ],
+      "bullets": [
+        "Sit nearby with your own book during their reading time.",
+        "Wait for an invitation before correcting mistakes.",
+        "Offer buddy-reading for longer or harder books.",
+        "Discuss the story casually, not as a quiz.",
+        "Protect the reading time from interruptions."
+      ]
+    },
+    {
+      "heading": "What if progress feels slow?",
+      "paragraphs": [
+        "Progress with reluctant readers is rarely linear. Some weeks they devour a series; other weeks they barely open a cover. That is normal. Focus on the relationship with reading, not a finish line. Keep offering variety. Revisit the library. Try audiobooks during car rides. Celebrate any moment they choose words on their own. The goal is a child who sees reading as a tool for their own curiosity, not a task for adults."
+      ],
+      "bullets": []
+    }
+  ],
+  "faq": [
+    {
+      "q": "My child only reads graphic novels. Is that real reading?",
+      "a": "Yes. Graphic novels build vocabulary, inference, and visual literacy. They require decoding text and images together. Many strong readers started with comics. Treat them as valid reading and use them as bridges to other formats when your child is ready."
+    },
+    {
+      "q": "Should I reward my child for reading?",
+      "a": "External rewards can undermine intrinsic motivation over time. Instead, make the reward the reading experience itself — a new book chosen together, a cozy fort, or extra time to stay up with a flashlight. Keep the focus on the joy of the story."
+    },
+    {
+      "q": "What if my child pretends to read but just flips pages?",
+      "a": "Page flipping often means the book is too hard or not interesting. Offer easier texts, audiobooks, or highly illustrated nonfiction. Sit down and read the first chapter aloud together to hook them. The goal is engagement, not performance."
+    },
+    {
+      "q": "Can audiobooks replace print reading?",
+      "a": "Audiobooks develop comprehension, vocabulary, and narrative sense. They are excellent for exposure to complex language. Pair them with print for decoding practice. Both formats support a reading life; neither cancels the other out."
+    }
+  ],
+  "facts_heading": "Quick checks before you plan the next library trip",
+  "facts": [
+    {
+      "claim": "The American Academy of Pediatrics recommends reading aloud to children daily from infancy through at least kindergarten to support language development.",
+      "source_url": "https://www.aap.org/en/patient-care/literacy-promotion/",
+      "source_name": "American Academy of Pediatrics",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "The Institute of Museum and Library Services reports that 97% of public libraries offer summer reading programs for children and teens.",
+      "source_url": "https://www.imls.gov/research-evaluation/data-collection/public-libraries-survey",
+      "source_name": "Institute of Museum and Library Services",
+      "verified": false,
+      "checked_status": 404
+    },
+    {
+      "claim": "The National Center for Education Statistics notes that children who are read to at least three times a week by a family member are almost twice as likely to score in the top 25% in reading.",
+      "source_url": "https://nces.ed.gov/fastfacts/display.asp?id=69",
+      "source_name": "National Center for Education Statistics",
+      "verified": true,
+      "checked_status": 200
+    }
+  ]
+}

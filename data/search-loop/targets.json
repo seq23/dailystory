@@ -1,228 +1,64 @@
 {
   "schema": "search-loop-targets-v1",
   "site": "time-2-read.com",
-  "week": "2026-W47",
-  "generated_at": "2026-11-16T11:45:18.396Z",
+  "week": "2026-W48",
+  "generated_at": "2026-11-23T22:54:30.690Z",
   "sources": {
-    "search_console": "ok: 49 rows",
+    "search_console": "ok: 50 rows",
     "bing_webmaster": "not read: BING_WEBMASTER_API_KEY is not set",
-    "easy_wins": "ok: 3 easy win(s) in Search Console",
+    "easy_wins": "ok: 5 easy win(s) in Search Console",
     "suggestqueries.google.com": "ok",
-    "api.bing.com": "ok",
-    "relevance_screen": "ok: kept 115 of 150 (free model)",
+    "api.bing.com": "not read: unavailable after 3 failures (last http 204)",
+    "relevance_screen": "ok: kept 61 of 114 (free model)",
     "top10": "not read: no BRAVE_SEARCH_API_KEY"
   },
   "targets": [
     {
-      "query": "can a reading app help a struggling reader",
-      "variants": [],
-      "signals": {
-        "words": 8,
-        "question": true,
-        "gsc_position": 11,
-        "gsc_impressions": 1,
-        "gsc_page": "https://time-2-read.com/reading-app-for-kids-struggling-to-read",
-        "unanswered": {
-          "words": 5,
-          "covered": 0.4,
-          "parts_best_position": 1,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 53.5,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 1",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
       "query": "reading 20 minutes a day statistics",
-      "variants": [
-        "statistics on reading 20 minutes a day"
-      ],
+      "variants": [],
       "signals": {
         "words": 6,
         "question": false,
         "gsc_position": 9,
         "gsc_impressions": 2,
         "gsc_page": "https://time-2-read.com/is-reading-20-minutes-a-day-enough",
-        "bing_suggest": true,
         "unanswered": {
           "words": 5,
           "covered": 0.4,
           "parts_best_position": 4.7,
-          "parts_rows": 6
+          "parts_rows": 7
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 64.5,
-        "can_be_one": 40
-      },
-      "score": 64.5,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "already ranks 9 in Search Console (2 impressions)",
-        "can-be-#1 score 40 too (taken by the striking lane's turn)"
-      ]
-    },
-    {
-      "query": "how long should a child read a day",
-      "variants": [],
-      "signals": {
-        "words": 8,
-        "question": true,
-        "google_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 9,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 30,
+        "striking": 54.5,
         "can_be_one": 40
       },
       "score": 40,
       "kind": "new",
       "lane": "can_be_one",
       "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 9",
+        "no site page answers this 5-word question, and the site holds its parts at position 4.7",
         "people search it (autocomplete or impressions)"
       ]
     },
     {
-      "query": "how long should children read a day",
+      "query": "20 minute reading timer for kids",
       "variants": [],
-      "signals": {
-        "words": 7,
-        "question": true,
-        "google_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 9,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 30,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 9",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "how to improve 2nd grade reading",
-      "variants": [
-        "reading strategies 2nd grade"
-      ],
       "signals": {
         "words": 6,
-        "question": true,
-        "google_suggest": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 45,
-        "can_be_one": 0
-      },
-      "score": 45,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "how much time should a child read per day",
-      "variants": [],
-      "signals": {
-        "words": 9,
-        "question": true,
-        "google_suggest": true,
-        "unanswered": {
-          "words": 6,
-          "covered": 0.33,
-          "parts_best_position": 4,
-          "parts_rows": 8
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 30,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 6-word question, and the site holds its parts at position 4",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "read 10 minutes a day for kids",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.4,
-          "parts_best_position": 6,
-          "parts_rows": 2
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 6",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "reading time 2",
-      "variants": [
-        "time 2 read"
-      ],
-      "signals": {
-        "words": 3,
         "question": false,
         "gsc_position": 10,
         "gsc_impressions": 1,
-        "gsc_page": "https://time-2-read.com/about",
+        "gsc_page": "https://time-2-read.com/20-minute-reading-log",
+        "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 40.4,
+        "striking": 65.4,
         "can_be_one": 0
       },
-      "score": 40.4,
+      "score": 65.4,
       "kind": "new",
       "lane": "striking",
       "reasons": [
@@ -257,186 +93,16 @@
       ]
     },
     {
-      "query": "for kids who cant read good",
+      "query": "summer reading list for kids going into 2nd grade",
       "variants": [],
       "signals": {
-        "words": 6,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.25,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "ai story generator for kids",
-      "variants": [
-        "best ai story generator for kids",
-        "ai kids story generator"
-      ],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "google_suggest": true,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)",
-        "can-be-#1 score 40 too (taken by the striking lane's turn)"
-      ]
-    },
-    {
-      "query": "books second graders should read",
-      "variants": [],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 6,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 6",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "summer books for kids reading log",
-      "variants": [],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 6,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 6",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "ai story generator for kids free",
-      "variants": [
-        "best free ai story generator for kids",
-        "ai kids story generator free"
-      ],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "google_suggest": true,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)",
-        "can-be-#1 score 40 too (taken by the striking lane's turn)"
-      ]
-    },
-    {
-      "query": "book reading log for kids",
-      "variants": [],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 6,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 6",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "ai story maker for kids",
-      "variants": [],
-      "signals": {
-        "words": 5,
+        "words": 9,
         "question": false,
         "google_suggest": true,
         "unanswered": {
-          "words": 4,
-          "covered": 0,
-          "parts_best_position": 7.3,
+          "words": 8,
+          "covered": 0.25,
+          "parts_best_position": 10,
           "parts_rows": 1
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
@@ -449,133 +115,49 @@
       "kind": "new",
       "lane": "can_be_one",
       "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 7.3",
+        "no site page answers this 8-word question, and the site holds its parts at position 10",
         "people search it (autocomplete or impressions)"
       ]
     },
     {
-      "query": "ai story book generator for kids",
-      "variants": [
-        "ai kids story book generator"
-      ],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "google_suggest": true,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)",
-        "can-be-#1 score 40 too (taken by the striking lane's turn)"
-      ]
-    },
-    {
-      "query": "free ai story generator for kids online",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "google_suggest": true,
-        "unanswered": {
-          "words": 6,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 6-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "ai story generator with pictures for kids",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "google_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "20 minute reading timer",
+      "query": "time to read app",
       "variants": [],
       "signals": {
         "words": 4,
         "question": false,
+        "gsc_position": 11,
+        "gsc_impressions": 1,
+        "gsc_page": "https://time-2-read.com/",
+        "neighbour": {
+          "sim": 0.67,
+          "of": "its time to read",
+          "why": "top 3 with 1 impressions"
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 48.5,
+        "can_be_one": 33.5
+      },
+      "score": 48.5,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "already ranks 11 in Search Console (1 impressions)",
+        "can-be-#1 score 33.5 too (taken by the striking lane's turn)"
+      ]
+    },
+    {
+      "query": "summer reading list for kids going into 1st grade",
+      "variants": [],
+      "signals": {
+        "words": 9,
+        "question": false,
         "google_suggest": true,
-        "bing_suggest": true,
         "unanswered": {
-          "words": 4,
+          "words": 8,
           "covered": 0.25,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)",
-        "can-be-#1 score 40 too (taken by the striking lane's turn)"
-      ]
-    },
-    {
-      "query": "free ai story video generator for kids",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "google_suggest": true,
-        "unanswered": {
-          "words": 6,
-          "covered": 0,
-          "parts_best_position": 7.3,
+          "parts_best_position": 10,
           "parts_rows": 1
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
@@ -588,284 +170,116 @@
       "kind": "new",
       "lane": "can_be_one",
       "reasons": [
-        "no site page answers this 6-word question, and the site holds its parts at position 7.3",
+        "no site page answers this 8-word question, and the site holds its parts at position 10",
         "people search it (autocomplete or impressions)"
       ]
     },
     {
-      "query": "tell me a bedtime story for kids",
+      "query": "summer reading list for kids going into 5th grade",
       "variants": [],
       "signals": {
-        "words": 7,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "20 minute reading timer with music",
-      "variants": [
-        "20 minute timer reading music"
-      ],
-      "signals": {
-        "words": 6,
+        "words": 9,
         "question": false,
         "google_suggest": true,
-        "bing_suggest": true,
         "unanswered": {
-          "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)",
-        "can-be-#1 score 40 too (taken by the striking lane's turn)"
-      ]
-    },
-    {
-      "query": "write a bedtime story for a child",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "kids bedtime story in english",
-      "variants": [],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "reading timer 20 minutes",
-      "variants": [],
-      "signals": {
-        "words": 4,
-        "question": false,
-        "google_suggest": true,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
+          "words": 8,
           "covered": 0.25,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
+          "parts_best_position": 10,
+          "parts_rows": 1
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 40,
+        "striking": 25,
         "can_be_one": 40
       },
       "score": 40,
+      "kind": "new",
+      "lane": "can_be_one",
+      "reasons": [
+        "no site page answers this 8-word question, and the site holds its parts at position 10",
+        "people search it (autocomplete or impressions)"
+      ]
+    },
+    {
+      "query": "time 2 read",
+      "variants": [],
+      "signals": {
+        "words": 3,
+        "question": false,
+        "gsc_position": 10,
+        "gsc_impressions": 1,
+        "gsc_page": "https://time-2-read.com/about",
+        "neighbour": {
+          "sim": 0.67,
+          "of": "its time to read",
+          "why": "top 3 with 1 impressions"
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 40.4,
+        "can_be_one": 33.5
+      },
+      "score": 40.4,
       "kind": "new",
       "lane": "striking",
       "reasons": [
-        "autocomplete demand (google/bing)",
-        "can-be-#1 score 40 too (taken by the striking lane's turn)"
+        "already ranks 10 in Search Console (1 impressions)",
+        "can-be-#1 score 33.5 too (taken by the striking lane's turn)"
       ]
     },
     {
-      "query": "childrens bedtime story online",
+      "query": "summer reading list for kids going into 4th grade",
       "variants": [],
       "signals": {
-        "words": 4,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "bedtime story website for children",
-      "variants": [],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "silent reading timer 20 minutes",
-      "variants": [],
-      "signals": {
-        "words": 5,
+        "words": 9,
         "question": false,
         "google_suggest": true,
-        "bing_suggest": true,
         "unanswered": {
-          "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)",
-        "can-be-#1 score 40 too (taken by the striking lane's turn)"
-      ]
-    },
-    {
-      "query": "bedtime stories for kids online",
-      "variants": [
-        "online bedtime stories for kids"
-      ],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0,
-          "parts_best_position": 7.3,
+          "words": 8,
+          "covered": 0.25,
+          "parts_best_position": 10,
           "parts_rows": 1
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 20,
+        "striking": 25,
         "can_be_one": 40
       },
       "score": 40,
       "kind": "new",
       "lane": "can_be_one",
       "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 7.3",
+        "no site page answers this 8-word question, and the site holds its parts at position 10",
         "people search it (autocomplete or impressions)"
       ]
     },
     {
-      "query": "kids bedtime stories short",
+      "query": "summer reading list for kids going into 6th grade",
       "variants": [],
       "signals": {
-        "words": 4,
+        "words": 9,
         "question": false,
-        "bing_suggest": true,
+        "google_suggest": true,
         "unanswered": {
-          "words": 4,
-          "covered": 0,
-          "parts_best_position": 7.3,
+          "words": 8,
+          "covered": 0.25,
+          "parts_best_position": 10,
           "parts_rows": 1
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 20,
+        "striking": 25,
         "can_be_one": 40
       },
       "score": 40,
       "kind": "new",
       "lane": "can_be_one",
       "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 7.3",
+        "no site page answers this 8-word question, and the site holds its parts at position 10",
         "people search it (autocomplete or impressions)"
       ]
     },
@@ -919,453 +333,17 @@
       ]
     },
     {
-      "query": "what happens if you read 20 minutes a day",
-      "variants": [],
-      "signals": {
-        "words": 9,
-        "question": true,
-        "google_suggest": true,
-        "unanswered": {
-          "words": 6,
-          "covered": 0.33,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 30,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 6-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "reading time for kids",
-      "variants": [
-        "time reading for kids"
-      ],
-      "signals": {
-        "words": 4,
-        "question": false,
-        "bing_suggest": true,
-        "google_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 0
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "how long should you read a book a day",
-      "variants": [],
-      "signals": {
-        "words": 9,
-        "question": true,
-        "google_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 6,
-          "parts_rows": 2
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 30,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 6",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "books to read for 20 minutes",
+      "query": "short reading comprehension passages for kids",
       "variants": [],
       "signals": {
         "words": 6,
         "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 4.7,
-          "parts_rows": 7
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "help second grader read better",
-      "variants": [
-        "how can i help my second grader read better",
-        "help second grader improve reading",
-        "how to help second grader with reading"
-      ],
-      "signals": {
-        "words": 5,
-        "question": false,
         "google_suggest": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 0
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "how much minutes to read a book",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": true,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 6,
-          "parts_rows": 3
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 6",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "students who read 20 minutes a day",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 6,
-          "covered": 0.33,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 6-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "help my 2nd grader read better",
-      "variants": [
-        "how to help 2nd grader with reading",
-        "helping 2nd grader with reading",
-        "reading help for 2nd graders",
-        "how to help my 2nd grader read better"
-      ],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "google_suggest": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 0
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "how many books to read a month",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": true,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 6,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 6",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "how much time do you read books",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": true,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 4,
-          "parts_rows": 7
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 4",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "summer reading log for kids",
-      "variants": [
-        "kids summer reading log"
-      ],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "google_suggest": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 0
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "importance of reading 20 minutes a day",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "bing_suggest": true,
         "unanswered": {
           "words": 5,
           "covered": 0.4,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "books that are 20 minutes long",
-      "variants": [],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 6,
-          "parts_rows": 2
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 6",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "reading log with parent signature",
-      "variants": [],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "google_suggest": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 0
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "read 10 minutes of a book",
-      "variants": [],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 6,
-          "parts_rows": 3
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 6",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "listen to 20 books in 20 days",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 9,
+          "parts_best_position": 10,
           "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 9",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "daily reading log with parent signature",
-      "variants": [],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "google_suggest": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 0
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "how long to read 20 pages",
-      "variants": [],
-      "signals": {
-        "words": 6,
-        "question": true,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
@@ -1377,190 +355,88 @@
       "kind": "new",
       "lane": "can_be_one",
       "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 4.7",
+        "no site page answers this 5-word question, and the site holds its parts at position 10",
         "people search it (autocomplete or impressions)"
       ]
     },
     {
-      "query": "reading learning app for kids",
+      "query": "what is the average time to read a 300 page book",
       "variants": [],
       "signals": {
-        "words": 5,
-        "question": false,
-        "bing_suggest": true,
+        "words": 11,
+        "question": true,
+        "google_suggest": true,
         "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 1,
-          "parts_rows": 1
+          "words": 6,
+          "covered": 0.33,
+          "parts_best_position": 3,
+          "parts_rows": 7
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 20,
+        "striking": 30,
         "can_be_one": 40
       },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 1",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "learning apps for homeschooling",
-      "variants": [
-        "best homeschool learning apps"
-      ],
-      "signals": {
-        "words": 4,
-        "question": false,
-        "google_suggest": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 0
-      },
-      "score": 40,
+      "score": 30,
       "kind": "new",
       "lane": "striking",
       "reasons": [
-        "autocomplete demand (google/bing)"
+        "autocomplete demand (google/bing)",
+        "can-be-#1 score 40 too (taken by the striking lane's turn)"
       ]
     },
     {
-      "query": "best reading program for kids app",
-      "variants": [
-        "kids reading programs apps"
-      ],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 1,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 1",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "level one reading books for kids",
+      "query": "reading comprehension passages with questions for kids",
       "variants": [],
       "signals": {
-        "words": 6,
+        "words": 7,
         "question": false,
-        "bing_suggest": true,
+        "google_suggest": true,
         "unanswered": {
           "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 6,
+          "covered": 0.4,
+          "parts_best_position": 10,
           "parts_rows": 1
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 20,
+        "striking": 25,
         "can_be_one": 40
       },
       "score": 40,
       "kind": "new",
       "lane": "can_be_one",
       "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 6",
+        "no site page answers this 5-word question, and the site holds its parts at position 10",
         "people search it (autocomplete or impressions)"
       ]
     },
     {
       "query": "short stories reading comprehension for kids",
-      "variants": [
-        "short stories for kids reading comprehension"
-      ],
+      "variants": [],
       "signals": {
         "words": 6,
         "question": false,
         "google_suggest": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 40,
-        "can_be_one": 0
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "level reading books for kindergarten",
-      "variants": [],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "bing_suggest": true,
         "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 6,
+          "words": 5,
+          "covered": 0.4,
+          "parts_best_position": 10,
           "parts_rows": 1
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 20,
+        "striking": 25,
         "can_be_one": 40
       },
       "score": 40,
       "kind": "new",
       "lane": "can_be_one",
       "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 6",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "kids level 1 reading books free",
-      "variants": [],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 6,
-          "covered": 0.17,
-          "parts_best_position": 6,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 6-word question, and the site holds its parts at position 6",
+        "no site page answers this 5-word question, and the site holds its parts at position 10",
         "people search it (autocomplete or impressions)"
       ]
     },
@@ -1639,10 +515,10 @@
       ]
     },
     {
-      "query": "how many minutes should students read each day",
+      "query": "how long should children read a day",
       "variants": [],
       "signals": {
-        "words": 8,
+        "words": 7,
         "question": true,
         "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
@@ -1659,56 +535,30 @@
       ]
     },
     {
-      "query": "reading time worksheet for grade 2",
+      "query": "time2read app",
       "variants": [],
       "signals": {
-        "words": 6,
+        "words": 2,
         "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.4,
-          "parts_best_position": 1,
-          "parts_rows": 9
+        "gsc_position": 21,
+        "gsc_impressions": 3,
+        "gsc_page": "https://time-2-read.com/",
+        "neighbour": {
+          "sim": 0.5,
+          "of": "time2read login",
+          "why": "top 3 with 1 impressions"
         },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 20,
-        "can_be_one": 40
+        "striking": 24.4,
+        "can_be_one": 27.5
       },
-      "score": 40,
+      "score": 27.5,
       "kind": "new",
       "lane": "can_be_one",
       "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 1",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "20 minute reading timer for kids",
-      "variants": [],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "google_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 4.7",
+        "easy-win neighbour of \"time2read login\" (top 3 with 1 impressions)",
         "people search it (autocomplete or impressions)"
       ]
     },
@@ -1733,60 +583,6 @@
       ]
     },
     {
-      "query": "20 minute silent reading timer",
-      "variants": [],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "google_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "set a 20 min timer for reading",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
       "query": "how many minutes should you read a day",
       "variants": [],
       "signals": {
@@ -1804,60 +600,6 @@
       "lane": "striking",
       "reasons": [
         "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "reading 15 minute timer",
-      "variants": [],
-      "signals": {
-        "words": 4,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 4.7,
-          "parts_rows": 5
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "reading timer 15 minutes",
-      "variants": [],
-      "signals": {
-        "words": 4,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
       ]
     },
     {
@@ -1881,57 +623,63 @@
       ]
     },
     {
-      "query": "time 20 minutes timer",
+      "query": "how to improve 2nd grade reading",
       "variants": [],
       "signals": {
-        "words": 4,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
+        "words": 6,
+        "question": true,
+        "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 20,
-        "can_be_one": 40
+        "striking": 30,
+        "can_be_one": 0
       },
-      "score": 40,
+      "score": 30,
       "kind": "new",
-      "lane": "can_be_one",
+      "lane": "striking",
       "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
+        "autocomplete demand (google/bing)"
       ]
     },
     {
-      "query": "reading time 2 minutes",
+      "query": "what happens if you read 20 minutes a day",
       "variants": [],
       "signals": {
-        "words": 4,
-        "question": false,
+        "words": 9,
+        "question": true,
         "google_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 1,
-          "parts_rows": 11
-        },
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 25,
-        "can_be_one": 40
+        "striking": 30,
+        "can_be_one": 0
       },
-      "score": 40,
+      "score": 30,
       "kind": "new",
-      "lane": "can_be_one",
+      "lane": "striking",
       "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 1",
-        "people search it (autocomplete or impressions)"
+        "autocomplete demand (google/bing)"
+      ]
+    },
+    {
+      "query": "how long should you read a book a day",
+      "variants": [],
+      "signals": {
+        "words": 9,
+        "question": true,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 30,
+        "can_be_one": 0
+      },
+      "score": 30,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)"
       ]
     },
     {
@@ -1955,60 +703,6 @@
       ]
     },
     {
-      "query": "set a timer 30 minutes for reading",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "set timer 7 minutes for reading",
-      "variants": [],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0.2,
-          "parts_best_position": 4.7,
-          "parts_rows": 6
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 4.7",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
       "query": "how to help a child who doesnt like to read",
       "variants": [],
       "signals": {
@@ -2026,60 +720,6 @@
       "lane": "striking",
       "reasons": [
         "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "ai kids story video generator",
-      "variants": [],
-      "signals": {
-        "words": 5,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 5,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 5-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
-      "query": "should my kid have a bedtime story",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": true,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
       ]
     },
     {
@@ -2103,33 +743,6 @@
       ]
     },
     {
-      "query": "stories to read to kids at bedtime",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": false,
-        "bing_suggest": true,
-        "unanswered": {
-          "words": 4,
-          "covered": 0.25,
-          "parts_best_position": 7.3,
-          "parts_rows": 1
-        },
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 20,
-        "can_be_one": 40
-      },
-      "score": 40,
-      "kind": "new",
-      "lane": "can_be_one",
-      "reasons": [
-        "no site page answers this 4-word question, and the site holds its parts at position 7.3",
-        "people search it (autocomplete or impressions)"
-      ]
-    },
-    {
       "query": "how to make an ai generated story",
       "variants": [],
       "signals": {
@@ -2150,7 +763,27 @@
       ]
     },
     {
-      "query": "what is a signature log",
+      "query": "what to do if your child doesnt want to read",
+      "variants": [],
+      "signals": {
+        "words": 10,
+        "question": true,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 30,
+        "can_be_one": 0
+      },
+      "score": 30,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ]
+    },
+    {
+      "query": "what is a reading log",
       "variants": [],
       "signals": {
         "words": 5,
@@ -2170,62 +803,19 @@
       ]
     },
     {
-      "query": "how long should you read a day",
+      "query": "what does reading log mean",
       "variants": [],
-      "signals": {
-        "words": 7,
-        "question": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 0
-      },
-      "score": 25,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "when should a child learn to read",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 0
-      },
-      "score": 25,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "when can a child read",
-      "variants": [
-        "my child can read",
-        "reading to my child"
-      ],
       "signals": {
         "words": 5,
         "question": true,
-        "bing_suggest": true,
+        "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 25,
+        "striking": 30,
         "can_be_one": 0
       },
-      "score": 25,
+      "score": 30,
       "kind": "new",
       "lane": "striking",
       "reasons": [
@@ -2233,39 +823,19 @@
       ]
     },
     {
-      "query": "when should children be able to read",
+      "query": "what is reading comprehension for kindergarten",
       "variants": [],
       "signals": {
-        "words": 7,
+        "words": 6,
         "question": true,
-        "bing_suggest": true,
+        "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
-        "striking": 25,
+        "striking": 30,
         "can_be_one": 0
       },
-      "score": 25,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "when should kids be able to read",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 0
-      },
-      "score": 25,
+      "score": 30,
       "kind": "new",
       "lane": "striking",
       "reasons": [
@@ -2274,26 +844,6 @@
     },
     {
       "query": "my child doesnt want to read",
-      "variants": [],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "google_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 0
-      },
-      "score": 25,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "my child doesnt like to read",
       "variants": [],
       "signals": {
         "words": 6,
@@ -2333,26 +883,6 @@
       ]
     },
     {
-      "query": "my toddler doesnt want to read",
-      "variants": [],
-      "signals": {
-        "words": 6,
-        "question": false,
-        "google_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 0
-      },
-      "score": 25,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
       "query": "my son doesnt like to read",
       "variants": [],
       "signals": {
@@ -2373,12 +903,14 @@
       ]
     },
     {
-      "query": "when kids dont like reading",
-      "variants": [],
+      "query": "help second grader read better",
+      "variants": [
+        "how can i help my second grader read better"
+      ],
       "signals": {
         "words": 5,
-        "question": true,
-        "bing_suggest": true,
+        "question": false,
+        "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
@@ -2393,12 +925,15 @@
       ]
     },
     {
-      "query": "how to teach 2nd grader to read",
-      "variants": [],
+      "query": "help my 2nd grader read better",
+      "variants": [
+        "how to help 2nd grader with reading",
+        "how to help my 2nd grader read better"
+      ],
       "signals": {
-        "words": 7,
-        "question": true,
-        "bing_suggest": true,
+        "words": 6,
+        "question": false,
+        "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
@@ -2413,27 +948,7 @@
       ]
     },
     {
-      "query": "how well should a second grader read",
-      "variants": [],
-      "signals": {
-        "words": 7,
-        "question": true,
-        "bing_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 0
-      },
-      "score": 25,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "summer reading list for kids",
+      "query": "summer reading log for kids",
       "variants": [],
       "signals": {
         "words": 5,
@@ -2453,10 +968,10 @@
       ]
     },
     {
-      "query": "summer reading list for kids going into 2nd grade",
+      "query": "summer reading list for kids",
       "variants": [],
       "signals": {
-        "words": 9,
+        "words": 5,
         "question": false,
         "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
@@ -2513,70 +1028,12 @@
       ]
     },
     {
-      "query": "summer reading list for kids going into 1st grade",
-      "variants": [],
+      "query": "ai story generator for kids",
+      "variants": [
+        "best ai story generator for kids"
+      ],
       "signals": {
-        "words": 9,
-        "question": false,
-        "google_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 0
-      },
-      "score": 25,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "summer reading list for kids going into 5th grade",
-      "variants": [],
-      "signals": {
-        "words": 9,
-        "question": false,
-        "google_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 0
-      },
-      "score": 25,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "summer reading list for kids going into 4th grade",
-      "variants": [],
-      "signals": {
-        "words": 9,
-        "question": false,
-        "google_suggest": true,
-        "top10": "not read: no BRAVE_SEARCH_API_KEY"
-      },
-      "scores": {
-        "striking": 25,
-        "can_be_one": 0
-      },
-      "score": 25,
-      "kind": "new",
-      "lane": "striking",
-      "reasons": [
-        "autocomplete demand (google/bing)"
-      ]
-    },
-    {
-      "query": "summer reading list for kids going into 6th grade",
-      "variants": [],
-      "signals": {
-        "words": 9,
+        "words": 5,
         "question": false,
         "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
@@ -2594,6 +1051,106 @@
     },
     {
       "query": "ai story generator for children",
+      "variants": [],
+      "signals": {
+        "words": 5,
+        "question": false,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 0
+      },
+      "score": 25,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ]
+    },
+    {
+      "query": "ai story book generator for kids",
+      "variants": [],
+      "signals": {
+        "words": 6,
+        "question": false,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 0
+      },
+      "score": 25,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ]
+    },
+    {
+      "query": "free ai story generator for kids online",
+      "variants": [],
+      "signals": {
+        "words": 7,
+        "question": false,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 0
+      },
+      "score": 25,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ]
+    },
+    {
+      "query": "ai story generator with pictures for kids",
+      "variants": [],
+      "signals": {
+        "words": 7,
+        "question": false,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 0
+      },
+      "score": 25,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ]
+    },
+    {
+      "query": "free ai story video generator for kids",
+      "variants": [],
+      "signals": {
+        "words": 7,
+        "question": false,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 0
+      },
+      "score": 25,
+      "kind": "new",
+      "lane": "striking",
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ]
+    },
+    {
+      "query": "reading log with parent signature",
       "variants": [],
       "signals": {
         "words": 5,
@@ -2673,7 +1230,7 @@
       ]
     },
     {
-      "query": "reading log sheet with parent signature",
+      "query": "daily reading log with parent signature",
       "variants": [],
       "signals": {
         "words": 6,
@@ -2693,12 +1250,12 @@
       ]
     },
     {
-      "query": "how many minutes of reading is beneficial",
+      "query": "reading log sheet with parent signature",
       "variants": [],
       "signals": {
-        "words": 7,
-        "question": true,
-        "bing_suggest": true,
+        "words": 6,
+        "question": false,
+        "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
       },
       "scores": {
@@ -2775,10 +1332,10 @@
       ]
     },
     {
-      "query": "short reading comprehension passages for kids",
+      "query": "my child doesn t want to learn how to read",
       "variants": [],
       "signals": {
-        "words": 6,
+        "words": 10,
         "question": false,
         "google_suggest": true,
         "top10": "not read: no BRAVE_SEARCH_API_KEY"
@@ -2795,7 +1352,7 @@
       ]
     },
     {
-      "query": "reading comprehension passages with questions for kids",
+      "query": "easy to read short stories for preschoolers",
       "variants": [],
       "signals": {
         "words": 7,
@@ -2817,157 +1374,69 @@
   ],
   "strengthen": [
     {
-      "query": "20 minute silent reading timer",
-      "page": "/questions/set-a-20-min-timer-for-reading/",
-      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-22"
-    },
-    {
-      "query": "20 minute reading timer for kids",
-      "page": "/questions/set-a-20-min-timer-for-reading/",
-      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-22"
-    },
-    {
-      "query": "ai story generator for kids",
-      "page": "/questions/ai-story-maker-for-kids/",
-      "url": "https://guides.time-2-read.com/questions/ai-story-maker-for-kids/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.60 >= 0.6)",
-      "at": "2026-11-21"
-    },
-    {
-      "query": "kids bedtime story in english",
-      "page": "/questions/tell-me-a-bedtime-story-for-kids/",
-      "url": "https://guides.time-2-read.com/questions/tell-me-a-bedtime-story-for-kids/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.60 >= 0.6)",
-      "at": "2026-11-20"
-    },
-    {
-      "query": "how long should you read a day",
-      "page": "/questions/how-long-should-a-child-read-a-day/",
-      "url": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
+      "query": "my child doesnt want to read",
+      "page": "/questions/what-to-do-if-your-child-doesnt-want-to-read/",
+      "url": "https://guides.time-2-read.com/questions/what-to-do-if-your-child-doesnt-want-to-read/",
       "score": 25,
       "from": "distinct-gate",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-19"
+      "matched_by": "high token overlap (0.75 >= 0.6)",
+      "at": "2026-11-23"
     },
     {
-      "query": "how many minutes should you read a day",
-      "page": "/questions/how-many-minutes-should-a-4th-grader-read-per-day/",
-      "url": "https://guides.time-2-read.com/questions/how-many-minutes-should-a-4th-grader-read-per-day/",
+      "query": "summer reading list for kids going into 6th grade",
+      "page": "/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "url": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.78 >= 0.6)",
+      "at": "2026-11-23"
+    },
+    {
+      "query": "times read",
+      "variants": [],
+      "signals": {
+        "words": 2,
+        "question": false,
+        "gsc_position": 12,
+        "gsc_impressions": 1,
+        "gsc_page": "https://time-2-read.com/"
+      },
+      "scores": {
+        "striking": 36.7,
+        "can_be_one": 0
+      },
+      "score": 36.7,
+      "page": "/questions/reading-15-minute-timer/"
+    },
+    {
+      "query": "what is ai for kids",
+      "variants": [],
+      "signals": {
+        "words": 5,
+        "question": true,
+        "google_suggest": true
+      },
+      "scores": {
+        "striking": 30,
+        "can_be_one": 0
+      },
       "score": 30,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.60 >= 0.6)",
-      "at": "2026-11-19"
-    },
-    {
-      "query": "reading timer 20 minutes",
-      "page": "/questions/set-a-20-min-timer-for-reading/",
-      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "20 minute reading timer with music",
-      "page": "/questions/set-a-20-min-timer-for-reading/",
-      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
+      "page": "/questions/ai-story-maker-for-kids/"
     },
     {
       "query": "20 minute reading timer",
-      "page": "/questions/set-a-20-min-timer-for-reading/",
-      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.80 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "ai story book generator for kids",
-      "page": "/questions/ai-story-generator-for-kids-free/",
-      "url": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "ai kids story video generator",
-      "page": "/questions/ai-story-generator-for-kids-free/",
-      "url": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "set timer 7 minutes for reading",
-      "page": "/questions/set-a-20-min-timer-for-reading/",
-      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.80 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "set a timer 30 minutes for reading",
-      "page": "/questions/set-a-20-min-timer-for-reading/",
-      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "time 20 minutes timer",
-      "page": "/questions/set-a-20-min-timer-for-reading/",
-      "url": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "reading timer 15 minutes",
-      "page": "/questions/reading-15-minute-timer/",
-      "url": "https://guides.time-2-read.com/questions/reading-15-minute-timer/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.60 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "how long should you read a book a day",
-      "page": "/questions/how-long-should-a-child-read-a-day/",
-      "url": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.60 >= 0.6)",
-      "at": "2026-11-17"
-    },
-    {
-      "query": "how long should children read a day",
-      "page": "/questions/how-long-should-a-child-read-a-day/",
-      "url": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
-      "score": 40,
-      "from": "distinct-gate",
-      "matched_by": "high token overlap (0.60 >= 0.6)",
-      "at": "2026-11-16"
+      "variants": [],
+      "signals": {
+        "words": 4,
+        "question": false,
+        "google_suggest": true
+      },
+      "scores": {
+        "striking": 25,
+        "can_be_one": 0
+      },
+      "score": 25,
+      "page": "/questions/set-a-20-min-timer-for-reading/"
     }
   ]
 }

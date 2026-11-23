@@ -1,8 +1,8 @@
 {
   "schema": "search-loop-discovery-v1",
   "site": "time-2-read.com",
-  "week": "2026-W47",
-  "generated_at": "2026-11-16T11:45:18.396Z",
+  "week": "2026-W48",
+  "generated_at": "2026-11-23T22:54:30.690Z",
   "paid_calls": 0,
   "cost_usd": 0,
   "hosts": {
@@ -13,37 +13,37 @@
       "cost_usd": 0
     },
     "suggestqueries.google.com": {
-      "calls": 40,
-      "ok": 40,
+      "calls": 77,
+      "ok": 77,
       "failed": 0,
       "cost_usd": 0
     },
     "api.bing.com": {
-      "calls": 40,
-      "ok": 40,
-      "failed": 0,
+      "calls": 3,
+      "ok": 0,
+      "failed": 3,
       "cost_usd": 0
     }
   },
   "sources": {
-    "search_console": "ok: 49 rows",
+    "search_console": "ok: 50 rows",
     "bing_webmaster": "not read: BING_WEBMASTER_API_KEY is not set",
-    "easy_wins": "ok: 3 easy win(s) in Search Console",
+    "easy_wins": "ok: 5 easy win(s) in Search Console",
     "suggestqueries.google.com": "ok",
-    "api.bing.com": "ok",
-    "relevance_screen": "ok: kept 115 of 150 (free model)",
+    "api.bing.com": "not read: unavailable after 3 failures (last http 204)",
+    "relevance_screen": "ok: kept 61 of 114 (free model)",
     "top10": "not read: no BRAVE_SEARCH_API_KEY"
   },
   "seeds": {
-    "planned": 183,
-    "asked": 40,
+    "planned": 197,
+    "asked": 77,
     "topics": 12,
     "topics_asked": 12,
     "priority_topics": 0,
     "priority_targets": 0
   },
   "notes": [
-    "autocomplete stopped at its budget of 80 calls (40 of 183 planned questions asked)"
+    "autocomplete stopped at its budget of 80 calls (77 of 197 planned questions asked)"
   ],
   "competition": "not read: no BRAVE_SEARCH_API_KEY",
   "lanes": {
@@ -51,8 +51,8 @@
       "can_be_one": 2,
       "striking": 1
     },
-    "can_be_one": 54,
-    "striking": 61,
+    "can_be_one": 14,
+    "striking": 47,
     "weights": {
       "neighbour": 35,
       "unanswered": 30,
@@ -61,9 +61,9 @@
     }
   },
   "counts": {
-    "candidates": 277,
-    "targets": 115,
-    "strengthen_candidates": 0,
-    "dropped_shared_audience": 14
+    "candidates": 132,
+    "targets": 61,
+    "strengthen_candidates": 3,
+    "dropped_shared_audience": 3
   }
 }

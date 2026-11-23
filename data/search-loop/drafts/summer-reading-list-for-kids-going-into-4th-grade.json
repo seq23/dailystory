@@ -1,0 +1,107 @@
+{
+  "h1": "What Should a Rising 4th Grader Read This Summer?",
+  "title_lead": "Summer reading list for kids going into 4th grade",
+  "meta_description": "Find engaging books for rising 4th graders. Mix series, graphic novels, and nonfiction to keep reading fun and build stamina for the school year.",
+  "direct_answer": "A summer reading list for rising 4th graders is a curated mix of chapter books, graphic novels, and nonfiction that matches their growing skills and interests. It helps kids choose stories they enjoy so they read more often.",
+  "sections": [
+    {
+      "heading": "Why does summer reading matter for this age?",
+      "paragraphs": [
+        "Fourth grade marks a big shift. Kids move from learning to read to reading to learn. Summer keeps that momentum going without pressure. When children pick books they like, they build stamina naturally. They also grow vocabulary and background knowledge that helps in every subject. A relaxed pace lets them finish books and feel proud. That confidence carries into the new school year."
+      ],
+      "bullets": [
+        "Prevents the summer slide in fluency",
+        "Builds the habit of daily reading",
+        "Lets kids explore favorite genres"
+      ]
+    },
+    {
+      "heading": "What types of books fit a rising 4th grader?",
+      "paragraphs": [
+        "Look for a blend of formats. Chapter books with short chapters keep the story moving. Graphic novels support visual learners and reluctant readers. Nonfiction feeds curiosity about animals, space, or history. Series books are gold because the familiar characters pull kids into the next title. Aim for a Lexile range roughly between 600L and 900L, but interest matters more than a number."
+      ],
+      "bullets": [
+        "Popular series like Wings of Fire or Dog Man",
+        "Standalone novels with strong hooks",
+        "Graphic novel adaptations of classics",
+        "High-interest nonfiction with photos"
+      ]
+    },
+    {
+      "heading": "How do I build a balanced list?",
+      "paragraphs": [
+        "Start with your child's current obsessions. Add two or three titles from each category: a funny series, a mystery, a realistic story, a fantasy, and a nonfiction pick. Visit the library together and let them browse the covers. Use the five-finger rule: open a random page; if they miss five words, it may be too hard right now. Swap titles as interests shift. The goal is a stack they want to reach for."
+      ],
+      "bullets": [
+        "Include at least three different genres",
+        "Mix shorter and longer books",
+        "Add one read-aloud for family time"
+      ]
+    },
+    {
+      "heading": "How can I make reading feel like a choice, not a chore?",
+      "paragraphs": [
+        "Create a low-key routine. A quiet 20-minute window after lunch or before bed works well. Keep books visible in the car, the kitchen, and the bedroom. Model reading yourself. Talk about the story at dinner with open questions like, \"What surprised you?\" Avoid quizzes or logs unless your child likes tracking. Celebrate finished books with a special snack or a trip to pick the next one."
+      ],
+      "bullets": [
+        "Set a consistent but flexible time",
+        "Let them abandon a book that bores them",
+        "Use audiobooks for car trips"
+      ]
+    },
+    {
+      "heading": "Where can I find fresh titles all summer?",
+      "paragraphs": [
+        "Your public library is the best free resource. Librarians curate summer displays and run reading challenges with small prizes. Bookstore staff know the new releases kids are grabbing. Online sites like the Association for Library Service to Children post annual notable lists. Ask your child's teacher for a recommended list before school ends. Rotate the stack every few weeks to keep it fresh."
+      ],
+      "bullets": [
+        "Library summer reading programs",
+        "ALSC Notable Children's Books list",
+        "Teacher recommendations from 3rd grade",
+        "Kids' choice award nominees"
+      ]
+    }
+  ],
+  "faq": [
+    {
+      "q": "How many books should a rising 4th grader read over the summer?",
+      "a": "There is no magic number. Focus on daily minutes instead of a count. Twenty to thirty minutes most days builds a stronger habit than racing through a set list. Some kids devour short graphic novels; others savor one longer novel. Both approaches grow reading muscles."
+    },
+    {
+      "q": "Do graphic novels count as real reading?",
+      "a": "Yes. Graphic novels require decoding text, following panels, and inferring meaning from images and words together. They build vocabulary and comprehension. Many teachers use them in class. If your child loves them, add them to the pile without hesitation."
+    },
+    {
+      "q": "Should I require a reading log or report?",
+      "a": "Only if your child enjoys tracking. Logs can turn reading into homework. Try a simple chart where they color a star for each day they read. Or let them keep a list of favorites to share with their new teacher in August. Keep the focus on the story, not the paperwork."
+    },
+    {
+      "q": "What if my child only wants to reread favorites?",
+      "a": "Rereading builds fluency and confidence. Each pass reveals new details. Let them revisit beloved books while you gently tuck one new title into the stack. They will try it when ready. The habit of picking up a book matters more than the novelty of the title."
+    }
+  ],
+  "facts_heading": "Trusted lists to simplify your planning",
+  "facts": [
+    {
+      "claim": "The Association for Library Service to Children publishes a free Notable Children's Books list each year organized by age range.",
+      "source_url": "https://www.ala.org/alsc/awardsgrants/notalists/ncb",
+      "source_name": "American Library Association",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "Public libraries nationwide run the Collaborative Summer Library Program with themed materials and reading logs for school-age children.",
+      "source_url": "https://www.cslpreads.org/",
+      "source_name": "Collaborative Summer Library Program",
+      "verified": false,
+      "checked_status": 403
+    },
+    {
+      "claim": "The Lexile Framework for Reading provides a free book search tool to match titles to a child's measured reading range.",
+      "source_url": "https://hub.lexile.com/find-a-book/search",
+      "source_name": "MetaMetrics",
+      "verified": true,
+      "checked_status": 200
+    }
+  ]
+}

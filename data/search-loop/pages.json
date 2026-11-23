@@ -1039,7 +1039,8 @@
       "gate_notes": [
         "b5 FAQ answer is 38 words (aim 40-60): \"Does reading aloud to my child count toward their \"",
         "b5 FAQ answer is 35 words (aim 40-60): \"How do I handle days when homework runs late?\""
-      ]
+      ],
+      "indexnow_at": "2026-11-23"
     },
     {
       "slug": "how-much-time-should-a-child-read-per-day",
@@ -1098,7 +1099,8 @@
         "b5 FAQ answer is 30 words (aim 40-60): \"Does listening to audiobooks count as reading time\"",
         "b5 FAQ answer is 33 words (aim 40-60): \"Should I count school reading toward the daily tot\"",
         "b5 FAQ answer is 33 words (aim 40-60): \"What if my child only wants to reread the same boo\""
-      ]
+      ],
+      "indexnow_at": "2026-11-23"
     },
     {
       "slug": "reading-time-2-minutes",
@@ -1158,7 +1160,164 @@
         "b5 FAQ answer is 35 words (aim 40-60): \"What if my child wants to stop before the timer?\"",
         "b5 FAQ answer is 38 words (aim 40-60): \"Should I correct mistakes during the two minutes?\"",
         "b5 FAQ answer is 32 words (aim 40-60): \"Can audiobooks count for the two minutes?\""
+      ],
+      "indexnow_at": "2026-11-23"
+    },
+    {
+      "slug": "what-to-do-if-your-child-doesnt-want-to-read",
+      "query": "what to do if your child doesnt want to read",
+      "lane": "striking",
+      "score": 30,
+      "scores": {
+        "striking": 30,
+        "can_be_one": 0
+      },
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ],
+      "signals": {
+        "words": 10,
+        "question": true,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/what-to-do-if-your-child-doesnt-want-to-read/index.html",
+      "route": "/questions/what-to-do-if-your-child-doesnt-want-to-read/",
+      "url": "https://guides.time-2-read.com/questions/what-to-do-if-your-child-doesnt-want-to-read/",
+      "published_at": "2026-11-23",
+      "status": "removed",
+      "hash": "1866ec181da27545af342f04af1997b6d7e5a9a4da3fd4211184be2c90cdd717",
+      "model": "free-route",
+      "facts": [
+        "https://www.aap.org/en/patient-care/literacy-promotion/",
+        "https://nces.ed.gov/fastfacts/display.asp?id=69"
+      ],
+      "linked_from": [
+        {
+          "rel": "questions/my-child-doesnt-like-to-read/index.html",
+          "route": "/questions/my-child-doesnt-like-to-read/",
+          "before_hash": "e97028f5bad59eb6cec422e81f21381dd2de341041842b9b95fcb3bbbc1f9f68",
+          "after_hash": "139cd977452dcc3d1b2603ef1bee188734775cd2b928d7ee7d83de9eb2365b36"
+        },
+        {
+          "rel": "questions/for-kids-who-cant-read-good/index.html",
+          "route": "/questions/for-kids-who-cant-read-good/",
+          "before_hash": "88ec75101d8980657123ccfa551367e8e13678b93db3cdd7aa200c519a260d37",
+          "after_hash": "7888c1041fdc52d9d61b4fd59a12922e50783a38e6b97575d0ff6f311dbc08e6"
+        }
+      ],
+      "checks": {},
+      "gate_notes": [
+        "b4 direct answer under the H1 is 36 words (aim 40-60)",
+        "b5 FAQ answer is 38 words (aim 40-60): \"What if my child pretends to read but just flips p\"",
+        "b5 FAQ answer is 33 words (aim 40-60): \"Can audiobooks replace print reading?\""
+      ],
+      "extra_queries": [
+        "my child doesnt want to read"
+      ],
+      "removed": {
+        "reason": "claims gate: medical \"Treat\""
+      }
+    },
+    {
+      "slug": "summer-reading-list-for-kids-going-into-4th-grade",
+      "query": "summer reading list for kids going into 4th grade",
+      "lane": "can_be_one",
+      "score": 40,
+      "scores": {
+        "striking": 25,
+        "can_be_one": 40
+      },
+      "reasons": [
+        "no site page answers this 8-word question, and the site holds its parts at position 10",
+        "people search it (autocomplete or impressions)"
+      ],
+      "signals": {
+        "words": 9,
+        "question": false,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 8,
+          "covered": 0.25,
+          "parts_best_position": 10,
+          "parts_rows": 1
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/summer-reading-list-for-kids-going-into-4th-grade/index.html",
+      "route": "/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "url": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "published_at": "2026-11-23",
+      "status": "live",
+      "hash": "93e375731b834b77dbf382f4d9c42d2432ecc50278080389f5a7798c4e168562",
+      "model": "free-route",
+      "facts": [
+        "https://www.ala.org/alsc/awardsgrants/notalists/ncb",
+        "https://hub.lexile.com/find-a-book/search"
+      ],
+      "linked_from": [],
+      "checks": {},
+      "gate_notes": [
+        "b4 direct answer under the H1 is 38 words (aim 40-60)",
+        "b5 FAQ answer is 39 words (aim 40-60): \"Do graphic novels count as real reading?\""
+      ],
+      "extra_queries": [
+        "summer reading list for kids going into 6th grade"
       ]
+    },
+    {
+      "slug": "reading-comprehension-passages-with-questions-for-kids",
+      "query": "reading comprehension passages with questions for kids",
+      "lane": "can_be_one",
+      "score": 40,
+      "scores": {
+        "striking": 25,
+        "can_be_one": 40
+      },
+      "reasons": [
+        "no site page answers this 5-word question, and the site holds its parts at position 10",
+        "people search it (autocomplete or impressions)"
+      ],
+      "signals": {
+        "words": 7,
+        "question": false,
+        "google_suggest": true,
+        "unanswered": {
+          "words": 5,
+          "covered": 0.4,
+          "parts_best_position": 10,
+          "parts_rows": 1
+        },
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/reading-comprehension-passages-with-questions-for-kids/index.html",
+      "route": "/questions/reading-comprehension-passages-with-questions-for-kids/",
+      "url": "https://guides.time-2-read.com/questions/reading-comprehension-passages-with-questions-for-kids/",
+      "published_at": "2026-11-23",
+      "status": "removed",
+      "hash": "1c37e07710b0543d7dc2af0291f6ba0a10070d4f1453059d6f14ee94df971092",
+      "model": "free-route",
+      "facts": [
+        "https://www.readworks.org/",
+        "https://www.commonlit.org/"
+      ],
+      "linked_from": [
+        {
+          "rel": "questions/kids-level-1-reading-books-free/index.html",
+          "route": "/questions/kids-level-1-reading-books-free/",
+          "before_hash": "499c61e422859186e95b9ca2b848e7b5f6fcbfe25a7e51e2f447ef1583a9ed8e",
+          "after_hash": "6af41ad3126fd6f2da850bd08bcd3b708da5797723f78fdc2c78a5cd47973620"
+        }
+      ],
+      "checks": {},
+      "gate_notes": [
+        "b4 direct answer under the H1 is 37 words (aim 40-60)",
+        "b5 FAQ answer is 37 words (aim 40-60): \"Are digital passages better than paper?\"",
+        "b5 FAQ answer is 39 words (aim 40-60): \"Should I time my child on passages?\""
+      ],
+      "removed": {
+        "reason": "claims gate: no-screens \"less screen\", medical \"treat\""
+      }
     }
   ],
   "dropped": [
@@ -2784,6 +2943,136 @@
         "b5 FAQ answer is 28 words (aim 40-60): \"How often should a student update the log?\"",
         "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www2.ed.gov/parents/read/resources/edpicks.jhtml (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.ala.org/alsc/publications-resources/book-lists/building-home-library (HTTP 404)"
       ]
+    },
+    {
+      "query": "time to read app",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b2 meta description is 74 chars (aim 120-160)",
+        "b5 FAQ answer is 27 words (aim 40-60): \"Can more than one child use the same account?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.healthychildren.org/English/ages-stages/gradeschool/school/Pages/Reading-Aloud-to-Your-Child.aspx (HTTP 404); https://www2.ed.gov/policy/gen/guid/fpco/ferpa/index.html (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "what is the average time to read a 300 page book",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"Does listening to an audiobook count as reading th\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.readingrockets.org/topics/reading-fluency/articles/reading-fluency-norms (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.marcbrysbaert.com/wp-content/uploads/2019/06/Brysbaert_2019_Reading-rate.pdf (no answer); https://www.theeditorsblog.net/2012/10/09/how-many-words-in-a-novel/ (HTTP 404)",
+        "invented: unsourced statistic \"That can add 20 to 50 percent more clock time.\""
+      ]
+    },
+    {
+      "query": "what happens if you read 20 minutes a day",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 29 words (aim 40-60)"
+      ]
+    },
+    {
+      "query": "how to make an ai generated story",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"Can I use a general chatbot instead of a kid-speci\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"How long should a generated story be for a 7-year-\"",
+        "b5 FAQ answer is 29 words (aim 40-60): \"What if the story includes a word my child cannot \"",
+        "b5 FAQ answer is 21 words (aim 40-60): \"How do I keep the same character voice across mult\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.apa.org/monitor/2019/06/reading-aloud (HTTP 404)"
+      ]
+    },
+    {
+      "query": "summer reading list for kids going into 2nd grade",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 19 words (aim 40-60): \"Should my child read only chapter books now?\"",
+        "b5 FAQ answer is 20 words (aim 40-60): \"Do audiobooks count as reading?\"",
+        "b5 FAQ answer is 21 words (aim 40-60): \"What if we miss a few days?\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"How do I find books at the right level?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.nationsreportcard.gov/reading/national/achievement/ (HTTP 404); https://www.ala.org/alsc/publications-resources/book-lists/summer-reading-list (HTTP 404); https://www.ala.org/advocacy/summer-reading (HTTP 404)"
+      ]
+    },
+    {
+      "query": "summer reading list for kids going into 1st grade",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "the answer was not the JSON object asked for, with every key filled"
+      ]
+    },
+    {
+      "query": "summer reading list for kids going into 5th grade",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 27 words (aim 40-60): \"How many books should a rising 5th grader read ove\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"Do graphic novels count as real reading?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"What if my child only wants to reread old favorite\"",
+        "b5 FAQ answer is 23 words (aim 40-60): \"Are audiobooks okay for summer reading logs?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://ccbc.education.wisc.edu/books/choices.asp (HTTP 202); https://www.ala.org/alsc/publications-resources/book-lists/summer-reading-list (HTTP 404)"
+      ]
+    },
+    {
+      "query": "if you read 20 minutes a day how many books",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 22 words (aim 40-60): \"Do audiobooks count toward the 20-minute goal?\"",
+        "b5 FAQ answer is 23 words (aim 40-60): \"Should I count picture books for older kids?\"",
+        "b5 FAQ answer is 23 words (aim 40-60): \"Can I split the 20 minutes into two shorter sessio\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.nationsreportcard.gov/reading/national/achievement/ (HTTP 404); https://www.ala.org/advocacy/summer-reading (HTTP 404)"
+      ]
+    },
+    {
+      "query": "short reading comprehension passages for kids",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"Can I use these passages for test prep?\""
+      ]
+    },
+    {
+      "query": "what is a reading log",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 28 words (aim 40-60): \"Do I need a special notebook for a reading log?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www2.ed.gov/parents/read/resources/edpicks.jhtml (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.ala.org/advocacy/summer-reading (HTTP 404)"
+      ]
+    },
+    {
+      "query": "what does reading log mean",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 28 words (aim 40-60)",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www2.ed.gov/parents/read/resources/readingtips/part_pg4.html (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.cde.ca.gov/ci/rl/lb/ (HTTP 404)"
+      ]
+    },
+    {
+      "query": "what is reading comprehension for kindergarten",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 22 words (aim 40-60): \"Does my child need to read words to show comprehen\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"Are picture books enough for comprehension practic\"",
+        "b5 FAQ answer is 23 words (aim 40-60): \"How long should a kindergarten read-aloud last?\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"What if my child wants the same book every night?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.naeyc.org/resources/pubs/yc/nov2019/interactive-read-alouds (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www2.ed.gov/parents/read/resources/readingtips/part_pg4.html (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "my son doesnt want to read",
+      "at": "2026-11-23",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"Are audiobooks cheating?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.aoa.org/healthy-eyes/eye-health-for-life/children (HTTP 404); https://sites.ed.gov/idea/regs/b/b/300.301 (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
     }
   ],
   "redirected": [
@@ -2975,6 +3264,26 @@
       "kind": "page",
       "matched_by": "high token overlap (0.67 >= 0.6)",
       "matched_text": "Set a 20 Minute Timer for Reading — Time-2-Read",
+      "stage": "search"
+    },
+    {
+      "query": "summer reading list for kids going into 6th grade",
+      "at": "2026-11-23",
+      "url": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "route": "/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.78 >= 0.6)",
+      "matched_text": "summer reading list for kids going into 4th grade",
+      "stage": "search"
+    },
+    {
+      "query": "my child doesnt want to read",
+      "at": "2026-11-23",
+      "url": "https://guides.time-2-read.com/questions/what-to-do-if-your-child-doesnt-want-to-read/",
+      "route": "/questions/what-to-do-if-your-child-doesnt-want-to-read/",
+      "kind": "engine",
+      "matched_by": "high token overlap (0.75 >= 0.6)",
+      "matched_text": "what to do if your child doesnt want to read",
       "stage": "search"
     }
   ]
