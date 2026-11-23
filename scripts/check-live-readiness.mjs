@@ -15,6 +15,7 @@
 // They all clear themselves the moment the current main is published. A failure is
 // therefore one action: publish, or fix the regression at source.
 import { readFileSync } from "node:fs";
+import { clarityRuleBroken, loadsClarity } from "./clarity-loader.mjs";
 
 // Overridable so the same assertions can be proved green against a local build
 // of dist before the guard is trusted against production.
@@ -22,7 +23,6 @@ const SITE = process.env.LIVE_CHECK_ORIGIN ?? "https://time-2-read.com";
 const BRAND = "Time-2-Read";
 // Clarity now mounts only inside LoginScreen (useParentFormClarity), the
 // grown-up's account/checkout form. No sitemap page may ship the tag.
-const CLARITY = /clarity\.ms|clarity\.js|\/clarity[-.]|microsoft clarity/i;
 // k4: every page's Organization names Spry Labs as its parent (src/seo/entity.json).
 const SPRY_LABS_ID = "https://billionairehighperformancecoach.com/spry-labs#organization";
 const UA = "Mozilla/5.0 (compatible; Time2ReadLiveCheck/1.0; +https://time-2-read.com)";
@@ -54,6 +54,7 @@ async function get(url) {
 }
 
 const fails = [];
+if (clarityRuleBroken()) fails.push("CLARITY RULE: loadsClarity must catch a Clarity script, snippet or preload and pass the vendor named in text");
 let checked = 0;
 for (const loc of locs) {
   const path = new URL(loc).pathname.replace(/\/+$/, "") || "/";
@@ -69,7 +70,7 @@ for (const loc of locs) {
   const title = (html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "")
     .replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'");
   if (!title.includes(BRAND)) fails.push(`TITLE_NOT_LIVE ${path}: live title does not name ${BRAND}: "${title}"`);
-  if (CLARITY.test(html)) fails.push(`CLARITY_STILL_LIVE ${path}: live page outside the parent form still loads Clarity`);
+  if (loadsClarity(html)) fails.push(`CLARITY_STILL_LIVE ${path}: live page outside the parent form still loads Clarity`);
   if (!html.includes(SPRY_LABS_ID)) fails.push(`PARENT_NOT_LIVE ${path}: live Organization does not name Spry Labs as its parent (${SPRY_LABS_ID})`);
 }
 

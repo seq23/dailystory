@@ -68,25 +68,14 @@ Time-2-Read implements:
 
 ## 5. Subprocessors
 
-Time-2-Read uses the following subprocessors:
-
-| Subprocessor | Purpose | Data Processed | Location |
-|---|---|---|---|
-| **Supabase** | Database, authentication, edge functions | User accounts, profiles, reading data | United States |
-| **OpenAI** | AI story text generation | Story prompts (no PII) | United States |
-| **Anthropic** | AI fallback story generation | Story prompts (no PII) | United States |
-| **Runware** | AI image generation | Image prompts (no PII) | Europe / United States |
-| **ElevenLabs** | Text-to-speech narration | Story text (no PII) | United States |
-| **Stripe** | Payment processing | Email, payment info (PCI DSS) | United States |
-| **Resend** | Transactional email delivery | Email addresses, email content | United States |
-| **Cloudflare** | Hosting, CDN, DDoS protection | IP addresses, request metadata | Global |
-| **GitHub** | Source code hosting, CI/CD | Source code only (no user data) | United States |
+The current list of subprocessors, with what each one receives, is kept at [time-2-read.com/subprocessors](https://time-2-read.com/subprocessors). It is the one list; this agreement does not copy it.
 
 Processor shall:
 
 - Ensure all subprocessors are contractually bound to equivalent data protection obligations
-- Maintain a current subprocessor list at [time-2-read.lovable.app/subprocessors](/subprocessors)
-- Notify Controller of any intended subprocessor changes
+- Keep that list current
+
+We update this list before a new subprocessor starts processing customer data. Schools and districts can ask us to email them when it changes.
 
 ---
 

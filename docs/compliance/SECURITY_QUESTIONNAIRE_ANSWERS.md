@@ -332,7 +332,7 @@ A: Public list at [/subprocessors](/subprocessors) and [/vendors](/vendors).
 A: Only Supabase (database), Stripe (payment info), and Resend (email addresses) process PII. AI vendors receive prompts/text with no personal information.
 
 **Q100: How do you assess vendor risk?**  
-A: Vendors are tiered: High Risk (stores PII), Medium Risk (transient processing, no PII), Low Risk (infrastructure only). See `docs/compliance/VENDOR_DPA_TRACKER.md`.
+A: Vendors are tiered: High Risk (stores accounts, payments and email), Medium Risk (runs the AI features; prompts and voice clips can carry personal information), Low Risk (hosts and builds the site; Cloudflare sees IP addresses). See `docs/compliance/VENDOR_DPA_TRACKER.md`.
 
 **Q101: How are you notified of vendor security incidents?**  
 A: Via vendor status pages, email notifications, and DPA breach notification clauses.
@@ -341,7 +341,7 @@ A: Via vendor status pages, email notifications, and DPA breach notification cla
 A: Yes. Annual review of vendor DPAs, certifications, and subprocessor changes.
 
 **Q103: Can you notify us before adding new subprocessors?**  
-A: Yes. Enterprise customers with DPAs will be notified of material subprocessor changes in advance.
+A: We update this list before a new subprocessor starts processing customer data. Schools and districts can ask us to email them when it changes. The list is at /subprocessors.
 
 **Q104: Do your AI vendors retain user data?**  
 A: No. OpenAI and Anthropic are configured with zero-data-retention API policies. Data is not used for model training.
