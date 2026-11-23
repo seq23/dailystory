@@ -73,7 +73,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                   <SelectTrigger className="w-[60px] border-none bg-transparent text-white text-xs h-auto p-0 focus:ring-0 mobile-input touch-target">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 mobile-scroll">
+                  <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-lg z-50 mobile-scroll">
                     <SelectItem value="en" className="touch-target">EN</SelectItem>
                     <SelectItem value="ar" className="touch-target">العربية</SelectItem>
                     <SelectItem value="ur" className="touch-target">اردو</SelectItem>
@@ -143,7 +143,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
                   <SelectTrigger className="w-[100px] sm:w-[140px] border-none bg-transparent text-white text-xs sm:text-sm h-auto p-0 focus:ring-0">
                     <SelectValue placeholder={t("welcomeHero.languageSelector.placeholder")} />
                   </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                  <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                     <SelectItem value="en">English</SelectItem>
                     <SelectItem value="ar">العربية</SelectItem>
                     <SelectItem value="ur">اردو</SelectItem>

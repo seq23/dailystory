@@ -173,12 +173,12 @@ export const AudioEventMonitor = () => {
 
   const getCategoryColor = (category: AudioEvent['category']) => {
     switch (category) {
-      case 'audio': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case 'voice': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'highlighting': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'coordination': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
-      case 'system': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      case 'audio': return 'bg-blue-100 text-blue-800';
+      case 'voice': return 'bg-green-100 text-green-800';
+      case 'highlighting': return 'bg-yellow-100 text-yellow-800';
+      case 'coordination': return 'bg-purple-100 text-purple-800';
+      case 'system': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -341,7 +341,7 @@ export const AudioEventMonitor = () => {
             <p><strong>Highlighting Events:</strong> Watch word highlighting during story playback</p>
             <p><strong>Coordination Events:</strong> See how Charlotte Buddy coordinates with story audio</p>
             <p><strong>System Events:</strong> Console logs and system-level audio events</p>
-            <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
+            <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">
               <strong>Pro Tip:</strong> Use the filter buttons to focus on specific event types. The monitor captures real-time events from all audio systems.
             </div>
           </div>

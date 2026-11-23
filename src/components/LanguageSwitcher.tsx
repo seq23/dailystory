@@ -65,7 +65,7 @@ export default function LanguageSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-56 mobile-scroll max-h-60 overflow-y-auto touch-target bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50"
+        className="w-56 mobile-scroll max-h-60 overflow-y-auto touch-target bg-white border border-gray-200 rounded-lg shadow-lg z-50"
         sideOffset={4}
       >
         {languages.map((language) => (

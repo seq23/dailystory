@@ -40,8 +40,8 @@ export const processTextForPhonetics = (
     // Clear highlighting if index is -1 (cleanup signal)
     if (highlightedWordIndex === -1) {
       // Remove any existing highlight classes from all elements
-      document.querySelectorAll('.bg-yellow-200\\/80, .dark\\:bg-yellow-800\\/60, .animate-pulse').forEach(el => {
-        el.classList.remove('bg-yellow-200/80', 'dark:bg-yellow-800/60', 'animate-pulse', 'transition-all', 'duration-500', 'shadow-md', 'rounded-sm');
+      document.querySelectorAll('.bg-yellow-200\\/80, .animate-pulse').forEach(el => {
+        el.classList.remove('bg-yellow-200/80', 'animate-pulse', 'transition-all', 'duration-500', 'shadow-md', 'rounded-sm');
       });
     }
     
@@ -49,7 +49,7 @@ export const processTextForPhonetics = (
       <MobileOptimizedInteractiveWord 
         key={`${index}-${word}`} 
         word={word} 
-        className={`inline ${className} ${isHighlighted ? 'bg-yellow-200/80 dark:bg-yellow-800/60 animate-pulse transition-all duration-500 shadow-md rounded-sm' : 'transition-all duration-300'} word-index-${index}`}
+        className={`inline ${className} ${isHighlighted ? 'bg-yellow-200/80 animate-pulse transition-all duration-500 shadow-md rounded-sm' : 'transition-all duration-300'} word-index-${index}`}
         difficulty={difficulty}
         userInfo={userInfo}
         isPremium={isPremium}

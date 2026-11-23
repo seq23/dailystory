@@ -283,7 +283,7 @@ export const VoiceButtonTester = ({
             <div>
               <strong>6. Status Monitoring:</strong> Watch the status indicators to see real-time connection and voice level feedback
             </div>
-            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800">
+            <div className="p-3 bg-yellow-50 rounded border border-yellow-200">
               <strong>Note:</strong> Make sure your microphone is enabled and working. Some voice commands require the story to be playing first.
             </div>
           </div>

@@ -71,7 +71,7 @@ export const ColorPicker = React.forwardRef<
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-4 bg-white dark:bg-gray-800 border-2 border-primary/20 rounded-2xl shadow-lg z-50" align="start">
+      <PopoverContent className="w-auto p-4 bg-white border-2 border-primary/20 rounded-2xl shadow-lg z-50" align="start">
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
             {primaryColors.map((colorObj) => (

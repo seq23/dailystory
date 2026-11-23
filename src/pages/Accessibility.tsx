@@ -66,7 +66,7 @@ const Accessibility = () => {
       </header>
 
       <section className="container mx-auto px-4 pb-12">
-        <article className="prose max-w-none dark:prose-invert">
+        <article className="prose max-w-none">
           <p className="lead">
             Spry VSL LLC is committed to ensuring digital accessibility for people with disabilities.
             We are continually improving the user experience for everyone and applying the relevant
@@ -93,7 +93,6 @@ const Accessibility = () => {
                   <li>High color contrast ratios</li>
                   <li>Resizable text without loss of content</li>
                   <li>Alternative text for images</li>
-                  <li>Dark mode support</li>
                 </ul>
               </CardContent>
             </Card>
