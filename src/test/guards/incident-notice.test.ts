@@ -311,7 +311,8 @@ describe("the email a parent reads", () => {
 
   it("escapes everything the owner typed", () => {
     const { html } = renderNotice(inc, ["<img src=x>"]);
-    expect(html).not.toMatch(/<script>|<b>Stories|<img src=x>/);
+    // Plain substring checks: a regex over tags is what CodeQL's bad-tag-filter flags.
+    for (const raw of ["<script>", "<b>Stories", "<img src=x>"]) expect(html).not.toContain(raw);
     expect(html).toContain("&lt;script&gt;");
   });
 
