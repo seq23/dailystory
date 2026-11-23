@@ -1,12 +1,11 @@
 // Enhanced ElevenLabs TTS Smart — Flash v2.5 + persistent cache + latency optimization
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { UniversalLKGCache } from '../_shared/UniversalLKGCache.ts';
 import { identifyCaller, chargeCall } from '../_shared/paidCallGuardDeno.ts';
 import { TTS_MAX_CHARACTERS } from '../_shared/languageVoiceMap.ts';
 import { sameSecret } from "../_shared/callerCheck.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-t2r-guest',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
   'Access-Control-Max-Age': '600',

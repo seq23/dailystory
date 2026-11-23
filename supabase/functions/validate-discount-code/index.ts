@@ -1,11 +1,11 @@
 // Discount Code Validation - Public (pre-auth, used on the sign-up form)
 // Anti-enumeration is enforced via IP-based rate limiting (no auth required)
 // Direct Supabase REST API calls only
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
+import { clientIp } from "../_shared/paidCallGuard.ts";
 import { normalizeAccessCode } from "../_shared/accessCodeRules.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -85,7 +85,7 @@ serve(async (req) => {
     }
 
     // Anti-enumeration: IP-based rate limiting (this is a pre-auth public endpoint)
-    const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
+    const ip = clientIp(req);
     const allowed = await checkRateLimit(supabaseUrl, supabaseKey, ip);
     if (!allowed) {
       return new Response(JSON.stringify({ 

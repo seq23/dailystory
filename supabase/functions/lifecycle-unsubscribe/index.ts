@@ -2,11 +2,10 @@
 // POST ?t=<token> (mail apps' one-click) or POST {"token": "..."} (the /unsubscribe page).
 // The token is the account's lifecycle_email_prefs.unsubscribe_token; nothing else is accepted.
 // verify_jwt = false: the person clicking is not signed in.
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4?target=deno";
 
 const cors = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };

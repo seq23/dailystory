@@ -1,6 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Enhanced with resilient loader
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { memoizedImport, createTieredSupabaseClient, createImportFailureResponse } from '../_shared/resilientLoader.ts';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
@@ -13,7 +13,6 @@ import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_s
 // Supabase client will be created inside handler for better error handling
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-t2r-guest',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
   'Access-Control-Max-Age': '600',

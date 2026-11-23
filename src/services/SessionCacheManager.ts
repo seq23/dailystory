@@ -138,10 +138,6 @@ export class SessionCacheManager {
       DebugLogger.log('performance', 'Step 6: Clearing Navigation Caches');
       this.clearNavigationCaches(userId);
 
-      // 7. Clear Server-Side Character Cache
-      DebugLogger.log('performance', 'Step 7: Clearing Server-Side Character Cache');
-      this.clearServerSideCharacterCache(effectiveSessionId);
-
       DebugLogger.log('performance', 'All cache clearing steps completed successfully');
 
     } catch (error) {
@@ -347,39 +343,6 @@ export class SessionCacheManager {
 
     } catch (error) {
       DebugLogger.warn('performance', 'Failed to clear navigation caches', { error });
-    }
-  }
-
-  /**
-   * Clear server-side character cache to ensure synchronization
-   */
-  private static clearServerSideCharacterCache(sessionId?: string): void {
-    try {
-      if (!sessionId) {
-        DebugLogger.warn('performance', 'Skipping server-side cache clear (no sessionId)');
-        return;
-      }
-      // Call the server-side clear endpoint asynchronously (don't block the UI)
-      fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/clear-character-cache', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sessionId, reason: 'client-cache-clear' })
-      })
-      .then(response => {
-        if (response.ok) {
-          DebugLogger.log('performance', 'Server-side character cache cleared successfully');
-        } else {
-          DebugLogger.warn('performance', 'Server-side character cache clear failed (non-critical)');
-        }
-      })
-      .catch(error => {
-        DebugLogger.warn('performance', 'Failed to clear server-side character cache (non-critical)', { error: error.message });
-      });
-
-    } catch (error) {
-      DebugLogger.warn('performance', 'Error initiating server-side cache clear (non-critical)', { error });
     }
   }
 

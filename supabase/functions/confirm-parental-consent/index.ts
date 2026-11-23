@@ -1,8 +1,8 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
+import { clientIpOrNull } from "../_shared/paidCallGuard.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -63,7 +63,7 @@ serve(async (req: Request) => {
       .update({
         consent_status: "verified",
         verified_at: new Date().toISOString(),
-        ip_address: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
+        ip_address: clientIpOrNull(req),
         user_agent: req.headers.get("user-agent"),
       })
       .eq("id", consentRecord.id);
@@ -81,7 +81,7 @@ serve(async (req: Request) => {
         child_profile_id: consentRecord.child_profile_id,
         verified_at: new Date().toISOString(),
       },
-      ip_address: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
+      ip_address: clientIpOrNull(req),
       user_agent: req.headers.get("user-agent"),
     });
 

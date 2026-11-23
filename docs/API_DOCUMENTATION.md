@@ -141,44 +141,6 @@ const { data } = await supabase.functions.invoke('update-user-profile', {
 
 ## 📊 Monitoring APIs (⚠️ Use Manual Refresh Only)
 
-### `get-monitoring-data`
-**Purpose**: Comprehensive system monitoring data
-
-**⚠️ WARNING**: Do not use auto-polling. Manual refresh only due to quota concerns.
-
-**Usage**:
-```typescript
-// ✅ CORRECT - Manual trigger only
-const handleManualRefresh = async () => {
-  const { data } = await supabase.functions.invoke('get-monitoring-data');
-};
-
-// ❌ NEVER - Auto-polling disabled due to quota burn
-// setInterval(() => invoke('get-monitoring-data'), 60000);
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "performanceMetrics": {
-      "avgStoryGenTime": 3.2,
-      "avgImageGenTime": 5.1,
-      "cacheHitRate": 0.84
-    },
-    "characterSeeds": {
-      "active": 15,
-      "cached": 42
-    },
-    "activeTests": [],
-    "culturalMetrics": {
-      "languageDistribution": { "en": 0.78, "es": 0.15 }
-    }
-  }
-}
-```
-
 ### `system-health-check`
 **Purpose**: Basic system health verification
 
@@ -325,39 +287,3 @@ const generateStory = async (userType: 'guest' | 'premium') => {
   }
 };
 ```
-
-### Monitoring Dashboard (Manual Refresh)
-```typescript
-const MonitoringDashboard = () => {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const handleManualRefresh = async () => {
-    setIsLoading(true);
-    try {
-      const { data: monitoring } = await supabase.functions.invoke('get-monitoring-data');
-      setData(monitoring);
-    } catch (error) {
-      console.error('Monitoring refresh failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  // ✅ Manual refresh only - no useEffect with intervals
-  return (
-    <div>
-      <Button onClick={handleManualRefresh} disabled={isLoading}>
-        {isLoading ? 'Refreshing...' : 'Refresh Data'}
-      </Button>
-      {data && <MonitoringDisplay data={data} />}
-    </div>
-  );
-};
-```
-
----
-
-**Last Updated**: January 2025  
-**Version**: 3.0 (Emergency Throttling Edition)  
-**API Status**: Production Ready with Usage Controls ✅

@@ -3,7 +3,7 @@
 // NO JWT verification — Stripe sends webhooks without auth tokens
 // Security: validated via Stripe webhook signature (STRIPE_WEBHOOK_SECRET)
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { subscriptionEndFrom } from "../_shared/subscriptionEnd.ts";
 
 import { syncSubscriptionEvent } from "../_shared/subscriptionUpdate.ts";
@@ -13,7 +13,6 @@ import { sendLifecycleEmail } from "../_shared/lifecycleEmail/core.ts";
 import { lifecycleDeps } from "../_shared/lifecycleEmail/deps.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 

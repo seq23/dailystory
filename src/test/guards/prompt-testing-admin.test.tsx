@@ -25,10 +25,14 @@ const settled = async (access: string) => {
 describe("/prompt-testing is behind the admin gate", () => {
   afterEach(() => { cleanup(); mocks.getSession.mockReset(); mocks.invoke.mockReset(); });
 
-  it("the route renders PromptTesting only inside AdminOnly", () => {
+  it("each team-only route renders its page only inside AdminOnly", () => {
     const app = readFileSync(join(__dirname, "../../App.tsx"), "utf8");
-    const routes = app.match(/<Route path="\/prompt-testing"[^\n]*/g) ?? [];
-    expect(routes).toEqual(['<Route path="/prompt-testing" element={<AdminOnly><PromptTesting /></AdminOnly>} />']);
+    // /template-testing and /admin/voices were open to anyone until 23 Nov 2026 (d10 audit).
+    for (const [path, page] of [["/prompt-testing", "PromptTesting"], ["/prompt-studio", "PromptStudio"],
+      ["/template-testing", "TemplateTestingPage"], ["/admin/voices", "VoiceAdmin"]]) {
+      const routes = app.match(new RegExp(`<Route path="${path}"[^\\n]*`, "g")) ?? [];
+      expect(routes, path).toEqual([`<Route path="${path}" element={<AdminOnly><${page} /></AdminOnly>} />`]);
+    }
   });
 
   it("a logged-out visit is refused and never asks the server", async () => {

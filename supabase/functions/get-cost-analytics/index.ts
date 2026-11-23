@@ -1,9 +1,8 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { adminIdsFrom, adminOrCronRefusal } from "../_shared/callerCheck.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Vary': 'Origin, Access-Control-Request-Headers',
 };

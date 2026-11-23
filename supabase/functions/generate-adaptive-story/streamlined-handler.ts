@@ -67,7 +67,6 @@ import {
 
 // CORS headers - moved to top to fix ReferenceError
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 

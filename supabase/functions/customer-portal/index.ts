@@ -1,14 +1,13 @@
 // Payment Function Pattern: Tier 1 (Network CDN) + Tier 2 (Vendor) ONLY
 // NO template fallback - payment requires live database access
 // Returns 503 if both network and vendor fail
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { createImportFailureResponse } from "../_shared/resilientLoader.ts";
 import { createPaymentServiceClient } from "../_shared/paymentSupabase.ts";
 import Stripe from "../_shared/stripe.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Max-Age": "600",
   "Vary": "Origin, Access-Control-Request-Headers",

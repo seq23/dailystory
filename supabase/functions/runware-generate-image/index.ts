@@ -21,9 +21,9 @@ import {
 } from '../_shared/imagePrompt.ts';
 import { privacyLaneForRequest } from '../_shared/privacyLane.ts';
 import { paidCallRefusal, adminUserIds, identifyCaller, chargeCall } from "../_shared/paidCallGuardDeno.ts";
+import { serve } from "../_shared/serve.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
     'authorization, x-client-info, apikey, content-type, x-requested-with, x-t2r-guest',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -202,7 +202,7 @@ async function resolveUserId(req: Request): Promise<string | null> {
 // Handler
 // ---------------------------------------------------------------------------
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

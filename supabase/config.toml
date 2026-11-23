@@ -9,14 +9,8 @@ verify_jwt = true
 [functions.background-image-pregeneration]
 verify_jwt = false
 
-[functions.cache-health]
-verify_jwt = false
-
 [functions.check-subscription]
 verify_jwt = true
-
-[functions.clear-character-cache]
-verify_jwt = false
 
 [functions.correct-spelling]
 verify_jwt = false
@@ -55,9 +49,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.get-cost-analytics]
-verify_jwt = false
-
-[functions.get-monitoring-data]
 verify_jwt = false
 
 [functions.guest-pass]
@@ -115,9 +106,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.validate-discount-code]
-verify_jwt = false
-
-[functions.vendor-first-selftest]
 verify_jwt = false
 
 [functions.voice-to-text]

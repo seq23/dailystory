@@ -368,10 +368,16 @@ jobs:
           # answer 2xx; one that does not is redeployed once and probed again, then the
           # deploy fails. Guard: src/test/guards/guest-story-path.test.ts.
           BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
+          # d10 audit (23 Nov 2026): a preflight from our site must also come back with our
+          # origin in Access-Control-Allow-Origin, or the browser refuses every call (the
+          # allowlist in _shared/allowedOrigin.ts). A 2xx without it counts as not booting.
           preflight() {
-            curl -s -o /dev/null -w "%{http_code}" --max-time 30 -X OPTIONS "$BASE_URL/$1" \
+            local code
+            code=$(curl -s -o /dev/null -D /tmp/pf.h -w "%{http_code}" --max-time 30 -X OPTIONS "$BASE_URL/$1" \
               -H "Origin: https://time-2-read.com" -H "Access-Control-Request-Method: POST" \
-              -H "Access-Control-Request-Headers: authorization, x-client-info, apikey, content-type" || echo 000
+              -H "Access-Control-Request-Headers: authorization, x-client-info, apikey, content-type" || echo 000)
+            case "$code" in 2*) grep -qi '^access-control-allow-origin: https://time-2-read.com' /tmp/pf.h || code="${code}-no-origin" ;; esac
+            echo "$code"
           }
           failed=""
           checked=0
@@ -394,6 +400,11 @@ jobs:
           echo "preflight checked $checked functions"
           if [ "$checked" -eq 0 ]; then echo "::error::no functions found to probe"; exit 1; fi
           if [ -n "$failed" ]; then echo "::error::functions that do not boot:$failed"; exit 1; fi
+          # And a stranger's site is refused: no Allow-Origin on its preflight.
+          curl -s -o /dev/null -D /tmp/pf.h --max-time 30 -X OPTIONS "$BASE_URL/generate-adaptive-story" \
+            -H "Origin: https://evil.example" -H "Access-Control-Request-Method: POST" || true
+          if grep -qi '^access-control-allow-origin:' /tmp/pf.h; then echo "::error::generate-adaptive-story allows a stranger's origin"; exit 1; fi
+          if ! grep -qi '^HTTP/' /tmp/pf.h; then echo "::error::the stranger-origin probe got no answer"; exit 1; fi
 
       - name: Strangers are refused (post-deploy)
         env:
@@ -479,9 +490,12 @@ jobs:
           failed=""
           submit() { # label bearer
             local code
-            code=$(curl -s -o /tmp/fb.json -w "%{http_code}" --max-time 30 -X POST "$BASE/functions/v1/send-feedback-notification" \
-              -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $2" -H "Content-Type: application/json" \
+            code=$(curl -s -o /tmp/fb.json -D /tmp/fb.h -w "%{http_code}" --max-time 30 -X POST "$BASE/functions/v1/send-feedback-notification" \
+              -H "Origin: https://time-2-read.com" -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $2" -H "Content-Type: application/json" \
               -d "{\"rating\":5,\"category\":\"other\",\"message\":\"TEST: automated check after deploy ${GITHUB_SHA:0:8}, $1. Please ignore.\",\"page_url\":\"https://time-2-read.com/\"}" || echo 000)
+            # The form is a browser call from our site: without our origin echoed back the
+            # browser would drop the answer, so that counts as not delivered (d10 audit).
+            grep -qi '^access-control-allow-origin: https://time-2-read.com' /tmp/fb.h || code="${code}-no-origin"
             if [ "$code" = "200" ] && [ "$(jq -r '.success' /tmp/fb.json)" = "true" ]; then echo "feedback $1: accepted for the inbox"; else echo "::error::feedback $1 answered $code: $(head -c 200 /tmp/fb.json)"; failed="$failed $1"; fi
           }
           submit "signed out" "$SUPABASE_ANON_KEY"
@@ -498,7 +512,9 @@ jobs:
           # when its folder is absent, and must then answer 404. Guard:
           # src/test/guards/caller-check.test.ts. openai-tts and openai-realtime: source removed in
           # #182, still live on old code that does not mask children's names (R-KID-01).
-          RETIRED="send-custom-auth-email notification-service send-coppa-notification send-parental-notification ai-visual-scene-creator runware-template-ab runware-template-cd openai-tts openai-realtime"
+          # vendor-first-selftest, cache-health, get-monitoring-data, clear-character-cache: d10 audit
+          # (23 Nov 2026), open to anyone with no caller in the app.
+          RETIRED="send-custom-auth-email notification-service send-coppa-notification send-parental-notification ai-visual-scene-creator runware-template-ab runware-template-cd openai-tts openai-realtime vendor-first-selftest cache-health get-monitoring-data clear-character-cache"
           BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
           failed=""
           for func in $RETIRED; do

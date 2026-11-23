@@ -155,11 +155,12 @@ describe("4. every edge function boots after a deploy", () => {
     expect(w).toMatch(/if \[ "\$checked" -eq 0 \]; then echo "::error::no functions found to probe"; exit 1; fi/);
   });
 
-  it("the two functions the guest page calls answer their preflight with CORS headers", () => {
-    for (const f of ["correct-spelling", "clear-character-cache"]) {
-      const src = read(`supabase/functions/${f}/index.ts`);
-      expect(src, f).toMatch(/handleHealthAndCors\(req\)/);
-    }
+  it("the function the guest page calls answers its preflight with CORS headers", () => {
+    // clear-character-cache was the second one until 23 Nov 2026 (d10 audit): it deleted rows of a
+    // table nothing writes any more, so the call was a no-op; both the call and the function are gone.
+    const src = read("supabase/functions/correct-spelling/index.ts");
+    expect(src).toMatch(/handleHealthAndCors\(req\)/);
     expect(read("supabase/functions/_shared/healthCors.ts")).toMatch(/OPTIONS/);
+    expect(read("src/services/SessionCacheManager.ts")).not.toContain("clear-character-cache");
   });
 });

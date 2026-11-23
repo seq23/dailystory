@@ -1,12 +1,11 @@
 
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { paidCallRefusal, adminUserIds } from "../_shared/paidCallGuardDeno.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-t2r-guest",
   "Access-Control-Max-Age": "600",
   "Vary": "Origin, Access-Control-Request-Headers",

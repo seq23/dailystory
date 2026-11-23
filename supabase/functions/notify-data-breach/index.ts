@@ -1,11 +1,12 @@
 // The parent incident notice (Privacy.tsx: "parents are notified"). Owner only; the rules live
 // in ./handler.ts (pure). How to run it: docs/OPERATIONS.md "Parent incident notice".
+// Starts through ../_shared/serve.ts: only our own sites get a CORS grant.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4?target=deno";
 import { adminIdsFrom } from "../_shared/callerCheck.ts";
+import { serve } from "../_shared/serve.ts";
 import { handleIncidentNotice, NOTICE_FROM, PRIVACY_INBOX } from "./handler.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -14,7 +15,7 @@ const must = <T>(r: { data: T; error: { message: string } | null }, what: string
   return r.data;
 };
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const db = createClient(Deno.env.get("SUPABASE_URL") ?? "", serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });

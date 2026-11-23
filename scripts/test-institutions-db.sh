@@ -83,3 +83,18 @@ docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ER
 docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$incident_migration"
 docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.incident_notices) <> 3 then raise exception 'Incident reapplication lost data'; end if; end \$\$;"
 echo 'Incident notice claims, retries, access and reapplication checks passed.'
+
+# performance_metrics: no public INSERT (d10 audit). The table and its original policies come from
+# the production migration itself, so the "before" state is the real one, not a hand copy.
+metrics_base=supabase/migrations/20250805053503_4e55a0e6-bee1-4150-99ee-46da857a037f.sql
+metrics_migration="${METRICS_MIGRATION:-supabase/migrations/20261123190000_performance_metrics_no_public_insert.sql}"
+sed -n '/^CREATE TABLE IF NOT EXISTS public.performance_metrics/,/^WITH CHECK (true);/p' "$metrics_base" \
+  | docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q
+# Before the change a stranger CAN insert: proves the test below would see the hole.
+docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q \
+  -c "set role anon; insert into public.performance_metrics (metric_name, metric_value) values ('before', 1); reset role;"
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$metrics_migration"
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < supabase/tests/performance_metrics/insert.sql
+docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$metrics_migration"
+docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.performance_metrics) <> 3 then raise exception 'performance_metrics reapplication lost data'; end if; end \$\$;"
+echo 'performance_metrics refuses anon and signed-in inserts, keeps service writes, own-row reads and existing rows.'

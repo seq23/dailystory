@@ -3,14 +3,13 @@ console.log("[translate-universal] DIAGNOSTIC LOADED: 2025-01-23T03:00:00Z");
 import { chatCompletionWithFallback } from "../_shared/storyTextProvider.ts";
 import { privacyLaneForRequest, withPrivacyLane } from "../_shared/privacyLane.ts";
 import { plainAnswerProblem } from "../_shared/storyOutputCheck.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "../_shared/serve.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { paidCallRefusal, adminUserIds, readJsonBeforeGuard } from "../_shared/paidCallGuardDeno.ts";
 import { logCost, estimateOpenAIChatCost } from "../_shared/costLogger.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-t2r-guest',
   'Access-Control-Max-Age': '600',
   'Vary': 'Origin, Access-Control-Request-Headers',

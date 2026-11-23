@@ -1,8 +1,8 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "../_shared/serve.ts";
+import { clientIp } from "../_shared/paidCallGuard.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -157,7 +157,7 @@ serve(async (req: Request) => {
         ),
         timestamp: new Date().toISOString(),
       },
-      ip_address: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown",
+      ip_address: clientIp(req),
       user_agent: req.headers.get("user-agent"),
     });
 
