@@ -1262,8 +1262,10 @@
         "b5 FAQ answer is 39 words (aim 40-60): \"Do graphic novels count as real reading?\""
       ],
       "extra_queries": [
-        "summer reading list for kids going into 6th grade"
-      ]
+        "summer reading list for kids going into 6th grade",
+        "summer reading list for kids"
+      ],
+      "indexnow_at": "2026-11-24"
     },
     {
       "slug": "reading-comprehension-passages-with-questions-for-kids",
@@ -1317,6 +1319,47 @@
       ],
       "removed": {
         "reason": "claims gate: no-screens \"less screen\", medical \"treat\""
+      }
+    },
+    {
+      "slug": "reading-app-for-homeschooling",
+      "query": "reading app for homeschooling",
+      "lane": "striking",
+      "score": 25,
+      "scores": {
+        "striking": 25,
+        "can_be_one": 0
+      },
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ],
+      "signals": {
+        "words": 4,
+        "question": false,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/reading-app-for-homeschooling/index.html",
+      "route": "/questions/reading-app-for-homeschooling/",
+      "url": "https://guides.time-2-read.com/questions/reading-app-for-homeschooling/",
+      "published_at": "2026-11-24",
+      "status": "removed",
+      "hash": "8ff5954ee96d386fc9322eba0b18a548a602da742a5b6dd0a3d91549956cc6f2",
+      "model": "free-route",
+      "facts": [
+        "https://www.ecfr.gov/current/title-16/chapter-I/subchapter-C/part-312",
+        "https://www.healthychildren.org/English/fmp/Pages/MediaPlan.aspx"
+      ],
+      "linked_from": [],
+      "checks": {},
+      "gate_notes": [
+        "b4 direct answer under the H1 is 30 words (aim 40-60)",
+        "b5 FAQ answer is 39 words (aim 40-60): \"How much daily time should we schedule for the rea\"",
+        "b5 FAQ answer is 35 words (aim 40-60): \"Can I use the app alongside our current phonics cu\"",
+        "b5 FAQ answer is 36 words (aim 40-60): \"How do I handle a child who rushes through books t\""
+      ],
+      "removed": {
+        "reason": "claims gate: no-screens \"screen-free\", medical \"Treat\""
       }
     }
   ],
@@ -3073,6 +3116,141 @@
         "b5 FAQ answer is 29 words (aim 40-60): \"Are audiobooks cheating?\"",
         "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.aoa.org/healthy-eyes/eye-health-for-life/children (HTTP 404); https://sites.ed.gov/idea/regs/b/b/300.301 (HTTP 403: this site refuses automated checks, so cite a different publisher)"
       ]
+    },
+    {
+      "query": "how to improve 2nd grade reading",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 29 words (aim 40-60)",
+        "b5 FAQ answer is 28 words (aim 40-60): \"Can audiobooks count as reading time?\"",
+        "b5 FAQ answer is 28 words (aim 40-60): \"How much reading time is enough each day?\""
+      ]
+    },
+    {
+      "query": "my son doesnt like to read",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://improvingliteracy.org/brief/universal-screening-k-3 (HTTP 404); https://dyslexiaida.org/structured-literacy/ (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "help second grader read better",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 22 words (aim 40-60): \"How many minutes should a second grader read each \"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"What if my child only wants graphic novels?\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"Should I correct every mistake when they read alou\"",
+        "b5 FAQ answer is 19 words (aim 40-60): \"Can audiobooks count as reading practice?\""
+      ]
+    },
+    {
+      "query": "help my 2nd grader read better",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 29 words (aim 40-60)",
+        "b5 FAQ answer is 23 words (aim 40-60): \"Is it okay to read aloud to a second grader?\"",
+        "b5 FAQ answer is 20 words (aim 40-60): \"Do graphic novels count as real reading?\"",
+        "b5 FAQ answer is 28 words (aim 40-60): \"Should I correct every mistake during practice?\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"How do I know if my child understands what they re\""
+      ]
+    },
+    {
+      "query": "summer book log for kids",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "b4 direct answer under the H1 is 29 words (aim 40-60)",
+        "b5 FAQ answer is 23 words (aim 40-60): \"Do I need a separate log for each child?\"",
+        "b5 FAQ answer is 19 words (aim 40-60): \"Should I require a certain number of books?\"",
+        "b5 FAQ answer is 14 words (aim 40-60): \"Can audiobooks count?\"",
+        "b5 FAQ answer is 18 words (aim 40-60): \"What if my child stops filling it out?\""
+      ]
+    },
+    {
+      "query": "summer reading journal for kids",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 28 words (aim 40-60): \"Should I correct spelling or grammar in the journa\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"How long should a journal entry take?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"Can we use a digital journal instead of paper?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.ala.org/advocacy/summer-reading-benefits (HTTP 404); https://www.scholastic.com/parents/books-and-reading/reading-resources/developing-reading-skills/summer-reading-loss.html (HTTP 404)"
+      ]
+    },
+    {
+      "query": "ai story generator for children",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 26 words (aim 40-60): \"Can I set a specific reading level like 2nd grade?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"Will the tool save my child's name or ideas?\"",
+        "b5 FAQ answer is 21 words (aim 40-60): \"Are the stories free to print and share?\"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"What if the story has words my child cannot read y\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www2.ed.gov/policy/gen/guid/fpco/ferpa/index.html (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.nist.gov/artificial-intelligence/ai-risk-management-framework (HTTP 404)"
+      ]
+    },
+    {
+      "query": "free ai story generator for kids online",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.corestandards.org/ela-literacy/ (HTTP 404); https://publications.aap.org/pediatrics/article/138/5/e20162591/52686/Media-and-Young-Minds (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "ai story generator with pictures for kids",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa (HTTP 403: this site refuses automated checks, so cite a different publisher); https://publications.aap.org/pediatrics/article/138/5/e20162591/52686/Media-and-Young-Minds (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "weekly reading log with parent signature",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 22 words (aim 40-60): \"Do I need a special notebook or can I print a shee\"",
+        "b5 FAQ answer is 24 words (aim 40-60): \"What if my child reads on a tablet or listens to a\"",
+        "b5 FAQ answer is 21 words (aim 40-60): \"Should I sign if my child forgot to fill in a day?\"",
+        "b5 FAQ answer is 22 words (aim 40-60): \"How long should we keep the logs after they are re\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www2.ed.gov/parents/read/resources/edpicks.jhtml (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.nea.org/advocating-for-change/new-from-nea/parents-guide-reading-logs (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.ala.org/alsc/publications-resources/book-lists/summer-reading-list (HTTP 404)"
+      ]
+    },
+    {
+      "query": "reading log template with parent signature",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 27 words (aim 40-60): \"Do I need a different log for summer break?\"",
+        "b5 FAQ answer is 29 words (aim 40-60): \"Can I use a digital version instead of paper?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www2.ed.gov/parents/read/resources/readingtips/readingtips.pdf (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.familieslearning.org/resources/parent-resources (HTTP 404)"
+      ]
+    },
+    {
+      "query": "free reading log with parent signature",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"Do I need a special notebook for a reading log?\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"How often should we sign the reading log?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.readwritethink.org/classroom-resources/printouts/reading-log (HTTP 404); https://www.nypl.org/events/summer/reading-log (HTTP 404)"
+      ]
+    },
+    {
+      "query": "reading log sheet with parent signature",
+      "at": "2026-11-24",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 29 words (aim 40-60): \"Do I need a special notebook for a reading log?\"",
+        "b5 FAQ answer is 23 words (aim 40-60): \"What if my child forgets to fill it in one night?\"",
+        "b5 FAQ answer is 27 words (aim 40-60): \"Can older kids use a reading log with a signature?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www2.ed.gov/parents/read/resources/readingtips/readingtips.pdf (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.literacyworldwide.org/docs/default-source/where-we-stand/ila-independent-reading-position-statement.pdf (HTTP 404)"
+      ]
     }
   ],
   "redirected": [
@@ -3284,6 +3462,16 @@
       "kind": "engine",
       "matched_by": "high token overlap (0.75 >= 0.6)",
       "matched_text": "what to do if your child doesnt want to read",
+      "stage": "search"
+    },
+    {
+      "query": "summer reading list for kids",
+      "at": "2026-11-24",
+      "url": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "route": "/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "kind": "engine",
+      "matched_by": "same 4 intent words plus modifiers",
+      "matched_text": "summer reading list for kids going into 4th grade",
       "stage": "search"
     }
   ]

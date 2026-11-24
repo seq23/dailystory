@@ -1,0 +1,91 @@
+{
+  "h1": "What Reading App Works Best for Homeschooling?",
+  "title_lead": "Reading app for homeschooling",
+  "meta_description": "A reading app for homeschooling gives you a library, level matching, and simple tracking in one place. See what to look for and how to fit it into your day.",
+  "direct_answer": "A reading app for homeschooling is a digital tool that offers leveled books, progress tracking, and offline access so parents can support independent reading at home without a separate curriculum.",
+  "sections": [
+    {
+      "heading": "What should a homeschool reading app include?",
+      "paragraphs": [
+        "Look for an app that sorts books by reading level, not just by grade. A good match lets your child choose stories that feel comfortable but still stretch a little. The library should cover picture books, early chapter books, and nonfiction so interests stay wide. Built-in audio narration helps when you are busy with another child. Offline download means reading continues in the car or at the park. A simple dashboard shows what was finished, how long it took, and which titles come next. No ads, no in-app purchases, and a clear privacy policy keep the focus on reading."
+      ],
+      "bullets": [
+        "Leveled library that grows with your child",
+        "Audio support for tricky words",
+        "Offline reading for travel or wait times",
+        "Parent dashboard with time and titles",
+        "No ads or surprise purchases"
+      ]
+    },
+    {
+      "heading": "How do I fit the app into our homeschool routine?",
+      "paragraphs": [
+        "Treat the app like a book basket you carry from room to room. Set a consistent window, such as twenty minutes after breakfast or before lunch, and let the child pick the title. Use the parent dashboard once a week to see patterns, then adjust the level or add a new genre. Pair app reading with a quick conversation: ask what happened, what surprised them, or what they would change. That talk builds comprehension without a worksheet. Keep a paper log or sticker chart if your child likes visual progress. The app handles the books; you handle the connection."
+      ],
+      "bullets": []
+    },
+    {
+      "heading": "Can one app serve multiple ages at once?",
+      "paragraphs": [
+        "Yes. Choose a platform with separate profiles so each child sees their own shelf. The three-year-old gets read-aloud picture books with word highlighting. The seven-year-old sees early chapter series with optional narration. The ten-year-old accesses nonfiction and longer novels. Profiles prevent the older child from feeling babyish and the younger one from feeling overwhelmed. You switch profiles in two taps. The shared subscription covers everyone, and the dashboard rolls up data for your records."
+      ],
+      "bullets": []
+    },
+    {
+      "heading": "What about internet safety and data privacy?",
+      "paragraphs": [
+        "Children's apps must follow federal privacy rules that limit data collection and require clear parental consent. Look for a statement that the app does not sell data, does not show behavioral ads, and lets you delete the account at any time. A COPPA-compliant badge or a link to a plain-language privacy policy is a good sign. Turn off location sharing and push notifications in the device settings. Use a family media plan that sets device bedtimes and keeps charging stations in common areas."
+      ],
+      "bullets": []
+    },
+    {
+      "heading": "How do I know the level is right for my child?",
+      "paragraphs": [
+        "Start with the app's placement activity or a quick read-aloud of a sample page. If your child misses more than one word in ten, drop a level. If they breeze through with expression and can retell the story, move up. Watch for confidence: a child who chooses the same level again is building fluency. A child who avoids the app may need easier books or a different genre. Adjust monthly. The goal is a stack of books they want to read, not a number on a chart."
+      ],
+      "bullets": []
+    }
+  ],
+  "faq": [
+    {
+      "q": "How much daily time should we schedule for the reading app?",
+      "a": "Aim for fifteen to twenty minutes of focused app reading each day, plus a few minutes of conversation about the story. Consistency matters more than length. Adjust the window if attention wanes or if the child asks for more."
+    },
+    {
+      "q": "Can I use the app alongside our current phonics curriculum?",
+      "a": "Yes. The app supplies connected text for practice while your curriculum teaches the code. Use decodable books in the app that match the sounds you taught that week. This alignment reinforces skills without extra prep."
+    },
+    {
+      "q": "What if my child prefers paper books?",
+      "a": "Keep paper books as the main library and use the app for travel, audio support, or titles you do not own. Many families alternate: paper at the table, app in the car. The format matters less than the daily habit."
+    },
+    {
+      "q": "How do I handle a child who rushes through books to finish fast?",
+      "a": "Turn on the comprehension check or ask for a one-sentence summary before the next title unlocks. Set a minimum time per book in the settings. Celebrate thoughtful reading with a sticker or a special read-aloud together."
+    }
+  ],
+  "facts_heading": "Before you choose an app",
+  "facts": [
+    {
+      "claim": "The Children's Online Privacy Protection Rule requires verifiable parental consent before collecting personal information from children under 13.",
+      "source_url": "https://www.ecfr.gov/current/title-16/chapter-I/subchapter-C/part-312",
+      "source_name": "Electronic Code of Federal Regulations",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "The American Academy of Pediatrics recommends creating a family media plan that sets consistent limits and designates screen-free times and locations.",
+      "source_url": "https://www.healthychildren.org/English/fmp/Pages/MediaPlan.aspx",
+      "source_name": "HealthyChildren.org",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "The Federal Trade Commission enforces COPPA and has taken action against apps that collected children's data without proper consent.",
+      "source_url": "https://www.ftc.gov/news-events/topics/childrens-privacy",
+      "source_name": "Federal Trade Commission",
+      "verified": false,
+      "checked_status": 403
+    }
+  ]
+}

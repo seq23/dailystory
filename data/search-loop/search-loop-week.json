@@ -2,7 +2,7 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W48",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-23T22:54:30.690Z",
+  "generated_at": "2026-11-24T21:29:55.442Z",
   "state": "running",
   "published": 18,
   "indexed": "not read: URL Inspection: HTTP 403 You do not own this site, or the inspected URL is not part of this property.",
@@ -15,12 +15,6 @@
   "merged": 0,
   "held_by_cap": 0,
   "redirected": [
-    {
-      "query": "how long should you read a book a day",
-      "strengthen": "https://guides.time-2-read.com/questions/how-long-should-a-child-read-a-day/",
-      "matched_by": "high token overlap (0.60 >= 0.6)",
-      "at": "2026-11-17"
-    },
     {
       "query": "reading timer 15 minutes",
       "strengthen": "https://guides.time-2-read.com/questions/reading-15-minute-timer/",
@@ -122,22 +116,24 @@
       "strengthen": "https://guides.time-2-read.com/questions/what-to-do-if-your-child-doesnt-want-to-read/",
       "matched_by": "high token overlap (0.75 >= 0.6)",
       "at": "2026-11-23"
+    },
+    {
+      "query": "summer reading list for kids",
+      "strengthen": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "matched_by": "same 4 intent words plus modifiers",
+      "at": "2026-11-24"
     }
   ],
   "cap": {
     "max_live_pages": 25,
-    "live": 21,
-    "room": 4,
+    "live": 20,
+    "room": 5,
     "why": "up from 22 to 25: Google impressions 562 in the last 28 days beat 107 in the 28 before"
   },
   "notes": [
     "not read: AI answer misses (Boss OS does not know guides.time-2-read.com (HTTP 404)); could not tell this run",
-    "FIND bing_webmaster: not read: BING_WEBMASTER_API_KEY is not set",
-    "FIND api.bing.com: not read: unavailable after 3 failures (last http 204)",
-    "FIND top10: not read: no BRAVE_SEARCH_API_KEY",
-    "cap: up from 22 to 25: Google impressions 562 in the last 28 days beat 107 in the 28 before",
-    "BUILD distinct gate: 2 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
-    "BUILD gate notes (not blocking): 3 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
+    "BUILD distinct gate: 1 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
+    "BUILD gate notes (not blocking): 1 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
     "not read: index status for the pages 14-42 days old (URL Inspection: HTTP 403 You do not own this site, or the inspected URL is not part of this property.)"
   ],
   "lanes": {
@@ -152,7 +148,7 @@
       "hit_rate": 0
     },
     "striking": {
-      "pages": 8,
+      "pages": 9,
       "measured": 2,
       "top3": 0,
       "hit_rate": 0
@@ -174,7 +170,7 @@
     "new_candidates": [],
     "skipped": [],
     "rejected": [],
-    "could_not_tell": 1
+    "could_not_tell": 2
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/45284041496"
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/45491662750"
 }

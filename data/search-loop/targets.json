@@ -1374,6 +1374,15 @@
   ],
   "strengthen": [
     {
+      "query": "summer reading list for kids",
+      "page": "/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "url": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "score": 25,
+      "from": "distinct-gate",
+      "matched_by": "same 4 intent words plus modifiers",
+      "at": "2026-11-24"
+    },
+    {
       "query": "my child doesnt want to read",
       "page": "/questions/what-to-do-if-your-child-doesnt-want-to-read/",
       "url": "https://guides.time-2-read.com/questions/what-to-do-if-your-child-doesnt-want-to-read/",
