@@ -22,8 +22,12 @@ import { GRADES, GRADE_PROFILES } from "@/lib/grades";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import "./Institutions.css";
+
+/** "1 story", "2 stories": these lines are English-only copy. */
+const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 import { assessmentScores } from "@/lib/institutions/assessmentForm";
 import { InstitutionRosterImport } from "@/components/InstitutionRosterImport";
+import { SchoolTable } from "@/components/SchoolTable";
 
 const gradeLabel = (value: string | null) =>
   value
@@ -92,12 +96,12 @@ function StudentDetail({
         {gradeLabel(report.readingGrade)}
       </p>
       <p>
-        Teacher recorded: {report.stories} stories completed · {report.minutes}{" "}
+        Teacher recorded: {count(report.stories, "story", "stories")} completed · {report.minutes}{" "}
         {uiText("minutes")}
       </p>
       <p>
-        From the app: {app.stories} stories completed · {app.minutes}{" "}
-        {uiText("minutes")} · {app.wordsRead} words read
+        From the app: {count(app.stories, "story", "stories")} completed · {app.minutes}{" "}
+        {uiText("minutes")} · {count(app.wordsRead, "word read", "words read")}
         {linked ? "" : " · No app profile linked"}
       </p>
       <h3>Growth from teacher-recorded assessments</h3>
@@ -114,41 +118,20 @@ function StudentDetail({
       ) : (
         <p>No reading-level assessments recorded.</p>
       )}
-      <div className="school-table">
-        <table>
-          <caption>Quiz growth by skill (percentage points)</caption>
-          <thead>
-            <tr>
-              <th>Skill</th>
-              <th>{uiText("Start")}</th>
-              <th>Latest</th>
-              <th>Change</th>
-            </tr>
-          </thead>
-          <tbody>
-            {report.skills.map((s) => (
-              <tr key={s.skill}>
-                <th>{s.skill}</th>
-                <td>
-                  {s.first
-                    ? `${s.first.correct}/${s.first.total} · ${date(s.first.date)}`
-                    : "Not assessed"}
-                </td>
-                <td>
-                  {s.last
-                    ? `${s.last.correct}/${s.last.total} · ${date(s.last.date)}`
-                    : "Not assessed"}
-                </td>
-                <td>
-                  {s.delta === null
-                    ? "Needs two results"
-                    : `${s.delta > 0 ? "+" : ""}${s.delta} pp`}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <SchoolTable
+        caption="Quiz growth by skill (percentage points)"
+        title="Skill"
+        columns={[uiText("Start"), "Latest", "Change"]}
+        rows={report.skills.map((s) => ({
+          key: s.skill,
+          title: s.skill,
+          cells: [
+            s.first ? `${s.first.correct}/${s.first.total} · ${date(s.first.date)}` : "Not assessed",
+            s.last ? `${s.last.correct}/${s.last.total} · ${date(s.last.date)}` : "Not assessed",
+            s.delta === null ? "Needs two results" : `${s.delta > 0 ? "+" : ""}${s.delta} pp`,
+          ],
+        }))}
+      />
       <h3>From the app</h3>
       <p>
         Recorded automatically while a linked app profile reads: its Reads-at
@@ -167,41 +150,20 @@ function StudentDetail({
       ) : (
         <p>No Reads-at changes recorded by the app.</p>
       )}
-      <div className="school-table">
-        <table>
-          <caption>App quiz results by skill (percentage points)</caption>
-          <thead>
-            <tr>
-              <th>Skill</th>
-              <th>{uiText("Start")}</th>
-              <th>Latest</th>
-              <th>Change</th>
-            </tr>
-          </thead>
-          <tbody>
-            {app.skills.map((s) => (
-              <tr key={s.skill}>
-                <th>{s.skill}</th>
-                <td>
-                  {s.first
-                    ? `${s.first.correct}/${s.first.total} · ${date(s.first.date)}`
-                    : "Not assessed"}
-                </td>
-                <td>
-                  {s.last
-                    ? `${s.last.correct}/${s.last.total} · ${date(s.last.date)}`
-                    : "Not assessed"}
-                </td>
-                <td>
-                  {s.delta === null
-                    ? "Needs two results"
-                    : `${s.delta > 0 ? "+" : ""}${s.delta} pp`}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <SchoolTable
+        caption="App quiz results by skill (percentage points)"
+        title="Skill"
+        columns={[uiText("Start"), "Latest", "Change"]}
+        rows={app.skills.map((s) => ({
+          key: s.skill,
+          title: s.skill,
+          cells: [
+            s.first ? `${s.first.correct}/${s.first.total} · ${date(s.first.date)}` : "Not assessed",
+            s.last ? `${s.last.correct}/${s.last.total} · ${date(s.last.date)}` : "Not assessed",
+            s.delta === null ? "Needs two results" : `${s.delta > 0 ? "+" : ""}${s.delta} pp`,
+          ],
+        }))}
+      />
       <details>
         <summary>
           Assessment history ({report.history.length + app.history.length})
@@ -524,7 +486,7 @@ export default function Institutions() {
                   <strong>
                     {teacherReadings.filter((r) => r.completed).length}
                   </strong>{" "}
-                  stories completed ·{" "}
+                  {teacherReadings.filter((r) => r.completed).length === 1 ? "story" : "stories"} completed ·{" "}
                   <strong>
                     {Math.round(
                       teacherReadings.reduce(
@@ -538,7 +500,7 @@ export default function Institutions() {
                 <p>
                   From the app:{" "}
                   <strong>{appReadings.filter((r) => r.completed).length}</strong>{" "}
-                  stories completed ·{" "}
+                  {appReadings.filter((r) => r.completed).length === 1 ? "story" : "stories"} completed ·{" "}
                   <strong>
                     {Math.round(
                       appReadings.reduce((n, r) => n + Number(r.minutes), 0) *
@@ -548,60 +510,26 @@ export default function Institutions() {
                   {uiText("minutes")} (time the reading page was open, up to 3
                   hours a session)
                 </p>
-                <div className="school-table">
-                  <table>
-                    <caption>
-                      Quiz results by skill · all teacher-recorded questions
-                    </caption>
-                    <thead>
-                      <tr>
-                        <th>Skill</th>
-                        <th>Correct / questions</th>
-                        <th>Score</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {summary.map((s) => (
-                        <tr key={s.skill}>
-                          <th>{s.skill}</th>
-                          <td>
-                            {s.total
-                              ? `${s.correct} / ${s.total}`
-                              : "Not assessed"}
-                          </td>
-                          <td>{s.percent === null ? "—" : `${s.percent}%`}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="school-table">
-                  <table>
-                    <caption>
-                      Quiz results by skill · all in-app quiz questions
-                    </caption>
-                    <thead>
-                      <tr>
-                        <th>Skill</th>
-                        <th>Correct / questions</th>
-                        <th>Score</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {appSummary.map((s) => (
-                        <tr key={s.skill}>
-                          <th>{s.skill}</th>
-                          <td>
-                            {s.total
-                              ? `${s.correct} / ${s.total}`
-                              : "Not assessed"}
-                          </td>
-                          <td>{s.percent === null ? "—" : `${s.percent}%`}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <SchoolTable
+                  caption="Quiz results by skill · all teacher-recorded questions"
+                  title="Skill"
+                  columns={["Correct / questions", "Score"]}
+                  rows={summary.map((s) => ({
+                    key: s.skill,
+                    title: s.skill,
+                    cells: [s.total ? `${s.correct} / ${s.total}` : "Not assessed", s.percent === null ? "—" : `${s.percent}%`],
+                  }))}
+                />
+                <SchoolTable
+                  caption="Quiz results by skill · all in-app quiz questions"
+                  title="Skill"
+                  columns={["Correct / questions", "Score"]}
+                  rows={appSummary.map((s) => ({
+                    key: s.skill,
+                    title: s.skill,
+                    cells: [s.total ? `${s.correct} / ${s.total}` : "Not assessed", s.percent === null ? "—" : `${s.percent}%`],
+                  }))}
+                />
                 <p>
                   Growth: {growth.paired} {uiText("of")} {growth.total} students have two
                   teacher-recorded reading levels.{" "}
@@ -613,89 +541,42 @@ export default function Institutions() {
                 </p>
                 <details>
                   <summary>Dated class growth comparisons</summary>
-                  <div className="school-table">
-                    <table>
-                      <caption>
-                        First and latest recorded level per child
-                      </caption>
-                      <thead>
-                        <tr>
-                          <th>Student</th>
-                          <th>{uiText("Start")}</th>
-                          <th>Latest</th>
-                          <th>Grade steps</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {students.map((s) => {
-                          const r = studentReport(
-                            s,
-                            reportWorkspace.readings,
-                            reportWorkspace.assessments,
-                            workspace.scores,
-                          );
-                          return (
-                            <tr key={s.id}>
-                              <th>{s.display_name}</th>
-                              <td>
-                                {r.start
-                                  ? `${gradeLabel(r.start.reading_grade)} · ${date(r.start.assessed_on)}`
-                                  : "Not assessed"}
-                              </td>
-                              <td>
-                                {r.now
-                                  ? `${gradeLabel(r.now.reading_grade)} · ${date(r.now.assessed_on)}`
-                                  : "Not assessed"}
-                              </td>
-                              <td>{r.levelDelta ?? "Needs two levels"}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="school-table">
-                    <table>
-                      <caption>
-                        Skill growth · same children at both endpoints for each
-                        skill
-                      </caption>
-                      <thead>
-                        <tr>
-                          <th>Skill</th>
-                          <th>Paired students</th>
-                          <th>Start questions / dates</th>
-                          <th>Latest questions / dates</th>
-                          <th>Change</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {growth.skills.map((s) => (
-                          <tr key={s.skill}>
-                            <th>{s.skill}</th>
-                            <td>
-                              {s.paired}/{students.length}
-                            </td>
-                            <td>
-                              {s.paired
-                                ? `${s.firstCorrect}/${s.firstTotal} · ${date(s.firstDates[0])}–${date(s.firstDates[s.firstDates.length - 1])}`
-                                : "Not assessed"}
-                            </td>
-                            <td>
-                              {s.paired
-                                ? `${s.lastCorrect}/${s.lastTotal} · ${date(s.lastDates[0])}–${date(s.lastDates[s.lastDates.length - 1])}`
-                                : "Not assessed"}
-                            </td>
-                            <td>
-                              {s.delta === null
-                                ? "Needs two results"
-                                : `${s.delta} pp`}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <SchoolTable
+                    caption="First and latest recorded level per child"
+                    title="Student"
+                    columns={[uiText("Start"), "Latest", "Grade steps"]}
+                    rows={students.map((s) => {
+                      const r = studentReport(s, reportWorkspace.readings, reportWorkspace.assessments, workspace.scores);
+                      return {
+                        key: s.id,
+                        title: s.display_name,
+                        cells: [
+                          r.start ? `${gradeLabel(r.start.reading_grade)} · ${date(r.start.assessed_on)}` : "Not assessed",
+                          r.now ? `${gradeLabel(r.now.reading_grade)} · ${date(r.now.assessed_on)}` : "Not assessed",
+                          r.levelDelta ?? "Needs two levels",
+                        ],
+                      };
+                    })}
+                  />
+                  <SchoolTable
+                    caption="Skill growth · same children at both endpoints for each skill"
+                    title="Skill"
+                    columns={["Paired students", "Start questions / dates", "Latest questions / dates", "Change"]}
+                    rows={growth.skills.map((s) => ({
+                      key: s.skill,
+                      title: s.skill,
+                      cells: [
+                        `${s.paired}/${students.length}`,
+                        s.paired
+                          ? `${s.firstCorrect}/${s.firstTotal} · ${date(s.firstDates[0])}–${date(s.firstDates[s.firstDates.length - 1])}`
+                          : "Not assessed",
+                        s.paired
+                          ? `${s.lastCorrect}/${s.lastTotal} · ${date(s.lastDates[0])}–${date(s.lastDates[s.lastDates.length - 1])}`
+                          : "Not assessed",
+                        s.delta === null ? "Needs two results" : `${s.delta} pp`,
+                      ],
+                    }))}
+                  />
                 </details>
               </section>
               <section className="school-panel">
@@ -706,59 +587,24 @@ export default function Institutions() {
                     profile.
                   </p>
                 ) : (
-                  <div className="school-table">
-                    <table>
-                      <caption>
-                        Select a student for dated reading and skill history
-                      </caption>
-                      <thead>
-                        <tr>
-                          <th>Student</th>
-                          <th>{uiText("School grade")}</th>
-                          <th>{uiText("Reads at")}</th>
-                          <th>{uiText("Stories")}</th>
-                          <th>{uiText("Minutes")}</th>
-                          <th>App stories</th>
-                          <th>App minutes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {students.map((s) => {
-                          const r = studentReport(
-                            s,
-                            reportWorkspace.readings,
-                            reportWorkspace.assessments,
-                            workspace.scores,
-                          );
-                          const a = studentReport(
-                            s,
-                            reportWorkspace.readings,
-                            reportWorkspace.assessments,
-                            workspace.scores,
-                            "app",
-                          );
-                          return (
-                            <tr key={s.id}>
-                              <td>
-                                <button
-                                  className="school-student"
-                                  onClick={() => setStudentId(s.id)}
-                                >
-                                  {s.display_name}
-                                </button>
-                              </td>
-                              <td>{gradeLabel(r.schoolGrade)}</td>
-                              <td>{gradeLabel(r.readingGrade)}</td>
-                              <td>{r.stories}</td>
-                              <td>{r.minutes}</td>
-                              <td>{a.stories}</td>
-                              <td>{a.minutes}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                  <SchoolTable
+                    caption="Select a student for dated reading and skill history"
+                    title="Student"
+                    columns={[uiText("School grade"), uiText("Reads at"), uiText("Stories"), uiText("Minutes"), "App stories", "App minutes"]}
+                    rows={students.map((s) => {
+                      const r = studentReport(s, reportWorkspace.readings, reportWorkspace.assessments, workspace.scores);
+                      const a = studentReport(s, reportWorkspace.readings, reportWorkspace.assessments, workspace.scores, "app");
+                      return {
+                        key: s.id,
+                        title: (
+                          <button className="school-student" onClick={() => setStudentId(s.id)}>
+                            {s.display_name}
+                          </button>
+                        ),
+                        cells: [gradeLabel(r.schoolGrade), gradeLabel(r.readingGrade), r.stories, r.minutes, a.stories, a.minutes],
+                      };
+                    })}
+                  />
                 )}
               </section>
               {selectedStudent && (

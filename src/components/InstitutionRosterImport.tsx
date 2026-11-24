@@ -6,6 +6,7 @@ import {
 } from "../../supabase/functions/_shared/institutionRoster";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SchoolTable } from "@/components/SchoolTable";
 import { institutionRpc } from "@/lib/institutions/api";
 
 export function InstitutionRosterImport({
@@ -183,29 +184,16 @@ export function InstitutionRosterImport({
             {rows.length} students ready for this class. Existing profiles stay
             unchanged; missing enrollments are added.
           </p>
-          <div className="school-table">
-            <table>
-              <caption>Roster preview</caption>
-              <thead>
-                <tr>
-                  <th>Roster ID</th>
-                  <th>Display name</th>
-                  <th>School grade</th>
-                  <th>Reads at</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.external_id}>
-                    <td>{r.external_id}</td>
-                    <td>{r.display_name}</td>
-                    <td>{r.school_grade ?? "Not recorded"}</td>
-                    <td>{r.reading_grade ?? "Not recorded"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <SchoolTable
+            caption="Roster preview"
+            title="Roster ID"
+            columns={["Display name", "School grade", "Reads at"]}
+            rows={rows.map((r) => ({
+              key: r.external_id,
+              title: r.external_id,
+              cells: [r.display_name, r.school_grade ?? "Not recorded", r.reading_grade ?? "Not recorded"],
+            }))}
+          />
           <Button
             disabled={busy}
             onClick={() =>

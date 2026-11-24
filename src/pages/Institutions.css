@@ -34,6 +34,7 @@
 }
 .school-workspace a,
 .school-student {
+  text-align: start;
   color: hsl(var(--primary));
   text-decoration: underline;
   text-underline-offset: 0.2em;
@@ -112,6 +113,11 @@
 .school-workspace :focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 3px;
+}
+@media screen and (max-width: 480px) {
+  /* A stacked table (index.css .stack-on-phone): one ruled card per row, no rule between its lines. */
+  .school-workspace .stack-on-phone tbody tr { margin: 0; padding: 0.5rem 0; border-bottom: 1px solid hsl(var(--border)); }
+  .school-workspace .stack-on-phone tbody tr > * { border-bottom: 0; padding-block: 0.25rem; }
 }
 @media (max-width: 480px) {
   .school-workspace form {

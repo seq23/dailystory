@@ -97,7 +97,14 @@ const SightWordsSection = () => (
 const LOG_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 /** Printable weekly log. Nothing to type in and nothing sent anywhere: it prints. */
-const ReadingLogSection = () => (
+const ReadingLogSection = () => {
+  // The blanks to fill in each day: the header row, and each blank's label on a phone card.
+  const logCols = [
+    { label: "What I read", width: "" },
+    { label: uiText("Minutes"), width: "w-24" },
+    { label: "Grown-up initials", width: "w-32" },
+  ];
+  return (
   <section className="mx-auto max-w-4xl px-4 py-12" aria-labelledby="reading-log-heading">
     <div className="printable-log rounded-2xl border-2 border-primary/30 bg-card p-6 md:p-8">
       <h2 id="reading-log-heading" className="font-fun text-2xl md:text-3xl text-foreground mb-1">
@@ -106,22 +113,24 @@ const ReadingLogSection = () => (
       <p className="text-muted-foreground mb-6">
         Name: ____________________ &nbsp; Week of: ______________ &nbsp; Goal: 20 minutes a day
       </p>
-      <table className="w-full border-collapse text-left text-sm">
-        <thead>
-          <tr>
-            <th scope="col" className="border border-border p-2 w-28">Day</th>
-            <th scope="col" className="border border-border p-2">What I read</th>
-            <th scope="col" className="border border-border p-2 w-24">{uiText("Minutes")}</th>
-            <th scope="col" className="border border-border p-2 w-32">Grown-up initials</th>
+      {/* Four columns clip at 320 px, so on a phone each day is a card with labelled blanks
+          (.stack-on-phone in index.css; e2e/tables-phone.spec.ts). Print keeps the table. */}
+      <table className="stack-on-phone w-full border-collapse text-left text-sm" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th scope="col" role="columnheader" className="border border-border p-2 w-28">Day</th>
+            {logCols.map((c) => (
+              <th key={c.label} scope="col" role="columnheader" className={`border border-border p-2 ${c.width}`}>{c.label}</th>
+            ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
           {LOG_DAYS.map((d) => (
-            <tr key={d}>
-              <th scope="row" className="border border-border p-2 font-medium">{d}</th>
-              <td className="border border-border p-2 h-12"></td>
-              <td className="border border-border p-2"></td>
-              <td className="border border-border p-2"></td>
+            <tr key={d} role="row">
+              <th scope="row" role="rowheader" className="border border-border p-2 font-medium">{d}</th>
+              {logCols.map((c) => (
+                <td key={c.label} role="cell" data-label={c.label} className="border border-border p-2 h-12"></td>
+              ))}
             </tr>
           ))}
         </tbody>
@@ -140,7 +149,8 @@ const ReadingLogSection = () => (
       </Button>
     </div>
   </section>
-);
+  );
+};
 
 const GuideSections = ({ config }: { config: LandingPageConfig }) => (
   <>

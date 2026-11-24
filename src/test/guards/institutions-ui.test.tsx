@@ -262,8 +262,8 @@ describe("school workspace user journeys", () => {
     expect(within(totals().getByRole("table", { name: /all in-app quiz questions/ })).getByRole("row", { name: "context 3 / 3 100%" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Reader A" }));
     const detail = within(screen.getByRole("region", { name: "Student report" }));
-    expect(detail.getByText(/Teacher recorded: 1 stories completed · 5/)).toBeInTheDocument();
-    expect(detail.getByText(/From the app: 1 stories completed · 7 .* 420 words read/)).toBeInTheDocument();
+    expect(detail.getByText(/Teacher recorded: 1 story completed · 5/)).toBeInTheDocument();
+    expect(detail.getByText(/From the app: 1 story completed · 7 .* 420 words read/)).toBeInTheDocument();
     expect(detail.getByText(/Fixture app story: 7 min/)).toHaveTextContent("From the app");
     expect(detail.getByText(/Fixture story: 5 min/)).toHaveTextContent("Teacher recorded");
     fireEvent.change(screen.getByLabelText("Teacher", { selector: "nav select" }), { target: { value: "fixture-teacher-b" } });
