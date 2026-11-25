@@ -2,9 +2,9 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W48",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-24T21:29:55.442Z",
+  "generated_at": "2026-11-25T20:38:00.787Z",
   "state": "running",
-  "published": 18,
+  "published": 15,
   "indexed": "not read: URL Inspection: HTTP 403 You do not own this site, or the inspected URL is not part of this property.",
   "pace": 10,
   "ai_visitors": 0,
@@ -15,60 +15,6 @@
   "merged": 0,
   "held_by_cap": 0,
   "redirected": [
-    {
-      "query": "reading timer 15 minutes",
-      "strengthen": "https://guides.time-2-read.com/questions/reading-15-minute-timer/",
-      "matched_by": "high token overlap (0.60 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "time 20 minutes timer",
-      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "set a timer 30 minutes for reading",
-      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "set timer 7 minutes for reading",
-      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "matched_by": "high token overlap (0.80 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "ai kids story video generator",
-      "strengthen": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "ai story book generator for kids",
-      "strengthen": "https://guides.time-2-read.com/questions/ai-story-generator-for-kids-free/",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "20 minute reading timer",
-      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "matched_by": "high token overlap (0.80 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "20 minute reading timer with music",
-      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
-    {
-      "query": "reading timer 20 minutes",
-      "strengthen": "https://guides.time-2-read.com/questions/set-a-20-min-timer-for-reading/",
-      "matched_by": "high token overlap (0.67 >= 0.6)",
-      "at": "2026-11-18"
-    },
     {
       "query": "how many minutes should you read a day",
       "strengthen": "https://guides.time-2-read.com/questions/how-many-minutes-should-a-4th-grader-read-per-day/",
@@ -122,18 +68,24 @@
       "strengthen": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
       "matched_by": "same 4 intent words plus modifiers",
       "at": "2026-11-24"
+    },
+    {
+      "query": "how many minutes should a kid read a day",
+      "strengthen": "https://guides.time-2-read.com/questions/how-many-minutes-should-students-read-each-day/",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-25"
     }
   ],
   "cap": {
     "max_live_pages": 25,
-    "live": 20,
-    "room": 5,
+    "live": 19,
+    "room": 6,
     "why": "up from 22 to 25: Google impressions 562 in the last 28 days beat 107 in the 28 before"
   },
   "notes": [
     "not read: AI answer misses (Boss OS does not know guides.time-2-read.com (HTTP 404)); could not tell this run",
     "BUILD distinct gate: 1 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
-    "BUILD gate notes (not blocking): 1 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
+    "BUILD published 0 of quota 6: 12 draft(s) failed the gate and were dropped; 0 got no answer from the free model and stay queued",
     "not read: index status for the pages 14-42 days old (URL Inspection: HTTP 403 You do not own this site, or the inspected URL is not part of this property.)"
   ],
   "lanes": {
@@ -170,7 +122,7 @@
     "new_candidates": [],
     "skipped": [],
     "rejected": [],
-    "could_not_tell": 2
+    "could_not_tell": 3
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/45491662750"
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/45696790826"
 }

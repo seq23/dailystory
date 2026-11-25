@@ -1374,6 +1374,15 @@
   ],
   "strengthen": [
     {
+      "query": "how many minutes should a kid read a day",
+      "page": "/questions/how-many-minutes-should-students-read-each-day/",
+      "url": "https://guides.time-2-read.com/questions/how-many-minutes-should-students-read-each-day/",
+      "score": 30,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.67 >= 0.6)",
+      "at": "2026-11-25"
+    },
+    {
       "query": "summer reading list for kids",
       "page": "/questions/summer-reading-list-for-kids-going-into-4th-grade/",
       "url": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
