@@ -157,7 +157,7 @@ const collectionPages: LandingPageConfig[] = [
         heading: "Is there a toddler reading level?",
         paragraphs: [
           "No. Time-2-Read's youngest level is Pre-K, written for about age 4 as a read-aloud picture-book level. For a two- or three-year-old that works as a shared book: you hold the screen, the narration reads, and your toddler points at the picture on each page.",
-          "Keep the session to one short story. Toddlers get more from hearing the same story twice than from three new ones, so save the stories they ask for and replay them.",
+          "Start with one short story. If your toddler asks to hear it again, reread it and let them point out what they remember.",
         ],
       },
       {
@@ -238,7 +238,7 @@ const collectionPages: LandingPageConfig[] = [
         heading: "How do you use narration without doing the reading for them?",
         bullets: [
           "Let your first grader read the page first, then play the narration to check.",
-          "Play narration only for the sentence they are stuck on, not the whole page.",
+          "If they get stuck on a sentence, read it together and let them try the next one.",
           "When most pages go without help, move up to the 2nd grade level.",
         ],
       },
@@ -536,7 +536,7 @@ const collectionPages: LandingPageConfig[] = [
       {
         heading: "How short is a short bedtime story?",
         paragraphs: [
-          "Short enough to finish before eyes close: a few pages for younger children, a little longer for older ones, set by the reading level you choose. A short story read every night does more for a bedtime routine than a long one read now and then.",
+          "Choose a story you can finish before lights out. If bedtime is close, pick a shorter story and leave time to talk about their favorite picture.",
         ],
       },
       {
