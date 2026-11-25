@@ -76,6 +76,23 @@ const collectionPages: LandingPageConfig[] = [
       { title: "A fresh story every time", body: "Stories are generated on demand, so your child never runs out of new adventures." },
       { title: "Built for ages 5–6", body: "Simple words, short pages, and pictures tuned to the kindergarten reading level." },
     ],
+    sections: [
+      {
+        heading: "What do you get free, and what needs Premium?",
+        paragraphs: [
+          "A guest can start a kindergarten story with no account and no card. The free stories are complete: every page is illustrated, narration reads each page aloud, and the words are written at the Kindergarten level (about age 5), an emergent-reader level built on short sentences and sight words.",
+          "Premium is for families who read every day: unlimited stories, a saved library your child can go back to, and longer adventures. Nothing in a free story is cut short to push an upgrade.",
+        ],
+      },
+      {
+        heading: "How do you make a free story feel like your kindergartener's own?",
+        bullets: [
+          "Type your child's first name so they are the hero on every page.",
+          "Pick one thing they love right now (dinosaurs, a pet, the playground) as the story's subject.",
+          "Choose the Kindergarten level, then read the first page together before letting narration take over.",
+        ],
+      },
+    ],
     faqs: [freeFaq, ageFaq("kindergarten kids"), { q: "Do the books have pictures?", a: "Every page has its own AI-generated illustration that matches the story, keeping young readers engaged." }],
   },
   {
@@ -97,6 +114,17 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Practice in context", body: "Seeing sight words inside a fun story helps them stick far better than flashcards alone." },
       { title: "Built on Dolch words", body: "Beginner levels lean on the Dolch pre-primer, primer and grade 1 sight word lists." },
       { title: "Repetition that's fun", body: "Common sight words come up again and again across every beginner story." },
+    ],
+    sections: [
+      {
+        heading: "How do you practise sight words at home?",
+        bullets: [
+          "Pick three or four words from the list a week, not the whole list at once.",
+          "Say the word, spell it together, then find it in a story.",
+          "Read a beginner-level Time-2-Read story and ask your child to point to each practice word they spot.",
+          "Come back to last week's words before adding new ones.",
+        ],
+      },
     ],
     faqs: [
       { q: "What are kindergarten sight words?", a: "Sight words are common words like 'the', 'and', 'is', and 'you' that kids should recognize instantly. They make up a huge share of everyday reading." },
@@ -124,6 +152,23 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Simple & soothing", body: "Short pages and gentle stories perfect for little attention spans." },
       { title: "Endlessly personalized", body: "Swap in their name, pets, and favorites for a story that's all theirs." },
     ],
+    sections: [
+      {
+        heading: "Is there a toddler reading level?",
+        paragraphs: [
+          "No. Time-2-Read's youngest level is Pre-K, written for about age 4 as a read-aloud picture-book level. For a two- or three-year-old that works as a shared book: you hold the screen, the narration reads, and your toddler points at the picture on each page.",
+          "Start with one short story. If your toddler asks to hear it again, reread it and let them point out what they remember.",
+        ],
+      },
+      {
+        heading: "What should a toddler story be about?",
+        bullets: [
+          "Their own day: bath time, the park, the car seat, a grandparent's visit.",
+          "One animal or object they already name out loud.",
+          "A tiny problem with a happy ending: a lost shoe found, a puppy who gets home.",
+        ],
+      },
+    ],
     faqs: [ageFaq("toddlers"), freeFaq, { q: "Can my toddler use it without reading yet?", a: "Absolutely — the read-aloud narration and illustrations are designed for pre-readers to enjoy on their own." }],
   },
   {
@@ -144,6 +189,21 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Right reading level", body: "Stories calibrated for kindergarteners — not too easy, not too hard." },
       { title: "Personalized", body: "Your child becomes the star of every adventure." },
       { title: "Illustrated pages", body: "A picture on every page keeps young readers engaged." },
+    ],
+    sections: [
+      {
+        heading: "What reading level should a kindergartener pick?",
+        paragraphs: [
+          "Start at the Kindergarten level (about age 5). It is an emergent-reader level: short sentences, many repeated sight words and a picture that carries most of the meaning. If your child reads a whole page without help, try the next level up; if they stop on most words, step back to Pre-K and read together.",
+          "A child who is working on sight words at school will meet the same high-frequency words in these stories, which is the practice the classroom asks for.",
+        ],
+      },
+      {
+        heading: "How long should a kindergarten reading session be?",
+        paragraphs: [
+          "One story at a time. A kindergarten story is a few short pages, so it fits before school, in the car or at bedtime. Ask one question at the end (what did the hero do first?) to turn listening into understanding.",
+        ],
+      },
     ],
     faqs: [ageFaq("kindergarteners"), freeFaq, { q: "Can I adjust the difficulty?", a: "Yes — you can set the reading level so stories grow with your child." }],
   },
@@ -166,6 +226,23 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Grows with them", body: "Adjust the level any time as reading skills advance." },
       { title: "Personalized adventures", body: "Stories starring your child keep them coming back." },
     ],
+    sections: [
+      {
+        heading: "What changes between kindergarten and first grade books?",
+        paragraphs: [
+          "First grade stories at Time-2-Read are written at an early-reader level (about age 6): more sentences on a page, more words a child has to decode rather than recognise on sight, and a plot that runs across several pages instead of one picture at a time.",
+          "That is the year many children move from being read to into reading out loud themselves, so narration becomes the backup rather than the main voice.",
+        ],
+      },
+      {
+        heading: "How do you use narration without doing the reading for them?",
+        bullets: [
+          "Let your first grader read the page first, then play the narration to check.",
+          "If they get stuck on a sentence, read it together and let them try the next one.",
+          "When most pages go without help, move up to the 2nd grade level.",
+        ],
+      },
+    ],
     faqs: [ageFaq("first graders"), freeFaq, { q: "Are the stories longer than kindergarten books?", a: "You control the length and level, so stories can grow right alongside your first grader." }],
   },
   {
@@ -186,6 +263,23 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Just-right level", body: "Simple words and short pages perfect for age five." },
       { title: "Listen or read", body: "Built-in narration supports early and pre-readers." },
       { title: "All about them", body: "Personalize the hero, setting, and favorite things." },
+    ],
+    sections: [
+      {
+        heading: "Can a 5 year old read on their own yet?",
+        paragraphs: [
+          "Some can and many cannot, and both are ordinary at five. Most five year olds are in kindergarten or about to start, so Time-2-Read's Kindergarten level (an emergent-reader level) fits most of them. A child who already reads simple books can move to the 1st grade level.",
+          "For a five year old who is not reading yet, use narration as the reader and let them say the last word of each sentence. It turns listening into a first step at reading.",
+        ],
+      },
+      {
+        heading: "What story topics hold a 5 year old's attention?",
+        bullets: [
+          "A story where they solve the problem, not a grown-up.",
+          "Silly situations: a pet that talks, a sandwich that will not be eaten.",
+          "Something from this week: a first day at school, a loose tooth, a new sibling.",
+        ],
+      },
     ],
     faqs: [ageFaq("5 year olds"), freeFaq, { q: "Does my child need to read already?", a: "No — narration and illustrations make every story enjoyable for pre-readers too." }],
   },
@@ -208,6 +302,23 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Read-aloud narration", body: "Perfect for pre-readers to enjoy independently." },
       { title: "Personalized", body: "Make your child the star of every story." },
     ],
+    sections: [
+      {
+        heading: "Which level is right for a 4 year old?",
+        paragraphs: [
+          "Pre-K. It is Time-2-Read's youngest level, written for about age 4 as a read-aloud picture-book level: a grown-up or the narration reads, and the child follows the pictures. Four year olds are not expected to read the words yet.",
+          "If your four year old already knows some letters and a few words, keep Pre-K and point at those words as the narration says them.",
+        ],
+      },
+      {
+        heading: "How do you build pre-reading skills with a 4 year old?",
+        bullets: [
+          "Pause before the last word of a rhyme and let them fill it in.",
+          "Ask what they think happens on the next page before you turn it.",
+          "Let them choose the hero's name and pet; four year olds love being in charge of the story.",
+        ],
+      },
+    ],
     faqs: [ageFaq("4 year olds"), freeFaq, { q: "Is this good for pre-readers?", a: "Yes — it's built for them, with narration and pictures on every page." }],
   },
   {
@@ -228,6 +339,23 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Right level", body: "Stories tuned for emerging readers around age six." },
       { title: "Adjustable difficulty", body: "Level up as your child's reading improves." },
       { title: "Personalized", body: "Your child stars in every adventure." },
+    ],
+    sections: [
+      {
+        heading: "What should a 6 year old be able to read?",
+        paragraphs: [
+          "At six most children are in first grade, where the 1st grade level (an early-reader level) fits. Children differ widely at this age: one six year old needs narration on every page, another is ready for 2nd grade stories with longer sentences. Both are normal.",
+          "The level is not fixed by age. Change it whenever a story feels too easy or too hard; the next story follows the new level.",
+        ],
+      },
+      {
+        heading: "How do you keep a 6 year old reading every day?",
+        bullets: [
+          "Let them pick the topic; choice matters more than the level.",
+          "Have them read one page aloud to you and let narration read the rest.",
+          "Save the stories they like so they can reread them on their own.",
+        ],
+      },
     ],
     faqs: [ageFaq("6 year olds"), freeFaq, { q: "Can it challenge a strong reader?", a: "Yes — raise the reading level for more advanced vocabulary and longer stories." }],
   },
@@ -250,6 +378,23 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Follow along", body: "Kids connect spoken and written words as they listen." },
       { title: "Anywhere", body: "Great for circle time, the car, or winding down at night." },
     ],
+    sections: [
+      {
+        heading: "Why read aloud to kindergarteners who are learning to read?",
+        paragraphs: [
+          "Because a kindergartener can understand far more words by ear than they can read on a page. Hearing a story read aloud builds the vocabulary and sense of story that their own reading will later use, while the text on screen shows that the spoken words are written down.",
+          "In Time-2-Read every page has narration, so the same story works for listening first and for reading along on the second pass.",
+        ],
+      },
+      {
+        heading: "How do teachers use read-aloud stories in class?",
+        bullets: [
+          "Project the story and play the narration for carpet time.",
+          "Make a class story: the class votes on the hero's name and adventure.",
+          "Stop before the last page and ask the class to predict the ending.",
+        ],
+      },
+    ],
     faqs: [ageFaq("kindergarten read-aloud time"), freeFaq, { q: "Can the class listen together?", a: "Yes — play the narration aloud so the whole class can follow along on screen." }],
   },
   {
@@ -270,6 +415,23 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Toddler-sized", body: "Short, simple stories that fit little attention spans." },
       { title: "Narrated", body: "Read-aloud audio lets pre-readers enjoy on their own." },
       { title: "Personalized", body: "Their name and favorites star in every story." },
+    ],
+    sections: [
+      {
+        heading: "How young can a child start with Time-2-Read?",
+        paragraphs: [
+          "The stories are written for ages 3 and up; the youngest level is Pre-K (about age 4), a read-aloud picture-book level. Under three, treat it as a book you share rather than an app your child uses alone: sit together, let the narration read and talk about the pictures.",
+        ],
+      },
+      {
+        heading: "How do you read with a toddler who will not sit still?",
+        bullets: [
+          "Read in short bursts: one page, a chat about the picture, then the next.",
+          "Let them swipe to the next page; turning pages is part of the fun.",
+          "Read at the same time each day, such as after the bath, so it becomes routine.",
+          "Stop while it is still fun, even halfway through.",
+        ],
+      },
     ],
     faqs: [ageFaq("toddlers"), freeFaq, { q: "Are the stories calming for bedtime?", a: "Yes — gentle stories and soft narration make a cozy bedtime routine." }],
   },
@@ -292,6 +454,22 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Narrated", body: "Read-aloud audio supports pre-readers." },
       { title: "Personalized", body: "Your child is the hero of every story." },
     ],
+    sections: [
+      {
+        heading: "What early skills do preschool stories practise?",
+        paragraphs: [
+          "Preschoolers are not expected to read, but they are learning that print carries meaning, that words have sounds and that stories have a beginning, middle and end. Pre-K stories are written at a read-aloud picture-book level to give them all three: a clear plot, simple repeated phrases and a picture that matches every page.",
+        ],
+      },
+      {
+        heading: "How do you use one story to get ready for kindergarten?",
+        bullets: [
+          "Find the first letter of your child's name in the story text.",
+          "Ask them to retell the story in their own words after the last page.",
+          "Read the same story again tomorrow and let them tell you what comes next.",
+        ],
+      },
+    ],
     faqs: [ageFaq("preschoolers"), freeFaq, { q: "Will it help prepare for kindergarten?", a: "Yes — daily story time builds vocabulary and print awareness that set kids up for kindergarten." }],
   },
   {
@@ -312,6 +490,22 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Five reading levels", body: "From pre-readers to confident grade-schoolers." },
       { title: "Adapts instantly", body: "Change the level and the next story matches." },
       { title: "Personalized", body: "Engaging stories starring your child at every level." },
+    ],
+    sections: [
+      {
+        heading: "How do Time-2-Read's levels line up with school grades?",
+        paragraphs: [
+          "There are five reading levels (pre-reader, beginner, developing, independent and advanced), and each story is also written for a school grade from Pre-K to 10th grade. The grade sets the words and sentence length; the age you enter keeps the themes right for the reader, so an older child who reads below grade gets easier words without a babyish story.",
+        ],
+      },
+      {
+        heading: "How do you know when to change a level?",
+        bullets: [
+          "Too hard: your child stops on more than a few words a page, or loses the thread of the plot.",
+          "Too easy: they read every page fluently and get bored before the end.",
+          "Just right: a few new words a page, and they can tell you what happened.",
+        ],
+      },
     ],
     faqs: [
       { q: "What reading levels are available?", a: "Time-2-Read spans five levels from pre-K through grade school, so you can match your child precisely." },
@@ -337,6 +531,23 @@ const collectionPages: LandingPageConfig[] = [
       { title: "Short & calming", body: "Just-right length to settle little ones for sleep." },
       { title: "Gentle narration", body: "Soft read-aloud audio for a cozy wind-down." },
       { title: "Personalized", body: "Your child stars in a new bedtime adventure every night." },
+    ],
+    sections: [
+      {
+        heading: "How short is a short bedtime story?",
+        paragraphs: [
+          "Choose a story you can finish before lights out. If bedtime is close, pick a shorter story and leave time to talk about their favorite picture.",
+        ],
+      },
+      {
+        heading: "What makes a bedtime story calming?",
+        bullets: [
+          "A quiet setting: a sleepy forest, a night sky, a cosy home.",
+          "A small, safe problem that resolves gently; no chases or cliffhangers.",
+          "An ending where the hero goes to sleep too.",
+          "Narration played softly, with the screen brightness turned down.",
+        ],
+      },
     ],
     faqs: [ageFaq("bedtime story time"), freeFaq, { q: "Can I get a new story every night?", a: "Yes — stories are generated on demand, so bedtime never gets repetitive." }],
   },

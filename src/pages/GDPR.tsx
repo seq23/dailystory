@@ -80,7 +80,7 @@ export default function GDPR() {
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Introduction */}
         <section className="mb-8">
-          <h2 className="text-2xl font-bold text-foreground mb-4">Your Data Protection Rights</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-4">Who has data protection rights under the GDPR?</h2>
           <p className="text-muted-foreground mb-4">
             If you are located in the European Economic Area (EEA), the United Kingdom, or Switzerland, 
             you have certain rights under the General Data Protection Regulation (GDPR) regarding your personal data.
@@ -95,7 +95,7 @@ export default function GDPR() {
 
         {/* Rights Grid */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-6">Your Rights Under GDPR</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-6">What are your rights under the GDPR?</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {rights.map((right, index) => (
               <Card key={index} className="border-muted/40">
@@ -122,7 +122,7 @@ export default function GDPR() {
 
         {/* Data Controller Information */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Data Controller</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Who is the data controller?</h2>
           <Card className="border-muted/40">
             <CardContent className="pt-6">
               <div className="space-y-2 text-sm">
@@ -136,7 +136,7 @@ export default function GDPR() {
 
         {/* Legal Basis */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Legal Basis for Processing</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">On what legal basis do we process your data?</h2>
           <div className="space-y-4 text-sm text-muted-foreground">
             <p>We process your personal data under the following legal bases:</p>
             <ul className="list-disc pl-6 space-y-2">
@@ -162,7 +162,7 @@ export default function GDPR() {
 
         {/* International Transfers */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">International Data Transfers</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Is your data transferred outside the EEA?</h2>
           <p className="text-sm text-muted-foreground mb-4">
             Your data may be transferred to and processed in the United States. We ensure appropriate 
             safeguards are in place through:
@@ -175,7 +175,7 @@ export default function GDPR() {
 
         {/* Response Times */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Response Timeframes</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">How quickly will we answer your request?</h2>
           <p className="text-sm text-muted-foreground">
             We will respond to your data rights requests within <strong>30 days</strong> of receipt. 
             If we need more time due to the complexity of your request, we will notify you within 
@@ -185,7 +185,7 @@ export default function GDPR() {
 
         {/* Supervisory Authority */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Right to Complain</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Where can you complain?</h2>
           <p className="text-sm text-muted-foreground mb-4">
             If you believe we have not handled your data appropriately, you have the right to lodge 
             a complaint with your local data protection supervisory authority.
@@ -226,7 +226,7 @@ export default function GDPR() {
 
         {/* Related Links */}
         <section>
-          <h2 className="text-xl font-semibold text-foreground mb-4">Related Policies</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Which other policies apply?</h2>
           <div className="flex flex-wrap gap-4 text-sm">
             <Link to="/privacy" className="text-primary hover:underline">{uiText("Privacy Policy")}</Link>
             <Link to="/terms" className="text-primary hover:underline">{uiText("Terms of Service")}</Link>
