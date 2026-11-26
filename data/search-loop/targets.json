@@ -1374,6 +1374,33 @@
   ],
   "strengthen": [
     {
+      "query": "summer reading list for kids going into 5th grade",
+      "page": "/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "url": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.78 >= 0.6)",
+      "at": "2026-11-26"
+    },
+    {
+      "query": "summer reading list for kids going into 1st grade",
+      "page": "/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "url": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.78 >= 0.6)",
+      "at": "2026-11-26"
+    },
+    {
+      "query": "summer reading list for kids going into 2nd grade",
+      "page": "/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "url": "https://guides.time-2-read.com/questions/summer-reading-list-for-kids-going-into-4th-grade/",
+      "score": 40,
+      "from": "distinct-gate",
+      "matched_by": "high token overlap (0.78 >= 0.6)",
+      "at": "2026-11-26"
+    },
+    {
       "query": "how many minutes should a kid read a day",
       "page": "/questions/how-many-minutes-should-students-read-each-day/",
       "url": "https://guides.time-2-read.com/questions/how-many-minutes-should-students-read-each-day/",

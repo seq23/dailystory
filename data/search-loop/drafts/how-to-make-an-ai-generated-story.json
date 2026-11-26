@@ -1,0 +1,106 @@
+{
+  "h1": "How to Make an AI Generated Story for Kids",
+  "title_lead": "How to Make an AI Generated Story",
+  "meta_description": "Learn the simple steps to create custom stories with AI. Pick a tool, write a clear prompt, and edit the result for a fun, safe read.",
+  "direct_answer": "An AI generated story is a tale written by a large language model after you give it a prompt. You choose the characters, setting, and plot points, then the model drafts the text for you to review and share.",
+  "sections": [
+    {
+      "heading": "What do I need before I start?",
+      "paragraphs": [
+        "You need a device with internet access and a free or paid account on an AI writing platform. Many services work in a browser with no download required. Have a rough idea of the genre, the main character, and the age of the reader. A quiet moment helps you focus on the prompt."
+      ],
+      "bullets": [
+        "A computer, tablet, or phone",
+        "An account on an AI writing site",
+        "A basic story idea in mind",
+        "A few minutes to review the output"
+      ]
+    },
+    {
+      "heading": "How do I write a prompt that works?",
+      "paragraphs": [
+        "A prompt is the instruction you type into the AI. Be specific about the reader's age, the length you want, and any themes or vocabulary limits. Mention the tone, such as funny, gentle, or adventurous. Include character names and a simple conflict. The more detail you give, the closer the first draft matches your vision."
+      ],
+      "bullets": [
+        "State the target age or grade level",
+        "Set a word count or chapter limit",
+        "Name the main character and sidekick",
+        "Describe the problem they must solve",
+        "Add any words to avoid or include"
+      ]
+    },
+    {
+      "heading": "What should I check after the AI writes the story?",
+      "paragraphs": [
+        "Read the draft aloud before you share it with a child. Look for words that are too hard, scary scenes, or ideas that do not fit your family values. Check that the plot makes sense from start to finish. Edit any awkward phrasing. You can ask the AI to rewrite a scene by giving a follow-up prompt such as \"make the ending happier\" or \"use shorter sentences.\""
+      ],
+      "bullets": [
+        "Read the whole text yourself first",
+        "Watch for mature themes or language",
+        "Confirm the reading level fits the child",
+        "Ask the AI to revise weak spots"
+      ]
+    },
+    {
+      "heading": "How can I turn the story into a keepsake?",
+      "paragraphs": [
+        "Copy the final text into a document or a simple book-making app. Add page breaks where the action shifts. Let your child draw pictures for each page or choose photos from a family album. Print the pages at home or send the file to a print-on-demand service for a softcover book. A homemade book makes a great gift for grandparents or a classroom library."
+      ],
+      "bullets": [
+        "Paste text into a blank document",
+        "Insert page breaks for pacing",
+        "Add child-drawn illustrations",
+        "Print at home or order a bound copy"
+      ]
+    },
+    {
+      "heading": "Where does this fit with other reading activities?",
+      "paragraphs": [
+        "AI stories work well as a supplement to library visits, read-aloud time, and phonics practice. They let a child see their own ideas in print, which builds confidence. Use them for rainy-day fun, long car trips, or a special bedtime surprise. They do not replace a balanced reading diet but add variety when you need a fresh tale fast."
+      ],
+      "bullets": []
+    }
+  ],
+  "faq": [
+    {
+      "q": "Can I use AI stories for school reading logs?",
+      "a": "Many teachers accept parent-approved texts for home reading minutes. Check the school policy first. Keep a note of the title, date, and minutes read. The log entry looks the same as any other book."
+    },
+    {
+      "q": "Do I need to pay for a good AI story tool?",
+      "a": "Several reputable platforms offer free tiers that are plenty for occasional family use. Paid plans usually add longer outputs, faster speed, or extra safety filters. Try the free version first to see if it meets your needs."
+    },
+    {
+      "q": "How do I keep the content safe for my child?",
+      "a": "Choose a platform with built-in content filters and a clear privacy policy. Always preview the story before reading it aloud. Avoid putting personal data such as full names, addresses, or school names into the prompt."
+    },
+    {
+      "q": "Can my child help write the prompts?",
+      "a": "Yes. Invite your child to pick the hero, the setting, and the problem. Type their ideas into the prompt together. This turns story creation into a shared language activity and teaches them how to give clear instructions."
+    }
+  ],
+  "facts_heading": "Before you hit generate",
+  "facts": [
+    {
+      "claim": "The Children's Online Privacy Protection Rule requires verifiable parental consent before a site collects personal information from children under 13.",
+      "source_url": "https://www.ecfr.gov/current/title-16/chapter-I/subchapter-C/part-312",
+      "source_name": "Electronic Code of Federal Regulations",
+      "verified": true,
+      "checked_status": 200
+    },
+    {
+      "claim": "The FTC advises parents to review privacy policies and use service settings that limit data collection on accounts used by children.",
+      "source_url": "https://www.consumer.ftc.gov/articles/protecting-your-childs-privacy-online",
+      "source_name": "Federal Trade Commission Consumer Advice",
+      "verified": false,
+      "checked_status": 403
+    },
+    {
+      "claim": "Common Sense Media recommends choosing AI tools that clearly state they do not use child interactions to train their models.",
+      "source_url": "https://www.commonsense.org/education/articles/what-educators-need-to-know-about-ai-privacy",
+      "source_name": "Common Sense Media",
+      "verified": true,
+      "checked_status": 200
+    }
+  ]
+}
