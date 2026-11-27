@@ -125,26 +125,28 @@ psql_in -c "do \$\$ begin if not exists (select 1 from information_schema.column
 psql_in < "$discount_migration"
 psql_in < supabase/tests/discount_codes/redeem.sql
 psql_in -c "insert into public.discount_codes (code, description, duration_days, max_uses, active) values ('RACEONE', 'race', 30, 1, true), ('RACEOPEN', 'race', 30, null, true); insert into auth.users (id, email) select ('e0000000-0000-4000-8000-0000000000' || lpad(g::text, 2, '0'))::uuid, 'race' || g || '@example.test' from generate_series(1, 21) g;"
-race_dir="$test_dir/discount-race"
-mkdir -p "$race_dir"
-redeem_status() { docker exec "$container" psql -d institutions_test -U supabase_admin -At -v ON_ERROR_STOP=1 -c "select status from public.redeem_discount_code('$1', '$2')"; }
-# The race: 20 different accounts at once on a code with one use left -> exactly one gets it.
-for g in $(seq 1 20); do
-  redeem_status "e0000000-0000-4000-8000-0000000000$(printf '%02d' "$g")" RACEONE > "$race_dir/one-$g" 2>&1 &
+# Parallel calls start inside the container from one shell, so all 20 overlap (a docker exec each
+# staggers them enough to run one at a time and hide a race). race CODE ID... prints one status a line.
+docker exec -i "$container" sh -c 'cat > /tmp/race.sh' <<'RACE'
+code=$1; shift
+for id in "$@"; do
+  printf "select status from public.redeem_discount_code(:'id', :'code');\n" |
+    psql -d institutions_test -U supabase_admin -At -v ON_ERROR_STOP=1 -v id="$id" -v code="$code" 2>&1 &
 done
 wait
-granted=$(cat "$race_dir"/one-* | grep -c '^granted$' || true)
-exhausted=$(cat "$race_dir"/one-* | grep -c '^exhausted$' || true)
-if [ "$granted" != 1 ] || [ "$exhausted" != 19 ]; then echo "20 parallel redemptions of a one-use code: granted=$granted exhausted=$exhausted (want 1 and 19)"; cat "$race_dir"/one-*; exit 1; fi
+RACE
+race() { docker exec "$container" sh /tmp/race.sh "$@"; }
+# The race: 20 different accounts at once on a code with one use left -> exactly one gets it.
+out=$(race RACEONE $(for g in $(seq 1 20); do printf "e0000000-0000-4000-8000-0000000000%02d " "$g"; done))
+granted=$(grep -c '^granted$' <<<"$out" || true)
+exhausted=$(grep -c '^exhausted$' <<<"$out" || true)
+if [ "$granted" != 1 ] || [ "$exhausted" != 19 ]; then echo "20 parallel redemptions of a one-use code: granted=$granted exhausted=$exhausted (want 1 and 19)"; echo "$out"; exit 1; fi
 psql_in -c "do \$\$ begin if (select current_uses from public.discount_codes where code = 'RACEONE') <> 1 or (select count(*) from public.discount_code_redemptions where code = 'RACEONE') <> 1 then raise exception 'the one-use race counted more than one'; end if; end \$\$;"
 # One account, 20 requests at once on an unlimited code -> one redemption, one use.
-for g in $(seq 1 20); do
-  redeem_status e0000000-0000-4000-8000-000000000021 RACEOPEN > "$race_dir/same-$g" 2>&1 &
-done
-wait
-granted=$(cat "$race_dir"/same-* | grep -c '^granted$' || true)
-already=$(cat "$race_dir"/same-* | grep -c '^already$' || true)
-if [ "$granted" != 1 ] || [ "$already" != 19 ]; then echo "20 parallel redemptions by one account: granted=$granted already=$already (want 1 and 19)"; cat "$race_dir"/same-*; exit 1; fi
+out=$(race RACEOPEN $(for g in $(seq 1 20); do printf "e0000000-0000-4000-8000-000000000021 "; done))
+granted=$(grep -c '^granted$' <<<"$out" || true)
+already=$(grep -c '^already$' <<<"$out" || true)
+if [ "$granted" != 1 ] || [ "$already" != 19 ]; then echo "20 parallel redemptions by one account: granted=$granted already=$already (want 1 and 19)"; echo "$out"; exit 1; fi
 psql_in -c "do \$\$ begin if (select current_uses from public.discount_codes where code = 'RACEOPEN') <> 1 then raise exception 'one account took more than one use'; end if; end \$\$;"
 before=$(docker exec "$container" psql -d institutions_test -U supabase_admin -At -c "select count(*) from public.discount_code_redemptions")
 psql_in < "$discount_migration"
