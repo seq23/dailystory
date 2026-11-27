@@ -182,6 +182,9 @@ describe("retired functions leave the project, not only the repo", () => {
     // answered anyone with cache internals and let them clear the import cache; get-monitoring-data
     // and vendor-first-selftest answered anyone with internals.
     "vendor-first-selftest", "cache-health", "get-monitoring-data", "clear-character-cache",
+    // Audit B (27 Nov 2026): attached a signed-in caller's checkout to the first Stripe customer
+    // with their email (someone else's billing); no caller in the app, replaced by create-checkout.
+    "create-premium-subscription",
   ];
   const wf = read(".github/workflows/deploy-functions.yml");
   const listed = (wf.match(/RETIRED="([^"]+)"/)?.[1] ?? "").split(/\s+/).filter(Boolean);
@@ -225,7 +228,8 @@ describe("retired functions leave the project, not only the repo", () => {
       expect(r.code, said).toBe(1);
       expect(r.out).toContain("retired functions still live: send-custom-auth-email");
     }
-  });
+    // Three runs of the real step: about 250 fake curl and supabase processes on a busy runner.
+  }, 30_000);
 
   it("no retired function has a folder, and nothing in the app still calls one", () => {
     for (const f of RETIRED) expect(existsSync(join(fnRoot, f)), f).toBe(false);

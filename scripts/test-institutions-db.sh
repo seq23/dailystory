@@ -113,3 +113,41 @@ docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ER
 docker exec -i "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q < "$metrics_migration"
 docker exec "$container" psql -d institutions_test -U supabase_admin -v ON_ERROR_STOP=1 -q -c "do \$\$ begin if (select count(*) from public.performance_metrics) <> 3 then raise exception 'performance_metrics reapplication lost data'; end if; end \$\$;"
 echo 'performance_metrics refuses anon and signed-in inserts, keeps service writes, own-row reads and existing rows.'
+
+# Discount codes (security audit B, 27 Nov 2026): once per account, max_uses kept under parallel
+# load, no default code, service role only, reapply keeps rows. discount_codes comes from its real
+# production CREATE; subscribers from the fixture (its CREATE plus the columns added later).
+discount_base=supabase/migrations/20250816050626_6485f12b-dc94-4f83-8087-cf801157203b.sql
+discount_migration="${DISCOUNT_MIGRATION:-supabase/migrations/20261127140000_discount_code_redemptions.sql}"
+psql_in < supabase/tests/discount_codes/fixture.sql
+sed -n '/^CREATE TABLE public.discount_codes/,/^);/p' "$discount_base" | psql_in
+psql_in -c "do \$\$ begin if not exists (select 1 from information_schema.columns where table_name = 'discount_codes' and column_name = 'max_uses') then raise exception 'discount_codes base table not created'; end if; end \$\$;"
+psql_in < "$discount_migration"
+psql_in < supabase/tests/discount_codes/redeem.sql
+psql_in -c "insert into public.discount_codes (code, description, duration_days, max_uses, active) values ('RACEONE', 'race', 30, 1, true), ('RACEOPEN', 'race', 30, null, true); insert into auth.users (id, email) select ('e0000000-0000-4000-8000-0000000000' || lpad(g::text, 2, '0'))::uuid, 'race' || g || '@example.test' from generate_series(1, 21) g;"
+race_dir="$test_dir/discount-race"
+mkdir -p "$race_dir"
+redeem_status() { docker exec "$container" psql -d institutions_test -U supabase_admin -At -v ON_ERROR_STOP=1 -c "select status from public.redeem_discount_code('$1', '$2')"; }
+# The race: 20 different accounts at once on a code with one use left -> exactly one gets it.
+for g in $(seq 1 20); do
+  redeem_status "e0000000-0000-4000-8000-0000000000$(printf '%02d' "$g")" RACEONE > "$race_dir/one-$g" 2>&1 &
+done
+wait
+granted=$(cat "$race_dir"/one-* | grep -c '^granted$' || true)
+exhausted=$(cat "$race_dir"/one-* | grep -c '^exhausted$' || true)
+if [ "$granted" != 1 ] || [ "$exhausted" != 19 ]; then echo "20 parallel redemptions of a one-use code: granted=$granted exhausted=$exhausted (want 1 and 19)"; cat "$race_dir"/one-*; exit 1; fi
+psql_in -c "do \$\$ begin if (select current_uses from public.discount_codes where code = 'RACEONE') <> 1 or (select count(*) from public.discount_code_redemptions where code = 'RACEONE') <> 1 then raise exception 'the one-use race counted more than one'; end if; end \$\$;"
+# One account, 20 requests at once on an unlimited code -> one redemption, one use.
+for g in $(seq 1 20); do
+  redeem_status e0000000-0000-4000-8000-000000000021 RACEOPEN > "$race_dir/same-$g" 2>&1 &
+done
+wait
+granted=$(cat "$race_dir"/same-* | grep -c '^granted$' || true)
+already=$(cat "$race_dir"/same-* | grep -c '^already$' || true)
+if [ "$granted" != 1 ] || [ "$already" != 19 ]; then echo "20 parallel redemptions by one account: granted=$granted already=$already (want 1 and 19)"; cat "$race_dir"/same-*; exit 1; fi
+psql_in -c "do \$\$ begin if (select current_uses from public.discount_codes where code = 'RACEOPEN') <> 1 then raise exception 'one account took more than one use'; end if; end \$\$;"
+before=$(docker exec "$container" psql -d institutions_test -U supabase_admin -At -c "select count(*) from public.discount_code_redemptions")
+psql_in < "$discount_migration"
+after=$(docker exec "$container" psql -d institutions_test -U supabase_admin -At -c "select count(*) from public.discount_code_redemptions")
+if [ "$before" -lt 6 ] || [ "$before" != "$after" ]; then echo "discount redemptions before=$before after=$after on reapply"; exit 1; fi
+echo 'Discount codes: once per account, max_uses held under 20 parallel redemptions, service role only, reapplication kept rows.'

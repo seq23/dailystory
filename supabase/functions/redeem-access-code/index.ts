@@ -11,6 +11,8 @@ import {
   decideGrant,
   normalizeAccessCode,
 } from "../_shared/accessCodeRules.ts";
+import { codeGuessRefusal } from "../_shared/discountRedeem.ts";
+import { clientIp, sha256Short } from "../_shared/paidCallGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -67,6 +69,18 @@ serve(async (req) => {
     const rawCode = normalizeAccessCode(bodyCode) ? bodyCode : user.user_metadata?.access_code;
     const code = normalizeAccessCode(rawCode);
     if (!code) return json({ activated: false, error: "NO_CODE", message: "Type your code first." }, 400);
+
+    // Code guesses are limited per account and per network before any lookup (audit B, 27 Nov 2026).
+    const limited = await codeGuessRefusal(async (buckets, windows, limits) => {
+      const r = await rest("rpc/paid_call_hit", {
+        method: "POST",
+        body: JSON.stringify({ p_buckets: buckets, p_windows: windows, p_limits: limits }),
+      });
+      if (!r.ok) throw new Error(`paid_call_hit ${r.status}`);
+      const over = await r.json();
+      return typeof over === "string" ? over : null;
+    }, "redeem-access-code", user.id, await sha256Short(clientIp(req)), corsHeaders);
+    if (limited) return limited;
 
     const [codeResp, grantResp, subResp] = await Promise.all([
       rest(`access_codes?code=eq.${encodeURIComponent(code)}&active=eq.true&select=id,code,trial_days,label,active`),

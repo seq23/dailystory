@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 
 const FUNCTIONS_DIR = join(__dirname, "../../../supabase/functions");
 const SHARED_STRIPE = join(FUNCTIONS_DIR, "_shared/stripe.ts");
-const STRIPE_FUNCTIONS = ["create-checkout", "customer-portal", "create-premium-subscription"];
+const STRIPE_FUNCTIONS = ["create-checkout", "customer-portal", "sync-subscription-status"];
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

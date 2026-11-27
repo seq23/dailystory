@@ -1,7 +1,7 @@
 // Guard: docs/PRICING.md is the price (Oct 2026: $12.99/month, $99/year).
 // The doc carries a ```pricing block; every place that charges or shows the price
 // must agree with it, so the doc and the code cannot drift apart.
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import * as accessRules from "../../../supabase/functions/_shared/accessCodeRules";
@@ -52,10 +52,9 @@ describe("the code charges and shows what PRICING.md says", () => {
     expect(src).toMatch(new RegExp(`unit_amount: plan === "monthly" \\? ${monthly} : ${annual},`));
   });
 
-  it("legacy create-premium-subscription uses the same cents", () => {
-    const src = read("supabase/functions/create-premium-subscription/index.ts");
-    expect(src).toContain(`amount: ${monthly},`);
-    expect(src).toContain(`amount: ${annual},`);
+  it("legacy create-premium-subscription is retired: create-checkout is the one place cents are set", () => {
+    expect(existsSync(join(ROOT, "supabase/functions/create-premium-subscription"))).toBe(false);
+    expect(read(".github/workflows/deploy-functions.yml")).toMatch(/RETIRED="[^"]*\bcreate-premium-subscription\b[^"]*"/);
   });
 
   it("PLAN_PRICES (PricingSection, StoryPaywall) match", () => {
@@ -131,7 +130,6 @@ describe("the code charges and shows what PRICING.md says", () => {
     const oldLabels = [label(old[0]), label(old[1])];
     const files = [
       "supabase/functions/create-checkout/index.ts",
-      "supabase/functions/create-premium-subscription/index.ts",
       "src/lib/freeStoryAllowance.ts",
       "src/components/PremiumUpgrade.tsx",
       "src/components/SubscriptionManager.tsx",
