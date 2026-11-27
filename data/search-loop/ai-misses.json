@@ -21,6 +21,11 @@
       "at": "2026-11-26T20:31:16.082Z",
       "status": "could_not_tell",
       "reason": "Boss OS does not know guides.time-2-read.com (HTTP 404)"
+    },
+    {
+      "at": "2026-11-27T20:17:50.441Z",
+      "status": "could_not_tell",
+      "reason": "Boss OS does not know guides.time-2-read.com (HTTP 404)"
     }
   ]
 }

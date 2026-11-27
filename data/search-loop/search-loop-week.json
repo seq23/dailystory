@@ -2,9 +2,9 @@
   "schema": "search-loop-week-v1",
   "week": "2026-W48",
   "site": "time-2-read.com",
-  "generated_at": "2026-11-26T20:31:16.082Z",
+  "generated_at": "2026-11-27T20:17:50.441Z",
   "state": "running",
-  "published": 14,
+  "published": 10,
   "indexed": "not read: URL Inspection: HTTP 403 You do not own this site, or the inspected URL is not part of this property.",
   "pace": 10,
   "ai_visitors": 0,
@@ -15,12 +15,6 @@
   "merged": 0,
   "held_by_cap": 0,
   "redirected": [
-    {
-      "query": "kids bedtime story in english",
-      "strengthen": "https://guides.time-2-read.com/questions/tell-me-a-bedtime-story-for-kids/",
-      "matched_by": "high token overlap (0.60 >= 0.6)",
-      "at": "2026-11-20"
-    },
     {
       "query": "ai story generator for kids",
       "strengthen": "https://guides.time-2-read.com/questions/ai-story-maker-for-kids/",
@@ -84,15 +78,13 @@
   ],
   "cap": {
     "max_live_pages": 25,
-    "live": 20,
-    "room": 5,
+    "live": 21,
+    "room": 4,
     "why": "up from 22 to 25: Google impressions 562 in the last 28 days beat 107 in the 28 before"
   },
   "notes": [
     "not read: AI answer misses (Boss OS does not know guides.time-2-read.com (HTTP 404)); could not tell this run",
-    "BUILD distinct gate: 3 search(es) had the same intent as an existing page and became strengthen briefs, not new pages (pages.json \"redirected\")",
     "BUILD gate notes (not blocking): 1 published page(s) are outside a length or style aim; each is listed under gate_notes in pages.json",
-    "IndexNow: 1 new page(s) not live yet; submitted when they answer 200",
     "not read: index status for the pages 14-42 days old (URL Inspection: HTTP 403 You do not own this site, or the inspected URL is not part of this property.)"
   ],
   "lanes": {
@@ -107,7 +99,7 @@
       "hit_rate": 0
     },
     "striking": {
-      "pages": 10,
+      "pages": 11,
       "measured": 2,
       "top3": 0,
       "hit_rate": 0
@@ -129,7 +121,9 @@
     "new_candidates": [],
     "skipped": [],
     "rejected": [],
-    "could_not_tell": 4
+    "could_not_tell": 5
   },
-  "run_url": "https://github.com/seq23/dailystory/actions/runs/45891609614"
+  "comparison": "not read: FIND has not run since v1.16.0",
+  "seeds": "not read: this site has no seeds in its config",
+  "run_url": "https://github.com/seq23/dailystory/actions/runs/46062558481"
 }

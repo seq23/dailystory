@@ -1412,6 +1412,60 @@
         "b5 FAQ answer is 37 words (aim 40-60): \"Do I need to pay for a good AI story tool?\"",
         "b5 FAQ answer is 35 words (aim 40-60): \"How do I keep the content safe for my child?\"",
         "b5 FAQ answer is 37 words (aim 40-60): \"Can my child help write the prompts?\""
+      ],
+      "indexnow_at": "2026-11-27"
+    },
+    {
+      "slug": "ai-story-generator-for-children",
+      "query": "ai story generator for children",
+      "lane": "striking",
+      "score": 25,
+      "scores": {
+        "striking": 25,
+        "can_be_one": 0
+      },
+      "reasons": [
+        "autocomplete demand (google/bing)"
+      ],
+      "signals": {
+        "words": 5,
+        "question": false,
+        "google_suggest": true,
+        "top10": "not read: no BRAVE_SEARCH_API_KEY"
+      },
+      "rel": "questions/ai-story-generator-for-children/index.html",
+      "route": "/questions/ai-story-generator-for-children/",
+      "url": "https://guides.time-2-read.com/questions/ai-story-generator-for-children/",
+      "published_at": "2026-11-27",
+      "status": "live",
+      "hash": "c068b86f3df51e45a3e3d2e403c9295a4b888d382d12e6c7e7aaa51df2243867",
+      "model": "free-route",
+      "facts": [
+        "https://www.ecfr.gov/current/title-16/chapter-I/subchapter-C/part-312",
+        "https://studentprivacy.ed.gov/ferpa",
+        "https://airc.nist.gov/AI_RMF_Knowledge_Base"
+      ],
+      "linked_from": [
+        {
+          "rel": "questions/ai-story-maker-for-kids/index.html",
+          "route": "/questions/ai-story-maker-for-kids/",
+          "before_hash": "d139f3a798a6370e7c132e51deaa86e1a1052c7ed789e232c1ec0e9d89905b55",
+          "after_hash": "8292c0c1e1bbd505ea300bf975a74a0fa830dfc3f04a9fd1e63e3eefe1fbe6ed"
+        },
+        {
+          "rel": "questions/how-to-make-an-ai-generated-story/index.html",
+          "route": "/questions/how-to-make-an-ai-generated-story/",
+          "before_hash": "9daecac48944d34293e7741c7ec83e1ca635865a3337a8002bdbf58612230409",
+          "after_hash": "43593cd56af3217b91a7d90ab4d2f57567d2c5a179e51a028bf140440fb80e7e"
+        }
+      ],
+      "checks": {},
+      "gate_notes": [
+        "b4 direct answer under the H1 is 35 words (aim 40-60)",
+        "b5 FAQ answer is 30 words (aim 40-60): \"Can I set a specific reading level like second gra\"",
+        "b5 FAQ answer is 34 words (aim 40-60): \"Will the tool save my child's name or ideas?\"",
+        "b5 FAQ answer is 30 words (aim 40-60): \"Are the stories free to print and share?\"",
+        "b5 FAQ answer is 35 words (aim 40-60): \"What if the story has words my child cannot read y\""
       ]
     }
   ],
@@ -3490,6 +3544,72 @@
         "b5 FAQ answer is 22 words (aim 40-60): \"What if he only wants to read the same book?\"",
         "b5 FAQ answer is 25 words (aim 40-60): \"Should I offer rewards for reading?\"",
         "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.colorincolorado.org/article/reading-aloud-children (HTTP 404); https://www.readingrockets.org/article/reading-fun (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "my son doesnt like to read",
+      "at": "2026-11-27",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 24 words (aim 40-60): \"Do graphic novels and audiobooks count as real rea\"",
+        "b5 FAQ answer is 25 words (aim 40-60): \"He only reads the same series over and over. Shoul\"",
+        "b5 FAQ answer is 28 words (aim 40-60): \"How much time should he spend reading each day?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://improvingliteracy.org/brief/matching-texts-readers (HTTP 404); https://www.literacyworldwide.org/blog/literacy-now/2021/03/15/graphic-novels-and-audiobooks-count-as-reading (HTTP 404)"
+      ]
+    },
+    {
+      "query": "summer book log for kids",
+      "at": "2026-11-27",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.cslpreads.org/ (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "summer reading journal for kids",
+      "at": "2026-11-27",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 1); these failed the check, replace each with a page that exists: https://www.cslpreads.org/ (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.imls.gov/grants/grant-programs/grants-states (HTTP 404)"
+      ]
+    },
+    {
+      "query": "weekly reading log with parent signature",
+      "at": "2026-11-27",
+      "gate": 2,
+      "reason": [
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.ed.gov/early-learning/resources (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.literacyworldwide.org/get-resources/literacy-glossary/independent-reading (HTTP 404); https://www.cde.ca.gov/ci/rl/lb/ (HTTP 404)"
+      ]
+    },
+    {
+      "query": "reading log template with parent signature",
+      "at": "2026-11-27",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 23 words (aim 40-60): \"Should I write a summary or just the minutes?\"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"What size paper works best for the template?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www2.ed.gov/parents/read/resources/readingtips/readingtips.pdf (HTTP 403: this site refuses automated checks, so cite a different publisher); https://hslda.org/post/state-homeschool-laws (HTTP 404)"
+      ]
+    },
+    {
+      "query": "free reading log with parent signature",
+      "at": "2026-11-27",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 27 words (aim 40-60): \"What if we miss a day of reading?\"",
+        "b5 FAQ answer is 26 words (aim 40-60): \"Can a digital log replace a paper one?\"",
+        "b5 FAQ answer is 29 words (aim 40-60): \"How long should we keep completed logs?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.readwritethink.org/classroom-resources/printouts/reading-log (HTTP 404); https://www.scholastic.com/teachers/teaching-tools/reading-log.html (HTTP 404); https://www.teachervision.com/reading/reading-log-printable (HTTP 403: this site refuses automated checks, so cite a different publisher)"
+      ]
+    },
+    {
+      "query": "reading log sheet with parent signature",
+      "at": "2026-11-27",
+      "gate": 2,
+      "reason": [
+        "b5 FAQ answer is 22 words (aim 40-60): \"Should I count audiobooks on the reading log?\"",
+        "b5 FAQ answer is 29 words (aim 40-60): \"How long should each reading session be?\"",
+        "facts: needs at least 2 distinct sources whose URLs answered 200 (found 0); these failed the check, replace each with a page that exists: https://www.ed.gov/early-learning/resources (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.nea.org/advocating-for-change/new-from-nea/parents-guide-reading-success (HTTP 403: this site refuses automated checks, so cite a different publisher); https://www.literacyworldwide.org/blog/literacy-now/2021/03/15/family-engagement-in-literacy (HTTP 404)"
       ]
     }
   ],
