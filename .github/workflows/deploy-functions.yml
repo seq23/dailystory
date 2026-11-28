@@ -659,3 +659,31 @@ jobs:
             
             echo "  ✅ Targeted redeployments queued for ${#FAILED_WARMUPS[@]} functions"
           fi
+
+  discount-live-check:
+    # Engineering-check FAIL on #195 (28 Nov 2026): the sign-up form's code step was rewritten and only
+    # stubs proved it. After every deploy, pass or fail, one marked TEST redemption goes through the live
+    # apply-discount-code and activate-discount-code with a TEST account and a TEST code made for this run
+    # (both deleted again; no real code, customer or charge is touched). It reads back the migration's
+    # redemption row, the Premium row and the use count. #195's Outcome reads this job's result on main,
+    # so a broken redemption, a missing migration or a failed deploy reads as FAIL there.
+    # Guard: src/test/guards/discount-live-check.test.ts.
+    name: discount-live-check
+    needs: deploy
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Discount code redeems live (TEST account and TEST code, both removed)
+        run: |
+          # The Management API call the feedback check above already uses for the service key.
+          SERVICE_KEY=$(curl -sS --max-time 30 "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_ID/api-keys?reveal=true" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" | jq -r '.[] | select(.name=="service_role") | .api_key // empty' | head -1) || SERVICE_KEY=""
+          if [ -z "$SERVICE_KEY" ] || [ "$SERVICE_KEY" = "null" ]; then echo "::error::NAMED STOP: the service key could not be read"; exit 1; fi
+          echo "::add-mask::$SERVICE_KEY"
+          SERVICE_KEY="$SERVICE_KEY" bash scripts/live-discount-check.sh

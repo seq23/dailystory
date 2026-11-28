@@ -42,11 +42,11 @@ uid=""; code_id=""
 cleanup() {
   local rc=$? c
   if [ -n "$uid" ]; then
-    c=$(admin -o /dev/null -w "%{http_code}" -X DELETE "$BASE/auth/v1/admin/users/$uid" 2>/dev/null || echo 000)
+    c=$(admin -o /dev/null -w "%{http_code}" -X DELETE "$BASE/auth/v1/admin/users/$uid" 2>/dev/null || true)
     if [ "$c" = "200" ]; then echo "TEST account removed"; else echo "::error::the TEST account $EMAIL was not deleted (HTTP $c)"; rc=1; fi
   fi
   if [ -n "$code_id" ]; then
-    c=$(admin -o "$TMP/del.json" -w "%{http_code}" -X DELETE -H "Prefer: return=representation" "$BASE/rest/v1/discount_codes?id=eq.$code_id" 2>/dev/null || echo 000)
+    c=$(admin -o "$TMP/del.json" -w "%{http_code}" -X DELETE -H "Prefer: return=representation" "$BASE/rest/v1/discount_codes?id=eq.$code_id" 2>/dev/null || true)
     if [ "$c" = "200" ] && [ "$(jq 'length' "$TMP/del.json" 2>/dev/null)" = "1" ]; then echo "TEST code removed"; else echo "::error::the TEST code $CODE was not deleted (HTTP $c)"; rc=1; fi
   fi
   rm -rf "$TMP"
@@ -56,13 +56,13 @@ trap cleanup EXIT
 
 # 1. The TEST code, for this run only.
 c=$(admin -o "$TMP/code.json" -w "%{http_code}" -X POST -H "Prefer: return=representation" "$BASE/rest/v1/discount_codes" \
-  -d "{\"code\":\"$CODE\",\"description\":\"TEST: automated live check $LABEL, not a real code\",\"duration_days\":1,\"max_uses\":1,\"active\":true}" || echo 000)
+  -d "{\"code\":\"$CODE\",\"description\":\"TEST: automated live check $LABEL, not a real code\",\"duration_days\":1,\"max_uses\":1,\"active\":true}" || true)
 code_id=$(jq -r '.[0].id // empty' "$TMP/code.json" 2>/dev/null)
 [ "$c" = "201" ] && [ -n "$code_id" ] || die "the TEST code could not be made (HTTP $c): $(head -c 200 "$TMP/code.json")"
 
 # 2. The TEST account and a session for it (admin magic link: no mail is sent).
 c=$(admin -o "$TMP/user.json" -w "%{http_code}" -X POST "$BASE/auth/v1/admin/users" \
-  -d "{\"email\":\"$EMAIL\",\"email_confirm\":true,\"user_metadata\":{\"test_account\":true,\"display_name\":\"TEST discount check\"}}" || echo 000)
+  -d "{\"email\":\"$EMAIL\",\"email_confirm\":true,\"user_metadata\":{\"test_account\":true,\"display_name\":\"TEST discount check\"}}" || true)
 uid=$(jq -r '.id // empty' "$TMP/user.json" 2>/dev/null)
 [ "$c" = "200" ] && [ -n "$uid" ] || die "the TEST account could not be made (HTTP $c)"
 hash=$(admin -X POST "$BASE/auth/v1/admin/generate_link" -d "{\"type\":\"magiclink\",\"email\":\"$EMAIL\"}" | jq -r '.hashed_token // .properties.hashed_token // empty')
@@ -76,7 +76,7 @@ TOKEN=$(curl -sS --max-time 30 -X POST "$BASE/auth/v1/verify" -H "apikey: $SUPAB
 call() { # function body -> sets status and body file $TMP/r.json
   status=$(curl -sS -o "$TMP/r.json" -w "%{http_code}" --max-time 30 -X POST "$BASE/functions/v1/$1" \
     -H "Origin: https://time-2-read.com" -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $TOKEN" \
-    -H "Content-Type: application/json" -d "$2" 2>/dev/null || echo 000)
+    -H "Content-Type: application/json" -d "$2" 2>/dev/null || true)
 }
 expect() { # label want-status jq-test
   if [ "$status" = "$2" ] && jq -e "$3" "$TMP/r.json" >/dev/null 2>&1; then echo "ok: $1 ($status)"
@@ -99,15 +99,15 @@ call "$ACTIVATE_FN" "{\"discountCode\":\"$CODE\"}"
 expect "activate-discount-code shares the once-per-account rule" 200 '.activated == false and .alreadyActivated == true'
 
 # 4. What the migration's table and function wrote, read back with the service role.
-c=$(admin -o "$TMP/red.json" -w "%{http_code}" "$BASE/rest/v1/discount_code_redemptions?user_id=eq.$uid&select=code,discount_code_id" || echo 000)
+c=$(admin -o "$TMP/red.json" -w "%{http_code}" "$BASE/rest/v1/discount_code_redemptions?user_id=eq.$uid&select=code,discount_code_id" || true)
 [ "$c" = "200" ] && jq -e --arg code "$CODE" --arg id "$code_id" 'length == 1 and .[0].code == $code and .[0].discount_code_id == $id' "$TMP/red.json" >/dev/null \
   || die "redemption row: HTTP $c $(head -c 200 "$TMP/red.json") (want one row for $CODE)"
 echo "ok: one redemption row for the TEST account"
-c=$(admin -o "$TMP/sub.json" -w "%{http_code}" "$BASE/rest/v1/subscribers?user_id=eq.$uid&select=subscribed,subscription_tier,discount_activated" || echo 000)
+c=$(admin -o "$TMP/sub.json" -w "%{http_code}" "$BASE/rest/v1/subscribers?user_id=eq.$uid&select=subscribed,subscription_tier,discount_activated" || true)
 [ "$c" = "200" ] && jq -e 'length == 1 and .[0].subscribed == true and .[0].subscription_tier == "premium" and .[0].discount_activated == true' "$TMP/sub.json" >/dev/null \
   || die "subscriber row: HTTP $c $(head -c 200 "$TMP/sub.json") (want Premium on the TEST account's own row)"
 echo "ok: Premium on the TEST account's own subscriber row"
-c=$(admin -o "$TMP/uses.json" -w "%{http_code}" "$BASE/rest/v1/discount_codes?id=eq.$code_id&select=current_uses,max_uses" || echo 000)
+c=$(admin -o "$TMP/uses.json" -w "%{http_code}" "$BASE/rest/v1/discount_codes?id=eq.$code_id&select=current_uses,max_uses" || true)
 [ "$c" = "200" ] && jq -e 'length == 1 and .[0].current_uses == 1' "$TMP/uses.json" >/dev/null \
   || die "use count: HTTP $c $(head -c 200 "$TMP/uses.json") (want exactly 1 use taken)"
 echo "ok: exactly one use taken from the TEST code"
