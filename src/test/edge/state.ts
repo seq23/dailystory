@@ -8,6 +8,18 @@ export interface EdgeState {
   rpc: Record<string, unknown>;
   /** The user id a token belongs to (null = not a user). */
   userIdFor: (token: string) => string | null;
+  /** The email on the account a token belongs to (supabase-js stub auth.getUser). */
+  emailFor?: (token: string) => string | null;
+  /** What the Stripe SDK stub (./stub-stripe.ts) holds, and every call made to it. */
+  stripe?: StripeFake;
+}
+export interface StripeFake {
+  customers: Array<{ id: string; email: string; deleted?: boolean }>;
+  /** Subscriptions by customer, with the metadata create-checkout writes. */
+  subscriptions: Array<{ id: string; customer: string; status: string; metadata: Record<string, string> }>;
+  calls: Array<{ method: string; args: unknown }>;
+  /** Set to make every Stripe call fail (an outage). */
+  down?: boolean;
 }
 const KEY = Symbol.for("t2r.edgeTestState");
 export function edgeState(): EdgeState {

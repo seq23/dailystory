@@ -197,83 +197,51 @@ if (data?.url) {
 
 ---
 
-### activate-discount-code
-**Activate a discount code for user**
+### activate-discount-code and apply-discount-code
+**Redeem a free-Premium discount code (`discount_codes`) for the signed-in account**
 
-**Authentication:** Required (JWT)  
+**Authentication:** Required (JWT, checked with Supabase auth)  
 **Method:** POST  
-**Endpoint:** `/activate-discount-code`
+**Endpoints:** `/activate-discount-code`, `/apply-discount-code`
+
+Both run `_shared/discountRedeem.ts` (security audit B, 27 Nov 2026):
+
+- **No default code.** `activate-discount-code` needs `discountCode`; an empty body is a 400.
+  `apply-discount-code` falls back to the account's `subscribers.discount_code_pending`
+  (auto-applied on first load), and with neither it is a 400.
+- **Once per account, atomic.** The redemption is `public.redeem_discount_code(user_id, code)`
+  (migration `20261127140000_discount_code_redemptions.sql`): in one transaction it claims the
+  account's single row in `discount_code_redemptions` (unique per account), takes a use only
+  while `current_uses < max_uses` (`max_uses` null = unlimited), and writes Premium on the
+  account's own subscriber row. Any refusal leaves nothing behind. 20 parallel redemptions of
+  a one-use code give exactly one grant (scripts/test-institutions-db.sh).
+- **Guesses are limited** (`public.paid_call_hit`): 10 tries a day per account and 60 per
+  network (cf-connecting-ip), per function, before any lookup. Over: 429 `TOO_MANY_TRIES`.
+  The counter unreachable: 503, never unlimited tries. `redeem-access-code` has the same limit.
+- A wrong code and a used-up code get the same 400 `INVALID_DISCOUNT_CODE`.
+
+The sign-up form calls `apply-discount-code` right after `signUp()` with `{ discountCode }`;
+My Account's "Have a code?" box reaches it through `redeemAccessCode` (src/lib/accessCode.ts).
 
 **Request Body:**
 ```typescript
 {
-  code: string             // Discount code to activate
+  discountCode?: string    // activate: required. apply: optional, falls back to the saved code
 }
 ```
 
-**Response:**
+**Response (200 on a grant):**
 ```typescript
 {
+  success: boolean
   activated: boolean
-  discountPercent: number
-  expiresAt: string
-}
-```
-
----
-
-### apply-discount-code
-**Activate a discount code for the authenticated user (grants free premium override)**
-
-**Authentication:** Required (JWT)  
-**Method:** POST  
-**Endpoint:** `/apply-discount-code`
-
-Activates a discount code for the current user via the service role (bypasses RLS).
-It uses the code supplied in the request body when present, otherwise falls back to
-any `discount_code_pending` stored on the subscriber row. On success it upserts the
-subscriber row with `subscribed=true`, `subscription_tier='premium'`, and an
-`override_premium` window of `duration_days`. Idempotent: a second call returns
-`activated: false` with "Discount code already activated".
-
-> ℹ️ The sign-up form calls this immediately after `signUp()` with the validated
-> code (`{ discountCode }`), because RLS prevents the client from persisting
-> `discount_code_pending` itself. The legacy "activate on first login" path
-> (no body) still works for any pre-existing pending codes.
-
-> 🛠️ **Race-proof write (fixed 2026-06-05):** the subscriber row is written with a
-> single UPSERT keyed on the unique `email` column
-> (`POST /subscribers?on_conflict=email`, `Prefer: resolution=merge-duplicates`).
-> The previous read-then-branch logic (PATCH if the `user_id` read found a row,
-> otherwise INSERT) could lose a race: a subscriber row created concurrently
-> (e.g. by `check-subscription`) between the read and the write caused a duplicate
-> key violation on `subscribers_email_key`, so the discount silently failed and the
-> account stayed "inactive" despite a valid code. The UPSERT merges into the
-> existing row regardless of read timing.
-
-> 💳 **Redeemable post-signup:** users who created an account without paying and
-> received a code later can redeem it from **My Account → Subscription Management**
-> ("Have a discount code?"), in addition to entering a credit card. The
-> `SubscriptionManager` component validates via `validate-discount-code` then calls
-> this function with `{ discountCode }`.
-
-**Request Body:**
-```typescript
-{
-  discountCode?: string    // Optional. Code to activate; falls back to pending code if omitted
-}
-```
-
-**Response:**
-```typescript
-{
-  activated: boolean
+  alreadyActivated?: boolean
   message: string
   code?: string
   description?: string
   duration_days?: number
   activation_date?: string // ISO timestamp
-  end_date?: string        // ISO timestamp
+  end_date?: string        // ISO timestamp (expiresAt is the same value)
 }
 ```
 

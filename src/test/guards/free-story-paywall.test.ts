@@ -1,7 +1,7 @@
 // Guard: the paywall in front of the stories (Oct 2026).
 // Free accounts get 3 stories in total, then a 7-day free trial (card up front)
 // at $12.99/month or $99/year (docs/PRICING.md). The server enforces the limit; the UI mirrors it.
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import * as rules from "../../../supabase/functions/_shared/freeStoryRules";
@@ -94,11 +94,9 @@ describe("checkout: 7-day trial at $12.99 / $99", () => {
     expect(src).toMatch(/const lineItem = \{ price_data: inlinePrice, quantity: 1 \};/);
   });
 
-  it("legacy create-premium-subscription charges the same amounts", () => {
-    const legacy = read("supabase/functions/create-premium-subscription/index.ts");
-    expect(legacy).toMatch(/amount: 1299,/);
-    expect(legacy).toMatch(/amount: 9900,/);
-    expect(legacy).not.toMatch(/amount: (999|7900),/);
+  it("legacy create-premium-subscription is retired: no second checkout path with its own amounts", () => {
+    expect(existsSync(join(ROOT, "supabase/functions/create-premium-subscription"))).toBe(false);
+    expect(read(".github/workflows/deploy-functions.yml")).toMatch(/RETIRED="[^"]*\bcreate-premium-subscription\b[^"]*"/);
   });
 
   it("subscription tier is read from the billing interval, not a price amount", () => {

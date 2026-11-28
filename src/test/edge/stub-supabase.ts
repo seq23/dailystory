@@ -29,7 +29,7 @@ export function createClient() {
     auth: {
       getUser: async (token: string) => {
         const id = state.userIdFor(token);
-        return id ? { data: { user: { id, app_metadata: {}, user_metadata: {} } }, error: null } : { data: { user: null }, error: { message: "invalid token" } };
+        return id ? { data: { user: { id, email: state.emailFor?.(token) ?? undefined, app_metadata: {}, user_metadata: {} } }, error: null } : { data: { user: null }, error: { message: "invalid token" } };
       },
       admin: { updateUserById: async () => ({ data: {}, error: null }) },
     },

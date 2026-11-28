@@ -34,6 +34,7 @@ export default defineConfig({
     alias: [
       { find: '@', replacement: path.resolve(__dirname, './src') },
       { find: /^https:\/\/esm\.sh\/@supabase\/supabase-js@[^?]*(\?.*)?$/, replacement: path.resolve(__dirname, './src/test/edge/stub-supabase.ts') },
+      { find: /^https:\/\/esm\.sh\/stripe@[^?]*(\?.*)?$/, replacement: path.resolve(__dirname, './src/test/edge/stub-stripe.ts') },
       { find: /^https:\/\/deno\.land\/std@[^/]+\/http\/server\.ts$/, replacement: path.resolve(__dirname, './src/test/edge/stub-server.ts') },
       { find: /^https:\/\/deno\.land\/x\/xhr@[^/]+\/mod\.ts$/, replacement: path.resolve(__dirname, './src/test/edge/stub-empty.ts') },
       { find: /^https:\/\/deno\.land\/x\/zod@[^/]+\/mod\.ts$/, replacement: 'zod' },

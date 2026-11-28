@@ -513,8 +513,9 @@ jobs:
           # src/test/guards/caller-check.test.ts. openai-tts and openai-realtime: source removed in
           # #182, still live on old code that does not mask children's names (R-KID-01).
           # vendor-first-selftest, cache-health, get-monitoring-data, clear-character-cache: d10 audit
-          # (23 Nov 2026), open to anyone with no caller in the app.
-          RETIRED="send-custom-auth-email notification-service send-coppa-notification send-parental-notification ai-visual-scene-creator runware-template-ab runware-template-cd openai-tts openai-realtime vendor-first-selftest cache-health get-monitoring-data clear-character-cache"
+          # (23 Nov 2026), open to anyone with no caller in the app. create-premium-subscription: audit B
+          # (27 Nov 2026), attached checkouts to the first Stripe customer with the caller's email.
+          RETIRED="send-custom-auth-email notification-service send-coppa-notification send-parental-notification ai-visual-scene-creator runware-template-ab runware-template-cd openai-tts openai-realtime vendor-first-selftest cache-health get-monitoring-data clear-character-cache create-premium-subscription"
           BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
           failed=""
           for func in $RETIRED; do

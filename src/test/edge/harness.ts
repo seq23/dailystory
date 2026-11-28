@@ -45,8 +45,11 @@ export const ENV: Record<string, string> = {
   RUNWARE_API_KEY: "rw-test",
 };
 
+/** Answers a non-AI request (REST, auth, RPC) in a test; undefined = the default empty answer. */
+export type Route = (url: string, init?: RequestInit) => Response | Promise<Response> | undefined;
+
 /** Load the function fresh and call it once with this request. */
-export async function runFunction(name: string, req: Request, mode: AiMode): Promise<Run> {
+export async function runFunction(name: string, req: Request, mode: AiMode, route?: Route): Promise<Run> {
   const state = edgeState();
   const outbound: Outbound[] = [];
   const logs: string[] = [];
@@ -69,6 +72,8 @@ export async function runFunction(name: string, req: Request, mode: AiMode): Pro
       const content = lastUserText(body) || "ok";
       return new Response(JSON.stringify({ choices: [{ message: { role: "assistant", content }, finish_reason: "stop" }], usage: { prompt_tokens: 1, completion_tokens: 1 } }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
+    const routed = route ? await route(url, init) : undefined;
+    if (routed) return routed;
     return new Response(JSON.stringify({ data: [] }), { status: 200, headers: { "Content-Type": "application/json" } });
   }));
 

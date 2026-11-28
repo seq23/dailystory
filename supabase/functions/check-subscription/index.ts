@@ -73,11 +73,10 @@ serve(async (req) => {
       });
     }
 
-    const userEmail = user.email;
-
-    // PURE DATABASE READ - Direct REST API call (no network imports)
+    // PURE DATABASE READ - Direct REST API call (no network imports).
+    // By the account's id, never its email: an email at sign-up is not proven (audit B, 27 Nov 2026).
     const dbResponse = await fetch(
-      `${supabaseUrl}/rest/v1/subscribers?email=eq.${encodeURIComponent(userEmail)}&select=*`,
+      `${supabaseUrl}/rest/v1/subscribers?user_id=eq.${encodeURIComponent(user.id)}&select=*`,
       {
         headers: {
           'apikey': supabaseKey,

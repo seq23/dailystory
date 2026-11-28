@@ -11,7 +11,6 @@ This directory contains all Edge Functions for the project. GitHub is the source
 - `apply-discount-code` - JWT: true  
 - `check-subscription` - JWT: true
 - `create-checkout` - JWT: true
-- `create-premium-subscription` - JWT: true
 - `customer-portal` - JWT: true
 - `stripe-webhook` - JWT: false (Stripe signature verification instead)
 - `validate-discount-code` - JWT: false

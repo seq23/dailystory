@@ -6,6 +6,7 @@ import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { createImportFailureResponse } from "../_shared/resilientLoader.ts";
 import { createPaymentServiceClient } from "../_shared/paymentSupabase.ts";
 import Stripe from "../_shared/stripe.ts";
+import { linkedStripeCustomer } from "../_shared/stripeCustomer.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -46,15 +47,26 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.id) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    if (customers.data.length === 0) {
-      throw new Error("No Stripe customer found for this user. Please complete a purchase first.");
+    // The billing account linked to THIS account id, never the first customer with its email
+    // (_shared/stripeCustomer.ts). A failed read is a refusal, never someone else's portal.
+    const { data: subRow, error: subError } = await supabaseClient
+      .from("subscribers")
+      .select("stripe_customer_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (subError) throw new Error(`Subscriber read failed: ${subError.message}`);
+    const customerId = await linkedStripeCustomer(stripe, { userId: user.id, storedCustomerId: subRow?.stripe_customer_id ?? null });
+    if (!customerId) {
+      logStep("No billing account linked to this user");
+      return new Response(JSON.stringify({ error: "No billing account is linked to this sign-in. If you pay for Premium, sign in with the account you subscribed from." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+      });
     }
-    const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
     const origin = req.headers.get("origin") || "http://localhost:3000";

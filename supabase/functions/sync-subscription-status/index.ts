@@ -2,6 +2,8 @@
 // Uses direct database calls for Supabase, requires Stripe SDK for payment sync
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "../_shared/serve.ts";
+import Stripe from "../_shared/stripe.ts";
+import { linkedStripeCustomer } from "../_shared/stripeCustomer.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -105,9 +107,10 @@ serve(async (req) => {
 
     logStep("Syncing subscription for user", { email: userEmail });
 
-    // Check for manual override first - PURE DATABASE READ
+    // Check for manual override first - PURE DATABASE READ.
+    // By the account's id, never its email: an email at sign-up is not proven (audit B, 27 Nov 2026).
     const subResponse = await fetch(
-      `${supabaseUrl}/rest/v1/subscribers?email=eq.${encodeURIComponent(userEmail)}&select=*`,
+      `${supabaseUrl}/rest/v1/subscribers?user_id=eq.${encodeURIComponent(userId)}&select=*`,
       {
         headers: {
           'apikey': supabaseKey,
@@ -117,8 +120,9 @@ serve(async (req) => {
       }
     );
 
+    if (!subResponse.ok) throw new Error(`Subscriber read failed: ${subResponse.status}`);
     const subData = await subResponse.json();
-    const subRow = subData[0];
+    const subRow = Array.isArray(subData) ? subData[0] : undefined;
 
     const overrideActive = (subRow?.override_premium === true &&
       (!subRow.override_end || new Date(subRow.override_end) > new Date())) ||
@@ -166,12 +170,13 @@ serve(async (req) => {
     }
 
     // Query Stripe for current subscription status (only external dependency)
-    const Stripe = (await import("https://esm.sh/stripe@14.21.0")).default;
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
-    
-    if (customers.data.length === 0) {
+    // The billing account linked to THIS account id (_shared/stripeCustomer.ts), never the
+    // first Stripe customer with its email.
+    const customerId = await linkedStripeCustomer(stripe, { userId, storedCustomerId: subRow?.stripe_customer_id ?? null });
+
+    if (!customerId) {
       // Check if user has discount activation BEFORE marking as unsubscribed
       if (subRow?.discount_activated === true || 
           (subRow?.override_premium === true && 
@@ -222,7 +227,6 @@ serve(async (req) => {
       });
     }
 
-    const customerId = customers.data[0].id;
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",

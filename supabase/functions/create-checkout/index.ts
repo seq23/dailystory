@@ -6,6 +6,7 @@ import { handleHealthAndCors } from "../_shared/healthCors.ts";
 import { createImportFailureResponse } from "../_shared/resilientLoader.ts";
 import { createPaymentServiceClient } from "../_shared/paymentSupabase.ts";
 import Stripe from "../_shared/stripe.ts";
+import { emailHadSubscription, linkedStripeCustomer } from "../_shared/stripeCustomer.ts";
 import { ACCESS_CODE_UNAVAILABLE, ACCESS_CODE_MESSAGES, decideTrial, normalizeAccessCode } from "../_shared/accessCodeRules.ts";
 
 const corsHeaders = {
@@ -61,7 +62,7 @@ serve(async (req) => {
     // Check if user already has premium access before creating checkout session
     const { data: existingSubscriber } = await supabaseService
       .from('subscribers')
-      .select('subscribed, subscription_end, override_premium, override_end, subscription_tier')
+      .select('subscribed, subscription_end, override_premium, override_end, subscription_tier, stripe_customer_id')
       .eq('user_id', user.id)
       .single();
 
@@ -89,15 +90,14 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     
-    // Check if customer exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      logStep("Existing customer found", { customerId });
-    } else {
-      logStep("Creating new customer");
-    }
+    // The billing account linked to THIS account id (_shared/stripeCustomer.ts), never the first
+    // Stripe customer with its email: a checkout must not attach to someone else's customer.
+    const customerId = (await linkedStripeCustomer(stripe, {
+      userId: user.id,
+      storedCustomerId: existingSubscriber?.stripe_customer_id ?? null,
+    })) ?? undefined;
+    if (customerId) logStep("Existing customer found", { customerId });
+    else logStep("Creating new customer");
 
     // Pricing: $12.99/month or $99/year (docs/PRICING.md), 7-day free trial (or an access code's days), card taken up front.
     // The amounts below are always sent inline, so this file and docs/PRICING.md are the
@@ -123,6 +123,8 @@ serve(async (req) => {
       const previous = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 1 });
       hadSubscription = previous.data.length > 0;
     }
+    // The email may only take a trial away (one trial per person, as before), never link a customer.
+    if (!hadSubscription) hadSubscription = await emailHadSubscription(stripe, user.email);
     // A code already gave this account its free Premium days (redeem-access-code):
     // that was the free trial, so checkout bills from day one.
     if (!hadSubscription) {
